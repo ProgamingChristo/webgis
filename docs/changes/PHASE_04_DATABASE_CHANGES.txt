@@ -1,0 +1,310 @@
+PHASE
+GETRA Phase 4 - Database & PostGIS Foundation
+Status: IMPLEMENTED - DATABASE VERIFICATION BLOCKED
+
+Tanggal
+2026-08-15
+
+Tujuan perubahan
+Menyediakan migration-first spatial database foundation tanpa data produksi,
+menjaga API health tetap melakukan konektivitas nyata, dan menambahkan baseline
+operasional/dokumentasi sebelum pekerjaan Phase 5 dimulai.
+
+FILE DIBUAT
+- supabase/migrations/20260815220000_create_spatial_foundation.sql
+- supabase/tests/database/phase4_spatial_foundation.test.sql
+- supabase/config.toml
+- src/schemas/spatial.schema.ts
+- src/modules/spatial-import/contracts.ts
+- tests/unit/supabase-server.test.ts
+- docs/database/database-architecture.md
+- docs/RUNNING_BACKEND.txt
+- docs/SUPABASE_MIGRATION.txt
+- docs/changes/PHASE_04_DATABASE_CHANGES.txt
+- ecosystem.config.cjs
+
+FILE DIUBAH
+- supabase/seed.sql
+- src/services/health.service.ts
+- src/lib/env/index.ts
+- src/lib/supabase/server.ts
+- src/config/bootstrap.ts
+- app/api/health/route.ts
+- app/api/profile/route.ts
+- tests/integration/health-route.test.ts
+- package.json
+- package-lock.json
+- .gitignore
+- README.md
+- docs/SUPABASE_CLI.md
+
+FILE DIHAPUS
+- Tidak ada.
+
+DATABASE CHANGES
+
+MIGRATION FILE
+- Existing: 20260815203150_create_profiles.sql
+- Existing: 20260815205854_add_roles_to_profiles.sql
+- Phase 4: 20260815220000_create_spatial_foundation.sql
+
+EXTENSION
+- CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA extensions.
+- Pernyataan bersifat idempotent, tetapi PostGIS belum boleh dinyatakan aktif
+  pada local/remote karena migration belum berhasil dijalankan.
+- pgRouting tidak dibuat dan tidak diklaim tersedia.
+
+TABLE
+- public.spatial_sources
+- public.study_areas
+- public.transport_corridors
+- public.transport_nodes
+- public.umkm_profiles
+
+COLUMN
+
+1. public.spatial_sources
+   id uuid PK; source_name text; source_type text; description text nullable;
+   metadata jsonb object; created_at timestamptz; updated_at timestamptz.
+
+2. public.study_areas
+   id uuid PK; source_id uuid nullable; name text; description text nullable;
+   geometry geometry(MultiPolygon,4326); created_at/updated_at timestamptz.
+
+3. public.transport_corridors
+   id uuid PK; source_id uuid nullable; name text; transport_mode text;
+   description text nullable; geometry geometry(MultiLineString,4326);
+   created_at/updated_at timestamptz.
+
+4. public.transport_nodes
+   id uuid PK; source_id uuid nullable; corridor_id uuid nullable; name text;
+   node_type text; transport_mode text; geometry geometry(Point,4326);
+   created_at/updated_at timestamptz.
+
+5. public.umkm_profiles
+   id uuid PK; owner_id uuid; source_id uuid nullable; business_name text;
+   category text; description/address text nullable; geometry geometry(Point,4326);
+   created_at/updated_at timestamptz.
+
+RELATIONSHIP / FOREIGN KEY
+- study_areas.source_id -> spatial_sources.id ON DELETE SET NULL.
+- transport_corridors.source_id -> spatial_sources.id ON DELETE SET NULL.
+- transport_nodes.source_id -> spatial_sources.id ON DELETE SET NULL.
+- transport_nodes.corridor_id -> transport_corridors.id ON DELETE SET NULL.
+- umkm_profiles.source_id -> spatial_sources.id ON DELETE SET NULL.
+- umkm_profiles.owner_id -> profiles.id ON DELETE RESTRICT.
+
+GEOMETRY, CRS, DAN CONSTRAINT
+- Storage CRS konsisten EPSG:4326.
+- Geometry NOT NULL dan dikunci oleh typmod sesuai tipe tabel.
+- is_valid_wgs84_geometry memeriksa non-null, SRID, tipe, ST_IsValid,
+  dan range longitude/latitude.
+- Nama/kategori/mode/type wajib non-empty.
+- source_type dibatasi ke external, survey, manual, imported, system.
+- metadata wajib JSON object; credential dilarang disimpan di metadata.
+
+INDEX
+- GiST: study_areas.geometry, transport_corridors.geometry,
+  transport_nodes.geometry, umkm_profiles.geometry (4 index).
+- B-tree: seluruh source_id yang digunakan, corridor_id, owner_id,
+  transport_corridors.transport_mode, transport_nodes(transport_mode,node_type),
+  umkm_profiles.category, spatial_sources.source_type (10 index).
+
+RLS
+- RLS diaktifkan pada kelima tabel Phase 4.
+- anon dicabut seluruh privilege pada tabel tersebut.
+- authenticated dapat membaca spatial reference data.
+- hanya ADMIN dapat mengelola spatial reference data.
+- owner dapat select/insert/update umkm_profiles miliknya sendiri.
+- ADMIN dapat mengelola seluruh umkm_profiles.
+- private.is_admin menghindari recursive profile policy; empat policy profiles
+  direkonstruksi tanpa membuka data profile ke anonymous.
+
+FUNCTION/TRIGGER
+- private.is_admin(): authorization helper SECURITY DEFINER dengan search_path aman.
+- public.is_valid_wgs84_geometry(): validasi type/SRID/validity/range.
+- public.make_wgs84_bbox(): membuat envelope 4326 setelah validasi bounds.
+- public.wgs84_distance_meters(): jarak point-to-point dalam meter via geography.
+- public.handle_updated_at() dan public.handle_new_user() di-hardening.
+- Lima trigger updated_at, satu untuk setiap tabel Phase 4.
+
+SEED
+- supabase/seed.sql hanya memuat fixture sintetis berlabel TEST/DEV.
+- Tidak ada data penelitian, UMKM, koridor, node, survey, atau demand produksi.
+- Seed belum dan tidak boleh dipush ke production tanpa instruksi eksplisit.
+
+API CHANGES
+
+METHOD
+GET
+
+ENDPOINT
+/api/health
+
+REQUEST BODY
+Tidak ada. Header x-request-id opsional dan hanya digunakan jika valid/aman.
+
+RESPONSE
+HTTP 200:
+{
+  "success": true,
+  "request_id": "<uuid-or-safe-client-id>",
+  "data": {
+    "service": "getra-api",
+    "status": "ok",
+    "database": "connected"
+  }
+}
+
+ERROR RESPONSE
+HTTP 503:
+{
+  "success": false,
+  "request_id": "<uuid-or-safe-client-id>",
+  "error": {
+    "code": "DATABASE_UNAVAILABLE",
+    "message": "Database connection failed",
+    "retryable": true
+  }
+}
+Stack trace, host, username, password, key, SQL, dan connection string tidak
+dikembalikan.
+
+HEALTH CHECK
+Repository health melakukan Supabase Storage listBuckets dengan limit 1 dan
+offset 0 menggunakan server-side publishable client. Request read-only ini
+memverifikasi application data plane dan PostgreSQL-backed Storage metadata.
+Ini bukan verifikasi bahwa migration Phase 4/PostGIS sudah diterapkan.
+
+SUPABASE CLIENT FOUNDATION
+- Semua pembacaan konfigurasi Supabase dipusatkan pada src/lib/env.
+- Server client menonaktifkan persistSession, autoRefreshToken, dan URL session
+  detection yang tidak diperlukan pada server.
+- Profile route memakai request-scoped client dengan Authorization header agar
+  query repository tetap berada di bawah RLS user, tanpa service-role key.
+
+ENVIRONMENT CHANGES
+- Tidak ada environment variable baru untuk Phase 4/process manager.
+- .env.local tetap diperlukan, di-ignore Git, dan tidak disalin ke PM2 config.
+- .env.example tetap hanya placeholder aman.
+- Tidak ada database password atau service-role value yang dibuat/ditebak.
+
+DEPENDENCY CHANGES
+- supabase CLI 2.114.0 sebagai development dependency untuk local/migration flow.
+- PM2 7.0.3 sebagai development dependency untuk persistent process.
+- npm override js-yaml=4.3.1 memasang patch security transitive PM2.
+- TypeScript dipertahankan pada 6.0.3 dan ts-api-utils dipin 2.4.0 untuk
+  kompatibilitas lint toolchain yang telah diuji.
+- Tidak ada dependency MAPID, routing, AI, Redis, TimescaleDB, atau Python.
+
+COMMAND YANG DIJALANKAN
+- npm install --save-dev pm2@latest: berhasil; audit awal menemukan 2 high.
+- npm install setelah override js-yaml=4.3.1: berhasil.
+- npm ls js-yaml: berhasil; PM2 menggunakan js-yaml 4.3.1 overridden.
+- npm audit --json: berhasil; 0 vulnerability setelah override.
+- npx supabase migration list --help: berhasil.
+- npx supabase db push --help: berhasil.
+- npx supabase db pull --help: berhasil.
+- npx supabase gen types --help: berhasil.
+- npm run typecheck: PASS pada validasi Phase 4 sebelumnya.
+- npm run typecheck (final): PASS.
+- npm run lint (final): PASS, zero warning.
+- npm test (final): PASS, 10 file / 29 test.
+- npm run build (final): PASS, Next.js production build.
+- npm run dev dan live GET /api/health: PASS sebelumnya, HTTP 200.
+- npx supabase migration list: gagal aman, LegacyProjectNotLinkedError.
+- npx supabase db push --dry-run: gagal aman, LegacyProjectNotLinkedError.
+- npm run process:start: PASS; production build dan PM2 online.
+- npm run process:status: PASS.
+- Live GET /api/health di bawah PM2: PASS, HTTP 200/database connected.
+- PM2 crash simulation pada PID getra-backend terverifikasi: PASS; PID diganti,
+  restart counter naik dari 0 ke 1, health pulih 200.
+- npm run process:restart: PASS setelah build.
+- npm run process:stop dan status stopped: PASS.
+- npm run process:start setelah stop: PASS; final process online.
+- npm audit --json (full tree): PASS, 0 vulnerability.
+- npm prune: PASS; dependency tree diaudit ulang.
+- docker version (final read-only check): Docker client tersedia, Linux daemon
+  tidak berjalan / named pipe tidak ditemukan.
+- npx supabase status: gagal karena Docker daemon tidak tersedia.
+- supabase start: timeout/gagal akibat Docker containerd blob I/O error.
+- npm run db:reset: timeout akibat Docker daemon tidak sehat.
+
+TEST YANG DIJALANKAN
+- Unit/integration test TypeScript/Vitest.
+- Unit test server Supabase client configuration dan request Authorization.
+- Typecheck, lint, build, production audit.
+- Development startup dan live health endpoint.
+- Local database reset/pgTAP dicoba tetapi belum berhasil dijalankan.
+- PM2 lifecycle mencakup start/status/log/crash recovery/restart/stop/restart.
+
+HASIL TEST
+- Code test final: PASS, 10 file / 29 test.
+- Typecheck/lint/build final: PASS.
+- Health live final di bawah PM2: PASS, HTTP 200 dan database=connected.
+- Automatic crash restart: PASS; restart counter meningkat dan health pulih.
+- Database pgTAP: NOT RUN karena local database tidak berhasil start.
+- PostGIS/schema/index/FK/RLS tests: NOT VERIFIED pada PostgreSQL berjalan.
+
+MIGRATION STATUS
+- Tiga migration local tersedia dan telah diinspeksi statis.
+- Local migration list/reset/test/lint belum berhasil karena Docker bermasalah.
+- db push --dry-run sudah dicoba secara non-mutating dan gagal sebelum preview
+  dengan LegacyProjectNotLinkedError; local DB validation juga belum lulus.
+- db push belum dijalankan.
+- Generated database types belum dibuat karena remote migration belum berhasil.
+
+SUPABASE REMOTE STATUS
+- Application connectivity probe: CONNECTED; live health pernah HTTP 200.
+- CLI link: NOT LINKED dari workspace ini.
+- Remote migration history/schema drift: UNKNOWN / NOT VERIFIED.
+- Remote dry-run: BLOCKED sebelum preview karena project NOT LINKED.
+- Remote migration push: NOT RUN; tidak ada remote schema yang diubah.
+- Remote PostGIS/RLS/index/function verification: NOT RUN.
+
+PERSISTENT PROCESS STATUS
+- PM2 config dan npm lifecycle scripts telah dibuat.
+- process:start membangun aplikasi lalu menjalankan next start.
+- autorestart/log/status/restart/stop dikonfigurasi.
+- Start/status/log/automatic crash restart/manual restart/stop/start ulang: PASS.
+- Final process getra-backend: ONLINE di PM2 pada port default 3000.
+- Final live health: HTTP 200, database=connected.
+
+SECURITY AUDIT
+- .env.local ter-ignore; .env.example dikecualikan dari pola .env*.
+- Tidak ada database password, service-role value, atau connection string.
+- Tidak ada credential di ecosystem config atau migration metadata.
+- Pembacaan konfigurasi Supabase terpusat di src/lib/env; route profile tidak
+  lagi membaca process.env atau membangun client sendiri.
+- Health error tidak mengembalikan stack/SQL/credential.
+- RLS/privilege SQL tersedia, tetapi enforcement remote belum terverifikasi.
+- npm audit penuh: 0 vulnerability setelah patched override.
+- Tidak ada remote destructive command yang dijalankan.
+
+KNOWN LIMITATION
+- Docker local stack belum sehat (blob I/O error pada percobaan awal; daemon
+  tidak tersedia pada pemeriksaan akhir); pgTAP/migration execution belum terbukti.
+- Remote schema/history dan PostGIS belum diketahui karena workspace belum linked.
+- Query plan spatial belum dapat di-audit tanpa PostgreSQL berjalan.
+- Generated Supabase TypeScript types masih pending.
+- PM2 tidak otomatis menjadi Windows startup service setelah reboot.
+- npm ls exit 0 tetapi masih melaporkan dua optional WASM package Next sebagai
+  extraneous; npm prune tidak mengubah artifact tersebut dan npm audit tetap 0.
+- Tidak ada MAPID importer, routing engine, AI, demand intelligence, dashboard,
+  frontend map, atau production data; semuanya sengaja di luar Phase 4.
+
+ROLLBACK NOTES
+- Tidak ada remote database change pada pekerjaan ini, sehingga tidak ada
+  remote rollback yang perlu dijalankan.
+- Jika migration belum pernah diterapkan, file Phase 4 dapat direvert bersama
+  test/docs terkait.
+- Jika migration sudah diterapkan di masa depan, jangan edit migration lama;
+  buat forward rollback migration dengan urutan dependency terbalik dan review
+  pemulihan policy/function profiles.
+- Process manager dapat dihapus dengan menghentikan getra-backend, menghapus
+  script/config PM2, lalu menghapus dependency PM2 melalui npm.
+- Jangan gunakan supabase db reset --linked sebagai mekanisme rollback.
+
+FINAL STATUS
+GETRA PHASE 4: IMPLEMENTED - DATABASE VERIFICATION BLOCKED
+Phase 5 belum dimulai.

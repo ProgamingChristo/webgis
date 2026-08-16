@@ -1,0 +1,100 @@
+GETRA BACKEND - PANDUAN MENJALANKAN PROCESS
+Tanggal pembaruan: 2026-08-15
+
+MODE YANG TERSEDIA
+
+1. Development manual: npm run dev
+   Menjalankan Next.js development server dengan hot reload.
+
+2. Persistent/production-like: npm run process:start
+   Menjalankan hasil production build melalui next start di bawah PM2.
+   npm lifecycle akan menjalankan npm run build terlebih dahulu melalui
+   script preprocess:start.
+
+3. Production-like manual: npm run build lalu npm run start
+   Mode ini tidak dikelola PM2 dan tidak melakukan automatic restart.
+
+CARA START
+
+Pastikan .env.local tersedia di mesin target, lalu jalankan:
+
+  npm run process:start
+
+Konfigurasi berada di ecosystem.config.cjs. Konfigurasi tersebut tidak
+menyimpan URL, API key, password, service-role key, atau secret lain.
+
+CARA STOP
+
+  npm run process:stop
+
+Perintah ini menghentikan hanya process bernama getra-backend. Entry process
+tetap tercatat oleh PM2 dan dapat dijalankan lagi dengan process:start.
+
+CARA RESTART
+
+  npm run process:restart
+
+npm lifecycle menjalankan npm run build sebelum restart melalui
+preprocess:restart. Gunakan command ini setelah perubahan code yang perlu
+dibangun ulang.
+
+CARA MELIHAT STATUS
+
+  npm run process:status
+
+Status normal setelah start adalah online untuk process getra-backend.
+
+CARA MELIHAT LOG
+
+  npm run process:logs
+
+PM2 menyimpan log stdout dan stderr pada direktori log PM2 milik user
+(secara default %USERPROFILE%\.pm2\logs pada Windows). Tekan Ctrl+C untuk
+keluar dari tampilan log; backend tetap berjalan.
+
+CARA KEMBALI KE npm run dev
+
+  npm run process:stop
+  npm run dev
+
+Jangan menjalankan npm run dev dan PM2 pada port yang sama secara bersamaan.
+
+STARTUP VALIDATION
+
+Urutan log backend yang diharapkan:
+
+  [GETRA] Starting backend...
+  [GETRA] Environment loaded
+  [GETRA] Supabase configured
+  [GETRA] Database connected
+  [GETRA] Backend ready
+
+Database connected hanya dicetak setelah probe Supabase Storage metadata
+berhasil. Probe tersebut adalah request read-only yang melewati data plane
+Supabase dan metadata bucket yang disimpan di PostgreSQL. Jika gagal, backend
+menulis Database connection failed tanpa mencetak credential.
+
+AUTOMATIC RESTART
+
+PM2 dikonfigurasi dengan autorestart=true, restart_delay=2000 ms,
+max_restarts=10, dan satu instance fork. Automatic restart berlaku selama
+daemon PM2 masih hidup. Setup service/startup setelah reboot Windows belum
+diotomatisasi oleh repository ini dan harus dikonfigurasi sesuai host target.
+
+ENVIRONMENT DAN SECURITY
+
+- .env.local harus tersedia hanya pada mesin runtime dan di-ignore Git.
+- Jangan menyalin secret ke ecosystem.config.cjs.
+- Jangan mengirim output environment atau log yang berisi credential.
+- PORT boleh diberikan sebagai environment runtime bila port default 3000
+  tidak dapat digunakan.
+- process:start menggunakan next start, bukan development server.
+
+VERIFIKASI PERUBAHAN INI
+
+Pada 2026-08-15 lifecycle berikut berhasil diuji: start, status online, live
+health HTTP 200, pembacaan log, automatic restart setelah process crash,
+restart manual, stop, start kembali, dan final status online. Detail hasil dan
+blocker database migration dicatat pada:
+
+  docs/changes/PHASE_04_DATABASE_CHANGES.txt

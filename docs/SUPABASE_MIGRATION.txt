@@ -1,0 +1,138 @@
+GETRA - WORKFLOW MIGRATION SUPABASE
+Tanggal pembaruan: 2026-08-15
+Project ref: sesakxnjaphrxqxllqjm
+
+PRINSIP
+
+- supabase/migrations adalah source of truth perubahan schema.
+- Jangan membuat schema production hanya melalui Dashboard.
+- Jangan menjalankan supabase db reset --linked tanpa instruksi eksplisit.
+- Jangan menaruh access token, database password, service-role key, atau URL
+  berkredensial di repository, command history, dokumentasi, maupun log.
+- supabase/seed.sql hanya untuk TEST/DEV dan tidak dipush ke production.
+
+PERSIAPAN
+
+Repository menyediakan Supabase CLI sebagai development dependency. Gunakan
+npx supabase ... atau wrapper npm yang tersedia agar versi CLI konsisten.
+Docker Desktop diperlukan untuk reset/test/lint database lokal.
+
+WORKFLOW AMAN
+
+1. Inspect migration local sebelum mengubah schema:
+
+     Get-ChildItem supabase/migrations
+     npx supabase migration list
+
+   Jika belum linked, command migration list akan melaporkan kondisi tersebut.
+   Jangan menganggap remote kosong.
+
+2. Login dan link hanya melalui mekanisme resmi CLI:
+
+     npx supabase login
+     npx supabase link --project-ref sesakxnjaphrxqxllqjm
+
+   Masukkan token/password melalui prompt aman. Jangan menambahkannya sebagai
+   argument yang dapat tersimpan pada history.
+
+3. Bandingkan history local dan remote sebelum membuat/push migration:
+
+     npx supabase migration list
+
+4. Validasi seluruh migration pada database lokal:
+
+     npm run db:start
+     npm run db:reset
+     npm run db:test
+     npm run db:lint
+     npm run db:migrations
+
+   npm run db:reset hanya menargetkan local stack. Pastikan command tidak
+   memakai flag --linked.
+
+5. Review migration SQL dan preview remote changes:
+
+     npx supabase migration list
+     npx supabase db push --dry-run
+
+6. Hanya jika local validation dan dry-run aman, push migration pending:
+
+     npx supabase db push
+
+   Jangan menambahkan --include-seed untuk project utama.
+
+7. Verifikasi sinkronisasi setelah push:
+
+     npx supabase migration list
+
+   Lakukan query read-only yang memverifikasi extension, table, column,
+   constraint, index, function, trigger, dan RLS yang dimigrasikan.
+
+8. Setelah schema remote berhasil dan sinkron, generate ulang type:
+
+     npx supabase gen types typescript --linked --schema public --schema private
+
+   Simpan output pada lokasi type existing. Untuk GETRA saat ini lokasi target
+   yang direncanakan adalah src/types/database.types.ts. Jangan membuat file
+   generated sebelum schema remote berhasil dimigrasikan dan diverifikasi.
+
+REMOTE SCHEMA DRIFT
+
+Jika remote memiliki object/history yang tidak ada di local:
+
+1. STOP sebelum db push.
+2. Simpan backup sesuai prosedur operasi project.
+3. Gunakan npx supabase db pull <nama_migration> untuk menangkap perbedaan.
+4. Audit SQL hasil pull; jangan langsung menerima atau overwrite migration.
+5. Rekonsiliasi duplicate table, extension, index, function, trigger, dan policy.
+6. Jalankan kembali reset/test/lint local dan dry-run.
+
+Jangan menggunakan migration repair sebelum provenance migration dipastikan.
+
+TROUBLESHOOTING
+
+Migration history mismatch
+  Bandingkan npx supabase migration list. Jangan rename/edit migration yang
+  sudah diterapkan. Pull drift dan rekonsiliasi history sebelum push.
+
+Migration already applied
+  Jangan jalankan SQL yang sama melalui Dashboard. Verifikasi version pada
+  history remote. Gunakan forward migration untuk koreksi; migration repair
+  memerlukan review dan keputusan engineer yang memahami provenance-nya.
+
+Remote schema drift
+  STOP push, lakukan db pull, audit hasil, lalu validasi ulang dari local stack.
+
+Connection failure
+  Periksa login CLI, link project, jaringan, dan status Supabase. Jangan cetak
+  access token atau connection string pada ticket/log.
+
+Missing database password
+  Operasi direct PostgreSQL/link tertentu membutuhkan database password.
+  Jangan menebak password. Hentikan hanya operasi tersebut dan dapatkan
+  credential melalui jalur rahasia yang disetujui. Application health probe
+  tetap dapat menggunakan publishable application credential.
+
+Docker/local stack issue
+  Pastikan Docker daemon sehat sebelum supabase start. Jika ada containerd
+  blob input/output error, hentikan validasi local dan perbaiki Docker terlebih
+  dahulu. Jangan menjalankan prune, factory reset, atau penghapusan volume
+  tanpa memastikan target serta approval karena dapat menghapus data lain.
+
+LARANGAN RESET REMOTE
+
+Command berikut destructive dan tidak boleh dijalankan otomatis:
+
+  supabase db reset --linked
+
+Jika reset remote dinilai perlu, STOP, laporkan alasan/dampak, dan tunggu
+approval eksplisit user.
+
+STATUS SAAT DOKUMEN DIBUAT
+
+- Project belum linked dari workspace ini.
+- Local stack belum sehat: percobaan awal mengalami containerd blob I/O error
+  dan pemeriksaan akhir mendapati Docker Desktop Linux daemon tidak berjalan.
+- Migration Phase 4 belum dipush ke remote.
+- Remote schema/history belum diverifikasi.
+- Generated database types belum dibuat.

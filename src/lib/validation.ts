@@ -1,0 +1,40 @@
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import { ApplicationError } from "@/src/lib/errors";
+
+export async function validateBody<T>(req: NextRequest, schema: z.ZodType<T>): Promise<T> {
+  const body = await req.json().catch(() => ({}));
+  const parseResult = schema.safeParse(body);
+  
+  if (!parseResult.success) {
+    const errorMsg = parseResult.error.issues[0]?.message || "Validation failed";
+    throw new ApplicationError("VALIDATION_ERROR", errorMsg);
+  }
+  
+  return parseResult.data;
+}
+
+export function validateQuery<T>(req: NextRequest | URL, schema: z.ZodType<T>): T {
+  const url = req instanceof NextRequest ? req.nextUrl : req;
+  const searchParams = Object.fromEntries(url.searchParams.entries());
+  
+  const parseResult = schema.safeParse(searchParams);
+  
+  if (!parseResult.success) {
+    const errorMsg = parseResult.error.issues[0]?.message || "Validation failed";
+    throw new ApplicationError("VALIDATION_ERROR", errorMsg);
+  }
+  
+  return parseResult.data;
+}
+
+export function validateParams<T>(params: Record<string, string | string[]>, schema: z.ZodType<T>): T {
+  const parseResult = schema.safeParse(params);
+  
+  if (!parseResult.success) {
+    const errorMsg = parseResult.error.issues[0]?.message || "Validation failed";
+    throw new ApplicationError("VALIDATION_ERROR", errorMsg);
+  }
+  
+  return parseResult.data;
+}
