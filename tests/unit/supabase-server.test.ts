@@ -38,6 +38,9 @@ describe("server Supabase clients", () => {
           detectSessionInUrl: false,
           persistSession: false,
         },
+        global: {
+          fetch: expect.any(Function),
+        },
       },
     );
   });
@@ -55,6 +58,7 @@ describe("server Supabase clients", () => {
           persistSession: false,
         },
         global: {
+          fetch: expect.any(Function),
           headers: { Authorization: "Bearer request-token" },
         },
       },

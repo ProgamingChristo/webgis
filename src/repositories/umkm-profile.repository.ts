@@ -39,7 +39,7 @@ import type {
 import type { UpdateProvenanceInput } from "@/src/types/provenance";
 import type { BoundingBox, NearPoint } from "@/src/types/spatial";
 
-const UMKM_PROFILE_COLUMNS =
+export const UMKM_PROFILE_COLUMNS =
   "id, owner_id, source_id, source_record_id, data_version, validation_status, retrieved_at, validated_at, metadata, business_name, category, description, address, geometry, created_at, updated_at, source:spatial_sources(source_type)";
 
 type UmkmListSource =

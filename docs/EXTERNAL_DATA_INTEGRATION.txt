@@ -1,0 +1,172 @@
+GETRA EXTERNAL DATA INTEGRATION
+Tanggal: 2026-08-16
+
+STATUS
+
+Foundation tersedia untuk provider eksternal dengan implementasi awal MAPID
+yang hanya memakai TEST FIXTURE CONTRACT. Koneksi MAPID production tidak
+diimplementasikan karena endpoint, authentication, dan response contract resmi
+untuk use case GETRA belum terverifikasi.
+
+ARCHITECTURE
+
+External Source
+     ↓
+Provider Client
+     ↓
+Response Validator
+     ↓
+Normalizer
+     ↓
+Adapter
+     ↓
+External Data Service
+     ↓
+External Record Repository
+     ↓
+Domain Repository
+     ↓
+Supabase PostgreSQL + PostGIS
+
+RESPONSIBILITY SETIAP LAYER
+
+1. External Source
+   Sistem provider di luar GETRA. Data pada boundary selalu dianggap unknown.
+   Tampilan GEO MAPID tidak dianggap sama dengan API dan tidak digunakan untuk
+   menebak endpoint atau schema.
+
+2. Provider Client
+   Membangun request read-only, menerapkan timeout, menjalankan HTTP transport,
+   dan memetakan status/network failure menjadi error aman. Authentication
+   dipasang oleh strategy server-owned yang wajib di-inject setelah kontrak resmi
+   tersedia; tidak ada default header atau real endpoint dalam repository.
+
+3. Response Validator
+   Menerima unknown dan menggunakan Zod. Validator yang tersedia saat ini
+   bernama MapidTestFixtureResponseValidator dan hanya menerima marker
+   GETRA_MAPID_TEST_FIXTURE_V1. Ia bukan production MAPID schema.
+
+4. Normalizer
+   Mengubah record test yang sudah tervalidasi menjadi normalized spatial record.
+   Normalizer tidak membuat source UUID dan tidak menganggap record VALIDATED.
+   source_id, data_version, retrieved_at, dan request_id berasal dari context
+   internal GETRA.
+
+5. Adapter
+   Mengorkestrasi client -> validator -> normalizer. Adapter tidak melakukan SQL
+   dan tidak mengetahui table database.
+
+6. External Data Service
+   Menjalankan fetch/validate/normalize, duplicate check, aggregate metrics, dan
+   optional persistence. Default persistence disabled. Dry-run tetap boleh
+   melakukan lookup duplicate read-only tetapi selalu menghasilkan zero write.
+
+7. External Record Repository
+   Facade atas ProvenanceRepository dan repository domain Phase 5. Ia memakai
+   entity_kind whitelist dan tidak menerima table name dari response provider.
+   Raw provider response tidak disimpan.
+
+8. Domain Repository
+   Melakukan Zod validation ulang, explicit column selection, database mapping,
+   dan write ke table domain yang sudah memiliki RLS/constraint.
+
+UNKNOWN BOUNDARY DAN TEST CONTRACT
+
+MapidRawResponse adalah unknown. Hanya validator yang boleh mengubah unknown
+menjadi type. Fixture memiliki marker:
+
+  TEST FIXTURE - NOT REAL MAPID PRODUCTION DATA
+
+Fixture contract tidak boleh diganti namanya atau dipakai untuk menyatakan
+compatibility dengan API MAPID production. Validator production baru harus
+dibuat dari dokumentasi/schema resmi yang telah diverifikasi.
+
+PROVENANCE
+
+Phase 6 memakai kontrak Phase 5:
+
+- spatial_sources.source_name = MAPID
+- spatial_sources.source_type = external
+- source_id = UUID row spatial_sources yang sudah di-resolve
+- source_record_id = ID external yang sudah divalidasi
+- data_version = context internal
+- retrieved_at = timestamp context internal
+- validation_status = PENDING
+- validated_at = null
+- metadata = object kecil yang sudah melewati metadataSchema
+
+Literal MAPID tidak ditambahkan ke SourceType karena enum existing memakai
+external sebagai klasifikasi provider eksternal.
+
+IDEMPOTENCY
+
+Runtime key:
+
+  entity_kind + source_id + source_record_id
+
+Duplicate dalam batch dideteksi dengan Set. Duplicate database diperiksa lewat
+ProvenanceRepository.existsBySourceRecordId(). Unique partial index Phase 5 pada
+(source_id, source_record_id) tetap menjadi race-condition guard terakhir.
+Policy Phase 6 adalah skip; tidak ada automatic update production.
+
+TIMEOUT DAN RETRY
+
+- Default timeout: 10000 ms.
+- Timeout valid: 100 sampai 120000 ms.
+- Maximum attempts: 3.
+- Base delay: 250 ms dengan exponential backoff terbatas.
+- Retry: network failure, timeout, HTTP 429, dan 500/502/503/504.
+- No retry: 400, 401, 403, invalid JSON, invalid schema, atau config error.
+- Request foundation hanya GET/read-only agar retry tidak menggandakan mutation.
+
+ERROR DAN REDACTION
+
+Error MAPID yang tersedia:
+
+- MAPID_CONFIGURATION_ERROR
+- MAPID_UNAUTHORIZED
+- MAPID_FORBIDDEN
+- MAPID_RATE_LIMITED
+- MAPID_TIMEOUT
+- MAPID_NETWORK_ERROR
+- MAPID_INVALID_RESPONSE
+- MAPID_UPSTREAM_ERROR
+
+Error tidak memuat raw body, URL query, header, API key, token, stack provider,
+atau detail internal. Tidak ada endpoint API GETRA baru pada Phase 6.
+
+OBSERVABILITY
+
+Log hanya memuat request_id, provider, operation, duration_ms, status,
+record_count, invalid_count, dan duplicate_count. Result internal menyediakan
+started_at, finished_at, records_received, records_valid, records_invalid, dan
+duplicates. Raw payload atau credential tidak pernah ditulis ke log.
+
+PERSISTENCE GATE
+
+Persistence production tetap disabled sampai seluruh syarat berikut terpenuhi:
+
+1. endpoint resmi diverifikasi;
+2. authentication contract resmi diverifikasi;
+3. response schema resmi diverifikasi;
+4. credential trusted server-side tersedia;
+5. RLS/service-role strategy direview;
+6. migration/schema remote existing diverifikasi;
+7. ingestion mendapat approval phase berikutnya.
+
+DATABASE
+
+Tidak ada migration Phase 6. Schema Phase 5 sudah memiliki provenance columns,
+validation_status, unique partial indexes, spatial source relation, dan domain
+repositories. Tidak ada raw_response table atau integration_log table.
+
+MENAMBAH PROVIDER BARU
+
+1. Implement ExternalDataProvider dengan type provider sendiri.
+2. Buat client server-only dan authentication strategy terverifikasi.
+3. Pertahankan raw response sebagai unknown sampai Zod validation.
+4. Buat normalizer ke kontrak provenance/domain existing.
+5. Gunakan entity-kind whitelist dan repository facade existing.
+6. Tambahkan fixture sintetis, unit test, integration test, dan change log phase.
+7. Jangan mengubah enum/table sebelum kebutuhan schema nyata dibuktikan.
+

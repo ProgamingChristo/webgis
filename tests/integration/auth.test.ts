@@ -28,6 +28,7 @@ describe("Auth API", () => {
 
       const req = new NextRequest("http://localhost:3000/api/auth/register", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: "test@example.com", password: "PasswordDevelopment123!", display_name: "Commuter", role: "COMMUTER" }),
       });
       const res = await RegisterPOST(req);
@@ -40,6 +41,7 @@ describe("Auth API", () => {
     it("should reject ADMIN registration", async () => {
       const req = new NextRequest("http://localhost:3000/api/auth/register", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: "admin@example.com", password: "PasswordDevelopment123!", display_name: "Admin", role: "ADMIN" }),
       });
       const res = await RegisterPOST(req);
@@ -70,6 +72,7 @@ describe("Auth API", () => {
 
       const req = new NextRequest("http://localhost:3000/api/auth/login", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: "test@example.com", password: "PasswordDevelopment123!" }),
       });
       const res = await LoginPOST(req);

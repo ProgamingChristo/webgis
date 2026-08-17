@@ -1,0 +1,156 @@
+GETRA MAPID ADAPTER USAGE
+Tanggal: 2026-08-16
+
+PENTING
+
+MAPID REAL API INTEGRATION:
+BLOCKED - OFFICIAL ENDPOINT/API CONTRACT NOT VERIFIED
+
+Semua contoh executable pada Phase 6 memakai fixture sintetis. Tidak ada contoh
+URL, path, authentication header, atau response production yang ditebak.
+
+1. TUJUAN ADAPTER
+
+MapidAdapter memisahkan HTTP client, unknown response validation, normalization,
+duplicate handling, dan persistence. Adapter sendiri tidak melakukan SQL.
+
+2. STRUKTUR FOLDER
+
+  src/integrations/core/          generic provider contract dan base error
+  src/integrations/mapid/         MAPID client/config/validator/normalizer/adapter
+  src/services/external-data/     orchestration dan dry-run
+  src/repositories/               Phase 5 repository facade
+  tests/fixtures/mapid/           TEST fixture JSON
+  tests/unit/integrations/        focused unit tests
+  tests/integration/integrations/ fixture pipeline test
+
+3. ENVIRONMENT VARIABLE
+
+Placeholder server-only pada .env.example:
+
+  MAPID_BASE_URL=
+  MAPID_API_KEY=
+  MAPID_TIMEOUT_MS=
+
+Jangan menggunakan NEXT_PUBLIC_MAPID_*. MAPID_BASE_URL dan MAPID_API_KEY wajib
+tersedia hanya saat real client kelak dirangkai. MAPID_TIMEOUT_MS kosong memakai
+default 10000 ms. Config di-load secara lazy sehingga startup GETRA biasa tidak
+gagal ketika integration belum dikonfigurasi.
+
+4. CARA MENGGUNAKAN CLIENT
+
+MapidClient membutuhkan tiga hal:
+
+1. config dari loadMapidProviderConfig();
+2. MapidAuthenticationStrategy yang berasal dari kontrak resmi;
+3. optional HTTP transport/delay untuk test.
+
+Konsep penggunaan setelah authentication resmi diverifikasi:
+
+  const client = new MapidClient(config, verifiedAuthenticationStrategy)
+  const raw = await client.request({ path: verifiedPath })
+
+Repository ini sengaja tidak menyediakan verifiedAuthenticationStrategy atau
+verifiedPath. Client hanya menerima relative path aman dan tidak mengekspos key.
+
+5. CARA MENGGUNAKAN ADAPTER
+
+Adapter menerima client, validator, dan normalizer melalui constructor. Untuk
+test foundation saja:
+
+  new MapidAdapter(
+    fixtureClient,
+    new MapidTestFixtureResponseValidator(),
+    new MapidTestFixtureNormalizer()
+  )
+
+Jangan menggunakan fixture validator untuk response production.
+
+6. CARA MELAKUKAN DRY-RUN
+
+Panggil ExternalDataService.processExternalData() dengan:
+
+  provider: "MAPID"
+  dryRun: true
+  query: relative path yang berasal dari test/verified server constant
+  context: request_id, source_id, data_version, retrieved_at
+
+Dry-run melakukan validation, normalization, batch duplicate detection, dan
+repository duplicate lookup. createNormalizedRecord/updateNormalizedRecord tidak
+dipanggil. persisted_records selalu 0.
+
+7. CARA VALIDATION
+
+Response client bertipe unknown. MapidTestFixtureResponseValidator memvalidasi
+envelope marker dan setiap record dengan Zod. Invalid record dilaporkan hanya
+dengan index dan reason aman; raw record tidak dikembalikan pada error.
+
+8. CARA NORMALIZATION
+
+MapidTestFixtureNormalizer mengubah validated TEST record menjadi transport-node
+normalized record. Ia memakai Point EPSG:4326 contract Phase 5, metadata aman,
+dan validation_status PENDING. Normalizer tidak membuat UUID/source row.
+
+9. CARA PROVENANCE MAPPING
+
+mapMapidRecordToExternalEntityInput() menghasilkan create_input dan update_input
+repository domain. Create provenance menyertakan source_id/source_record_id.
+Update provenance tidak dapat mengubah source identity, sesuai Phase 5.
+
+10. CARA DUPLICATE DETECTION
+
+- Batch: entity_kind + source_id + source_record_id dalam Set.
+- Database: ExternalRecordRepository -> ProvenanceRepository.
+- Race condition: unique partial index Phase 5 dan error 23505 -> CONFLICT.
+- Phase 6 policy: duplicate di-skip, bukan automatic overwrite.
+
+11. CARA TEST FIXTURE
+
+Fixture berada pada tests/fixtures/mapid/:
+
+- valid-response.fixture.json
+- invalid-response.fixture.json
+- empty-response.fixture.json
+- duplicate-record.fixture.json
+
+Semua fixture berlabel TEST dan menggunakan nama/koordinat sintetis. Fixture
+tidak boleh diperlakukan sebagai data penelitian atau schema resmi MAPID.
+
+12. CARA MENJALANKAN TEST
+
+  npm test
+  npm run typecheck
+  npm run lint
+  npm run build
+
+Tidak ada unit test yang memanggil endpoint eksternal.
+
+13. CARA MELIHAT LOG
+
+  npm run process:status
+  npm run process:logs
+
+Log integration hanya memuat aggregate metrics aman. Jangan log environment,
+header, key, raw response, atau upstream error detail.
+
+14. CARA MENAMBAH PROVIDER BARU
+
+Implement generic ExternalDataProvider, lalu buat provider-specific config,
+client, validator, normalizer, adapter, mapper, fixtures, dan tests. Reuse
+provenance/status/repository Phase 5. Jangan menambah table/enum tanpa kebutuhan
+data yang sudah diverifikasi.
+
+15. BATASAN INTEGRATION SAAT INI
+
+- Official MAPID endpoint: belum terverifikasi.
+- Authentication header/contract: belum terverifikasi.
+- Production response schema: belum terverifikasi.
+- Real network connection: tidak diimplementasikan.
+- Production persistence wiring: disabled.
+- Internal/public API endpoint: tidak dibuat.
+- Bulk ingestion, survey import, routing, spatial engine, AI, dan frontend: di
+  luar Phase 6.
+
+Timeout/retry defaults: 10000 ms, maximum 3 attempts, base delay 250 ms.
+Retry hanya untuk timeout/network/429/transient 5xx.
+

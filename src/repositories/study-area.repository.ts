@@ -35,7 +35,7 @@ import type {
 } from "@/src/types/domain";
 import type { BoundingBox } from "@/src/types/spatial";
 
-const STUDY_AREA_COLUMNS =
+export const STUDY_AREA_COLUMNS =
   "id, source_id, source_record_id, data_version, validation_status, retrieved_at, validated_at, metadata, name, description, geometry, created_at, updated_at, source:spatial_sources(source_type)";
 
 export class StudyAreaRepository

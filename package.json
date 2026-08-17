@@ -29,7 +29,14 @@
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
     "db:lint": "supabase db lint --local",
-    "db:migrations": "supabase migration list --local"
+    "db:migrations": "supabase migration list --local",
+    "docker:build": "docker compose --env-file .env.local build",
+    "docker:start": "docker compose --env-file .env.local up -d",
+    "docker:stop": "docker compose --env-file .env.local down",
+    "docker:restart": "docker compose --env-file .env.local restart",
+    "docker:status": "docker compose --env-file .env.local ps",
+    "docker:logs": "docker compose --env-file .env.local logs -f --tail 100",
+    "docker:prod:start": "docker compose --env-file .env.local -f docker-compose.yml -f docker-compose.prod.yml up -d --build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

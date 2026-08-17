@@ -1,0 +1,403 @@
+GETRA API ENDPOINT MATRIX
+=========================
+
+Tanggal pembaruan: 2026-08-16 (Asia/Jakarta)
+
+CLASSIFICATION
+--------------
+PUBLIC           : dapat dipanggil tanpa bearer; validation/rate/CORS tetap ada.
+AUTHENTICATED    : wajib Supabase bearer token valid.
+ROLE_RESTRICTED  : bearer + allowed role tertentu.
+ADMIN            : bearer + ADMIN server-side guard.
+INTERNAL         : guard internal/admin/environment/scoped credential sesuai use.
+
+Semua endpoint di bawah memakai exact-origin CORS policy. Request tanpa Origin
+diterima untuk server-to-server/CLI, tetapi tidak melewati auth. Semua endpoint
+mempunyai OPTIONS handler dengan method/header minimal sesuai path.
+
+RATE-LIMIT PROFILES (DEFAULT)
+-----------------------------
+NONE      : tidak memakai application limiter (health).
+AUTH      : 5 request / 60000 ms / client / endpoint.
+API       : 60 request / 60000 ms / user / endpoint.
+MUTATION  : 20 request / 60000 ms / user / endpoint.
+SPATIAL   : 30 request / 60000 ms / user / endpoint.
+
+Nilai dapat dikonfigurasi environment. Limiter process-local/single-instance;
+lihat `docs/PUBLIC_API_SECURITY.txt` sebelum horizontal scaling.
+
+ENDPOINT 01
+-----------
+METHOD:
+GET
+
+ENDPOINT:
+/api/health
+
+CLASS:
+PUBLIC
+
+AUTH:
+NO
+
+ROLE:
+NONE
+
+RATE LIMIT:
+NONE
+
+CORS:
+EXACT ALLOWLIST; NO-ORIGIN SERVER REQUEST ALLOWED
+
+PREFLIGHT HEADERS:
+x-request-id
+
+BODY/QUERY:
+NONE
+
+PURPOSE:
+Readiness dan real Supabase connectivity probe. HTTP 200 hanya ketika database
+dependency connected; HTTP 503 bila unavailable. Tidak mengungkap host/user/key.
+
+ENDPOINT 02
+-----------
+METHOD:
+POST
+
+ENDPOINT:
+/api/auth/login
+
+CLASS:
+PUBLIC
+
+AUTH:
+NO
+
+ROLE:
+NONE
+
+RATE LIMIT:
+AUTH
+
+CORS:
+EXACT ALLOWLIST
+
+PREFLIGHT HEADERS:
+content-type, x-request-id
+
+BODY/QUERY:
+Strict JSON email + password; max body 8192 byte.
+
+PURPOSE:
+Supabase password login dan pengembalian access token/user/profile ringkas.
+
+ENDPOINT 03
+-----------
+METHOD:
+POST
+
+ENDPOINT:
+/api/auth/register
+
+CLASS:
+PUBLIC
+
+AUTH:
+NO
+
+ROLE:
+NONE
+
+RATE LIMIT:
+AUTH
+
+CORS:
+EXACT ALLOWLIST
+
+PREFLIGHT HEADERS:
+content-type, x-request-id
+
+BODY/QUERY:
+Strict JSON email, password, display_name, optional COMMUTER/UMKM/COMMUNITY role;
+max body 8192 byte. ADMIN rejected.
+
+PURPOSE:
+Public non-admin Supabase registration.
+
+ENDPOINT 04
+-----------
+METHOD:
+POST
+
+ENDPOINT:
+/api/auth/logout
+
+CLASS:
+AUTHENTICATED
+
+AUTH:
+BEARER REQUIRED
+
+ROLE:
+ANY AUTHENTICATED ROLE
+
+RATE LIMIT:
+MUTATION
+
+CORS:
+EXACT ALLOWLIST
+
+PREFLIGHT HEADERS:
+authorization, x-request-id
+
+BODY/QUERY:
+NONE
+
+PURPOSE:
+Acknowledgement logout stateless. Client wajib membuang bearer token; tidak ada
+service-role/global token revocation atau auth cookie.
+
+ENDPOINT 05
+-----------
+METHOD:
+GET
+
+ENDPOINT:
+/api/auth/me
+
+CLASS:
+AUTHENTICATED
+
+AUTH:
+BEARER REQUIRED
+
+ROLE:
+ANY AUTHENTICATED ROLE
+
+RATE LIMIT:
+API
+
+CORS:
+EXACT ALLOWLIST
+
+PREFLIGHT HEADERS:
+authorization, x-request-id
+
+BODY/QUERY:
+NONE
+
+PURPOSE:
+Mengembalikan authenticated user dan profile ringkas melalui user-scoped access.
+
+ENDPOINT 06
+-----------
+METHOD:
+GET
+
+ENDPOINT:
+/api/profile
+
+CLASS:
+AUTHENTICATED
+
+AUTH:
+BEARER REQUIRED
+
+ROLE:
+ANY AUTHENTICATED ROLE
+
+RATE LIMIT:
+API
+
+CORS:
+EXACT ALLOWLIST
+
+PREFLIGHT HEADERS:
+authorization, x-request-id
+
+BODY/QUERY:
+NONE
+
+PURPOSE:
+Membaca profile sendiri melalui request-scoped Supabase client dan RLS.
+
+ENDPOINT 07
+-----------
+METHOD:
+PATCH
+
+ENDPOINT:
+/api/profile
+
+CLASS:
+AUTHENTICATED
+
+AUTH:
+BEARER REQUIRED
+
+ROLE:
+ANY AUTHENTICATED ROLE
+
+RATE LIMIT:
+MUTATION
+
+CORS:
+EXACT ALLOWLIST
+
+PREFLIGHT HEADERS:
+authorization, content-type, x-request-id
+
+BODY/QUERY:
+Strict JSON: display_name dan/atau avatar_url; minimal satu field; max 4096 byte.
+
+PURPOSE:
+Mengubah profile sendiri melalui request-scoped Supabase client dan RLS.
+
+ENDPOINT 08
+-----------
+METHOD:
+POST
+
+ENDPOINT:
+/api/spatial/distance
+
+CLASS:
+AUTHENTICATED
+
+AUTH:
+BEARER REQUIRED
+
+ROLE:
+ANY AUTHENTICATED ROLE
+
+RATE LIMIT:
+SPATIAL
+
+CORS:
+EXACT ALLOWLIST
+
+PREFLIGHT HEADERS:
+authorization, content-type, x-request-id
+
+BODY/QUERY:
+Strict JSON origin/destination longitude-latitude; max 4096 byte. Coordinate
+WGS84 bounds enforced.
+
+PURPOSE:
+PostGIS geography distance dalam meter; bukan JavaScript degree distance.
+
+ENDPOINT 09
+-----------
+METHOD:
+GET
+
+ENDPOINT:
+/api/spatial/nearby
+
+CLASS:
+AUTHENTICATED
+
+AUTH:
+BEARER REQUIRED
+
+ROLE:
+ANY AUTHENTICATED ROLE
+
+RATE LIMIT:
+SPATIAL
+
+CORS:
+EXACT ALLOWLIST
+
+PREFLIGHT HEADERS:
+authorization, x-request-id
+
+BODY/QUERY:
+lat, lng, radius, type, optional limit. Type whitelist transport_node atau
+umkm_profile; radius default cap 50000 m/configurable; limit default 20/max 100;
+unknown atau duplicate query key ditolak.
+
+PURPOSE:
+Bounded ST_DWithin proximity query melalui parameterized static RPC whitelist.
+
+ENDPOINT 10
+-----------
+METHOD:
+GET
+
+ENDPOINT:
+/api/spatial/bbox
+
+CLASS:
+AUTHENTICATED
+
+AUTH:
+BEARER REQUIRED
+
+ROLE:
+ANY AUTHENTICATED ROLE
+
+RATE LIMIT:
+SPATIAL
+
+CORS:
+EXACT ALLOWLIST
+
+PREFLIGHT HEADERS:
+authorization, x-request-id
+
+BODY/QUERY:
+west, south, east, north, type, optional limit. Ordered WGS84 bbox; type whitelist
+study_area/transport_corridor/transport_node/umkm_profile; default max span 10
+derajat per axis; limit default 20/max 100; unknown/duplicate key ditolak.
+
+PURPOSE:
+Bounded PostGIS bbox intersection melalui static RPC whitelist dan spatial index.
+
+ROLE-RESTRICTED ENDPOINTS
+-------------------------
+NONE EXPOSED.
+
+ADMIN ENDPOINTS
+---------------
+NONE EXPOSED.
+
+INTERNAL ENDPOINTS
+------------------
+NONE EXPOSED.
+
+API VERSIONING STATUS
+---------------------
+Endpoint existing tetap `/api/...` untuk compatibility. `/api/v1/...` adalah
+strategy untuk public domain endpoint baru, bukan path yang tersedia saat ini.
+
+STANDARD RESPONSE
+-----------------
+Success:
+
+  {
+    "success": true,
+    "data": {},
+    "request_id": "UUID"
+  }
+
+Error:
+
+  {
+    "success": false,
+    "error": {
+      "code": "...",
+      "message": "...",
+      "retryable": false
+    },
+    "request_id": "UUID"
+  }
+
+429 menambahkan `Retry-After`. Semua response menambahkan `X-Request-ID` dan
+`Cache-Control: no-store`. Detail security header ada di PUBLIC_API_SECURITY.txt.
+
+VERIFICATION STATUS
+-------------------
+Policy/unit tests dan live PM2 CORS negative, auth negative, rate-limit, serta
+security-header smoke tests PASS. Live endpoint matrix dari Docker BLOCKED karena
+Docker Desktop Linux Engine HTTP 500; PM2 tidak dianggap bukti container.

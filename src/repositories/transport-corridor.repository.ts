@@ -38,7 +38,7 @@ import type {
 } from "@/src/types/domain";
 import type { BoundingBox } from "@/src/types/spatial";
 
-const TRANSPORT_CORRIDOR_COLUMNS =
+export const TRANSPORT_CORRIDOR_COLUMNS =
   "id, source_id, source_record_id, data_version, validation_status, retrieved_at, validated_at, metadata, name, transport_mode, description, geometry, created_at, updated_at, source:spatial_sources(source_type)";
 
 export class TransportCorridorRepository

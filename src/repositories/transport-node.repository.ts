@@ -38,7 +38,7 @@ import type {
 } from "@/src/types/domain";
 import type { BoundingBox, NearPoint } from "@/src/types/spatial";
 
-const TRANSPORT_NODE_COLUMNS =
+export const TRANSPORT_NODE_COLUMNS =
   "id, source_id, source_record_id, data_version, validation_status, retrieved_at, validated_at, metadata, corridor_id, name, node_type, transport_mode, geometry, created_at, updated_at, source:spatial_sources(source_type)";
 
 type NodeListSource =

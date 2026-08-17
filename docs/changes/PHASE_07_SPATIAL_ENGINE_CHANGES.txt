@@ -1,0 +1,233 @@
+PHASE:
+07
+
+TITLE:
+Spatial Engine Foundation
+
+DATE:
+2026-08-16 (Asia/Jakarta)
+
+OBJECTIVE:
+Menyediakan fondasi spatial DB-first berbasis PostGIS untuk validasi WGS84,
+distance, proximity, bounding box, walking-time estimator, serta contract
+routing/service-area yang fail-closed tanpa data production atau graph palsu.
+
+FILES CREATED:
+- app/api/spatial/distance/route.ts
+- app/api/spatial/nearby/route.ts
+- app/api/spatial/bbox/route.ts
+- src/lib/spatial/coordinates.ts
+- src/lib/spatial/geojson.ts
+- src/lib/spatial/geometry.ts
+- src/lib/spatial/request.ts
+- src/lib/spatial/srid.ts
+- src/modules/spatial/bbox.service.ts
+- src/modules/spatial/distance.service.ts
+- src/modules/spatial/index.ts
+- src/modules/spatial/proximity.service.ts
+- src/modules/spatial/routing.contract.ts
+- src/modules/spatial/service-area.service.ts
+- src/modules/spatial/spatial-api.ts
+- src/modules/spatial/spatial.config.ts
+- src/modules/spatial/spatial.constants.ts
+- src/modules/spatial/spatial.dto.ts
+- src/modules/spatial/spatial.errors.ts
+- src/modules/spatial/spatial.mapper.ts
+- src/modules/spatial/spatial.repository.ts
+- src/modules/spatial/spatial.schema.ts
+- src/modules/spatial/spatial.service.ts
+- src/modules/spatial/spatial.types.ts
+- src/modules/spatial/walking-time.service.ts
+- tests/fixtures/spatial/valid-point.fixture.json
+- tests/fixtures/spatial/invalid-point.fixture.json
+- tests/fixtures/spatial/valid-bbox.fixture.json
+- tests/fixtures/spatial/invalid-bbox.fixture.json
+- tests/fixtures/spatial/nearby.fixture.json
+- tests/unit/spatial/spatial-schema-config.test.ts
+- tests/unit/spatial/spatial-services.test.ts
+- tests/unit/spatial/spatial-mapper-geojson.test.ts
+- tests/unit/spatial/spatial-repository.test.ts
+- tests/integration/spatial/spatial-api.test.ts
+- tests/integration/spatial/spatial-fixture-flow.test.ts
+- supabase/tests/database/phase7_spatial_engine.test.sql
+- docs/SPATIAL_ENGINE_USAGE.txt
+- docs/SPATIAL_API.txt
+- docs/changes/PHASE_07_SPATIAL_ENGINE_CHANGES.txt
+
+FILES MODIFIED:
+- .env.example
+- README.md
+- src/config/bootstrap.ts
+- src/lib/errors/index.ts
+- src/repositories/study-area.repository.ts
+- src/repositories/transport-corridor.repository.ts
+- src/repositories/transport-node.repository.ts
+- src/repositories/umkm-profile.repository.ts
+- src/schemas/spatial.schema.ts
+- src/types/spatial.ts
+
+FILES REMOVED:
+NONE
+
+DEPENDENCY CHANGES:
+NONE. Phase 7 memakai Zod, Supabase JS, dan server-only yang sudah tersedia.
+
+ENVIRONMENT CHANGES:
+- SPATIAL_MAX_RADIUS_METERS= (server-only, optional; default 50000, max 100000)
+- DEFAULT_WALKING_SPEED_MPS= (server-only, optional; default 1.4, range 0.1..3)
+Placeholder .env.example kosong. Spatial config ikut divalidasi pada startup.
+
+SPATIAL TYPES:
+Coordinate, BoundingBox, Point/Line/Polygon geometry, SpatialReference,
+DistanceResult, NearbyQuery/Result, WalkingTimeResult, ServiceAreaRequest/Result,
+dan RoutingRequest/Result. Object Coordinate memakai longitude/latitude;
+GeoJSON memakai [longitude, latitude]. CRS canonical EPSG:4326.
+
+SPATIAL SERVICES:
+- DistanceService: delegasi perhitungan meter ke PostGIS geography.
+- ProximityService: ST_DWithin untuk transport_node/umkm_profile.
+- BBoxService: GiST-compatible bbox intersection untuk empat entity whitelist.
+- WalkingTimeService: estimator distance/speed dengan label metode eksplisit.
+- ServiceAreaService: fail-closed SPATIAL_NETWORK_NOT_READY.
+- UnavailableRoutingEngine: fail-closed ROUTING_GRAPH_NOT_AVAILABLE.
+
+SPATIAL REPOSITORIES:
+SpatialRepository memakai static RPC whitelist, explicit column projections,
+request-scoped Supabase client/JWT, parameterized RPC values, mapper existing,
+dan RLS SECURITY INVOKER. Tidak ada raw SQL dari client.
+
+DTO:
+Response feature hanya memuat id, label, entity_type, GeoJSON geometry, dan
+provenance allowlist. owner_id, metadata, validation internals, dan raw database
+representation tidak dikembalikan.
+
+MAPPER:
+Mapper memisahkan row/DTO, memvalidasi distance finite non-negative, memberi
+analysis_method/source/srid, dan menghitung returned_count dari result aman.
+
+ERRORS:
+Ditambahkan controlled error codes untuk configuration, coordinate, distance,
+geometry, bbox, radius, entity, query, network, request size, dan routing graph.
+Response memakai canonical public message tanpa stack/PostgREST/SQL detail.
+
+API ENDPOINTS:
+- POST /api/spatial/distance
+- GET /api/spatial/nearby
+- GET /api/spatial/bbox
+Semua wajib Bearer authentication, request_id, no-store response, structured
+logging, strict Zod validation, entity/result/radius cap, dan rate-limit hook.
+
+DATABASE CHANGES:
+NONE. Phase 7 hanya menggunakan schema/RPC/index Phase 4 dan Phase 5.
+
+MIGRATION FILES:
+NONE
+
+SPATIAL FUNCTIONS:
+Existing functions yang digunakan:
+- public.is_valid_wgs84_geometry
+- public.wgs84_distance_meters
+- public.find_transport_nodes_near
+- public.find_umkm_profiles_near
+- public.find_study_areas_within_bbox
+- public.find_transport_corridors_within_bbox
+- public.find_transport_nodes_within_bbox
+- public.find_umkm_profiles_within_bbox
+
+INDEXES:
+Tidak ada index baru. Query memakai existing geometry GiST untuk bbox dan
+existing geography-expression GiST untuk nearby transport_nodes/umkm_profiles.
+
+COMMANDS EXECUTED:
+- npm run typecheck
+- npm run lint
+- npm test
+- npm run build
+- npm run db:test
+- docker info --format ...
+- npx supabase migration list
+- npm run process:restart
+- npm run process:status
+- PM2 log inspection
+- HTTP health and unauthenticated spatial endpoint probes on ports 3000/3001
+- read-only remote Supabase health/spatial RPC probes
+- npm audit --json
+- git diff --check
+- git/security/browser-bundle/fixture/log scans
+
+DRY RUN RESULT:
+NOT REQUIRED. Tidak ada schema/migration Phase 7. npx supabase migration list
+tetap dicoba dan gagal dengan LegacyProjectNotLinkedError karena workspace belum
+di-link; karena tidak ada DB change, db push --dry-run tidak dijalankan.
+
+REMOTE SUPABASE PUSH:
+NOT REQUIRED. Tidak ada database change Phase 7.
+
+REMOTE VERIFICATION:
+PARTIAL / READ-ONLY SUCCESS.
+- /api/health pada backend production-like mengembalikan HTTP 200 dan database
+  connected melalui real Supabase-backed health probe.
+- public.getra_database_health remote merespons HTTP 200.
+- Representative spatial RPC paths tersedia dan menolak publishable/anon access
+  dengan HTTP 401, konsisten dengan revoke anon + authenticated-only grant.
+- Perhitungan spatial remote authenticated tidak dijalankan karena access token
+  test tidak tersedia; tidak ada credential/service-role yang dibuat atau ditebak.
+- Migration history/drift remote belum dapat diverifikasi karena CLI belum linked.
+
+GENERATED TYPES:
+NOT REQUIRED. Tidak ada schema change dan repository tidak mempunyai generated
+database.types.ts existing yang perlu diregenerasi.
+
+TEST FIXTURES:
+Lima fixture JSON sintetis dan fixture SQL transaction-local. Seluruhnya berlabel
+TEST FIXTURE / NOT PRODUCTION DATA. Tidak ada data penelitian atau credential.
+
+TESTS EXECUTED:
+- npm test: Vitest unit + integration/API fixture tests.
+- npm run db:test: pgTAP PostGIS test attempt.
+
+TEST RESULT:
+- TypeScript/Vitest: PASS, 33 files / 241 tests.
+- Phase 7 pgTAP file dibuat, tetapi runtime NOT RUN/FAILED TO CONNECT karena local
+  PostgreSQL 127.0.0.1:54322 tidak aktif dan Docker daemon tidak merespons.
+- pgTAP file mencakup ST_Distance, ST_DWithin, bbox, validity, empty, SRID, dan
+  EXPLAIN index-eligibility assertions untuk TEST-only fixtures.
+
+BUILD RESULT:
+PASS. Next.js 16.3.1 production build memuat ketiga dynamic spatial routes.
+
+PERSISTENT BACKEND STATUS:
+PASS. PM2 getra-backend online, restart berhasil, autorestart aktif, health 200.
+npm run dev existing pada port 3001 juga health 200 dan memuat route Phase 7.
+
+SECURITY AUDIT:
+PASS untuk code/config scope Phase 7:
+- API key/service-role tidak ditambah atau diekspos.
+- .env.local ignored; .env.example memiliki zero non-blank values.
+- Zero server-only spatial/MAPID/service-role markers di .next/static.
+- Zero credential marker pada fixture Phase 7 dan PM2 logs.
+- Static RPC/entity whitelist; Zod bounds; body/radius/result/geometry caps.
+- JWT request client + RLS; no service-role bypass; safe response DTO/error.
+- npm audit: 0 vulnerability (all severity levels).
+- git diff --check: PASS (hanya informational LF/CRLF warnings).
+
+KNOWN LIMITATIONS:
+- Pedestrian/network graph production belum tersedia.
+- Routing production dan service-area production tidak tersedia.
+- RateLimiter existing masih NoOp hook, bukan enforcement production.
+- Authenticated direct Data API caller dapat melewati application radius cap;
+  DB-level cap membutuhkan migration hardening terpisah.
+- Nearby hanya untuk transport_node/umkm_profile dan belum mengembalikan distance
+  per record; bbox crossing antimeridian belum didukung.
+- Real local pgTAP/EXPLAIN belum dijalankan karena Docker/local DB unavailable.
+- Supabase CLI belum linked, sehingga migration history/drift remote masih unknown.
+
+BLOCKERS:
+Tidak ada blocker untuk code foundation Phase 7. Blocker verifikasi tambahan:
+Docker/local Supabase untuk pgTAP; Supabase CLI link untuk migration-history audit;
+authenticated test token untuk remote spatial calculation.
+
+ROLLBACK NOTES:
+Hapus file Phase 7 yang tercantum pada FILES CREATED dan revert hanya perubahan
+Phase 7 pada FILES MODIFIED. Tidak ada migration/database rollback karena Phase 7
+tidak mengubah schema atau data remote. Jangan gunakan db reset --linked.

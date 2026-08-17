@@ -1,0 +1,381 @@
+PHASE:
+EXTRA
+
+TITLE:
+Dockerization + Public API Security + Frontend Integration Readiness
+
+DATE:
+2026-08-16 (Asia/Jakarta)
+
+OBJECTIVE:
+Menjadikan GETRA Backend reproducible sebagai Next.js standalone container,
+menambah public-network hardening tanpa melemahkan Supabase Auth/RLS, dan
+mendokumentasikan contract frontend sebelum ada deployment URL atau fitur/data
+production.
+
+FILES CREATED:
+- Dockerfile
+- .dockerignore
+- docker-compose.yml
+- docker-compose.prod.yml
+- deployment/env/README.txt
+- src/lib/api-security/config.ts
+- src/lib/api-security/cors.ts
+- src/lib/api-security/endpoint-policy.ts
+- src/lib/api-security/index.ts
+- src/lib/api-security/options.ts
+- src/lib/api-security/security-headers.ts
+- src/lib/http/timeout-fetch.ts
+- src/lib/request-body.ts
+- tests/unit/docker-config.test.ts
+- tests/unit/security/api-security-config.test.ts
+- tests/unit/security/auth-guards.test.ts
+- tests/unit/security/cors.test.ts
+- tests/unit/security/endpoint-policy.test.ts
+- tests/unit/security/rate-limit.test.ts
+- tests/unit/security/rate-limit-response.test.ts
+- tests/unit/security/request-body.test.ts
+- tests/unit/security/timeout-fetch.test.ts
+- tests/integration/security/auth-route-hardening.test.ts
+- tests/integration/security/cors-security.test.ts
+- docs/DOCKER_USAGE.txt
+- docs/PUBLIC_API_SECURITY.txt
+- docs/FRONTEND_INTEGRATION.txt
+- docs/API_ENDPOINT_MATRIX.txt
+- docs/changes/PHASE_EXTRA_DOCKER_PUBLIC_API_CHANGES.txt
+
+FILES MODIFIED:
+- .env.example
+- .gitignore
+- next.config.ts
+- package.json
+- app/api/health/route.ts
+- app/api/auth/login/route.ts
+- app/api/auth/register/route.ts
+- app/api/auth/logout/route.ts
+- app/api/auth/me/route.ts
+- app/api/profile/route.ts
+- app/api/spatial/distance/route.ts
+- app/api/spatial/nearby/route.ts
+- app/api/spatial/bbox/route.ts
+- src/config/bootstrap.ts
+- src/lib/api-logger.ts
+- src/lib/api-response.ts
+- src/lib/auth.ts
+- src/lib/errors/index.ts
+- src/lib/rate-limit.ts
+- src/lib/supabase/server.ts
+- src/lib/validation.ts
+- src/schemas/auth.schema.ts
+- src/modules/spatial/spatial.config.ts
+- src/modules/spatial/spatial.constants.ts
+- src/modules/spatial/spatial.schema.ts
+- src/modules/spatial/bbox.service.ts
+- src/modules/spatial/spatial.service.ts
+- tests/integration/auth.test.ts
+- tests/unit/supabase-server.test.ts
+- README.md
+
+FILES REMOVED:
+NONE
+
+DEPENDENCY CHANGES:
+NONE. Docker/Compose memakai CLI host. Rate limit, timeout, CORS, header, dan body
+reader memakai Node/Next/Web APIs existing; tidak ada package security baru.
+
+DOCKERFILE:
+- Three-stage build: deps, builder, runner.
+- npm ci pada stage deps; npm run build pada builder.
+- Next.js `output: standalone`; runtime menyalin .next/standalone + .next/static.
+- Base runtime node:22-bookworm-slim.
+- Runtime `USER node` non-root.
+- Command `node server.js`, bukan next dev.
+- Hanya EXPOSE 3000.
+- Healthcheck nyata GET /api/health dengan bounded timeout.
+- Tidak ada secret ARG, ENV value credential, atau database container.
+
+DOCKER COMPOSE:
+- docker-compose.yml untuk local standalone runtime.
+- docker-compose.prod.yml sebagai production security/environment override.
+- init enabled, stop grace 30s, restart unless-stopped.
+- Production override: APP_ENV=production, explicit APP_BASE_URL/origins,
+  no-new-privileges, cap_drop ALL.
+- npm scripts: docker:build/start/stop/restart/status/logs/prod:start.
+
+PORTS:
+- Container: 3000 only.
+- Host default: 3002, configurable melalui GETRA_DOCKER_PORT.
+- Tidak ada port PostgreSQL; database tetap Supabase remote.
+
+ENVIRONMENT CHANGES:
+Added empty placeholders:
+- APP_ENV
+- APP_BASE_URL
+- FRONTEND_ALLOWED_ORIGINS
+- TRUST_PROXY
+- API_MAX_JSON_BODY_BYTES
+- SUPABASE_REQUEST_TIMEOUT_MS
+- RATE_LIMIT_WINDOW_MS
+- RATE_LIMIT_AUTH_MAX_REQUESTS
+- RATE_LIMIT_API_MAX_REQUESTS
+- RATE_LIMIT_MUTATION_MAX_REQUESTS
+- RATE_LIMIT_SPATIAL_MAX_REQUESTS
+- NEXT_PUBLIC_GETRA_API_URL (frontend-owned public base URL)
+- SPATIAL_MAX_BBOX_LATITUDE_DEGREES
+- SPATIAL_MAX_BBOX_LONGITUDE_DEGREES
+
+Existing placeholders dipertahankan. `.env.example` tidak berisi value nyata.
+`.env*` tetap ignored dengan exception `.env.example`; logs/secrets patterns added.
+
+API CLASSIFICATION:
+PUBLIC:
+- GET /api/health
+- POST /api/auth/login
+- POST /api/auth/register
+
+AUTHENTICATED:
+- POST /api/auth/logout
+- GET /api/auth/me
+- GET/PATCH /api/profile
+- POST /api/spatial/distance
+- GET /api/spatial/nearby
+- GET /api/spatial/bbox
+
+ROLE_RESTRICTED:
+NONE EXPOSED
+
+ADMIN:
+NONE EXPOSED
+
+INTERNAL:
+NONE EXPOSED
+
+Central endpoint policy menyimpan method, path, classification, role, rate profile,
+allowed preflight headers, dan purpose.
+
+CORS CONFIG:
+- Exact allowlist dari FRONTEND_ALLOWED_ORIGINS.
+- Same-origin dan request tanpa Origin diperbolehkan; auth tetap berlaku.
+- Unknown/null/malformed/wildcard origin ditolak 403 tanpa ACAO.
+- Semua route existing mempunyai OPTIONS handler.
+- Preflight hanya method dan headers yang tercatat per endpoint.
+- Valid response echo origin, Vary Origin, exposed X-Request-ID/Retry-After.
+- Tidak ada Access-Control-Allow-Credentials karena bearer auth.
+
+AUTH CHANGES:
+- Bearer syntax exact dan bounded 8192 characters.
+- Login/register body strict dan bounded.
+- Logout sekarang wajib bearer auth dan mutation rate limit.
+- Logout tidak lagi mencoba admin sign-out memakai publishable client; response
+  menyatakan frontend wajib discard token.
+- Public registration tetap menolak ADMIN.
+
+ROLE GUARD:
+Existing requireAnyRole/requireRole dipertahankan. Negative tests mencakup
+COMMUTER, UMKM, dan COMMUNITY ditolak untuk ADMIN serta ADMIN diizinkan pada
+guard. Tidak ada admin endpoint dummy dibuat hanya untuk test.
+
+RLS STATUS:
+PRESERVED / NO CHANGE. Profile dan spatial request tetap memakai Supabase client
+request-scoped dengan bearer JWT. Existing profiles/spatial/UMKM RLS tetap
+authorization boundary. Service-role key tidak dipakai route public.
+
+RATE LIMIT:
+- Default route dependency diubah dari no-op menjadi bounded in-memory fixed
+  window enforcement.
+- Auth 5, API 60, mutation 20, spatial 30 per 60000 ms default.
+- Protected key berdasarkan user ID + endpoint; auth berdasarkan client identity
+  hanya jika proxy trust aman.
+- TRUST_PROXY=false tidak mempercayai forwarded headers.
+- HTTP 429 RATE_LIMIT_EXCEEDED + Retry-After.
+- Process-local/single replica; shared limiter required before horizontal scaling.
+
+SECURITY HEADERS:
+- CSP API deny-by-default.
+- X-Content-Type-Options nosniff.
+- Referrer-Policy no-referrer.
+- Permissions-Policy disables camera/microphone/geolocation.
+- X-Frame-Options DENY.
+- COOP same-origin dan DNS prefetch off.
+- X-Powered-By disabled.
+- HSTS only when APP_ENV=production and APP_BASE_URL HTTPS.
+
+REQUEST LIMITS:
+- Global default JSON cap 65536 bytes (validated range 1024..1048576).
+- Auth body 8192 bytes.
+- Profile PATCH 4096 bytes.
+- Spatial distance 4096 bytes.
+- application/json required; streamed size check; strict UTF-8/JSON/Zod.
+- Nearby result max 100 and radius cap.
+- BBox default max 10 longitude degrees x 10 latitude degrees.
+- Query keys/types whitelisted; duplicate/unknown keys rejected.
+
+TIMEOUT:
+- Supabase server/request clients use AbortController fetch timeout.
+- Default SUPABASE_REQUEST_TIMEOUT_MS=10000; validated 1000..60000.
+- API route maxDuration=15 seconds is a runtime hint, not a replacement for
+  provider/database cancellation.
+- MAPID timeout foundation existing; no real MAPID endpoint call.
+
+HEALTHCHECK:
+Dockerfile and Compose call GET http://127.0.0.1:3000/api/health. Probe checks
+real Supabase connectivity and never returns host/user/connection credential.
+
+READINESS:
+`/api/health` is readiness (application + Supabase dependency). No separate
+liveness endpoint was added. Docker detects process exit for restart, while
+health state exposes dependency readiness. Unhealthy alone does not restart a
+running container under plain Compose.
+
+API VERSIONING:
+Existing unversioned `/api/...` routes are preserved. New stable public domain
+routes should use `/api/v1/...`; no nonexistent alias was created.
+
+FRONTEND INTEGRATION:
+- Frontend-owned NEXT_PUBLIC_GETRA_API_URL placeholder.
+- Bearer token/header, CORS, envelopes, roles, status handling, rate handling,
+  local Docker URL, and unknown staging/production placeholders documented.
+- Cookie auth/CSRF are not applicable now; future cookie flow requires audit.
+- Current logout is client discard, not token revocation.
+
+DATABASE CHANGES:
+NONE
+
+MIGRATION:
+NOT REQUIRED. No migration file was created.
+
+DRY RUN:
+NOT REQUIRED. There is no database change to preview or push.
+
+REMOTE PUSH:
+NOT REQUIRED. Supabase remote schema/data were not changed.
+
+REMOTE VERIFICATION:
+NOT REQUIRED FOR PHASE EXTRA DATABASE WORK. Existing readiness still performs a
+read-only real Supabase probe; it is not a migration-history verification.
+
+DOCKER BUILD RESULT:
+FAILED (HOST DAEMON BLOCKER). `docker build --tag getra-backend:local .` benar-
+benar dijalankan dan gagal sebelum build stage dimulai: Docker Desktop Linux
+Engine `_ping` mengembalikan HTTP 500. Image tidak dibuat.
+
+DOCKER RUN RESULT:
+FAILED / NOT STARTED. `docker compose --env-file .env.local up -d --build`
+benar-benar dijalankan dan gagal ketika membaca image melalui Docker Desktop
+Linux Engine HTTP 500. Tidak ada container GETRA yang dinyatakan berjalan.
+
+CONTAINER STATUS:
+UNAVAILABLE. `docker compose ... ps` juga menerima HTTP 500 dari daemon.
+
+RUNTIME USER:
+CONFIGURED AS NON-ROOT `node` dan diverifikasi oleh static config tests. Live
+image/container inspection BLOCKED karena image gagal dibangun.
+
+HEALTH STATUS:
+CONTAINER: NOT AVAILABLE. PM2 production backend dan npm dev backend terpisah
+masing-masing merespons /api/health HTTP 200 dengan database connected.
+
+DOCKER SMOKE TEST:
+BLOCKED. Tidak ada response port 3002 yang boleh diklaim sebagai container.
+Live PM2-only checks PASSED untuk health, allowed/denied CORS, preflight, 401,
+security headers, 429, Retry-After, request ID, dan safe envelope.
+
+CONTAINER RESTART TEST:
+BLOCKED karena container tidak dapat dibuat/start.
+
+FAILURE/INVALID CONFIG TEST:
+UNIT CONFIG TEST PASSED; live invalid-config container test BLOCKED oleh daemon.
+
+COMMANDS EXECUTED SO FAR:
+- Repository, routes, RLS, config, process manager, Docker CLI/daemon inspection.
+- Next.js 16 local deployment/standalone/self-hosting/proxy/env/header docs read.
+- docker compose config --quiet base: PASS.
+- docker compose base + production override config --quiet: PASS.
+- docker build --tag getra-backend:local .: FAILED (daemon HTTP 500).
+- docker compose up -d --build: FAILED (daemon HTTP 500).
+- docker compose ps: FAILED (daemon HTTP 500).
+- npm run typecheck, lint, test, build, audit, PM2 restart/status, npm dev live
+  health, live API security checks, log credential-marker scan, dan diff check.
+
+TESTS:
+TEST FILES CREATED for Docker config, security config, CORS/preflight, endpoint
+policy, auth guards, request body, timeout, rate enforcement, and 429 response.
+
+FULL `npm test` RESULT:
+PASS - 44 files, 353 tests.
+
+TYPECHECK RESULT:
+PASS - `npm run typecheck`.
+
+LINT RESULT:
+PASS - `npm run lint`, zero warning.
+
+BUILD:
+PASS - `npm run build`, Next.js 16.3.1 standalone output compiled.
+
+PERSISTENT BACKEND STATUS:
+PASS - PM2 `getra-backend` online pada port 3000 setelah build + restart; health
+HTTP 200 dan real database probe connected. Sensitive log marker count: 0.
+
+NPM RUN DEV STATUS:
+PASS - existing `npm run dev` process pada port 3001 merespons health HTTP 200.
+
+SECURITY AUDIT:
+PASS untuk source/config/tests/live non-container. `npm audit --audit-level=high`
+melaporkan 0 vulnerability. Image-content/history/runtime audit BLOCKED karena
+Docker daemon gagal membangun image; bagian ini tidak diklaim berhasil.
+
+Audit scope:
+- Docker build context, build ARG/secret, runtime user, ports, image contents.
+- env/example/gitignore, service-role/MAPID/database credential exposure.
+- CORS positive/negative/preflight.
+- bearer auth, role guards, RLS preservation.
+- rate limit/Retry-After/proxy trust.
+- body/query/spatial caps, timeout, raw SQL/whitelist.
+- safe response/logs/stack trace.
+- cookie/CSRF decision and internal endpoint inventory.
+
+KNOWN LIMITATIONS:
+- Docker image/container belum tersedia karena Docker Desktop Linux Engine HTTP
+  500; build/run/health/restart/image inspection belum lulus.
+- Rate limiter is process-local and resets on restart; not multi-replica atomic.
+- TRUST_PROXY=false shares unauthenticated auth bucket; true requires controlled
+  reverse proxy and no direct container exposure.
+- `/api/health` is readiness only; no separate liveness endpoint.
+- Plain Compose does not restart a merely unhealthy process.
+- Backend exposes access token only; refresh-token flow is not defined.
+- Logout requires client discard and does not globally revoke issued token.
+- No `/api/v1` endpoint exists yet; versioning is a transition strategy.
+- No admin/internal endpoint exists, so only the reusable role guard is tested.
+- Staging/production URL, provider, domain, ingress, and TLS configuration remain
+  undecided; no URL is invented.
+- Real MAPID, routing/service area, production data, and frontend application are
+  outside scope.
+
+BLOCKERS:
+Docker Desktop Windows service berstatus Stopped dan tidak dapat dibuka/start dari
+session saat ini karena hak administrator. Proses/distro docker-desktop telah
+direstart secara terarah, tetapi Linux Engine tetap membalas HTTP 500. Jalankan
+Docker Desktop/service dengan hak host yang sesuai, lalu ulangi build, Compose
+up, health, smoke, restart, failure test, dan image audit. Phase Extra belum boleh
+dinyatakan COMPLETE sampai checkpoint Docker tersebut lulus.
+
+ROLLBACK NOTES:
+1. Stop only the GETRA Compose project:
+
+     docker compose --env-file .env.local down
+
+2. Revert Dockerfile, .dockerignore, Compose files, Docker package scripts, and
+   `output: standalone` only if containerization is intentionally rolled back.
+3. Revert Phase Extra API security modules together with their route imports/
+   OPTIONS exports; partial removal can leave CORS or error handling inconsistent.
+4. Revert bounded body/auth/rate/timeout changes only with a reviewed replacement;
+   do not silently restore NoOp production enforcement.
+5. Remove only Phase Extra tests/docs listed above; preserve Phase 0-7 files.
+6. No database rollback is needed. Do not run `supabase db reset --linked`.
+7. Removing local image `getra-backend:local` is optional host cleanup and must not
+   be confused with deleting source or remote data.
+
+STOP CONDITION:
+No production ingestion, real MAPID call, routing production, Demand Intelligence,
+Fair Discovery, AI production, domain purchase, or provider deployment was done.

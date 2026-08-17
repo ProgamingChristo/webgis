@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import {
   getHttpStatusForError,
   getPublicErrorMessage,
+  RateLimitExceededError,
   type ApplicationError,
 } from "@/src/lib/errors";
 import type { ApiErrorResponse, ApiSuccessResponse, ApiListResponse, ApiListMeta } from "@/src/types/api";
@@ -59,10 +60,18 @@ export function createErrorResponse(
     request_id: requestId,
   };
 
+  const init: ResponseInit = {
+    status: getHttpStatusForError(error.code),
+  };
+
+  if (error instanceof RateLimitExceededError) {
+    const headers = new Headers(init.headers);
+    headers.set("Retry-After", String(error.retryAfterSeconds));
+    init.headers = headers;
+  }
+
   return NextResponse.json(
     body,
-    withStandardHeaders(requestId, {
-      status: getHttpStatusForError(error.code),
-    }),
+    withStandardHeaders(requestId, init),
   );
 }

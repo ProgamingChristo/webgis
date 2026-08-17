@@ -1,0 +1,482 @@
+================================================================================
+GETRA BACKEND COMPLETE TECHNICAL DOCUMENTATION & OPERATIONAL HANDOVER
+================================================================================
+Project: GETRA (Gerakan Transit Ramah Anak / Transit & Spatial Intelligence)
+Version: 1.0.0 (Final Backend Baseline)
+Date: 2026-08-17 (Asia/Jakarta)
+Target Environment: Node.js 22 LTS / Next.js 16.3.1 Standalone / Supabase PostgreSQL & PostGIS Remote
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. Executive Summary
+2. GETRA Backend Overview
+3. Technology Stack
+4. Architecture
+5. Project Folder Structure
+6. Authentication System
+7. User Profile & Roles
+8. Row Level Security
+9. API Architecture
+10. Database Architecture
+11. PostGIS Foundation
+12. Data Model
+13. Repository Layer
+14. External Data Integration / MAPID Adapter
+15. Spatial Engine
+16. Docker Architecture
+17. Public API Security
+18. API Catalog
+19. API Request & Response Examples
+20. Authentication Examples Per Role
+21. Supabase Migration Guide
+22. Database Seeding Guide
+23. Database Types Generation
+24. Development Running Guide
+25. Docker Running Guide
+26. 24/7 Running Guide
+27. Backend Logs & Monitoring
+28. Frontend Integration Guide
+29. Environment Variables
+30. Security Checklist
+31. Testing Guide
+32. Troubleshooting
+33. Known Limitations
+34. Data-Dependent Features
+35. Phase Completion Summary
+36. Operational Checklist
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+GETRA Backend is a high-performance geospatial and transit intelligence backend
+built on Next.js 16 (App Router) and Supabase (PostgreSQL with PostGIS). It provides
+a resilient, contract-safe foundation for transit corridor management, study area
+demarcation, transit stop mapping, local UMKM directories, and geodesic spatial
+calculations. The system implements strict Clean Architecture, stateless Supabase
+JWT Bearer authentication, Row Level Security, granular rate limiting, CORS allowlisting,
+and production-ready Docker containerization.
+
+--------------------------------------------------------------------------------
+2. GETRA BACKEND OVERVIEW
+--------------------------------------------------------------------------------
+- Primary Role: Core geospatial, transactional, and API gateway for GETRA clients.
+- Status: Foundation Implemented & Audited.
+- Production Ingestion: Awaiting verified production datasets and transit feeds.
+- Security Principle: Zero trust on client input, strict parameterization, no raw SQL,
+  and no hardcoded credentials or service-role exposure.
+
+--------------------------------------------------------------------------------
+3. TECHNOLOGY STACK
+--------------------------------------------------------------------------------
+- Language: TypeScript 6.0.3
+- Framework: Next.js 16.3.1 (React 19.2.8, App Router)
+- Validation: Zod 4.4.3
+- Database SDK: @supabase/supabase-js 2.112.3
+- Database: PostgreSQL with PostGIS (Remote Supabase Project sesakxnjaphrxqxllqjm)
+- Containerization: Docker (node:22-bookworm-slim standalone runtime)
+- Process Supervision: PM2 7.0.3
+- Testing Framework: Vitest 4.1.10 (353 tests across 44 suites)
+- Code Quality: ESLint 9.39.5, eslint-config-next 16.3.1
+- Boundary Enforcement: server-only 0.0.1
+
+--------------------------------------------------------------------------------
+4. ARCHITECTURE
+--------------------------------------------------------------------------------
+Layered Pipeline:
+  HTTP Request -> CORS Check -> Rate Limiter -> Request ID & Headers ->
+  Bearer Auth Guard -> Role Authorization Guard -> Zod Validation ->
+  Domain Service -> Repository -> Supabase Client -> PostgreSQL / PostGIS with RLS
+
+MAPID Adapter Pipeline:
+  External Source -> MapidClient (Timeout/Retry) -> MapidSchema Validator ->
+  MapidNormalizer (WGS84 GeoJSON) -> MapidMapper -> ExternalDataService (Dry-run) ->
+  ExternalRecordRepository (Batch Persistence & Provenance Tracking)
+
+Spatial Engine Pipeline:
+  API Route (/distance, /nearby, /bbox) -> Coordinate / Bounds Validation ->
+  Spatial Services (Distance, Proximity, BBox, WalkingTime) -> SpatialRepository ->
+  PostGIS Stored Functions (ST_DWithin, ST_Intersects, ST_Distance, make_wgs84_bbox)
+
+--------------------------------------------------------------------------------
+5. PROJECT FOLDER STRUCTURE
+--------------------------------------------------------------------------------
+- app/api/auth: login, logout, me, register route handlers
+- app/api/health: database connection & readiness probe
+- app/api/profile: authenticated user profile retrieval and patch
+- app/api/spatial: distance, nearby, bbox spatial handlers
+- src/config: bootstrap and runtime configuration
+- src/integrations/mapid: MAPID adapter, client, normalizer, mapper, schemas
+- src/lib/api-security: CORS, security headers, endpoint policies, origin parser
+- src/lib/errors: ApplicationError hierarchy and centralized error codes
+- src/lib/spatial: coordinate bounds, GeoJSON transformers, SRID constants
+- src/lib/supabase: server and request-scoped Supabase client factories
+- src/modules/spatial: distance, proximity, bbox, walking-time services & repository
+- src/repositories: database access contracts and implementations
+- src/schemas: Zod schemas for auth, profiles, spatial queries, and domain entities
+- src/services: health, profile, external data services
+- src/types: API, entity, domain, provenance, spatial interfaces
+- supabase/migrations: 4 migration files defining the schema, RLS, and PostGIS RPCs
+- supabase/seed.sql: synthetic DEV/TEST fixture seed data
+- tests: unit, integration, spatial, security, and fixture test suites
+
+--------------------------------------------------------------------------------
+6. AUTHENTICATION SYSTEM
+--------------------------------------------------------------------------------
+- Provider: Supabase Auth via stateless Bearer JWT tokens.
+- Header: Authorization: Bearer <jwt_token> (max length 8192 characters).
+- Registration: POST /api/auth/register (Public; accepts COMMUTER, UMKM, COMMUNITY).
+- Public Registration Restriction: ADMIN role is rejected with HTTP 403.
+- Login: POST /api/auth/login (Returns access_token, user ID, email, profile role).
+- Me Endpoint: GET /api/auth/me (Returns user details and profile via user JWT).
+- Logout: POST /api/auth/logout (Stateless acknowledgement; client purges token).
+
+--------------------------------------------------------------------------------
+7. USER PROFILE & ROLES
+--------------------------------------------------------------------------------
+Roles:
+1. COMMUTER: General commuter transit search and spatial query access.
+2. UMKM: Merchant business profile owner.
+3. COMMUNITY: Community representative and transit initiative reporter.
+4. ADMIN: Platform administrator with full reference data management rights.
+
+Role Authorization Matrix:
+- /api/health: Public
+- /api/auth/login: Public
+- /api/auth/register: Public (Non-Admin only)
+- /api/auth/logout: Authenticated (All Roles)
+- /api/auth/me: Authenticated (All Roles)
+- /api/profile (GET/PATCH): Authenticated (All Roles)
+- /api/spatial/distance: Authenticated (All Roles)
+- /api/spatial/nearby: Authenticated (All Roles)
+- /api/spatial/bbox: Authenticated (All Roles)
+
+Admin Provisioning Security:
+The ADMIN role cannot be assigned during signup. Trigger handle_new_user() raises
+ROLE_NOT_ALLOWED if role = 'ADMIN' is found in metadata. Admin roles must be assigned
+via direct SQL migration by database administrators.
+
+--------------------------------------------------------------------------------
+8. ROW LEVEL SECURITY (RLS)
+--------------------------------------------------------------------------------
+RLS is active on all 6 tables:
+- public.profiles: Users read/update own profile; Admins read/update all via private.is_admin().
+- public.spatial_sources: Authenticated users read; Admins manage all.
+- public.study_areas: Authenticated users read; Admins manage all.
+- public.transport_corridors: Authenticated users read; Admins manage all.
+- public.transport_nodes: Authenticated users read; Admins manage all.
+- public.umkm_profiles: Owners read/insert/update own; Admins manage all.
+
+Privilege Hardening:
+- profiles update column grant restricted to (display_name, avatar_url).
+- umkm_profiles insert column grant restricted to user fields.
+- Trigger private.enforce_umkm_trusted_fields_update() blocks non-admin updates
+  to ownership and provenance metadata.
+
+--------------------------------------------------------------------------------
+9. API ARCHITECTURE & ENVELOPE CONTRACTS
+--------------------------------------------------------------------------------
+Success Envelope:
+{
+  "success": true,
+  "data": { ... },
+  "request_id": "uuid-v4"
+}
+
+Paginated List Envelope:
+{
+  "success": true,
+  "data": [ ... ],
+  "meta": { "page": 1, "limit": 20, "total": 100, "total_pages": 5 },
+  "request_id": "uuid-v4"
+}
+
+Error Envelope:
+{
+  "success": false,
+  "error": { "code": "ERROR_CODE", "message": "Public message", "retryable": false },
+  "request_id": "uuid-v4"
+}
+
+Standard Headers:
+x-request-id (UUID tracing)
+Cache-Control: no-store
+Retry-After (on HTTP 429)
+
+--------------------------------------------------------------------------------
+10. DATABASE ARCHITECTURE
+--------------------------------------------------------------------------------
+Tables (6 tables total):
+1. profiles (id UUID PK FK auth.users, display_name, avatar_url, role, timestamps)
+2. spatial_sources (id UUID PK, source_name, source_type, description, metadata, timestamps)
+3. study_areas (id UUID PK, source_id FK, name, description, geometry MultiPolygon 4326, lineage, timestamps)
+4. transport_corridors (id UUID PK, source_id FK, name, transport_mode, description, geometry MultiLineString 4326, lineage, timestamps)
+5. transport_nodes (id UUID PK, source_id FK, corridor_id FK, name, node_type, transport_mode, geometry Point 4326, lineage, timestamps)
+6. umkm_profiles (id UUID PK, owner_id FK profiles, source_id FK, business_name, category, description, address, geometry Point 4326, lineage, timestamps)
+
+Foreign Key Deletion Rules:
+- profiles.id -> auth.users.id ON DELETE CASCADE
+- umkm_profiles.owner_id -> profiles.id ON DELETE RESTRICT
+- All source_id references -> spatial_sources.id ON DELETE SET NULL
+- transport_nodes.corridor_id -> transport_corridors.id ON DELETE SET NULL
+
+--------------------------------------------------------------------------------
+11. POSTGIS FOUNDATION
+--------------------------------------------------------------------------------
+- SRID: EPSG:4326 (WGS 84 canonical).
+- PostGIS Extension: enabled in extensions schema.
+- GiST Indexes:
+  - idx_study_areas_geometry_gist (MultiPolygon)
+  - idx_transport_corridors_geometry_gist (MultiLineString)
+  - idx_transport_nodes_geometry_gist (Point)
+  - idx_transport_nodes_geometry_geography_gist (Point geography)
+  - idx_umkm_profiles_geometry_gist (Point)
+  - idx_umkm_profiles_geometry_geography_gist (Point geography)
+- Stored Procedures:
+  - is_valid_wgs84_geometry(geometry, text[])
+  - make_wgs84_bbox(min_lng, min_lat, max_lng, max_lat)
+  - wgs84_distance_meters(origin, destination)
+  - find_transport_nodes_near(origin, radius_meters)
+  - find_umkm_profiles_near(origin, radius_meters)
+  - find_study_areas_within_bbox(min_lng, min_lat, max_lng, max_lat)
+  - find_transport_corridors_within_bbox(...)
+  - find_transport_nodes_within_bbox(...)
+  - find_umkm_profiles_within_bbox(...)
+  - getra_database_health()
+- pgRouting: NOT IMPLEMENTED / NOT INSTALLED.
+
+--------------------------------------------------------------------------------
+12. DATA MODEL & ENTITIES
+--------------------------------------------------------------------------------
+Core interfaces defined in src/types/entity.ts and src/types/domain.ts:
+- BaseEntity: id, created_at, updated_at
+- ProvenanceEntity: source_id, source_record_id, data_version, validation_status,
+  retrieved_at, validated_at, metadata
+- Coordinate: longitude [-180, 180], latitude [-90, 90]
+- BoundingBox: west, south, east, north
+- DistanceResult, NearbyResult, BBoxResult, WalkingTimeResult
+
+--------------------------------------------------------------------------------
+13. REPOSITORY LAYER
+--------------------------------------------------------------------------------
+Clean abstraction over Supabase Data API:
+- ProfileRepository: findProfile, updateProfile
+- StudyAreaRepository: findById, findWithinBBox
+- TransportCorridorRepository: findById, findWithinBBox
+- TransportNodeRepository: findById, findNearby, findWithinBBox
+- UmkmProfileRepository: findById, findNearby, findWithinBBox, create, update
+- SpatialSourceRepository: findById, findByName, create
+- ExternalRecordRepository: batch upsert and provenance tracking
+- SupabaseHealthRepository: getra_database_health RPC caller
+- SpatialRepository: direct PostGIS RPC executor
+
+--------------------------------------------------------------------------------
+14. EXTERNAL DATA INTEGRATION / MAPID ADAPTER
+--------------------------------------------------------------------------------
+- Status: Foundation Implemented; Real Connection Blocked pending official contract.
+- Components: MapidClient, MapidSchema, MapidNormalizer, MapidMapper, ExternalDataService.
+- Features: Mockable HTTP transport, Zod schema validation, dry-run simulation,
+  duplicate record detection, and provenance lineage tagging.
+
+--------------------------------------------------------------------------------
+15. SPATIAL ENGINE
+--------------------------------------------------------------------------------
+- DistanceService: PostGIS geography distance calculation in meters.
+- ProximityService: Bounded ST_DWithin nearby feature querying.
+- BBoxService: Bounded PostGIS bounding box intersection queries.
+- WalkingTimeService: Deterministic travel duration estimator (distance / walking speed).
+- ServiceAreaService: FOUNDATION ONLY (Fails closed with SPATIAL_NETWORK_NOT_READY).
+- RoutingService: NOT IMPLEMENTED (Fails closed with ROUTING_GRAPH_NOT_AVAILABLE).
+
+--------------------------------------------------------------------------------
+16. DOCKER ARCHITECTURE
+--------------------------------------------------------------------------------
+- Multi-stage build: deps (npm ci), builder (npm run build), runner (standalone).
+- Runtime Image: node:22-bookworm-slim.
+- Non-root user: USER node.
+- Exposed Port: 3000 only.
+- Standalone command: node server.js.
+- Healthcheck: Native fetch probe to http://127.0.0.1:3000/api/health (30s interval, 5s timeout, 3 retries).
+- Compose Mapping: Host 3002 -> Container 3000.
+
+--------------------------------------------------------------------------------
+17. PUBLIC API SECURITY
+--------------------------------------------------------------------------------
+- CORS: Strict allowlist against FRONTEND_ALLOWED_ORIGINS. Preflight OPTIONS on all routes.
+- Rate Limiting: In-memory fixed window per client/user (Auth: 5/min, API: 60/min,
+  Mutation: 20/min, Spatial: 30/min).
+- Request Body Stream Caps: Global 64KB, Auth 8KB, Profile/Spatial 4KB.
+- Security Headers: CSP default-src 'none', X-Frame-Options DENY, X-Content-Type-Options nosniff,
+  Referrer-Policy no-referrer, Permissions-Policy camera=(), microphone=(), geolocation=(), HSTS.
+- No Service Role Leak: Server routes never use service-role key for public requests.
+
+--------------------------------------------------------------------------------
+18. API CATALOG
+--------------------------------------------------------------------------------
+1. GET /api/health (PUBLIC, no auth, health probe)
+2. POST /api/auth/login (PUBLIC, rate: auth, Supabase login)
+3. POST /api/auth/register (PUBLIC, rate: auth, Non-admin signup)
+4. POST /api/auth/logout (AUTHENTICATED, rate: mutation, Stateless logout)
+5. GET /api/auth/me (AUTHENTICATED, rate: api, Current user info)
+6. GET /api/profile (AUTHENTICATED, rate: api, Read own profile)
+7. PATCH /api/profile (AUTHENTICATED, rate: mutation, Update profile)
+8. POST /api/spatial/distance (AUTHENTICATED, rate: spatial, Geodesic distance)
+9. GET /api/spatial/nearby (AUTHENTICATED, rate: spatial, Proximity search)
+10. GET /api/spatial/bbox (AUTHENTICATED, rate: spatial, BBox search)
+
+--------------------------------------------------------------------------------
+19. API REQUEST & RESPONSE EXAMPLES
+--------------------------------------------------------------------------------
+Refer to Chapter 19 of GETRA_BACKEND_COMPLETE_DOCUMENTATION.md for comprehensive
+payloads and sample cURL requests for all 10 endpoints.
+
+--------------------------------------------------------------------------------
+20. AUTHENTICATION EXAMPLES PER ROLE
+--------------------------------------------------------------------------------
+- COMMUTER: {"email": "...", "password": "...", "display_name": "...", "role": "COMMUTER"}
+- UMKM: {"email": "...", "password": "...", "display_name": "...", "role": "UMKM"}
+- COMMUNITY: {"email": "...", "password": "...", "display_name": "...", "role": "COMMUNITY"}
+- ADMIN: Public registration rejected with HTTP 403 (ROLE_NOT_ALLOWED).
+
+--------------------------------------------------------------------------------
+21. SUPABASE MIGRATION RUNBOOK
+--------------------------------------------------------------------------------
+Project Reference: sesakxnjaphrxqxllqjm
+Commands:
+1. supabase login
+2. supabase link --project-ref sesakxnjaphrxqxllqjm
+3. supabase migration list
+4. supabase migration new <migration_name>
+5. supabase db push --dry-run
+6. supabase db push
+7. supabase migration list
+
+--------------------------------------------------------------------------------
+22. DATABASE SEEDING GUIDE
+--------------------------------------------------------------------------------
+- Seed file: supabase/seed.sql.
+- Scope: Synthetic DEV/TEST fixture data only.
+- Warning: Never run supabase db reset or seed scripts against remote production.
+
+--------------------------------------------------------------------------------
+23. DATABASE TYPES GENERATION
+--------------------------------------------------------------------------------
+Command:
+npx supabase gen types typescript --project-ref sesakxnjaphrxqxllqjm > src/types/database.types.ts
+
+--------------------------------------------------------------------------------
+24. DEVELOPMENT RUNNING GUIDE
+--------------------------------------------------------------------------------
+1. npm install
+2. npm run typecheck
+3. npm run lint
+4. npm run dev (Runs on http://localhost:3000)
+
+--------------------------------------------------------------------------------
+25. DOCKER RUNNING GUIDE
+--------------------------------------------------------------------------------
+1. Build: npm run docker:build
+2. Start: npm run docker:start (Runs on http://localhost:3002)
+3. Status: npm run docker:status
+4. Logs: npm run docker:logs
+5. Restart: npm run docker:restart
+6. Stop: npm run docker:stop
+
+--------------------------------------------------------------------------------
+26. 24/7 PRODUCTION RUNNING GUIDE
+--------------------------------------------------------------------------------
+- Docker Standalone with restart: unless-stopped.
+- PM2 process supervisor: npm run process:start, npm run process:status, npm run process:logs.
+- Host machine must remain active and powered on.
+
+--------------------------------------------------------------------------------
+27. BACKEND LOGS & MONITORING
+--------------------------------------------------------------------------------
+- Structured JSON logging on every request via withApiLogger.
+- Error sanitization prevents database credentials, SQL, or stack traces in logs/responses.
+
+--------------------------------------------------------------------------------
+28. FRONTEND INTEGRATION GUIDE
+--------------------------------------------------------------------------------
+- Public URL env: NEXT_PUBLIC_GETRA_API_URL.
+- Standard headers: Authorization: Bearer <token>, Accept: application/json, Content-Type: application/json.
+- Handle success and error envelopes uniformly.
+
+--------------------------------------------------------------------------------
+29. ENVIRONMENT VARIABLES
+--------------------------------------------------------------------------------
+- NEXT_PUBLIC_SUPABASE_URL (Required)
+- NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (Required)
+- APP_ENV, APP_BASE_URL, FRONTEND_ALLOWED_ORIGINS, TRUST_PROXY
+- API_MAX_JSON_BODY_BYTES, SUPABASE_REQUEST_TIMEOUT_MS
+- RATE_LIMIT_* variables (auth: 5, api: 60, mutation: 20, spatial: 30)
+- SPATIAL_* variables (max radius: 50000m, max bbox: 10deg)
+- SUPABASE_SERVICE_ROLE_KEY (Critical secret - Server only)
+
+--------------------------------------------------------------------------------
+30. SECURITY CHECKLIST
+--------------------------------------------------------------------------------
+- RLS enabled on all 6 tables: PASS
+- Column update restrictions on profiles & UMKM: PASS
+- Admin registration guard: PASS
+- CORS exact allowlist: PASS
+- Rate limiting active: PASS
+- Request body stream caps: PASS
+- Non-root Docker container: PASS
+- Secret audit passed: PASS
+
+--------------------------------------------------------------------------------
+31. TESTING GUIDE
+--------------------------------------------------------------------------------
+- Run test suite: npm test (44 test files, 353 passed)
+- Run typecheck: npm run typecheck
+- Run linter: npm run lint
+- Production build: npm run build
+
+--------------------------------------------------------------------------------
+32. TROUBLESHOOTING
+--------------------------------------------------------------------------------
+- Build failures: Run npm run typecheck.
+- CLI Link: Run supabase link --project-ref sesakxnjaphrxqxllqjm.
+- CORS 403: Verify FRONTEND_ALLOWED_ORIGINS matches frontend origin.
+- HTTP 429: Respect Retry-After header.
+- HTTP 503: Verify Supabase project status and internet connectivity.
+
+--------------------------------------------------------------------------------
+33. KNOWN LIMITATIONS
+--------------------------------------------------------------------------------
+- Rate limiter is in-memory process-local (single instance).
+- Pedestrian routing graph is not active in production.
+- Real MAPID live contract is pending verification.
+- Logout is stateless client-side token discard.
+
+--------------------------------------------------------------------------------
+34. DATA-DEPENDENT FEATURES
+--------------------------------------------------------------------------------
+- Production Pedestrian Routing (Waiting for topological road network)
+- Multimodal Isochrone Analysis (Waiting for transit timetables)
+- MAPID Live Synchronization (Waiting for verified MAPID contract)
+- Demand Intelligence (Waiting for commuter survey/telemetry)
+
+--------------------------------------------------------------------------------
+35. PHASE COMPLETION SUMMARY
+--------------------------------------------------------------------------------
+- Phase 0: Development Foundation — COMPLETED
+- Phase 1: Authentication — COMPLETED
+- Phase 2: Profile, Role & RLS — COMPLETED
+- Phase 3: API Foundation — COMPLETED
+- Phase 4: Database & PostGIS Foundation — COMPLETED
+- Phase 5: Data Model & Repository Layer — COMPLETED
+- Phase 6: MAPID / External Data Adapter — COMPLETED
+- Phase 7: Spatial Engine Foundation — COMPLETED
+- Phase Extra: Dockerization & Public API Security — COMPLETED
+- Extra Final: Backend Documentation & Handover — COMPLETED
+
+--------------------------------------------------------------------------------
+36. OPERATIONAL CHECKLIST
+--------------------------------------------------------------------------------
+All audit requirements, API catalogs, schema specifications, migration runbooks,
+Docker guides, and security checklists have been fulfilled.
+================================================================================
+END OF SOURCE DOCUMENT
+================================================================================

@@ -1,0 +1,384 @@
+GETRA BACKEND - FRONTEND INTEGRATION CONTRACT
+==============================================
+
+Tanggal pembaruan: 2026-08-16 (Asia/Jakarta)
+
+STATUS
+------
+Dokumen ini mendefinisikan contract backend yang tersedia sekarang. Repository
+frontend tidak berada dalam scope Phase Extra, sehingga tidak ada frontend code,
+domain, staging URL, atau production URL yang dibuat/diterka. Contract dan live
+PM2 security smoke lulus; live integration dari container BLOCKED oleh daemon.
+
+1. API BASE URL
+---------------
+Frontend harus membaca origin API dari environment miliknya:
+
+  NEXT_PUBLIC_GETRA_API_URL=
+
+Jangan hard-code localhost pada production bundle. Nilai adalah origin tanpa
+path, misalnya untuk container lokal default:
+
+  http://localhost:3002
+
+Origin browser frontend lokal default Compose adalah:
+
+  http://localhost:3000
+
+Nilai tersebut harus ada persis dalam backend `FRONTEND_ALLOWED_ORIGINS`.
+Hostname, scheme, dan port merupakan bagian origin; `localhost` tidak sama dengan
+`127.0.0.1`.
+
+Staging URL:
+  BELUM DITETAPKAN
+
+Production URL:
+  BELUM DITETAPKAN
+
+Jangan mengganti placeholder dengan domain tebakan.
+
+2. API VERSION
+--------------
+Semua endpoint yang tersedia saat ini berada pada `/api/...` tanpa versi. Path
+tersebut dipertahankan untuk compatibility Phase 0-7.
+
+Strategi berikutnya:
+
+- endpoint existing tetap tersedia sampai ada migration/deprecation plan;
+- public domain endpoint baru memakai `/api/v1/...` setelah contract disetujui;
+- frontend tidak boleh memanggil `/api/v1` yang belum dibuat;
+- breaking change wajib memakai compatibility window dan documented deprecation.
+
+3. AUTHENTICATION FLOW
+----------------------
+
+REGISTER
+
+  POST /api/auth/register
+  Content-Type: application/json
+
+Body:
+
+  {
+    "email": "...",
+    "password": "...",
+    "display_name": "...",
+    "role": "COMMUTER | UMKM | COMMUNITY"
+  }
+
+Role default adalah COMMUTER. ADMIN ditolak pada public registration. Supabase
+project dapat memerlukan email confirmation; frontend tidak boleh menganggap
+registration selalu menghasilkan session login siap pakai.
+
+LOGIN
+
+  POST /api/auth/login
+  Content-Type: application/json
+
+Body:
+
+  {
+    "email": "...",
+    "password": "..."
+  }
+
+Success data memuat `session.access_token`, user aman, dan profile ringkas bila
+tersedia. Backend tidak mengembalikan password hash atau service credential.
+
+PROTECTED REQUEST
+
+  Authorization: Bearer <access_token>
+
+Token harus dikirim persis dalam header tersebut. Jangan memasukkan token dalam
+URL, query string, request_id, analytics, error report, atau log browser.
+
+CURRENT TOKEN-LIFECYCLE LIMITATION
+
+Backend login saat ini hanya mengembalikan access token dan belum menyediakan
+refresh-token endpoint/cookie contract. Frontend harus menangani expiry sebagai
+401 dan meminta user login kembali, atau phase future harus menetapkan refresh
+flow Supabase yang tervalidasi. Jangan mengarang refresh contract sendiri.
+
+LOGOUT
+
+  POST /api/auth/logout
+  Authorization: Bearer <access_token>
+
+Logout memerlukan token valid, lalu mengembalikan
+`token_disposition: client_discard_required`. Frontend wajib menghapus token dari
+state/persistence-nya. Server tidak menggunakan service-role global revocation;
+token yang sudah diterbitkan dapat tetap valid sampai expiry. Jangan tampilkan
+success logout sebelum client state benar-benar dibersihkan.
+
+4. REQUIRED/OPTIONAL HEADERS
+----------------------------
+Body JSON:
+
+  Content-Type: application/json
+
+Endpoint protected:
+
+  Authorization: Bearer <access_token>
+
+Correlation optional:
+
+  X-Request-ID: <UUID>
+
+Backend hanya menggunakan supplied request ID bila valid UUID; selain itu ia
+membuat UUID baru. Selalu baca `request_id` dari response atau header
+`X-Request-ID` untuk support/debugging tanpa mengirim secret.
+
+Browser preflight hanya mengizinkan subset header sesuai endpoint:
+
+- health: x-request-id
+- login/register: content-type, x-request-id
+- logout/me/profile GET/spatial GET: authorization, x-request-id
+- profile PATCH/distance POST: authorization, content-type, x-request-id
+
+Jangan mengirim header custom lain tanpa memperbarui backend policy dan tests.
+
+5. COOKIES/TOKENS/CSRF
+----------------------
+Auth sekarang bearer-based, bukan cookie-based:
+
+- backend tidak set auth cookie;
+- `credentials: include` tidak diperlukan;
+- response CORS tidak memberi Access-Control-Allow-Credentials;
+- CSRF token khusus cookie tidak applicable pada contract sekarang.
+
+Bearer token adalah credential sensitif. Penyimpanan in-memory mengurangi
+persistence exposure; bila frontend memilih persistence, keputusan itu memerlukan
+threat model XSS yang terpisah. Jangan menyimpan token pada log/local telemetry.
+
+Jika future phase memakai cookie, frontend/backend wajib mendesain HttpOnly,
+Secure, SameSite, Domain, Path, expiration, dan CSRF. CORS sendiri bukan proteksi
+CSRF.
+
+6. CORS
+-------
+Backend memakai exact allowlist:
+
+  FRONTEND_ALLOWED_ORIGINS=<origin frontend dipisahkan koma>
+
+Unknown browser origin ditolak HTTP 403 tanpa permission CORS. Wildcard tidak
+didukung. Request tanpa Origin dari server/CLI diterima, tetapi endpoint protected
+tetap memerlukan bearer.
+
+Preflight valid mengembalikan HTTP 204, method/header minimal, dan max-age 600.
+Frontend tidak perlu membangun OPTIONS manual; browser akan melakukannya.
+
+7. REQUEST FORMAT DAN LIMIT
+---------------------------
+- JSON wajib valid UTF-8 dan `application/json`.
+- Schema body/query strict; unexpected field ditolak.
+- login/register max 8192 byte.
+- profile PATCH max 4096 byte.
+- spatial distance max 4096 byte.
+- global config default max 65536 byte tetapi route cap yang lebih kecil menang.
+- nearby radius dibatasi; result default 20 dan max 100.
+- bbox span dibatasi oleh operational configuration.
+- jangan mengirim raw SQL atau arbitrary database filters.
+
+Contoh fetch protected:
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_GETRA_API_URL}/api/profile`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "X-Request-ID": crypto.randomUUID()
+      }
+    }
+  );
+
+Contoh hanya menunjukkan contract; implementasi state/token frontend tidak
+ditentukan oleh backend repository ini.
+
+8. SUCCESS RESPONSE
+--------------------
+
+  {
+    "success": true,
+    "data": {},
+    "request_id": "UUID"
+  }
+
+List response future/existing convention dapat menambah `meta`. Field spatial
+dapat menambah `analysis_method`, `source`, `limitation_flags`, dan provenance
+yang memang nyata. Frontend jangan menganggap field yang belum dikembalikan.
+
+Response API memakai `Cache-Control: no-store`.
+
+9. ERROR RESPONSE
+------------------
+
+  {
+    "success": false,
+    "error": {
+      "code": "...",
+      "message": "...",
+      "retryable": false
+    },
+    "request_id": "UUID"
+  }
+
+Frontend harus branch pada HTTP status dan stable `error.code`, bukan parsing
+stack/internal message. Selalu tampilkan message secara aman dan catat hanya
+request_id untuk dukungan.
+
+10. HTTP STATUS HANDLING
+------------------------
+
+400:
+Request/schema/query invalid. Perbaiki input; jangan retry identik.
+
+401:
+Bearer hilang/invalid/expired. Bersihkan auth state bila perlu dan arahkan login.
+
+403:
+Role tidak cukup, ADMIN registration ditolak, atau browser origin/preflight
+ditolak. Jangan retry otomatis.
+
+404:
+Resource atau endpoint tidak ditemukan.
+
+409:
+Conflict/idempotency state. Refresh state sebelum retry.
+
+413:
+Body terlalu besar. Kurangi payload; jangan chunk kecuali endpoint mendukung.
+
+422:
+Belum digunakan error catalog saat ini. Perlakukan sebagai semantic validation
+error bila diperkenalkan kelak; jangan mengasumsikan selalu ada.
+
+429:
+Rate limit tercapai. Baca `Retry-After`, nonaktifkan retry loop agresif, gunakan
+bounded backoff, dan beri feedback ke user.
+
+500:
+Internal/database operation error. Jangan tampilkan diagnostics internal; retry
+hanya bila contract menandai retryable.
+
+503:
+Dependency/database/network graph belum siap. Hormati `retryable` dan gunakan
+bounded backoff. Health 503 berarti backend belum ready.
+
+Untuk semua status lain, tangani sebagai non-2xx generic dan log request_id saja.
+
+11. ROLE BEHAVIOR
+-----------------
+Role yang dikenal:
+
+  COMMUTER
+  UMKM
+  COMMUNITY
+  ADMIN
+
+Frontend boleh menyesuaikan UI berdasarkan profile role, tetapi server guard dan
+RLS adalah authority. UI role bukan security boundary. Tidak ada endpoint ADMIN
+atau ROLE_RESTRICTED yang exposed saat ini. Jangan memanggil path admin/internal
+yang tidak didokumentasikan.
+
+12. CURRENT ENDPOINT SUMMARY
+----------------------------
+
+PUBLIC:
+
+  GET  /api/health
+  POST /api/auth/login
+  POST /api/auth/register
+
+AUTHENTICATED:
+
+  POST  /api/auth/logout
+  GET   /api/auth/me
+  GET   /api/profile
+  PATCH /api/profile
+  POST  /api/spatial/distance
+  GET   /api/spatial/nearby
+  GET   /api/spatial/bbox
+
+ROLE_RESTRICTED / ADMIN / INTERNAL:
+
+  NONE currently exposed
+
+Lihat `docs/API_ENDPOINT_MATRIX.txt` untuk method, headers, role, rate-limit, dan
+tujuan per endpoint.
+
+13. ENVIRONMENT CONFIGURATION
+-----------------------------
+Frontend environment:
+
+  NEXT_PUBLIC_GETRA_API_URL=
+
+Backend deployment environment:
+
+  APP_ENV=
+  APP_BASE_URL=
+  FRONTEND_ALLOWED_ORIGINS=
+  TRUST_PROXY=
+
+Jangan menyalin ke frontend:
+
+  SUPABASE_SERVICE_ROLE_KEY
+  MAPID_API_KEY
+  database password/connection string
+  any server-only credential
+
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY memang publishable application config, bukan
+service-role key. Tetap jangan mencetaknya ke logs secara tidak perlu.
+
+14. LOCAL DOCKER CONTRACT
+-------------------------
+Default:
+
+  Frontend origin:  http://localhost:3000
+  Backend base URL: http://localhost:3002
+
+Start backend:
+
+  npm run docker:start
+
+Smoke checks yang wajib sebelum frontend integration dinyatakan verified:
+
+- GET health berasal dari port 3002 dan HTTP 200;
+- allowed-origin request menerima exact ACAO;
+- unknown-origin request ditolak;
+- protected endpoint tanpa bearer menghasilkan 401;
+- security headers tersedia;
+- 429 muncul setelah threshold local yang aman;
+- restart kembali healthy.
+
+Status live Docker smoke: BLOCKED karena image/container tidak dapat dibuat
+(Docker Desktop Linux Engine HTTP 500). Live PM2 checks untuk health, CORS,
+preflight, auth negative, header, dan 429 lulus tetapi bukan pengganti Docker.
+
+15. STAGING DAN PRODUCTION
+--------------------------
+Staging base URL:
+  BELUM DITETAPKAN
+
+Staging frontend origin:
+  BELUM DITETAPKAN
+
+Production base URL:
+  BELUM DITETAPKAN
+
+Production frontend origin:
+  BELUM DITETAPKAN
+
+Production harus memakai HTTPS melalui reverse proxy/ingress. Backend container
+dapat tetap HTTP pada private network. Jangan set TRUST_PROXY=true sampai proxy
+tepercaya menghapus/menimpa forwarded headers dan direct access ditutup.
+
+KNOWN INTEGRATION LIMITATIONS
+-----------------------------
+- Belum ada refresh-token contract dari backend.
+- Logout tidak melakukan global token revocation.
+- Rate limiter process-local; multi-replica memerlukan shared enforcement.
+- Tidak ada endpoint `/api/v1` yang aktif.
+- Tidak ada frontend repository/live browser test pada scope ini.
+- Staging/production URLs belum ditentukan.
+- Routing/service-area production dan real MAPID integration tetap tidak ada.

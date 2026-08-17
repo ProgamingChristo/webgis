@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-const longitudeSchema = z.number().finite().min(-180).max(180);
-const latitudeSchema = z.number().finite().min(-90).max(90);
+export const longitudeSchema = z.number().finite().min(-180).max(180);
+export const latitudeSchema = z.number().finite().min(-90).max(90);
 
 export const positionSchema = z
   .tuple([longitudeSchema, latitudeSchema]);
@@ -46,6 +46,13 @@ export const multiLineStringGeometrySchema = z
   })
   .strict();
 
+export const polygonGeometrySchema = z
+  .object({
+    coordinates: polygonCoordinatesSchema,
+    type: z.literal("Polygon"),
+  })
+  .strict();
+
 export const multiPolygonGeometrySchema = z
   .object({
     coordinates: z.array(polygonCoordinatesSchema).min(1),
@@ -62,6 +69,7 @@ export const geoJsonGeometrySchema = z.union([
   pointGeometrySchema,
   lineStringGeometrySchema,
   multiLineStringGeometrySchema,
+  polygonGeometrySchema,
   multiPolygonGeometrySchema,
 ]);
 
@@ -101,6 +109,7 @@ export const nearPointSchema = z
 
 export type PointGeometryInput = z.infer<typeof pointGeometrySchema>;
 export type CorridorGeometryInput = z.infer<typeof corridorGeometrySchema>;
+export type PolygonGeometryInput = z.infer<typeof polygonGeometrySchema>;
 export type MultiPolygonGeometryInput = z.infer<typeof multiPolygonGeometrySchema>;
 export type GeoJsonGeometryInput = z.infer<typeof geoJsonGeometrySchema>;
 export type BoundingBoxInput = z.infer<typeof boundingBoxSchema>;

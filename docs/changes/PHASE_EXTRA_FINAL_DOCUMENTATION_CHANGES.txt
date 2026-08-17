@@ -1,0 +1,92 @@
+PHASE:
+EXTRA FINAL
+
+TITLE:
+GETRA Backend Complete Documentation, API Catalog & Operational Handover
+
+DATE:
+2026-08-17 (Asia/Jakarta)
+
+OBJECTIVE:
+Mengaudit seluruh repository backend GETRA dan menghasilkan dokumentasi final yang 100%
+akurat berdasarkan implementasi aktual pada source code, migration, Supabase schema,
+Docker configuration, environment, dan test suites.
+
+FILES CREATED:
+- docs/final/GETRA_BACKEND_COMPLETE_DOCUMENTATION.pdf
+- docs/final/GETRA_BACKEND_COMPLETE_DOCUMENTATION.md
+- docs/final/GETRA_BACKEND_DOCUMENTATION_SOURCE.txt
+- docs/final/document.html
+- scripts/build-pdf.js
+- docs/changes/PHASE_EXTRA_FINAL_DOCUMENTATION_CHANGES.txt
+
+FILES MODIFIED:
+NONE
+
+FILES DELETED:
+NONE
+
+PDF:
+docs/final/GETRA_BACKEND_COMPLETE_DOCUMENTATION.pdf
+Size: ~1.02 MB (1,021,988 bytes)
+Format: High-resolution PDF with Executive Cover Page, Table of Contents, 36 Chapter Headings,
+Code Blocks, Data Tables, Alert Boxes, and Page Numbers.
+
+SOURCE DOCUMENT:
+docs/final/GETRA_BACKEND_COMPLETE_DOCUMENTATION.md
+docs/final/GETRA_BACKEND_DOCUMENTATION_SOURCE.txt
+
+API COUNT:
+10 endpoints terverifikasi:
+1. GET /api/health (PUBLIC, readiness probe)
+2. POST /api/auth/login (PUBLIC, rate: auth, Supabase login)
+3. POST /api/auth/register (PUBLIC, rate: auth, Non-admin signup)
+4. POST /api/auth/logout (AUTHENTICATED, rate: mutation, Stateless logout)
+5. GET /api/auth/me (AUTHENTICATED, rate: api, Current user info)
+6. GET /api/profile (AUTHENTICATED, rate: api, Read profile)
+7. PATCH /api/profile (AUTHENTICATED, rate: mutation, Update profile)
+8. POST /api/spatial/distance (AUTHENTICATED, rate: spatial, Geodesic distance)
+9. GET /api/spatial/nearby (AUTHENTICATED, rate: spatial, Proximity search)
+10. GET /api/spatial/bbox (AUTHENTICATED, rate: spatial, Bounding box search)
+
+DATABASE TABLE COUNT:
+6 tables terverifikasi:
+1. public.profiles (User profiles & role assignment)
+2. public.spatial_sources (Spatial lineage source catalog)
+3. public.study_areas (MultiPolygon regional boundary zones)
+4. public.transport_corridors (MultiLineString transit corridors)
+5. public.transport_nodes (Point transit stations and stops)
+6. public.umkm_profiles (Point UMKM business registry)
+
+MIGRATION COUNT:
+4 migration files:
+1. 20260815203150_create_profiles.sql
+2. 20260815205854_add_roles_to_profiles.sql
+3. 20260815220000_create_spatial_foundation.sql
+4. 20260816090000_add_data_model_repository_foundation.sql
+
+DOCUMENTATION REVIEW:
+- 36 core chapters covering Architecture, Auth, Roles, RLS, PostGIS, Schemas, Docker, Security,
+  Migrations, 24/7 Operations, Troubleshooting, and Handover.
+- Strict accuracy statuses used throughout (FOUNDATION ONLY, PRODUCTION DATA REQUIRED, NOT IMPLEMENTED).
+- Real JSON request and response envelopes for all 10 endpoints.
+- Role authorization matrix and column-level permission boundaries documented.
+- PostGIS stored functions (ST_DWithin, ST_Intersects, ST_Distance, make_wgs84_bbox) documented.
+- Supabase Project Ref (sesakxnjaphrxqxllqjm) migration runbook with CLI workflow.
+
+SECRET SCAN:
+PASS (0 secrets found):
+- No database passwords or database connection strings.
+- No Supabase service-role keys.
+- No real JWT tokens or production credentials.
+- All environment variables documented via .env.example placeholders.
+
+KNOWN LIMITATIONS:
+1. In-memory fixed-window rate limiter is single-process local (Redis required for cluster scale-out).
+2. Pedestrian routing graph is not available in production (ROUTING_GRAPH_NOT_AVAILABLE).
+3. Real MAPID API connection is pending official provider contract.
+4. Stateless token logout requires client-side discard.
+
+FINAL RESULT:
+COMPLETE. Master documentation in PDF, Markdown, Plain-Text, and Changelog formats successfully
+generated and verified against the repository implementation.

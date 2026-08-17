@@ -1,0 +1,47 @@
+services:
+  getra-backend:
+    image: getra-backend:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    init: true
+    ports:
+      - "${GETRA_DOCKER_PORT:-3002}:3000"
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+      APP_ENV: "${APP_ENV:-development}"
+      APP_BASE_URL: "${APP_BASE_URL:-http://localhost:3002}"
+      FRONTEND_ALLOWED_ORIGINS: "${FRONTEND_ALLOWED_ORIGINS:-http://localhost:3000}"
+      TRUST_PROXY: "${TRUST_PROXY:-false}"
+      API_MAX_JSON_BODY_BYTES: "${API_MAX_JSON_BODY_BYTES:-65536}"
+      SUPABASE_REQUEST_TIMEOUT_MS: "${SUPABASE_REQUEST_TIMEOUT_MS:-10000}"
+      RATE_LIMIT_WINDOW_MS: "${RATE_LIMIT_WINDOW_MS:-60000}"
+      RATE_LIMIT_AUTH_MAX_REQUESTS: "${RATE_LIMIT_AUTH_MAX_REQUESTS:-5}"
+      RATE_LIMIT_API_MAX_REQUESTS: "${RATE_LIMIT_API_MAX_REQUESTS:-60}"
+      RATE_LIMIT_MUTATION_MAX_REQUESTS: "${RATE_LIMIT_MUTATION_MAX_REQUESTS:-20}"
+      RATE_LIMIT_SPATIAL_MAX_REQUESTS: "${RATE_LIMIT_SPATIAL_MAX_REQUESTS:-30}"
+      NEXT_PUBLIC_SUPABASE_URL: "${NEXT_PUBLIC_SUPABASE_URL:?NEXT_PUBLIC_SUPABASE_URL is required}"
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:?NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is required}"
+      SUPABASE_SERVICE_ROLE_KEY: "${SUPABASE_SERVICE_ROLE_KEY:-}"
+      MAPID_BASE_URL: "${MAPID_BASE_URL:-}"
+      MAPID_API_KEY: "${MAPID_API_KEY:-}"
+      MAPID_TIMEOUT_MS: "${MAPID_TIMEOUT_MS:-}"
+      SPATIAL_MAX_RADIUS_METERS: "${SPATIAL_MAX_RADIUS_METERS:-}"
+      SPATIAL_MAX_BBOX_LATITUDE_DEGREES: "${SPATIAL_MAX_BBOX_LATITUDE_DEGREES:-}"
+      SPATIAL_MAX_BBOX_LONGITUDE_DEGREES: "${SPATIAL_MAX_BBOX_LONGITUDE_DEGREES:-}"
+      DEFAULT_WALKING_SPEED_MPS: "${DEFAULT_WALKING_SPEED_MPS:-}"
+    restart: unless-stopped
+    stop_grace_period: 30s
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health',{signal:AbortSignal.timeout(4000)}).then(response=>{if(!response.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3

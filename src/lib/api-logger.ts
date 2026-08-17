@@ -1,7 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/src/lib/logger";
 import { createErrorResponse } from "@/src/lib/api-response";
-import { toApplicationError } from "@/src/lib/errors";
+import { ApplicationError, toApplicationError } from "@/src/lib/errors";
+import {
+  applyCorsHeaders,
+  evaluateActualCors,
+  type CorsDecision,
+} from "@/src/lib/api-security/cors";
+import {
+  loadApiSecurityConfig,
+  type ApiSecurityConfig,
+} from "@/src/lib/api-security/config";
+import {
+  applyProductionHsts,
+  applyStaticSecurityHeaders,
+} from "@/src/lib/api-security/security-headers";
+
+function secureResponse(
+  response: NextResponse,
+  config?: ApiSecurityConfig,
+  corsDecision?: CorsDecision,
+): NextResponse {
+  applyStaticSecurityHeaders(response.headers);
+  if (config) {
+    applyProductionHsts(response.headers, config.appEnv, config.appBaseUrl);
+  }
+  if (corsDecision?.allowed) {
+    applyCorsHeaders(response.headers, corsDecision);
+  }
+  return response;
+}
 
 export async function withApiLogger(
   req: NextRequest,
@@ -12,8 +40,16 @@ export async function withApiLogger(
   const url = new URL(req.url);
   const path = url.pathname;
   const start = Date.now();
+  let securityConfig: ApiSecurityConfig | undefined;
+  let corsDecision: CorsDecision | undefined;
 
   try {
+    securityConfig = loadApiSecurityConfig();
+    corsDecision = evaluateActualCors(req, securityConfig.allowedOrigins);
+    if (!corsDecision.allowed) {
+      throw new ApplicationError("CORS_ORIGIN_DENIED");
+    }
+
     const res = await handler();
     const duration = Date.now() - start;
     
@@ -24,7 +60,7 @@ export async function withApiLogger(
       duration_ms: duration,
     });
     
-    return res;
+    return secureResponse(res, securityConfig, corsDecision);
   } catch (error: unknown) {
     const duration = Date.now() - start;
     const applicationError = toApplicationError(error);
@@ -35,6 +71,10 @@ export async function withApiLogger(
       duration_ms: duration,
     });
     
-    return createErrorResponse(requestId, applicationError);
+    return secureResponse(
+      createErrorResponse(requestId, applicationError),
+      securityConfig,
+      corsDecision,
+    );
   }
 }

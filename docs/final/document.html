@@ -1,0 +1,2192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GETRA Backend Complete Technical Documentation</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 18mm 14mm 18mm 14mm;
+      @bottom-right {
+        content: counter(page);
+        font-family: 'Segoe UI', Arial, sans-serif;
+        font-size: 8pt;
+        color: #718096;
+      }
+      @top-right {
+        content: "GETRA Backend Technical Documentation";
+        font-family: 'Segoe UI', Arial, sans-serif;
+        font-size: 8pt;
+        color: #a0aec0;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #1a202c;
+      line-height: 1.55;
+      font-size: 9.5pt;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Cover Page */
+    .cover-page {
+      page-break-after: always;
+      height: 92vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 2px solid #2b6cb0;
+      border-radius: 8px;
+      padding: 40px 30px;
+      background: linear-gradient(180deg, #ebf8ff 0%, #ffffff 40%);
+    }
+
+    .cover-header {
+      border-bottom: 3px solid #3182ce;
+      padding-bottom: 20px;
+    }
+
+    .cover-badge {
+      display: inline-block;
+      background-color: #2b6cb0;
+      color: white;
+      font-size: 9pt;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .cover-title {
+      font-size: 26pt;
+      font-weight: 800;
+      color: #1a365d;
+      margin: 0 0 8px 0;
+      line-height: 1.15;
+    }
+
+    .cover-subtitle {
+      font-size: 13pt;
+      color: #4a5568;
+      margin: 0;
+      line-height: 1.4;
+      font-weight: 400;
+    }
+
+    .cover-meta {
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 20px;
+      margin: 30px 0;
+    }
+
+    .cover-meta-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .cover-meta-table td {
+      padding: 6px 10px;
+      font-size: 9.5pt;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .cover-meta-table td.label {
+      font-weight: 700;
+      color: #4a5568;
+      width: 32%;
+    }
+
+    .cover-meta-table td.value {
+      color: #1a202c;
+      font-family: 'Consolas', monospace;
+    }
+
+    .cover-footer {
+      border-top: 1px solid #cbd5e0;
+      padding-top: 15px;
+      display: flex;
+      justify-content: space-between;
+      color: #718096;
+      font-size: 8.5pt;
+    }
+
+    /* Headings */
+    h1.doc-main-title {
+      font-size: 18pt;
+      font-weight: 800;
+      color: #1a365d;
+      border-bottom: 2px solid #3182ce;
+      padding-bottom: 6px;
+      margin-top: 20px;
+      margin-bottom: 15px;
+    }
+
+    h2.section-title {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #2b6cb0;
+      border-bottom: 1.5px solid #e2e8f0;
+      padding-bottom: 4px;
+      margin-top: 22px;
+      margin-bottom: 10px;
+    }
+
+    h3.subsection-title {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #2d3748;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+
+    h4.sub-subsection-title {
+      font-size: 9.5pt;
+      font-weight: 600;
+      color: #4a5568;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    .chapter-break {
+      page-break-before: always;
+    }
+
+    p {
+      margin: 0 0 8px 0;
+      text-align: justify;
+    }
+
+    /* Code Blocks */
+    pre.code-block {
+      background-color: #1e293b;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 0;
+      margin: 8px 0 12px 0;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 8pt;
+      line-height: 1.4;
+      overflow-x: hidden;
+      border: 1px solid #334155;
+      page-break-inside: avoid;
+    }
+
+    .code-header {
+      background: #0f172a;
+      color: #94a3b8;
+      font-size: 7pt;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-bottom: 1px solid #334155;
+      border-top-left-radius: 5px;
+      border-top-right-radius: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    pre.code-block code {
+      display: block;
+      padding: 8px 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      background-color: #edf2f7;
+      color: #c53030;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: 8.5pt;
+    }
+
+    /* Tables */
+    .table-container {
+      width: 100%;
+      margin: 10px 0 14px 0;
+      page-break-inside: avoid;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+    }
+
+    th, td {
+      border: 1px solid #cbd5e0;
+      padding: 5px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #edf2f7;
+      color: #2d3748;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f7fafc;
+    }
+
+    /* Alerts */
+    .alert {
+      border-left: 4px solid #3182ce;
+      background-color: #ebf8ff;
+      border-radius: 4px;
+      padding: 8px 12px;
+      margin: 10px 0;
+      page-break-inside: avoid;
+    }
+
+    .alert-title {
+      font-weight: 700;
+      font-size: 8.5pt;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+      color: #2b6cb0;
+    }
+
+    .alert-note {
+      border-left-color: #3182ce;
+      background-color: #ebf8ff;
+    }
+    .alert-note .alert-title { color: #2b6cb0; }
+
+    .alert-tip {
+      border-left-color: #38a169;
+      background-color: #f0fff4;
+    }
+    .alert-tip .alert-title { color: #2f855a; }
+
+    .alert-important {
+      border-left-color: #805ad5;
+      background-color: #faf5ff;
+    }
+    .alert-important .alert-title { color: #6b46c1; }
+
+    .alert-warning {
+      border-left-color: #dd6b20;
+      background-color: #fffaf0;
+    }
+    .alert-warning .alert-title { color: #c05621; }
+
+    .alert-caution {
+      border-left-color: #e53e3e;
+      background-color: #fff5f5;
+    }
+    .alert-caution .alert-title { color: #c53030; }
+
+    .alert p {
+      margin: 0;
+      font-size: 8.5pt;
+      color: #2d3748;
+    }
+
+    /* Lists */
+    ul {
+      margin: 4px 0 8px 16px;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 3px;
+    }
+
+    .numbered-item {
+      margin-bottom: 4px;
+    }
+
+    .item-num {
+      font-weight: 700;
+      color: #2b6cb0;
+      display: inline-block;
+      width: 18px;
+    }
+
+    hr.divider {
+      border: 0;
+      height: 1px;
+      background: #e2e8f0;
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cover Page -->
+  <div class="cover-page">
+    <div class="cover-header">
+      <div class="cover-badge">Official Architecture & Operational Manual</div>
+      <h1 class="cover-title">GETRA Backend</h1>
+      <p class="cover-subtitle">Complete Technical Documentation, API Catalog, Database & PostGIS Foundation, Supabase Migration Runbook, Docker Operations & Security Handover</p>
+    </div>
+
+    <div class="cover-meta">
+      <table class="cover-meta-table">
+        <tr>
+          <td class="label">Project</td>
+          <td class="value">GETRA (Gerakan Transit Ramah Anak)</td>
+        </tr>
+        <tr>
+          <td class="label">Document Version</td>
+          <td class="value">1.0.0 (Final Backend Baseline)</td>
+        </tr>
+        <tr>
+          <td class="label">Release Phase</td>
+          <td class="value">Extra Phase Final — Documentation & Handover</td>
+        </tr>
+        <tr>
+          <td class="label">Runtime Stack</td>
+          <td class="value">Next.js 16.3.1 Standalone / Node 22 LTS</td>
+        </tr>
+        <tr>
+          <td class="label">Database Platform</td>
+          <td class="value">Supabase PostgreSQL 15+ with PostGIS</td>
+        </tr>
+        <tr>
+          <td class="label">Supabase Project Ref</td>
+          <td class="value">sesakxnjaphrxqxllqjm</td>
+        </tr>
+        <tr>
+          <td class="label">Audit Status</td>
+          <td class="value">VERIFIED & 100% AUDITED AGAINST REPOSITORY</td>
+        </tr>
+        <tr>
+          <td class="label">Date</td>
+          <td class="value">2026-08-17 (Asia/Jakarta)</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="cover-footer">
+      <div>GETRA Core Engineering Team</div>
+      <div>Confidential & Internal Engineering Specification</div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="document-content">
+    <h1 class="doc-main-title">GETRA Backend Complete Technical Documentation</h1>
+<h2 class="section-title ">Architecture, API Catalog, Database &amp; PostGIS Foundation, Docker Operations, Security &amp; Operational Handover</h2>
+<hr class="divider" />
+<p><strong>Project Name:</strong> GETRA (Gerakan Transit Ramah Anak / Transit &amp; Spatial Intelligence Platform)  </p>
+<p><strong>Document Version:</strong> 1.0.0 (Final Backend Baseline)  </p>
+<p><strong>Date:</strong> 2026-08-17 (Asia/Jakarta)  </p>
+<p><strong>Status:</strong> AUDITED &amp; VERIFIED  </p>
+<p><strong>Target Environment:</strong> Node.js 22 LTS / Next.js 16.3.1 Standalone / Supabase PostgreSQL &amp; PostGIS Remote  </p>
+<hr class="divider" />
+<h2 class="section-title ">TABLE OF CONTENTS</h2>
+<div class="numbered-item"><span class="item-num">1.</span> <span class="item-text"><a href="#1-executive-summary">Executive Summary</a></span></div>
+<div class="numbered-item"><span class="item-num">2.</span> <span class="item-text"><a href="#2-getra-backend-overview">GETRA Backend Overview</a></span></div>
+<div class="numbered-item"><span class="item-num">3.</span> <span class="item-text"><a href="#3-technology-stack">Technology Stack</a></span></div>
+<div class="numbered-item"><span class="item-num">4.</span> <span class="item-text"><a href="#4-system-architecture">System Architecture</a></span></div>
+<div class="numbered-item"><span class="item-num">5.</span> <span class="item-text"><a href="#5-project-folder-structure">Project Folder Structure</a></span></div>
+<div class="numbered-item"><span class="item-num">6.</span> <span class="item-text"><a href="#6-authentication-system">Authentication System</a></span></div>
+<div class="numbered-item"><span class="item-num">7.</span> <span class="item-text"><a href="#7-user-profiles--roles">User Profiles &amp; Roles</a></span></div>
+<div class="numbered-item"><span class="item-num">8.</span> <span class="item-text"><a href="#8-row-level-security-rls--authorization">Row Level Security (RLS) &amp; Authorization</a></span></div>
+<div class="numbered-item"><span class="item-num">9.</span> <span class="item-text"><a href="#9-api-architecture--response-contracts">API Architecture &amp; Response Contracts</a></span></div>
+<div class="numbered-item"><span class="item-num">10.</span> <span class="item-text"><a href="#10-database-architecture--schema">Database Architecture &amp; Schema</a></span></div>
+<div class="numbered-item"><span class="item-num">11.</span> <span class="item-text"><a href="#11-postgis-spatial-foundation">PostGIS Spatial Foundation</a></span></div>
+<div class="numbered-item"><span class="item-num">12.</span> <span class="item-text"><a href="#12-data-model--entities">Data Model &amp; Entities</a></span></div>
+<div class="numbered-item"><span class="item-num">13.</span> <span class="item-text"><a href="#13-repository-layer">Repository Layer</a></span></div>
+<div class="numbered-item"><span class="item-num">14.</span> <span class="item-text"><a href="#14-external-data-integration--mapid-adapter">External Data Integration &amp; MAPID Adapter</a></span></div>
+<div class="numbered-item"><span class="item-num">15.</span> <span class="item-text"><a href="#15-spatial-engine-modules">Spatial Engine Modules</a></span></div>
+<div class="numbered-item"><span class="item-num">16.</span> <span class="item-text"><a href="#16-docker-architecture--containerization">Docker Architecture &amp; Containerization</a></span></div>
+<div class="numbered-item"><span class="item-num">17.</span> <span class="item-text"><a href="#17-public-api-security-hardening">Public API Security Hardening</a></span></div>
+<div class="numbered-item"><span class="item-num">18.</span> <span class="item-text"><a href="#18-api-catalog">API Catalog</a></span></div>
+<div class="numbered-item"><span class="item-num">19.</span> <span class="item-text"><a href="#19-api-request--response-examples">API Request &amp; Response Examples</a></span></div>
+<div class="numbered-item"><span class="item-num">20.</span> <span class="item-text"><a href="#20-authentication--registration-examples-per-role">Authentication &amp; Registration Examples Per Role</a></span></div>
+<div class="numbered-item"><span class="item-num">21.</span> <span class="item-text"><a href="#21-supabase-migration-runbook">Supabase Migration Runbook</a></span></div>
+<div class="numbered-item"><span class="item-num">22.</span> <span class="item-text"><a href="#22-database-seeding-guide">Database Seeding Guide</a></span></div>
+<div class="numbered-item"><span class="item-num">23.</span> <span class="item-text"><a href="#23-database-typescript-types-generation">Database TypeScript Types Generation</a></span></div>
+<div class="numbered-item"><span class="item-num">24.</span> <span class="item-text"><a href="#24-development-mode-running-guide">Development Mode Running Guide</a></span></div>
+<div class="numbered-item"><span class="item-num">25.</span> <span class="item-text"><a href="#25-docker-container-running-guide">Docker Container Running Guide</a></span></div>
+<div class="numbered-item"><span class="item-num">26.</span> <span class="item-text"><a href="#26-247-production-operations-guide">24/7 Production Operations Guide</a></span></div>
+<div class="numbered-item"><span class="item-num">27.</span> <span class="item-text"><a href="#27-backend-logging--health-monitoring">Backend Logging &amp; Health Monitoring</a></span></div>
+<div class="numbered-item"><span class="item-num">28.</span> <span class="item-text"><a href="#28-frontend-integration-guide">Frontend Integration Guide</a></span></div>
+<div class="numbered-item"><span class="item-num">29.</span> <span class="item-text"><a href="#29-environment-variables-reference">Environment Variables Reference</a></span></div>
+<div class="numbered-item"><span class="item-num">30.</span> <span class="item-text"><a href="#30-security-checklist--compliance">Security Checklist &amp; Compliance</a></span></div>
+<div class="numbered-item"><span class="item-num">31.</span> <span class="item-text"><a href="#31-testing--quality-assurance-guide">Testing &amp; Quality Assurance Guide</a></span></div>
+<div class="numbered-item"><span class="item-num">32.</span> <span class="item-text"><a href="#32-troubleshooting--diagnostics-guide">Troubleshooting &amp; Diagnostics Guide</a></span></div>
+<div class="numbered-item"><span class="item-num">33.</span> <span class="item-text"><a href="#33-known-limitations">Known Limitations</a></span></div>
+<div class="numbered-item"><span class="item-num">34.</span> <span class="item-text"><a href="#34-features-waiting-for-production-data">Features Waiting for Production Data</a></span></div>
+<div class="numbered-item"><span class="item-num">35.</span> <span class="item-text"><a href="#35-phase-completion-summary-phases-07--extra">Phase Completion Summary (Phases 0–7 + Extra)</a></span></div>
+<div class="numbered-item"><span class="item-num">36.</span> <span class="item-text"><a href="#36-operational-handover-checklist">Operational Handover Checklist</a></span></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">1. Executive Summary</h2>
+<p>GETRA (Gerakan Transit Ramah Anak) Backend is a high-performance, modular geospatial and transit data platform built on <strong>Next.js 16 (App Router)</strong> and <strong>Supabase (PostgreSQL with PostGIS)</strong>. The backend acts as the core transactional, spatial, and integration engine supporting transit node mapping, study area demarcations, corridor routing foundations, UMKM business directory integration, and role-based commuter services.</p>
+<h3 class="subsection-title">Core Capabilities Summary:</h3>
+<ul>
+  <li><strong>Architecture:</strong> Layered Clean Architecture (HTTP Handler $\rightarrow$ Security Middleware $\rightarrow$ Zod Validation $\rightarrow$ Service $\rightarrow$ Repository $\rightarrow$ PostGIS).</li>
+  <li><strong>Database &amp; PostGIS:</strong> 6 normalized PostgreSQL tables with strict constraints, EPSG:4326 spatial geometry types (Point, MultiLineString, MultiPolygon), GiST indexing, and server-side RPC functions for bounded bounding-box and proximity queries.</li>
+  <li><strong>Authentication &amp; Authorization:</strong> Stateless Supabase JWT Bearer token authentication with 4 roles (<code>COMMUTER</code>, <code>UMKM</code>, <code>COMMUNITY</code>, <code>ADMIN</code>), Row Level Security (RLS) enforcement, and column-level permission boundaries.</li>
+  <li><strong>Security Hardening:</strong> Strict origin CORS allowlist, granular rate limiting, bounded streaming JSON parsing, secure HTTP headers (CSP, HSTS, X-Frame-Options, etc.), request IDs, and non-root Docker execution.</li>
+  <li><strong>Integrations:</strong> Extensible MAPID / External Data Adapter foundation featuring fixture-based testing, dry-run simulation, and data provenance tracking.</li>
+  <li><strong>Operational Readiness:</strong> Fully dockerized multi-stage standalone runtime with automated health checking and 24/7 PM2 process management support.</li>
+</ul>
+<hr class="divider" />
+<h2 class="section-title chapter-break">2. GETRA Backend Overview</h2>
+<p>The GETRA backend provides secure, bounded RESTful endpoints for web and mobile frontends. It is designed around the principle of <strong>strict contract safety</strong>: no unverified external dependencies are invoked in production, all queries are bounded to prevent denial-of-service, and sensitive credentials (such as service-role keys or database passwords) are strictly quarantined from public runtime bundles.</p>
+<h3 class="subsection-title">System Verification &amp; Implementation Status:</h3>
+<ul>
+  <li><strong>Overall Status:</strong> <code>FOUNDATION IMPLEMENTED — ACCURACY AUDITED</code></li>
+  <li><strong>Real Production Data:</strong> <code>PENDING PRODUCTION INGESTION</code></li>
+  <li><strong>Real MAPID Connection:</strong> <code>FOUNDATION ONLY — OFFICIAL CONTRACT REQUIRED</code></li>
+  <li><strong>Pedestrian Graph Routing:</strong> <code>FOUNDATION ONLY — PRODUCTION GRAPH REQUIRED</code></li>
+</ul>
+<hr class="divider" />
+<h2 class="section-title chapter-break">3. Technology Stack</h2>
+<p>The GETRA backend stack is strictly documented from <code>package.json</code>, source code, and configuration files:</p>
+<div class="table-container"><table>
+  <thead>
+    <tr>
+      <th>Layer / Category</th>
+      <th>Technology / Library</th>
+      <th>Version</th>
+      <th>Purpose in GETRA</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Language</strong></td>
+      <td>TypeScript</td>
+      <td><code>^6.0.3</code></td>
+      <td>Type-safe backend domain models, DTOs, and schemas</td>
+    </tr>
+    <tr>
+      <td><strong>Framework</strong></td>
+      <td>Next.js</td>
+      <td><code>^16.3.1</code></td>
+      <td>App Router API Route Handlers and Standalone Server</td>
+    </tr>
+    <tr>
+      <td><strong>Runtime Core</strong></td>
+      <td>React / React DOM</td>
+      <td><code>^19.2.8</code></td>
+      <td>Core Next.js 16 engine peer dependencies</td>
+    </tr>
+    <tr>
+      <td><strong>Server Boundary</strong></td>
+      <td><code>server-only</code></td>
+      <td><code>^0.0.1</code></td>
+      <td>Prevents server modules from leaking into client bundles</td>
+    </tr>
+    <tr>
+      <td><strong>Validation</strong></td>
+      <td>Zod</td>
+      <td><code>^4.4.3</code></td>
+      <td>Runtime schema validation for requests, configs, and payloads</td>
+    </tr>
+    <tr>
+      <td><strong>Database SDK</strong></td>
+      <td><code>@supabase/supabase-js</code></td>
+      <td><code>^2.112.3</code></td>
+      <td>Supabase PostgreSQL client and authentication provider</td>
+    </tr>
+    <tr>
+      <td><strong>Database Engine</strong></td>
+      <td>PostgreSQL + PostGIS</td>
+      <td>Remote (Supabase)</td>
+      <td>Spatial data storage, GiST indexing, and spatial calculations</td>
+    </tr>
+    <tr>
+      <td><strong>Container Engine</strong></td>
+      <td>Docker &amp; Docker Compose</td>
+      <td>Node 22-slim</td>
+      <td>Standalone containerization and reproducible deployment</td>
+    </tr>
+    <tr>
+      <td><strong>Process Manager</strong></td>
+      <td>PM2</td>
+      <td><code>^7.0.3</code></td>
+      <td>24/7 host process monitoring and automatic crash restarts</td>
+    </tr>
+    <tr>
+      <td><strong>Testing Engine</strong></td>
+      <td>Vitest</td>
+      <td><code>^4.1.10</code></td>
+      <td>Unit, integration, and security test runner</td>
+    </tr>
+    <tr>
+      <td><strong>Linter / Quality</strong></td>
+      <td>ESLint / eslint-config-next</td>
+      <td><code>^9.39.5</code> / <code>^16.3.1</code></td>
+      <td>Static code analysis and style verification</td>
+    </tr>
+    <tr>
+      <td><strong>CLI Tooling</strong></td>
+      <td>Supabase CLI</td>
+      <td><code>^2.114.0</code></td>
+      <td>Local database management and migration tooling</td>
+    </tr>
+  </tbody>
+</table></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">4. System Architecture</h2>
+<p>GETRA implements a strict, multi-tiered architecture that separates concerns between transport protocol, security guards, input validation, domain business logic, data persistence, and database-level RLS.</p>
+<h3 class="subsection-title">4.1 Standard Request Flow</h3>
+<pre class="code-block text"><div class="code-header">TEXT</div><code>[ Incoming HTTP Request from Frontend / Mobile Client ]
+                          │
+                          ▼
+             [ CORS Exact Origin Check ] ── (Unknown Origin: 403 Forbidden)
+                          │
+                          ▼
+            [ Granular Rate Limit Guard ] ── (Limit Exceeded: 429 Too Many Requests)
+                          │
+                          ▼
+         [ Security Headers &amp; Request ID Injection ] (x-request-id generated / traced)
+                          │
+                          ▼
+          [ Authentication / Bearer JWT Guard ] ── (Missing/Invalid: 401 Unauthorized)
+                          │
+                          ▼
+              [ Role Authorization Guard ] ── (Forbidden Role: 403 Forbidden)
+                          │
+                          ▼
+          [ Bounded JSON / Query Zod Validation ] ── (Invalid Payload: 400 Bad Request)
+                          │
+                          ▼
+                 [ Domain Service Layer ]
+                          │
+                          ▼
+               [ Repository Layer (RPC/SQL) ]
+                          │
+                          ▼
+          [ Supabase PostGIS with Row Level Security ]</code></pre>
+<h3 class="subsection-title">4.2 External Provider / MAPID Adapter Pipeline</h3>
+<pre class="code-block text"><div class="code-header">TEXT</div><code>[ MAPID / External API Source ]
+               │
+               ▼
+      [ External Client ] ── (Timeout, Retries, Bearer/Header Injection)
+               │
+               ▼
+     [ Fixture / Schema Validator ] ── (Zod Contract Verification)
+               │
+               ▼
+     [ Data Normalizer ] ── (Transforms to Standard GeoJSON &amp; WGS84)
+               │
+               ▼
+      [ Domain Mapper ] ── (Maps to GETRA Entity DTOs)
+               │
+               ▼
+ [ External Data Service ] ── (Dry-run mode, Duplicate Check, Lineage Tagging)
+               │
+               ▼
+ [ External Record Repository ] ── (Transactional Batch Persistence &amp; Provenance)</code></pre>
+<h3 class="subsection-title">4.3 Spatial Engine Flow</h3>
+<pre class="code-block text"><div class="code-header">TEXT</div><code>[ API Spatial Route: /distance, /nearby, /bbox ]
+                          │
+                          ▼
+            [ Coordinate / Bounds Validation ]
+                          │
+                          ▼
+              [ Spatial Service Layer ]
+         (Distance, Proximity, BBox, WalkingTime)
+                          │
+                          ▼
+             [ Spatial Repository Layer ]
+                          │
+                          ▼
+        [ PostGIS Database Spatial Functions ]
+  (ST_DWithin, ST_Intersects, ST_Distance on EPSG:4326)</code></pre>
+<hr class="divider" />
+<h2 class="section-title chapter-break">5. Project Folder Structure</h2>
+<p>The repository structure reflects Clean Architecture with strict separation of routes, schemas, domain modules, repositories, and migration files:</p>
+<pre class="code-block text"><div class="code-header">TEXT</div><code>getra-backend/
+├── app/                                 # Next.js App Router root
+│   └── api/                             # API route handlers
+│       ├── auth/                        # Authentication endpoints
+│       │   ├── login/route.ts           # POST /api/auth/login, OPTIONS
+│       │   ├── logout/route.ts          # POST /api/auth/logout, OPTIONS
+│       │   ├── me/route.ts              # GET /api/auth/me, OPTIONS
+│       │   └── register/route.ts        # POST /api/auth/register, OPTIONS
+│       ├── health/                      # Health &amp; readiness probe
+│       │   └── route.ts                 # GET /api/health, OPTIONS
+│       ├── profile/                     # Profile management
+│       │   └── route.ts                 # GET, PATCH /api/profile, OPTIONS
+│       ├── spatial/                     # Geospatial endpoints
+│       │   ├── bbox/route.ts            # GET /api/spatial/bbox, OPTIONS
+│       │   ├── distance/route.ts        # POST /api/spatial/distance, OPTIONS
+│       │   └── nearby/route.ts          # GET /api/spatial/nearby, OPTIONS
+│       └── v1/                          # Versioned endpoint placeholder (.gitkeep)
+├── src/                                 # Core backend source code
+│   ├── config/                          # Application bootstrap &amp; runtime config
+│   ├── integrations/                    # External data integrations &amp; adapters
+│   │   ├── core/                        # Common external provider contracts &amp; errors
+│   │   └── mapid/                       # MAPID adapter, client, mapper, normalizer
+│   ├── lib/                             # Shared utility libraries &amp; security helpers
+│   │   ├── api-security/                # CORS, security headers, endpoint policies
+│   │   ├── env/                         # Type-safe environment validation
+│   │   ├── errors/                      # ApplicationError hierarchy &amp; error codes
+│   │   ├── http/                        # Timeout fetch &amp; abort controller helpers
+│   │   ├── logger/                      # Sanitized structured logging helpers
+│   │   ├── spatial/                     # Spatial parsing, GeoJSON mappers &amp; SRID helpers
+│   │   ├── supabase/                    # Server &amp; request-scoped Supabase client factories
+│   │   ├── api-logger.ts                # withApiLogger request wrapper
+│   │   ├── api-response.ts              # Standard JSON envelope creators
+│   │   ├── auth.ts                      # Authentication &amp; role guard utilities
+│   │   ├── pagination.ts                # List pagination helpers
+│   │   ├── query-parser.ts              # Query parameter parsers
+│   │   ├── rate-limit.ts                # In-memory fixed-window rate limiter
+│   │   ├── request-body.ts              # Bounded stream JSON body reader
+│   │   ├── request-id.ts                # UUID request tracer
+│   │   └── validation.ts                # Zod request body &amp; query validators
+│   ├── mappers/                         # Domain, geometry, and profile data mappers
+│   ├── modules/                         # Specialized business logic domain modules
+│   │   ├── spatial/                     # PostGIS spatial calculation &amp; query services
+│   │   └── spatial-import/              # Spatial import contracts &amp; normalization
+│   ├── repositories/                    # Data access layer interfacing with Supabase
+│   ├── schemas/                         # Central Zod validation schemas
+│   ├── services/                        # Domain service layer
+│   └── types/                           # TypeScript interfaces and entity types
+├── supabase/                            # Supabase database configuration
+│   ├── migrations/                      # PostgreSQL migrations (source of truth)
+│   ├── tests/database/                  # pgTAP database tests
+│   ├── config.toml                      # Local Supabase CLI configuration
+│   └── seed.sql                         # Synthetic DEV/TEST seed fixture data
+├── tests/                               # Comprehensive Vitest test suite
+│   ├── fixtures/                        # Synthetic GeoJSON and MAPID test fixtures
+│   ├── integration/                     # API route &amp; security integration tests
+│   └── unit/                            # Unit tests for models, services &amp; repositories
+├── deployment/                          # Deployment environment guidelines
+├── docs/                                # Technical documentation &amp; change logs
+│   ├── changes/                         # Phase change logs (Phase 4, 6, 7, Extra, Final)
+│   ├── database/                        # Database architecture documentation
+│   └── final/                           # Complete master technical documentation &amp; PDF
+├── Dockerfile                           # 3-stage standalone Node 22 production Dockerfile
+├── docker-compose.yml                   # Base Docker Compose specification
+├── docker-compose.prod.yml              # Production Docker Compose security overrides
+├── ecosystem.config.cjs                 # PM2 process manager configuration
+├── next.config.ts                       # Next.js configuration (standalone output)
+├── tsconfig.json                        # TypeScript compiler configuration
+└── package.json                         # Project dependencies and script definitions</code></pre>
+<hr class="divider" />
+<h2 class="section-title chapter-break">6. Authentication System</h2>
+<p>GETRA utilizes <strong>Supabase Auth</strong> as the underlying authentication provider, utilizing JSON Web Tokens (JWT) transmitted via HTTP <code>Authorization: Bearer &lt;token&gt;</code> headers.</p>
+<h3 class="subsection-title">6.1 Authentication Lifecycle</h3>
+<div class="numbered-item"><span class="item-num">1.</span> <span class="item-text"><strong>Registration (<code>POST /api/auth/register</code>):</strong></span></div>
+<ul>
+  <li>Creates a new user in <code>auth.users</code>.</li>
+  <li>Trigger <code>public.handle_new_user()</code> automatically creates a corresponding record in <code>public.profiles</code>.</li>
+  <li><strong>Security Rule:</strong> Public registration strictly permits <code>COMMUTER</code>, <code>UMKM</code>, or <code>COMMUNITY</code> roles. Requesting <code>ADMIN</code> triggers an immediate <code>403 Forbidden</code> error.</li>
+</ul>
+<div class="numbered-item"><span class="item-num">2.</span> <span class="item-text"><strong>Login (<code>POST /api/auth/login</code>):</strong></span></div>
+<ul>
+  <li>Authenticates user credentials via <code>supabase.auth.signInWithPassword()</code>.</li>
+  <li>Returns <code>access_token</code>, user identifier, email, and associated profile summary (<code>display_name</code>, <code>role</code>).</li>
+</ul>
+<div class="numbered-item"><span class="item-num">3.</span> <span class="item-text"><strong>Session Verification (<code>GET /api/auth/me</code>):</strong></span></div>
+<ul>
+  <li>Validates bearer token against Supabase Auth.</li>
+  <li>Fetches user profile using a request-scoped Supabase client subject to RLS.</li>
+</ul>
+<div class="numbered-item"><span class="item-num">4.</span> <span class="item-text"><strong>Logout (<code>POST /api/auth/logout</code>):</strong></span></div>
+<ul>
+  <li>Acknowledges stateless logout (<code>token_disposition: "client_discard_required"</code>).</li>
+  <li>Frontend client must immediately purge the token from local storage / memory.</li>
+</ul>
+<h3 class="subsection-title">6.2 Bearer Token Extraction &amp; Validation</h3>
+<p>Bearer tokens are bounded to a maximum of 8,192 characters and validated against the format <code>^Bearer ([^\s]+)$</code>. Unauthenticated or malformed requests are rejected with a standardized <code>UNAUTHORIZED</code> error (HTTP 401).</p>
+<hr class="divider" />
+<h2 class="section-title chapter-break">7. User Profiles &amp; Roles</h2>
+<p>GETRA defines four explicit user roles via the PostgreSQL enum type <code>public.user_role</code>:</p>
+<div class="table-container"><table>
+  <thead>
+    <tr>
+      <th>Role Enum</th>
+      <th>Description</th>
+      <th>Intended Platform Capabilities</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>COMMUTER</code></td>
+      <td>General public transit user</td>
+      <td>Public transit search, nearby stops, bookmarks, walking calculations</td>
+    </tr>
+    <tr>
+      <td><code>UMKM</code></td>
+      <td>Verified merchant / business owner</td>
+      <td>Manage owned UMKM profile, location, business information</td>
+    </tr>
+    <tr>
+      <td><code>COMMUNITY</code></td>
+      <td>Community leader / local group</td>
+      <td>View community transit initiatives and report transit observations</td>
+    </tr>
+    <tr>
+      <td><code>ADMIN</code></td>
+      <td>System administrator</td>
+      <td>Manage all spatial sources, reference nodes, corridors, and all profiles</td>
+    </tr>
+  </tbody>
+</table></div>
+<h3 class="subsection-title">7.1 Role Authorization Matrix</h3>
+<div class="table-container"><table>
+  <thead>
+    <tr>
+      <th>Endpoint</th>
+      <th>Public</th>
+      <th>COMMUTER</th>
+      <th>UMKM</th>
+      <th>COMMUNITY</th>
+      <th>ADMIN</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>GET /api/health</code></td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+    </tr>
+    <tr>
+      <td><code>POST /api/auth/login</code></td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+    </tr>
+    <tr>
+      <td><code>POST /api/auth/register</code></td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\times$ (Blocked)</td>
+    </tr>
+    <tr>
+      <td><code>POST /api/auth/logout</code></td>
+      <td>$\times$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+    </tr>
+    <tr>
+      <td><code>GET /api/auth/me</code></td>
+      <td>$\times$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+    </tr>
+    <tr>
+      <td><code>GET /api/profile</code></td>
+      <td>$\times$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+    </tr>
+    <tr>
+      <td><code>PATCH /api/profile</code></td>
+      <td>$\times$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+    </tr>
+    <tr>
+      <td><code>POST /api/spatial/distance</code></td>
+      <td>$\times$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+    </tr>
+    <tr>
+      <td><code>GET /api/spatial/nearby</code></td>
+      <td>$\times$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+    </tr>
+    <tr>
+      <td><code>GET /api/spatial/bbox</code></td>
+      <td>$\times$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+      <td>$\checkmark$</td>
+    </tr>
+  </tbody>
+</table></div>
+<h3 class="subsection-title">7.2 Administrator Provisioning Security Policy</h3>
+<div class="alert alert-caution"><div class="alert-title">CAUTION</div><p><strong>Admin Role Protection:</strong> The <code>ADMIN</code> role cannot be provisioned through public registration. The trigger <code>public.handle_new_user()</code> will raise exception <code>ROLE_NOT_ALLOWED</code> if <code>role = 'ADMIN'</code> is provided in metadata. Admin privileges must be assigned manually by a database administrator via direct SQL or a secure administrative migration script.</p></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">8. Row Level Security (RLS) &amp; Authorization</h2>
+<p>Row Level Security is enabled on every table in the database. Client queries are executed with the user's JWT, ensuring that database-level authorization is enforced by PostgreSQL even if application-level checks fail.</p>
+<h3 class="subsection-title">8.1 Complete RLS Policy Table</h3>
+<div class="table-container"><table>
+  <thead>
+    <tr>
+      <th>Table Name</th>
+      <th>RLS Enabled</th>
+      <th>Allowed Roles</th>
+      <th>Operation</th>
+      <th>Policy Definition / Owner Rule</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>public.profiles</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>SELECT</code></td>
+      <td><code>auth.uid() = id</code> (Read own profile)</td>
+    </tr>
+    <tr>
+      <td><code>public.profiles</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>UPDATE</code></td>
+      <td><code>auth.uid() = id</code> (Update own profile)</td>
+    </tr>
+    <tr>
+      <td><code>public.profiles</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>SELECT</code></td>
+      <td><code>private.is_admin()</code> (Admins read all)</td>
+    </tr>
+    <tr>
+      <td><code>public.profiles</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>UPDATE</code></td>
+      <td><code>private.is_admin()</code> (Admins update all)</td>
+    </tr>
+    <tr>
+      <td><code>public.spatial_sources</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>SELECT</code></td>
+      <td><code>true</code> (All authenticated can read)</td>
+    </tr>
+    <tr>
+      <td><code>public.spatial_sources</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>ALL</code></td>
+      <td><code>private.is_admin()</code> (Admins manage)</td>
+    </tr>
+    <tr>
+      <td><code>public.study_areas</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>SELECT</code></td>
+      <td><code>true</code> (All authenticated can read)</td>
+    </tr>
+    <tr>
+      <td><code>public.study_areas</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>ALL</code></td>
+      <td><code>private.is_admin()</code> (Admins manage)</td>
+    </tr>
+    <tr>
+      <td><code>public.transport_corridors</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>SELECT</code></td>
+      <td><code>true</code> (All authenticated can read)</td>
+    </tr>
+    <tr>
+      <td><code>public.transport_corridors</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>ALL</code></td>
+      <td><code>private.is_admin()</code> (Admins manage)</td>
+    </tr>
+    <tr>
+      <td><code>public.transport_nodes</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>SELECT</code></td>
+      <td><code>true</code> (All authenticated can read)</td>
+    </tr>
+    <tr>
+      <td><code>public.transport_nodes</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>ALL</code></td>
+      <td><code>private.is_admin()</code> (Admins manage)</td>
+    </tr>
+    <tr>
+      <td><code>public.umkm_profiles</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>SELECT</code></td>
+      <td><code>owner_id = auth.uid()</code> (Owner read)</td>
+    </tr>
+    <tr>
+      <td><code>public.umkm_profiles</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>INSERT</code></td>
+      <td><code>owner_id = auth.uid()</code> (Owner create)</td>
+    </tr>
+    <tr>
+      <td><code>public.umkm_profiles</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>UPDATE</code></td>
+      <td><code>owner_id = auth.uid()</code> (Owner update)</td>
+    </tr>
+    <tr>
+      <td><code>public.umkm_profiles</code></td>
+      <td><strong>YES</strong></td>
+      <td><code>authenticated</code></td>
+      <td><code>ALL</code></td>
+      <td><code>private.is_admin()</code> (Admins manage all)</td>
+    </tr>
+  </tbody>
+</table></div>
+<h3 class="subsection-title">8.2 Column-Level Grants &amp; Privilege Hardening</h3>
+<p>To prevent privilege escalation, column-level permission restrictions are enforced in PostgreSQL:</p>
+<ul>
+  <li><strong><code>profiles</code> Table:</strong> Authenticated users only have <code>UPDATE</code> privileges on <code>(display_name, avatar_url)</code>. Role assignment cannot be modified by user updates.</li>
+  <li><strong><code>umkm_profiles</code> Table:</strong> Authenticated users only have <code>INSERT</code> privileges on <code>(owner_id, business_name, category, description, address, geometry)</code>. System provenance columns (<code>source_id</code>, <code>source_record_id</code>, <code>data_version</code>, <code>validation_status</code>, <code>retrieved_at</code>, <code>validated_at</code>, <code>metadata</code>) cannot be forged on insert.</li>
+  <li><strong>Trigger <code>private.enforce_umkm_trusted_fields_update()</code>:</strong> Blocks non-admin users from altering provenance and ownership metadata during updates.</li>
+</ul>
+<hr class="divider" />
+<h2 class="section-title chapter-break">9. API Architecture &amp; Response Contracts</h2>
+<p>Every API response from GETRA follows a strict, predictable JSON envelope format.</p>
+<h3 class="subsection-title">9.1 Standard Success Envelope (HTTP 200 / 201)</h3>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "success": true,
+  "data": { ... },
+  "request_id": "4d983e20-7ad1-49b8-bc88-34827fb70588"
+}</code></pre>
+<h3 class="subsection-title">9.2 Standard Paginated List Envelope (HTTP 200)</h3>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "success": true,
+  "data": [ ... ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "total_pages": 5
+  },
+  "request_id": "4d983e20-7ad1-49b8-bc88-34827fb70588"
+}</code></pre>
+<h3 class="subsection-title">9.3 Standard Error Envelope (HTTP 4xx / 5xx)</h3>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "retryable": false
+  },
+  "request_id": "4d983e20-7ad1-49b8-bc88-34827fb70588"
+}</code></pre>
+<h3 class="subsection-title">9.4 Global Response Headers</h3>
+<p>All API responses automatically include:</p>
+<ul>
+  <li><code>x-request-id</code>: Tracing identifier for telemetry and error tracking.</li>
+  <li><code>Cache-Control: no-store</code>: Prevents caching of authenticated and dynamic spatial responses.</li>
+  <li><code>Retry-After</code>: Included on HTTP 429 (<code>RATE_LIMIT_EXCEEDED</code>) with wait duration in seconds.</li>
+</ul>
+<hr class="divider" />
+<h2 class="section-title chapter-break">10. Database Architecture &amp; Schema</h2>
+<p>The GETRA database schema consists of 6 tables created and managed via versioned Supabase migrations.</p>
+<pre class="code-block mermaid"><div class="code-header">MERMAID</div><code>erDiagram
+    auth_users ||--|| profiles : "references (1:1)"
+    profiles ||--o{ umkm_profiles : "owns (1:N)"
+    spatial_sources ||--o{ study_areas : "lineage (1:N)"
+    spatial_sources ||--o{ transport_corridors : "lineage (1:N)"
+    spatial_sources ||--o{ transport_nodes : "lineage (1:N)"
+    spatial_sources ||--o{ umkm_profiles : "lineage (1:N)"
+    transport_corridors ||--o{ transport_nodes : "connects (1:N)"
+
+    profiles {
+        uuid id PK
+        text display_name
+        text avatar_url
+        user_role role
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    spatial_sources {
+        uuid id PK
+        text source_name
+        text source_type
+        text description
+        jsonb metadata
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    study_areas {
+        uuid id PK
+        uuid source_id FK
+        text name
+        text description
+        geometry geometry
+        text source_record_id
+        text data_version
+        validation_status validation_status
+        timestamptz retrieved_at
+        timestamptz validated_at
+        jsonb metadata
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    transport_corridors {
+        uuid id PK
+        uuid source_id FK
+        text name
+        text transport_mode
+        text description
+        geometry geometry
+        text source_record_id
+        text data_version
+        validation_status validation_status
+        timestamptz retrieved_at
+        timestamptz validated_at
+        jsonb metadata
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    transport_nodes {
+        uuid id PK
+        uuid source_id FK
+        uuid corridor_id FK
+        text name
+        text node_type
+        text transport_mode
+        geometry geometry
+        text source_record_id
+        text data_version
+        validation_status validation_status
+        timestamptz retrieved_at
+        timestamptz validated_at
+        jsonb metadata
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    umkm_profiles {
+        uuid id PK
+        uuid owner_id FK
+        uuid source_id FK
+        text business_name
+        text category
+        text description
+        text address
+        geometry geometry
+        text source_record_id
+        text data_version
+        validation_status validation_status
+        timestamptz retrieved_at
+        timestamptz validated_at
+        jsonb metadata
+        timestamptz created_at
+        timestamptz updated_at
+    }</code></pre>
+<h3 class="subsection-title">10.1 Table Specifications</h3>
+<h4 class="sub-subsection-title">1. <code>public.profiles</code></h4>
+<ul>
+  <li><strong>Purpose:</strong> Stores user profile information and role assignments linked directly to Supabase Auth.</li>
+  <li><strong>Primary Key:</strong> <code>id</code> (<code>uuid</code>, references <code>auth.users(id) ON DELETE CASCADE</code>).</li>
+  <li><strong>Columns:</strong> <code>display_name</code> (text), <code>avatar_url</code> (text nullable), <code>role</code> (<code>user_role</code> NOT NULL DEFAULT <code>'COMMUTER'</code>), <code>created_at</code> (timestamptz), <code>updated_at</code> (timestamptz).</li>
+  <li><strong>Indexes:</strong> PK index on <code>id</code>.</li>
+</ul>
+<h4 class="sub-subsection-title">2. <code>public.spatial_sources</code></h4>
+<ul>
+  <li><strong>Purpose:</strong> Lineage catalog for all spatial layers (e.g. MAPID, field surveys, manual entries).</li>
+  <li><strong>Primary Key:</strong> <code>id</code> (<code>uuid</code> DEFAULT <code>gen_random_uuid()</code>).</li>
+  <li><strong>Columns:</strong> <code>source_name</code> (text NOT NULL), <code>source_type</code> (text NOT NULL: <code>'external'</code>, <code>'survey'</code>, <code>'manual'</code>, <code>'imported'</code>, <code>'system'</code>), <code>description</code> (text nullable), <code>metadata</code> (jsonb NOT NULL DEFAULT <code>'{}'</code>), <code>created_at</code> (timestamptz), <code>updated_at</code> (timestamptz).</li>
+  <li><strong>Indexes:</strong> <code>idx_spatial_sources_type</code> (B-tree on <code>source_type</code>).</li>
+</ul>
+<h4 class="sub-subsection-title">3. <code>public.study_areas</code></h4>
+<ul>
+  <li><strong>Purpose:</strong> Boundary polygons representing regional study and transit planning zones.</li>
+  <li><strong>Primary Key:</strong> <code>id</code> (<code>uuid</code> DEFAULT <code>gen_random_uuid()</code>).</li>
+  <li><strong>Geometry:</strong> <code>geometry(MultiPolygon, 4326)</code> NOT NULL with <code>is_valid_wgs84_geometry</code> check.</li>
+  <li><strong>Lineage &amp; Validation:</strong> <code>source_id</code> (FK $\rightarrow$ <code>spatial_sources.id</code>), <code>source_record_id</code> (text), <code>data_version</code> (text), <code>validation_status</code> (<code>validation_status</code> enum: <code>'PENDING'</code>, <code>'VALIDATED'</code>, <code>'REJECTED'</code>, <code>'ARCHIVED'</code>), <code>retrieved_at</code>, <code>validated_at</code>, <code>metadata</code>.</li>
+  <li><strong>Indexes:</strong> <code>idx_study_areas_geometry_gist</code> (GiST), <code>idx_study_areas_source_id</code> (B-tree), <code>idx_study_areas_source_record_unique</code> (Unique B-tree on <code>(source_id, source_record_id)</code>).</li>
+</ul>
+<h4 class="sub-subsection-title">4. <code>public.transport_corridors</code></h4>
+<ul>
+  <li><strong>Purpose:</strong> Linear route geometries representing public transit lines, corridors, and pathways.</li>
+  <li><strong>Primary Key:</strong> <code>id</code> (<code>uuid</code> DEFAULT <code>gen_random_uuid()</code>).</li>
+  <li><strong>Geometry:</strong> <code>geometry(MultiLineString, 4326)</code> NOT NULL with <code>is_valid_wgs84_geometry</code> check.</li>
+  <li><strong>Columns:</strong> <code>name</code> (text NOT NULL), <code>transport_mode</code> (text NOT NULL), <code>description</code> (text nullable), lineage columns.</li>
+  <li><strong>Indexes:</strong> <code>idx_transport_corridors_geometry_gist</code> (GiST), <code>idx_transport_corridors_source_id</code> (B-tree), <code>idx_transport_corridors_mode</code> (B-tree), <code>idx_transport_corridors_source_record_unique</code> (Unique B-tree on <code>(source_id, source_record_id)</code>).</li>
+</ul>
+<h4 class="sub-subsection-title">5. <code>public.transport_nodes</code></h4>
+<ul>
+  <li><strong>Purpose:</strong> Point locations for bus stops, train stations, bike shares, and transit access points.</li>
+  <li><strong>Primary Key:</strong> <code>id</code> (<code>uuid</code> DEFAULT <code>gen_random_uuid()</code>).</li>
+  <li><strong>Geometry:</strong> <code>geometry(Point, 4326)</code> NOT NULL with <code>is_valid_wgs84_geometry</code> check.</li>
+  <li><strong>Columns:</strong> <code>name</code> (text NOT NULL), <code>node_type</code> (text NOT NULL), <code>transport_mode</code> (text NOT NULL), <code>corridor_id</code> (FK $\rightarrow$ <code>transport_corridors.id</code>), lineage columns.</li>
+  <li><strong>Indexes:</strong> <code>idx_transport_nodes_geometry_gist</code> (GiST on geometry), <code>idx_transport_nodes_geometry_geography_gist</code> (GiST on <code>(geometry::geography)</code>), <code>idx_transport_nodes_source_id</code> (B-tree), <code>idx_transport_nodes_corridor_id</code> (B-tree), <code>idx_transport_nodes_mode_type</code> (B-tree), <code>idx_transport_nodes_source_record_unique</code> (Unique B-tree on <code>(source_id, source_record_id)</code>).</li>
+</ul>
+<h4 class="sub-subsection-title">6. <code>public.umkm_profiles</code></h4>
+<ul>
+  <li><strong>Purpose:</strong> Registered micro, small, and medium enterprise locations and business directories.</li>
+  <li><strong>Primary Key:</strong> <code>id</code> (<code>uuid</code> DEFAULT <code>gen_random_uuid()</code>).</li>
+  <li><strong>Foreign Keys:</strong> <code>owner_id</code> (FK $\rightarrow$ <code>profiles.id</code> ON DELETE RESTRICT), <code>source_id</code> (FK $\rightarrow$ <code>spatial_sources.id</code> ON DELETE SET NULL).</li>
+  <li><strong>Geometry:</strong> <code>geometry(Point, 4326)</code> NOT NULL with <code>is_valid_wgs84_geometry</code> check.</li>
+  <li><strong>Columns:</strong> <code>business_name</code> (text NOT NULL), <code>category</code> (text NOT NULL), <code>description</code> (text nullable), <code>address</code> (text nullable), lineage columns.</li>
+  <li><strong>Indexes:</strong> <code>idx_umkm_profiles_geometry_gist</code> (GiST on geometry), <code>idx_umkm_profiles_geometry_geography_gist</code> (GiST on <code>(geometry::geography)</code>), <code>idx_umkm_profiles_owner_id</code> (B-tree), <code>idx_umkm_profiles_source_id</code> (B-tree), <code>idx_umkm_profiles_category</code> (B-tree), <code>idx_umkm_profiles_source_record_unique</code> (Unique B-tree on <code>(source_id, source_record_id)</code>).</li>
+</ul>
+<hr class="divider" />
+<h2 class="section-title chapter-break">11. PostGIS Foundation</h2>
+<h3 class="subsection-title">11.1 Spatial Reference &amp; Standards</h3>
+<ul>
+  <li><strong>Canonical SRID:</strong> <code>EPSG:4326</code> (WGS 84 coordinate system).</li>
+  <li><strong>Coordinates Format:</strong> Standard GeoJSON coordinate order <code>[longitude, latitude]</code> for geometry objects, and named <code>{ longitude, latitude }</code> objects for API request bodies.</li>
+  <li><strong>Coordinate Bounds Enforced:</strong> Longitude $[-180.0, 180.0]$, Latitude $[-90.0, 90.0]$.</li>
+</ul>
+<h3 class="subsection-title">11.2 Database Functions &amp; Stored Procedures (RPC)</h3>
+<div class="numbered-item"><span class="item-num">1.</span> <span class="item-text"><code>public.is_valid_wgs84_geometry(input_geometry geometry, allowed_types text[])</code>: Validates SRID 4326, non-empty status, geometric validity (<code>ST_IsValid</code>), allowed typemod, and WGS84 bounding limits.</span></div>
+<div class="numbered-item"><span class="item-num">2.</span> <span class="item-text"><code>public.make_wgs84_bbox(min_lng, min_lat, max_lng, max_lat)</code>: Creates an <code>ST_MakeEnvelope</code> polygon with EPSG:4326 after validating coordinate ordering and bounding ranges.</span></div>
+<div class="numbered-item"><span class="item-num">3.</span> <span class="item-text"><code>public.wgs84_distance_meters(origin, destination)</code>: Calculates geodetic surface distance in meters using PostGIS <code>geography</code> type casting.</span></div>
+<div class="numbered-item"><span class="item-num">4.</span> <span class="item-text"><code>public.find_transport_nodes_near(origin geometry, radius_meters float8)</code>: Proximity search using <code>ST_DWithin(geometry::geography, ...)</code> ordered by distance.</span></div>
+<div class="numbered-item"><span class="item-num">5.</span> <span class="item-text"><code>public.find_umkm_profiles_near(origin geometry, radius_meters float8)</code>: Proximity search for UMKM locations using <code>ST_DWithin</code> and geography GiST indexing.</span></div>
+<div class="numbered-item"><span class="item-num">6.</span> <span class="item-text"><code>public.find_study_areas_within_bbox(min_lng, min_lat, max_lng, max_lat)</code>: Bounding box intersection using <code>&amp;&amp;</code> operator and <code>ST_Intersects</code>.</span></div>
+<div class="numbered-item"><span class="item-num">7.</span> <span class="item-text"><code>public.find_transport_corridors_within_bbox(...)</code>: Bounding box query for transit lines.</span></div>
+<div class="numbered-item"><span class="item-num">8.</span> <span class="item-text"><code>public.find_transport_nodes_within_bbox(...)</code>: Bounding box query for transit stations/nodes.</span></div>
+<div class="numbered-item"><span class="item-num">9.</span> <span class="item-text"><code>public.find_umkm_profiles_within_bbox(...)</code>: Bounding box query for UMKM businesses.</span></div>
+<div class="numbered-item"><span class="item-num">10.</span> <span class="item-text"><code>public.getra_database_health()</code>: Lightweight RPC returning <code>'connected'</code> to verify database reachability.</span></div>
+<div class="alert alert-note"><div class="alert-title">NOTE</div><p><strong>pgRouting Status:</strong> <code>NOT IMPLEMENTED / NOT VERIFIED</code>. pgRouting is not installed or enabled in the current database migrations. Shortest-path routing over pedestrian graphs remains a foundation contract pending graph data ingestion.</p></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">12. Data Model &amp; Entities</h2>
+<p>GETRA core entity models are defined in <code>src/types/entity.ts</code> and <code>src/types/domain.ts</code>:</p>
+<ul>
+  <li><strong><code>BaseEntity</code>:</strong> Base interface containing <code>id</code>, <code>created_at</code>, and <code>updated_at</code>.</li>
+  <li><strong><code>ProvenanceEntity</code>:</strong> Extends <code>BaseEntity</code> with <code>source_id</code>, <code>source_record_id</code>, <code>data_version</code>, <code>validation_status</code>, <code>retrieved_at</code>, <code>validated_at</code>, and <code>metadata</code>.</li>
+  <li><strong><code>StudyArea</code>:</strong> Represents polygon study zones.</li>
+  <li><strong><code>TransportCorridor</code>:</strong> Represents transit lines with <code>transport_mode</code> (<code>bus</code>, <code>rail</code>, <code>angkot</code>, <code>pedestrian</code>, etc.).</li>
+  <li><strong><code>TransportNode</code>:</strong> Represents transit stops with <code>node_type</code> (<code>station</code>, <code>stop</code>, <code>terminal</code>) and <code>transport_mode</code>.</li>
+  <li><strong><code>UmkmProfile</code>:</strong> Represents local merchant points with <code>owner_id</code>, <code>business_name</code>, and <code>category</code>.</li>
+</ul>
+<hr class="divider" />
+<h2 class="section-title chapter-break">13. Repository Layer</h2>
+<p>The repository layer abstracts data access, utilizing the Supabase JavaScript Client with parameterization and strict schema mapping:</p>
+<div class="table-container"><table>
+  <thead>
+    <tr>
+      <th>Repository Class</th>
+      <th>Location</th>
+      <th>Primary Responsibilities</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ProfileRepository</code></td>
+      <td><code>src/repositories/profile.repository.ts</code></td>
+      <td>Profile retrieval and update via RLS</td>
+    </tr>
+    <tr>
+      <td><code>StudyAreaRepository</code></td>
+      <td><code>src/repositories/study-area.repository.ts</code></td>
+      <td>Study area querying and bounding box search</td>
+    </tr>
+    <tr>
+      <td><code>TransportCorridorRepository</code></td>
+      <td><code>src/repositories/transport-corridor.repository.ts</code></td>
+      <td>Corridor data access and bbox queries</td>
+    </tr>
+    <tr>
+      <td><code>TransportNodeRepository</code></td>
+      <td><code>src/repositories/transport-node.repository.ts</code></td>
+      <td>Node queries, proximity search, bbox search</td>
+    </tr>
+    <tr>
+      <td><code>UmkmProfileRepository</code></td>
+      <td><code>src/repositories/umkm-profile.repository.ts</code></td>
+      <td>Merchant profile management and spatial search</td>
+    </tr>
+    <tr>
+      <td><code>SpatialSourceRepository</code></td>
+      <td><code>src/repositories/spatial-source.repository.ts</code></td>
+      <td>Provenance source registry management</td>
+    </tr>
+    <tr>
+      <td><code>ExternalRecordRepository</code></td>
+      <td><code>src/repositories/external-record.repository.ts</code></td>
+      <td>Composition facade for external data persistence</td>
+    </tr>
+    <tr>
+      <td><code>SupabaseHealthRepository</code></td>
+      <td><code>src/repositories/supabase-health.repository.ts</code></td>
+      <td>Database connection probe (<code>getra_database_health</code>)</td>
+    </tr>
+    <tr>
+      <td><code>SpatialRepository</code></td>
+      <td><code>src/modules/spatial/spatial.repository.ts</code></td>
+      <td>Direct PostGIS RPC execution for distance/bbox/nearby</td>
+    </tr>
+  </tbody>
+</table></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">14. External Data Integration / MAPID Adapter</h2>
+<p>The external data integration module (<code>src/integrations/mapid/</code>) provides a clean pipeline for ingesting external GIS datasets without coupling GETRA core models to third-party proprietary schemas.</p>
+<h3 class="subsection-title">14.1 Status &amp; Contract Verification</h3>
+<ul>
+  <li><strong>Integration Status:</strong> <code>FOUNDATION IMPLEMENTED — OFFICIAL CONTRACT REQUIRED</code></li>
+  <li><strong>Real MAPID Connection:</strong> <code>NOT IMPLEMENTED (NO PRODUCTION INGESTION)</code></li>
+  <li><strong>Design Pattern:</strong> Inversion of Control with mockable HTTP transport, schema validation, and dry-run execution.</li>
+</ul>
+<h3 class="subsection-title">14.2 Adapter Pipeline Components</h3>
+<div class="numbered-item"><span class="item-num">1.</span> <span class="item-text"><strong><code>MapidClient</code> (<code>src/integrations/mapid/mapid.client.ts</code>):</strong> HTTP client with timeout management (<code>AbortSignal.timeout</code>), retry logic, and credential masking.</span></div>
+<div class="numbered-item"><span class="item-num">2.</span> <span class="item-text"><strong><code>MapidSchema</code> (<code>src/integrations/mapid/mapid.schema.ts</code>):</strong> Zod validation schemas for incoming external payload verification.</span></div>
+<div class="numbered-item"><span class="item-num">3.</span> <span class="item-text"><strong><code>MapidNormalizer</code> (<code>src/integrations/mapid/mapid.normalizer.ts</code>):</strong> Transforms external attributes into standard WGS84 GeoJSON structures.</span></div>
+<div class="numbered-item"><span class="item-num">4.</span> <span class="item-text"><strong><code>MapidMapper</code> (<code>src/integrations/mapid/mapid.mapper.ts</code>):</strong> Maps normalized data into repository-ready transport node entity inputs.</span></div>
+<div class="numbered-item"><span class="item-num">5.</span> <span class="item-text"><strong><code>ExternalDataService</code> (<code>src/services/external-data/external-data.service.ts</code>):</strong> Orchestrates dry-run ingestion, duplicate detection, and provenance tracking.</span></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">15. Spatial Engine</h2>
+<p>The spatial engine (<code>src/modules/spatial/</code>) delivers core geospatial services backed by PostGIS:</p>
+<ul>
+  <li><strong><code>DistanceService</code>:</strong> Computes accurate geodesic distance between two points in meters using PostGIS <code>ST_Distance(geometry::geography, destination::geography)</code>.</li>
+  <li><strong><code>ProximityService</code>:</strong> Performs bounded nearby searches (<code>ST_DWithin</code>) around a reference point with configurable radius (default max 50,000m).</li>
+  <li><strong><code>BBoxService</code>:</strong> Queries features intersecting a bounding box (<code>[west, south, east, north]</code>) with maximum span limits (default 10 degrees).</li>
+  <li><strong><code>WalkingTimeService</code>:</strong> Estimates pedestrian travel duration based on geodesic distance and configurable walking speed (default 1.4 m/s).</li>
+  <li><strong><code>ServiceAreaService</code>:</strong> Status: <code>FOUNDATION ONLY — PRODUCTION DATA REQUIRED</code> (Fails closed with <code>SPATIAL_NETWORK_NOT_READY</code>).</li>
+  <li><strong><code>RoutingService</code> / <code>UnavailableRoutingEngine</code>:</strong> Status: <code>NOT IMPLEMENTED</code> (Fails closed with <code>ROUTING_GRAPH_NOT_AVAILABLE</code>).</li>
+</ul>
+<hr class="divider" />
+<h2 class="section-title chapter-break">16. Docker Architecture</h2>
+<p>GETRA is containerized as a self-contained Next.js Standalone application.</p>
+<h3 class="subsection-title">16.1 Multi-Stage Dockerfile Lifecycle</h3>
+<ul>
+  <li><strong>Stage 1 (<code>deps</code>):</strong> Base <code>node:22-bookworm-slim</code>. Runs <code>npm ci</code> for deterministic dependencies.</li>
+  <li><strong>Stage 2 (<code>builder</code>):</strong> Compiles application via <code>npm run build</code>, generating <code>.next/standalone</code> and <code>.next/static</code>.</li>
+  <li><strong>Stage 3 (<code>runner</code>):</strong> Minimal production image. Copies standalone bundle, sets non-root user <code>node</code> (<code>USER node</code>), exposes port <code>3000</code>, and executes <code>node server.js</code>.</li>
+</ul>
+<h3 class="subsection-title">16.2 Container Healthcheck Specification</h3>
+<p>The container includes a native healthcheck probe:</p>
+<pre class="code-block bash"><div class="code-header">BASH</div><code>HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD ["node", "-e", "fetch('http://127.0.0.1:3000/api/health',{signal:AbortSignal.timeout(4000)}).then(response=&gt;{if(!response.ok)process.exit(1)}).catch(()=&gt;process.exit(1))"]</code></pre>
+<hr class="divider" />
+<h2 class="section-title chapter-break">17. Public API Security</h2>
+<p>GETRA implements comprehensive multi-layer security controls:</p>
+<h3 class="subsection-title">17.1 Security Controls Summary</h3>
+<div class="numbered-item"><span class="item-num">1.</span> <span class="item-text"><strong>CORS Allowlist:</strong> Strict origin matching against <code>FRONTEND_ALLOWED_ORIGINS</code>. Wildcards (<code>*</code>), <code>null</code>, and malformed origins are rejected with <code>403 Forbidden</code>. Preflight <code>OPTIONS</code> handlers exist on every route.</span></div>
+<div class="numbered-item"><span class="item-num">2.</span> <span class="item-text"><strong>Rate Limiting:</strong> In-memory fixed-window limiter per user/client IP:</span></div>
+<ul>
+  <li><strong>Auth Profile (<code>auth:login</code>, <code>auth:register</code>):</strong> 5 requests / 60,000 ms.</li>
+  <li><strong>API Profile (<code>/api/auth/me</code>, <code>/api/profile</code>):</strong> 60 requests / 60,000 ms.</li>
+  <li><strong>Mutation Profile (<code>/api/auth/logout</code>, <code>PATCH /api/profile</code>):</strong> 20 requests / 60,000 ms.</li>
+  <li><strong>Spatial Profile (<code>/api/spatial/*</code>):</strong> 30 requests / 60,000 ms.</li>
+</ul>
+<div class="numbered-item"><span class="item-num">3.</span> <span class="item-text"><strong>Bounded Request Body Reader:</strong> Enforces strict byte caps on incoming JSON streams:</span></div>
+<ul>
+  <li>Global Default: 65,536 bytes (64 KB).</li>
+  <li>Auth Endpoints: 8,192 bytes (8 KB).</li>
+  <li>Profile &amp; Spatial Endpoints: 4,096 bytes (4 KB).</li>
+</ul>
+<div class="numbered-item"><span class="item-num">4.</span> <span class="item-text"><strong>Security Headers:</strong> Enforces <code>Content-Security-Policy: default-src 'none'</code>, <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy: no-referrer</code>, <code>Permissions-Policy: camera=(), microphone=(), geolocation=()</code>, and production HSTS.</span></div>
+<div class="numbered-item"><span class="item-num">5.</span> <span class="item-text"><strong>No Service-Role Leakage:</strong> Server routes strictly utilize publishable / user JWT client instances. No public API uses <code>SUPABASE_SERVICE_ROLE_KEY</code>.</span></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">18. API Catalog</h2>
+<p>The complete catalog of all 10 verified API endpoints available in GETRA:</p>
+<div class="table-container"><table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Method</th>
+      <th>Endpoint Path</th>
+      <th>Classification</th>
+      <th>Auth Required</th>
+      <th>Rate Limit Profile</th>
+      <th>Purpose &amp; Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><code>GET</code></td>
+      <td><code>/api/health</code></td>
+      <td><code>PUBLIC</code></td>
+      <td>None</td>
+      <td>None</td>
+      <td>Application readiness &amp; Supabase connectivity probe</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><code>POST</code></td>
+      <td><code>/api/auth/login</code></td>
+      <td><code>PUBLIC</code></td>
+      <td>None</td>
+      <td><code>auth</code> (5/min)</td>
+      <td>Authenticate user via email/password, return access token</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><code>POST</code></td>
+      <td><code>/api/auth/register</code></td>
+      <td><code>PUBLIC</code></td>
+      <td>None</td>
+      <td><code>auth</code> (5/min)</td>
+      <td>Register new non-admin commuter, UMKM, or community user</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><code>POST</code></td>
+      <td><code>/api/auth/logout</code></td>
+      <td><code>AUTHENTICATED</code></td>
+      <td>Bearer JWT</td>
+      <td><code>mutation</code> (20/min)</td>
+      <td>Acknowledge stateless client session termination</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><code>GET</code></td>
+      <td><code>/api/auth/me</code></td>
+      <td><code>AUTHENTICATED</code></td>
+      <td>Bearer JWT</td>
+      <td><code>api</code> (60/min)</td>
+      <td>Get current authenticated user details and profile</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><code>GET</code></td>
+      <td><code>/api/profile</code></td>
+      <td><code>AUTHENTICATED</code></td>
+      <td>Bearer JWT</td>
+      <td><code>api</code> (60/min)</td>
+      <td>Retrieve full user profile of the caller</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><code>PATCH</code></td>
+      <td><code>/api/profile</code></td>
+      <td><code>AUTHENTICATED</code></td>
+      <td>Bearer JWT</td>
+      <td><code>mutation</code> (20/min)</td>
+      <td>Update user profile (<code>display_name</code>, <code>avatar_url</code>)</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td><code>POST</code></td>
+      <td><code>/api/spatial/distance</code></td>
+      <td><code>AUTHENTICATED</code></td>
+      <td>Bearer JWT</td>
+      <td><code>spatial</code> (30/min)</td>
+      <td>Compute geodesic distance in meters between two points</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td><code>GET</code></td>
+      <td><code>/api/spatial/nearby</code></td>
+      <td><code>AUTHENTICATED</code></td>
+      <td>Bearer JWT</td>
+      <td><code>spatial</code> (30/min)</td>
+      <td>Find nearby transport nodes or UMKM within radius</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td><code>GET</code></td>
+      <td><code>/api/spatial/bbox</code></td>
+      <td><code>AUTHENTICATED</code></td>
+      <td>Bearer JWT</td>
+      <td><code>spatial</code> (30/min)</td>
+      <td>Query spatial features within a bounding box</td>
+    </tr>
+  </tbody>
+</table></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">19. API Request &amp; Response Examples</h2>
+<h3 class="subsection-title">19.1 Health Check (<code>GET /api/health</code>)</h3>
+<h4 class="sub-subsection-title">Request:</h4>
+<pre class="code-block http"><div class="code-header">HTTP</div><code>GET /api/health HTTP/1.1
+Host: localhost:3000
+x-request-id: 11111111-2222-3333-4444-555555555555</code></pre>
+<h4 class="sub-subsection-title">Success Response (HTTP 200 OK):</h4>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "success": true,
+  "data": {
+    "service": "getra-api",
+    "status": "ok",
+    "database": "connected"
+  },
+  "request_id": "11111111-2222-3333-4444-555555555555"
+}</code></pre>
+<h4 class="sub-subsection-title">Error Response — Database Down (HTTP 503 Service Unavailable):</h4>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "success": false,
+  "error": {
+    "code": "DATABASE_UNAVAILABLE",
+    "message": "Database connection failed",
+    "retryable": true
+  },
+  "request_id": "11111111-2222-3333-4444-555555555555"
+}</code></pre>
+<hr class="divider" />
+<h3 class="subsection-title">19.2 User Login (<code>POST /api/auth/login</code>)</h3>
+<h4 class="sub-subsection-title">Request:</h4>
+<pre class="code-block http"><div class="code-header">HTTP</div><code>POST /api/auth/login HTTP/1.1
+Host: localhost:3000
+Content-Type: application/json
+
+{
+  "email": "commuter.test@example.com",
+  "password": "ExamplePassword123!"
+}</code></pre>
+<h4 class="sub-subsection-title">Success Response (HTTP 200 OK):</h4>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "success": true,
+  "data": {
+    "session": {
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.EXAMPLE_TOKEN_PAYLOAD"
+    },
+    "user": {
+      "id": "e8d0e512-1823-455b-8025-a1312384a601",
+      "email": "commuter.test@example.com"
+    },
+    "profile": {
+      "display_name": "Budi Commuter",
+      "role": "COMMUTER"
+    }
+  },
+  "request_id": "4d983e20-7ad1-49b8-bc88-34827fb70588"
+}</code></pre>
+<h4 class="sub-subsection-title">Error Response — Invalid Credentials (HTTP 401 Unauthorized):</h4>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid email or password.",
+    "retryable": false
+  },
+  "request_id": "4d983e20-7ad1-49b8-bc88-34827fb70588"
+}</code></pre>
+<hr class="divider" />
+<h3 class="subsection-title">19.3 User Registration (<code>POST /api/auth/register</code>)</h3>
+<h4 class="sub-subsection-title">Request (Commuter):</h4>
+<pre class="code-block http"><div class="code-header">HTTP</div><code>POST /api/auth/register HTTP/1.1
+Host: localhost:3000
+Content-Type: application/json
+
+{
+  "email": "commuter.new@example.com",
+  "password": "ExamplePassword123!",
+  "display_name": "Budi Commuter",
+  "role": "COMMUTER"
+}</code></pre>
+<h4 class="sub-subsection-title">Success Response (HTTP 200 OK):</h4>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "e8d0e512-1823-455b-8025-a1312384a601",
+      "email": "commuter.new@example.com"
+    },
+    "profile": {
+      "display_name": "Budi Commuter",
+      "role": "COMMUTER"
+    }
+  },
+  "request_id": "4d983e20-7ad1-49b8-bc88-34827fb70588"
+}</code></pre>
+<h4 class="sub-subsection-title">Error Response — Admin Role Attempt (HTTP 403 Forbidden):</h4>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Role ADMIN tidak dapat dibuat melalui public registration.",
+    "retryable": false
+  },
+  "request_id": "4d983e20-7ad1-49b8-bc88-34827fb70588"
+}</code></pre>
+<hr class="divider" />
+<h3 class="subsection-title">19.4 Spatial Distance Calculation (<code>POST /api/spatial/distance</code>)</h3>
+<h4 class="sub-subsection-title">Request:</h4>
+<pre class="code-block http"><div class="code-header">HTTP</div><code>POST /api/spatial/distance HTTP/1.1
+Host: localhost:3000
+Authorization: Bearer &lt;VALID_JWT_TOKEN&gt;
+Content-Type: application/json
+
+{
+  "origin": {
+    "longitude": 107.60981,
+    "latitude": -6.914744
+  },
+  "destination": {
+    "longitude": 107.61861,
+    "latitude": -6.90389
+  }
+}</code></pre>
+<h4 class="sub-subsection-title">Success Response (HTTP 200 OK):</h4>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "success": true,
+  "data": {
+    "distance_meters": 1542.85,
+    "origin": {
+      "longitude": 107.60981,
+      "latitude": -6.914744
+    },
+    "destination": {
+      "longitude": 107.61861,
+      "latitude": -6.90389
+    },
+    "analysis_method": "postgis_geography_distance",
+    "source": "postgis_st_distance",
+    "srid": 4326
+  },
+  "request_id": "5c983e20-7ad1-49b8-bc88-34827fb70599"
+}</code></pre>
+<hr class="divider" />
+<h3 class="subsection-title">19.5 Spatial Nearby Query (<code>GET /api/spatial/nearby</code>)</h3>
+<h4 class="sub-subsection-title">Request:</h4>
+<pre class="code-block http"><div class="code-header">HTTP</div><code>GET /api/spatial/nearby?lat=-6.914744&amp;lng=107.60981&amp;radius=1000&amp;type=transport_node&amp;limit=10 HTTP/1.1
+Host: localhost:3000
+Authorization: Bearer &lt;VALID_JWT_TOKEN&gt;</code></pre>
+<h4 class="sub-subsection-title">Success Response (HTTP 200 OK):</h4>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "success": true,
+  "data": {
+    "origin": {
+      "longitude": 107.60981,
+      "latitude": -6.914744
+    },
+    "radius_meters": 1000,
+    "type": "transport_node",
+    "features": [
+      {
+        "id": "10000000-0000-0000-0000-000000000004",
+        "entity_type": "transport_node",
+        "label": "Halte Alun-Alun Bandung",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [107.60985, -6.9148]
+        },
+        "provenance": {
+          "source_id": "10000000-0000-0000-0000-000000000001",
+          "source_name": "TEST MANUAL SOURCE",
+          "source_type": "manual"
+        }
+      }
+    ],
+    "returned_count": 1,
+    "analysis_method": "postgis_st_dwithin",
+    "source": "postgis_rpc",
+    "srid": 4326
+  },
+  "request_id": "6d983e20-7ad1-49b8-bc88-34827fb70500"
+}</code></pre>
+<hr class="divider" />
+<h3 class="subsection-title">19.6 Spatial Bounding Box Query (<code>GET /api/spatial/bbox</code>)</h3>
+<h4 class="sub-subsection-title">Request:</h4>
+<pre class="code-block http"><div class="code-header">HTTP</div><code>GET /api/spatial/bbox?west=107.60&amp;south=-6.95&amp;east=107.65&amp;north=-6.90&amp;type=umkm_profile&amp;limit=20 HTTP/1.1
+Host: localhost:3000
+Authorization: Bearer &lt;VALID_JWT_TOKEN&gt;</code></pre>
+<h4 class="sub-subsection-title">Success Response (HTTP 200 OK):</h4>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "success": true,
+  "data": {
+    "bbox": {
+      "west": 107.6,
+      "south": -6.95,
+      "east": 107.65,
+      "north": -6.9
+    },
+    "type": "umkm_profile",
+    "features": [
+      {
+        "id": "10000000-0000-0000-0000-000000000005",
+        "entity_type": "umkm_profile",
+        "label": "Warung Kopi Braga",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [107.609, -6.917]
+        },
+        "provenance": {
+          "source_id": "10000000-0000-0000-0000-000000000001",
+          "source_name": "TEST MANUAL SOURCE",
+          "source_type": "manual"
+        }
+      }
+    ],
+    "returned_count": 1,
+    "analysis_method": "postgis_bbox_intersection",
+    "source": "postgis_rpc",
+    "srid": 4326
+  },
+  "request_id": "7d983e20-7ad1-49b8-bc88-34827fb70511"
+}</code></pre>
+<hr class="divider" />
+<h2 class="section-title chapter-break">20. Authentication Examples Per Role</h2>
+<p>Registration requests are customized per role. All roles use the identical <code>POST /api/auth/login</code> endpoint for authentication, with subsequent permissions governed by the user's assigned role in <code>public.profiles</code>.</p>
+<h3 class="subsection-title">20.1 Commuter Registration</h3>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "email": "commuter.user@example.com",
+  "password": "ExamplePassword123!",
+  "display_name": "Ahmad Commuter",
+  "role": "COMMUTER"
+}</code></pre>
+<h3 class="subsection-title">20.2 UMKM Merchant Registration</h3>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "email": "umkm.merchant@example.com",
+  "password": "ExamplePassword123!",
+  "display_name": "Kedai Kopi Transit",
+  "role": "UMKM"
+}</code></pre>
+<h3 class="subsection-title">20.3 Community Representative Registration</h3>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "email": "community.rep@example.com",
+  "password": "ExamplePassword123!",
+  "display_name": "Komunitas Pejalan Kaki",
+  "role": "COMMUNITY"
+}</code></pre>
+<hr class="divider" />
+<h2 class="section-title chapter-break">21. Supabase Migration Runbook</h2>
+<p>The project uses Supabase CLI for database schema versioning.</p>
+<p><strong>Project Reference ID:</strong> <code>sesakxnjaphrxqxllqjm</code></p>
+<h3 class="subsection-title">21.1 Standard Migration Workflow</h3>
+<pre class="code-block mermaid"><div class="code-header">MERMAID</div><code>graph TD
+    A[Schema Change Required] --&gt; B[Create New Migration File: supabase migration new name]
+    B --&gt; C[Write SQL DDL / Constraints / RLS / Indexes]
+    C --&gt; D[Preview Changes: supabase db push --dry-run]
+    D --&gt; E{Dry-Run OK?}
+    E -- No --&gt; C
+    E -- Yes --&gt; F[Apply to Remote: supabase db push]
+    F --&gt; G[Verify Status: supabase migration list]</code></pre>
+<h3 class="subsection-title">21.2 CLI Terminal Commands Guide</h3>
+<h4 class="sub-subsection-title">Step 1: Verify CLI Version &amp; Login</h4>
+<pre class="code-block bash"><div class="code-header">BASH</div><code>supabase --version
+supabase login</code></pre>
+<h4 class="sub-subsection-title">Step 2: Link Workspace to Remote Project</h4>
+<pre class="code-block bash"><div class="code-header">BASH</div><code>supabase link --project-ref sesakxnjaphrxqxllqjm</code></pre>
+<h4 class="sub-subsection-title">Step 3: Check Current Migration Status</h4>
+<pre class="code-block bash"><div class="code-header">BASH</div><code>supabase migration list</code></pre>
+<h4 class="sub-subsection-title">Step 4: Create a New Migration File</h4>
+<pre class="code-block bash"><div class="code-header">BASH</div><code>supabase migration new add_feature_table_name</code></pre>
+<h4 class="sub-subsection-title">Step 5: Dry-Run Preview Before Applying</h4>
+<pre class="code-block bash"><div class="code-header">BASH</div><code>supabase db push --dry-run</code></pre>
+<h4 class="sub-subsection-title">Step 6: Push Migration to Remote Database</h4>
+<pre class="code-block bash"><div class="code-header">BASH</div><code>supabase db push</code></pre>
+<h4 class="sub-subsection-title">Step 7: Verify Applied Migrations</h4>
+<pre class="code-block bash"><div class="code-header">BASH</div><code>supabase migration list</code></pre>
+<div class="alert alert-caution"><div class="alert-title">CAUTION</div><p><strong>Destructive Operations Policy:</strong> Never execute <code>supabase db reset --linked</code> on remote or production environments. Destructive commands (<code>DROP TABLE</code>, <code>DROP COLUMN</code>) require manual architectural review and forward-migration scripts.</p></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">22. Database Seeding Guide</h2>
+<h3 class="subsection-title">22.1 Seeding Structure</h3>
+<p>The file <code>supabase/seed.sql</code> contains <strong>strictly synthetic development fixtures</strong> prefixed with <code>TEST ...</code>.</p>
+<ul>
+  <li>Contains mocked users (<code>admin.mock@getra.local</code>, <code>umkm.mock@getra.local</code>, <code>commuter.mock@getra.local</code>).</li>
+  <li>Contains synthetic bounding boxes, test lines, and mock coordinates.</li>
+  <li><strong>Strict Rule:</strong> <code>seed.sql</code> is intended exclusively for local Docker/Supabase testing (<code>supabase db reset</code>). It must <strong>never</strong> be applied to production.</li>
+</ul>
+<hr class="divider" />
+<h2 class="section-title chapter-break">23. Database Types Generation</h2>
+<p>When linked to the Supabase remote project, TypeScript database definitions can be generated to keep frontend and backend types synchronized:</p>
+<pre class="code-block bash"><div class="code-header">BASH</div><code># Generate types directly from remote schema
+npx supabase gen types typescript --project-ref sesakxnjaphrxqxllqjm &gt; src/types/database.types.ts</code></pre>
+<hr class="divider" />
+<h2 class="section-title chapter-break">24. Development Mode Running Guide</h2>
+<p>For local feature development, interactive debugging, and hot-reloading:</p>
+<pre class="code-block bash"><div class="code-header">BASH</div><code># 1. Install dependencies
+npm install
+
+# 2. Run TypeScript type check
+npm run typecheck
+
+# 3. Run ESLint
+npm run lint
+
+# 4. Start Next.js development server (default port 3000)
+npm run dev</code></pre>
+<div class="alert alert-note"><div class="alert-title">NOTE</div><p><code>npm run dev</code> is strictly for local interactive development and debugging. It must <strong>not</strong> be used as a 24/7 background production server.</p></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">25. Docker Container Running Guide</h2>
+<h3 class="subsection-title">25.1 Build Container Image</h3>
+<pre class="code-block bash"><div class="code-header">BASH</div><code># Using npm script
+npm run docker:build
+
+# Or directly using Docker CLI
+docker build -t getra-backend:latest .</code></pre>
+<h3 class="subsection-title">25.2 Start Background Container (Detached Mode)</h3>
+<pre class="code-block bash"><div class="code-header">BASH</div><code># Start container in detached mode (-d)
+npm run docker:start
+
+# Equivalent Compose command
+docker compose --env-file .env.local up -d</code></pre>
+<h3 class="subsection-title">25.3 Check Container Status</h3>
+<pre class="code-block bash"><div class="code-header">BASH</div><code>npm run docker:status
+
+# Equivalent Compose command
+docker compose --env-file .env.local ps</code></pre>
+<h3 class="subsection-title">25.4 View Real-time Container Logs</h3>
+<pre class="code-block bash"><div class="code-header">BASH</div><code># Follow live logs
+npm run docker:logs
+
+# Or using Compose directly
+docker compose --env-file .env.local logs -f --tail 100</code></pre>
+<h3 class="subsection-title">25.5 Restart Container</h3>
+<pre class="code-block bash"><div class="code-header">BASH</div><code>npm run docker:restart</code></pre>
+<h3 class="subsection-title">25.6 Stop Container</h3>
+<pre class="code-block bash"><div class="code-header">BASH</div><code>npm run docker:stop</code></pre>
+<hr class="divider" />
+<h2 class="section-title chapter-break">26. 24/7 Production Operations Guide</h2>
+<p>For continuous 24/7 production operation, GETRA backend must run inside Docker with automatic restart policies or under PM2 process supervision.</p>
+<h3 class="subsection-title">26.1 24/7 Infrastructure Architecture</h3>
+<pre class="code-block text"><div class="code-header">TEXT</div><code>[ Physical Host / Cloud VM Server (Must remain powered on) ]
+                           │
+                           ▼
+                 [ Docker Engine Daemon ]
+                           │
+                           ▼
+          [ GETRA Standalone Production Container ]
+        (restart: unless-stopped | stop_grace: 30s)
+                           │
+                           ▼
+            [ Next.js Standalone Application ]
+                           │
+                           ▼
+         [ Outbound TLS to Supabase Remote PostgreSQL ]</code></pre>
+<h3 class="subsection-title">26.2 Automatic Crash Restart Behavior</h3>
+<ul>
+  <li>Under Docker Compose (<code>restart: unless-stopped</code>), if the Node.js application experiences an unhandled exception or process termination, the Docker daemon automatically instantiates a new container instance.</li>
+  <li>Under PM2 (<code>max_restarts: 10</code>, <code>autorestart: true</code>), crashed processes are automatically rebooted within <code>2000ms</code>.</li>
+</ul>
+<hr class="divider" />
+<h2 class="section-title chapter-break">27. Backend Logs &amp; Monitoring</h2>
+<h3 class="subsection-title">27.1 Structured Logging Format</h3>
+<p>GETRA implements sanitized JSON-formatted console logging via <code>withApiLogger</code>:</p>
+<pre class="code-block json"><div class="code-header">JSON</div><code>{
+  "timestamp": "2026-08-17T15:50:00.000Z",
+  "level": "info",
+  "service": "getra-backend",
+  "request_id": "4d983e20-7ad1-49b8-bc88-34827fb70588",
+  "method": "POST",
+  "path": "/api/spatial/distance",
+  "status": 200,
+  "duration_ms": 14
+}</code></pre>
+<h3 class="subsection-title">27.2 Error Sanitization</h3>
+<p>All database errors, Supabase exceptions, and internal failures are intercepted. Stack traces, database hostnames, usernames, and raw SQL queries are stripped before response transmission.</p>
+<hr class="divider" />
+<h2 class="section-title chapter-break">28. Frontend Integration Guide</h2>
+<p>Frontends (Next.js web apps, mobile apps) interact with GETRA via standard JSON HTTP requests.</p>
+<h3 class="subsection-title">28.1 Frontend Client Request Example (TypeScript)</h3>
+<pre class="code-block typescript"><div class="code-header">TYPESCRIPT</div><code>interface ApiResponse&lt;T&gt; {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+    retryable: boolean;
+  };
+  request_id: string;
+}
+
+export async function fetchSpatialNearby(
+  token: string,
+  lat: number,
+  lng: number,
+  radius: number = 1000
+): Promise&lt;ApiResponse&lt;any&gt;&gt; {
+  const baseUrl = process.env.NEXT_PUBLIC_GETRA_API_URL || "http://localhost:3002";
+  
+  const response = await fetch(
+    `${baseUrl}/api/spatial/nearby?lat=${lat}&amp;lng=${lng}&amp;radius=${radius}&amp;type=transport_node`,
+    {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/json",
+      },
+    }
+  );
+
+  return response.json();
+}</code></pre>
+<hr class="divider" />
+<h2 class="section-title chapter-break">29. Environment Variables Reference</h2>
+<div class="table-container"><table>
+  <thead>
+    <tr>
+      <th>Variable Name</th>
+      <th>Required</th>
+      <th>Target Scope</th>
+      <th>Purpose / Default Value</th>
+      <th>Secret Level</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>NEXT_PUBLIC_SUPABASE_URL</code></td>
+      <td><strong>YES</strong></td>
+      <td>Client &amp; Server</td>
+      <td>Supabase project API URL (<code>https://&lt;ref&gt;.supabase.co</code>)</td>
+      <td>Public</td>
+    </tr>
+    <tr>
+      <td><code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code></td>
+      <td><strong>YES</strong></td>
+      <td>Client &amp; Server</td>
+      <td>Supabase anonymous public API key</td>
+      <td>Public</td>
+    </tr>
+    <tr>
+      <td><code>APP_ENV</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Application environment (<code>development</code>, <code>staging</code>, <code>production</code>)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>APP_BASE_URL</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Public HTTP/HTTPS origin (e.g. <code>http://localhost:3002</code>)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>FRONTEND_ALLOWED_ORIGINS</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Comma-separated CORS allowlist (e.g. <code>http://localhost:3000</code>)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>TRUST_PROXY</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Trust reverse proxy headers (<code>true</code> or <code>false</code>)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>API_MAX_JSON_BODY_BYTES</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Global JSON body stream cap (default: <code>65536</code> bytes)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>SUPABASE_REQUEST_TIMEOUT_MS</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Supabase fetch abort timeout (default: <code>10000</code> ms)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>RATE_LIMIT_WINDOW_MS</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Fixed window duration (default: <code>60000</code> ms)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>RATE_LIMIT_AUTH_MAX_REQUESTS</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Auth endpoint limit (default: <code>5</code> req/window)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>RATE_LIMIT_API_MAX_REQUESTS</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>API endpoint limit (default: <code>60</code> req/window)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>RATE_LIMIT_MUTATION_MAX_REQUESTS</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Mutation endpoint limit (default: <code>20</code> req/window)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>RATE_LIMIT_SPATIAL_MAX_REQUESTS</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Spatial endpoint limit (default: <code>30</code> req/window)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>SPATIAL_MAX_RADIUS_METERS</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Maximum spatial search radius (default: <code>50000</code> m)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>SPATIAL_MAX_BBOX_LATITUDE_DEGREES</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Max bbox latitude span (default: <code>10.0</code> deg)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>SPATIAL_MAX_BBOX_LONGITUDE_DEGREES</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Max bbox longitude span (default: <code>10.0</code> deg)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>DEFAULT_WALKING_SPEED_MPS</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Pedestrian speed estimator (default: <code>1.4</code> m/s)</td>
+      <td>Safe Config</td>
+    </tr>
+    <tr>
+      <td><code>SUPABASE_SERVICE_ROLE_KEY</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>Administrative Supabase key (Reserved / Backend-only)</td>
+      <td><strong>CRITICAL SECRET</strong></td>
+    </tr>
+    <tr>
+      <td><code>MAPID_API_KEY</code></td>
+      <td>Optional</td>
+      <td>Server-only</td>
+      <td>External provider API key (Reserved / Backend-only)</td>
+      <td><strong>CRITICAL SECRET</strong></td>
+    </tr>
+  </tbody>
+</table></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">30. Security Checklist &amp; Compliance</h2>
+<ul>
+  <li>[x] <strong>Row Level Security:</strong> Enabled and verified on all 6 database tables.</li>
+  <li>[x] <strong>Column-Level Permissions:</strong> Role modification restricted from user profiles; provenance tampering blocked on UMKM tables.</li>
+  <li>[x] <strong>Admin Role Protection:</strong> Public registration strictly rejects <code>ADMIN</code> creation at both database trigger and application route layers.</li>
+  <li>[x] <strong>CORS Enforcement:</strong> Exact origin matching; wildcard <code>*</code> and null origins rejected with HTTP 403.</li>
+  <li>[x] <strong>Rate Limiting:</strong> Active in-memory fixed-window limiter enforcing 5–60 req/min depending on route criticality.</li>
+  <li>[x] <strong>Payload Bounds:</strong> Strict byte limits on all incoming request JSON streams.</li>
+  <li>[x] <strong>Credential Isolation:</strong> <code>.env*</code> excluded from Docker build context; zero hardcoded secrets in repository.</li>
+  <li>[x] <strong>Container Non-Root User:</strong> Dockerfile explicitly specifies <code>USER node</code>.</li>
+  <li>[x] <strong>Error Sanitization:</strong> Zero database passwords, connection strings, or stack traces leaked in error responses.</li>
+</ul>
+<hr class="divider" />
+<h2 class="section-title chapter-break">31. Testing &amp; Quality Assurance Guide</h2>
+<p>The repository includes a comprehensive 44-file, 353-test automated test suite:</p>
+<pre class="code-block bash"><div class="code-header">BASH</div><code># 1. Run all unit and integration tests
+npm test
+
+# 2. Run TypeScript type checking
+npm run typecheck
+
+# 3. Run ESLint code quality verification
+npm run lint
+
+# 4. Compile production build
+npm run build</code></pre>
+<hr class="divider" />
+<h2 class="section-title chapter-break">32. Troubleshooting &amp; Diagnostics Guide</h2>
+<div class="table-container"><table>
+  <thead>
+    <tr>
+      <th>Problem / Error</th>
+      <th>Root Cause</th>
+      <th>Solution</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>npm run build</code> fails</td>
+      <td>Missing environment variables or TypeScript error</td>
+      <td>Run <code>npm run typecheck</code> to locate type mismatch. Ensure <code>.env.local</code> contains <code>NEXT_PUBLIC_SUPABASE_URL</code>.</td>
+    </tr>
+    <tr>
+      <td><code>LegacyProjectNotLinkedError</code></td>
+      <td>Supabase CLI has not linked local workspace</td>
+      <td>Run <code>supabase link --project-ref sesakxnjaphrxqxllqjm</code> and authenticate.</td>
+    </tr>
+    <tr>
+      <td>HTTP <code>401 Unauthorized</code></td>
+      <td>Missing or invalid Supabase Bearer token</td>
+      <td>Verify client transmits <code>Authorization: Bearer &lt;valid_jwt&gt;</code> header.</td>
+    </tr>
+    <tr>
+      <td>HTTP <code>403 Forbidden</code> (<code>CORS_ORIGIN_DENIED</code>)</td>
+      <td>Origin not in allowlist</td>
+      <td>Add frontend origin to <code>FRONTEND_ALLOWED_ORIGINS</code> in <code>.env.local</code>.</td>
+    </tr>
+    <tr>
+      <td>HTTP <code>429 Too Many Requests</code></td>
+      <td>Rate limit threshold exceeded</td>
+      <td>Client must wait and respect <code>Retry-After</code> response header.</td>
+    </tr>
+    <tr>
+      <td>HTTP <code>503 Service Unavailable</code></td>
+      <td>Supabase unreachable or health check failed</td>
+      <td>Check outbound internet connection, Supabase service status, and URL credentials.</td>
+    </tr>
+    <tr>
+      <td>Docker Daemon Error (HTTP 500)</td>
+      <td>Docker Desktop service not running on host</td>
+      <td>Start Docker Desktop application or start the Windows Docker service.</td>
+    </tr>
+  </tbody>
+</table></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">33. Known Limitations</h2>
+<div class="numbered-item"><span class="item-num">1.</span> <span class="item-text"><strong>In-Memory Rate Limiter:</strong> Current rate limiting is process-local. Distributed deployment across multiple instances requires migrating to a shared Redis store.</span></div>
+<div class="numbered-item"><span class="item-num">2.</span> <span class="item-text"><strong>Pedestrian Routing Graph:</strong> No production pedestrian graph is active; routing service responds with <code>ROUTING_GRAPH_NOT_AVAILABLE</code>.</span></div>
+<div class="numbered-item"><span class="item-num">3.</span> <span class="item-text"><strong>Official MAPID Contract:</strong> Live MAPID integration is blocked pending verified production contracts and API credentials.</span></div>
+<div class="numbered-item"><span class="item-num">4.</span> <span class="item-text"><strong>Token Revocation:</strong> Logout is client-side stateless token discarding; global token blacklisting is not implemented.</span></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">34. Features Waiting for Production Data</h2>
+<div class="table-container"><table>
+  <thead>
+    <tr>
+      <th>Feature Name</th>
+      <th>Current Implementation Status</th>
+      <th>Required Production Data Dependency</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Production Pedestrian Routing</strong></td>
+      <td><code>FOUNDATION ONLY</code></td>
+      <td>Complete, routable topological pedestrian road graph</td>
+    </tr>
+    <tr>
+      <td><strong>Isochrone Service Area Analysis</strong></td>
+      <td><code>FOUNDATION ONLY</code></td>
+      <td>Multimodal transit timetable and network graph data</td>
+    </tr>
+    <tr>
+      <td><strong>MAPID Live Sync &amp; Ingestion</strong></td>
+      <td><code>FOUNDATION ONLY</code></td>
+      <td>Verified MAPID API contracts, endpoints, and credentials</td>
+    </tr>
+    <tr>
+      <td><strong>Demand Intelligence Platform</strong></td>
+      <td><code>NOT IMPLEMENTED</code></td>
+      <td>Mobile commuter movement telemetry &amp; survey data</td>
+    </tr>
+    <tr>
+      <td><strong>Fair Discovery Transit Matching</strong></td>
+      <td><code>NOT IMPLEMENTED</code></td>
+      <td>Real-time transit arrival feeds (GTFS-RT / GPS)</td>
+    </tr>
+  </tbody>
+</table></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">35. Phase Completion Summary (Phases 0–7 + Extra)</h2>
+<div class="table-container"><table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>Title</th>
+      <th>Implementation Status</th>
+      <th>Main Deliverables</th>
+      <th>Database Changes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Phase 0</strong></td>
+      <td>Development Foundation</td>
+      <td><strong>COMPLETED</strong></td>
+      <td>Toolchain, Next.js 16 setup, linting, Vitest</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 1</strong></td>
+      <td>Authentication</td>
+      <td><strong>COMPLETED</strong></td>
+      <td>Supabase Auth login, register, me, logout routes</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 2</strong></td>
+      <td>Profile, Role &amp; RLS</td>
+      <td><strong>COMPLETED</strong></td>
+      <td>Profile schema, role guards (<code>COMMUTER</code>, <code>UMKM</code>, etc.)</td>
+      <td><code>profiles</code> table</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 3</strong></td>
+      <td>API Foundation</td>
+      <td><strong>COMPLETED</strong></td>
+      <td>Standard envelope, error hierarchy, logging, validation</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 4</strong></td>
+      <td>Database &amp; PostGIS Foundation</td>
+      <td><strong>COMPLETED</strong></td>
+      <td>5 core spatial tables, GiST indexes, WGS84 functions</td>
+      <td>5 spatial tables</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 5</strong></td>
+      <td>Data Model &amp; Repository Layer</td>
+      <td><strong>COMPLETED</strong></td>
+      <td>Provenance tracking, repository contracts, immutable triggers</td>
+      <td>Migration update</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 6</strong></td>
+      <td>MAPID / External Data Adapter</td>
+      <td><strong>COMPLETED</strong></td>
+      <td>Adapter, client, normalizer, fixture test flow</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 7</strong></td>
+      <td>Spatial Engine Foundation</td>
+      <td><strong>COMPLETED</strong></td>
+      <td>Distance, Nearby, BBox APIs, walking time estimator</td>
+      <td>PostGIS RPCs</td>
+    </tr>
+    <tr>
+      <td><strong>Phase Extra</strong></td>
+      <td>Docker &amp; Public API Security</td>
+      <td><strong>COMPLETED</strong></td>
+      <td>Standalone Dockerfile, CORS, rate limiting, request caps</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><strong>Final</strong></td>
+      <td>Master Documentation &amp; Handover</td>
+      <td><strong>COMPLETED</strong></td>
+      <td>Master PDF manual, complete API catalog, audit</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table></div>
+<hr class="divider" />
+<h2 class="section-title chapter-break">36. Operational Handover Checklist</h2>
+<ul>
+  <li>[x] Full repository audit completed.</li>
+  <li>[x] 10 verified API endpoints cataloged with exact JSON payloads.</li>
+  <li>[x] 6 database tables, constraints, and GiST indexes documented.</li>
+  <li>[x] RLS policies and role authorization matrix verified.</li>
+  <li>[x] PostGIS foundation and RPC functions documented.</li>
+  <li>[x] Supabase migration and seeding runbooks created.</li>
+  <li>[x] Development and Docker 24/7 deployment procedures verified.</li>
+  <li>[x] Frontend integration code samples provided.</li>
+  <li>[x] Security checklist and troubleshooting matrix completed.</li>
+  <li>[x] Secret audit passed with zero credential leakage.</li>
+  <li>[x] Final PDF and Markdown documentation generated in <code>docs/final/</code>.</li>
+</ul>
+<hr class="divider" />
+<p><em>GETRA Platform Technical Documentation — Extra Phase Final Handover Complete.</em></p>
+
+  </div>
+
+</body>
+</html>

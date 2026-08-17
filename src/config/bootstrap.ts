@@ -7,7 +7,9 @@ import {
 } from "@/src/lib/env";
 import { logger, type Logger } from "@/src/lib/logger";
 import { getServerSupabaseClient } from "@/src/lib/supabase/server";
+import { loadSpatialConfig } from "@/src/modules/spatial/spatial.config";
 import { createHealthService } from "@/src/services/health.service";
+import { loadApiSecurityConfig } from "@/src/lib/api-security/config";
 
 export type BackendBootstrapResult = {
   database: "connected" | "unavailable";
@@ -19,6 +21,12 @@ type BootstrapDependencies = {
   logger: Logger;
   runHealthCheck: () => Promise<unknown>;
 };
+
+function loadBackendEnvironment(): void {
+  getEnvironment();
+  loadApiSecurityConfig();
+  loadSpatialConfig();
+}
 
 function getEnvironmentFailureContext(error: unknown): Record<string, string | number | boolean> {
   if (error instanceof EnvironmentValidationError) {
@@ -33,7 +41,7 @@ export async function bootstrapBackend(
 ): Promise<BackendBootstrapResult> {
   const dependencies: BootstrapDependencies = {
     configureSupabase: getServerSupabaseClient,
-    loadEnvironment: getEnvironment,
+    loadEnvironment: loadBackendEnvironment,
     logger,
     runHealthCheck: () => createHealthService().check(),
     ...overrides,

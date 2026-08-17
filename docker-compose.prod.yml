@@ -1,0 +1,11 @@
+services:
+  getra-backend:
+    environment:
+      NODE_ENV: production
+      APP_ENV: production
+      APP_BASE_URL: "${APP_BASE_URL:?APP_BASE_URL is required for production-like mode}"
+      FRONTEND_ALLOWED_ORIGINS: "${FRONTEND_ALLOWED_ORIGINS:?FRONTEND_ALLOWED_ORIGINS is required for production-like mode}"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

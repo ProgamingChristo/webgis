@@ -7,13 +7,21 @@ import { registerSchema } from "@/src/schemas/auth.schema";
 import { validateBody } from "@/src/lib/validation";
 import { withApiLogger } from "@/src/lib/api-logger";
 import { rateLimiter } from "@/src/lib/rate-limit";
+import { MAX_AUTH_JSON_BODY_BYTES } from "@/src/lib/request-body";
+import { createOptionsHandler } from "@/src/lib/api-security";
+
+export const maxDuration = 15;
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const reqId = getRequestId(req);
   
   return withApiLogger(req, reqId, async () => {
     await rateLimiter.checkLimit(req, "auth:register");
-    const body = await validateBody(req, registerSchema);
+    const body = await validateBody(
+      req,
+      registerSchema,
+      MAX_AUTH_JSON_BODY_BYTES,
+    );
     
     if (body.role === "ADMIN") {
       throw new ApplicationError("FORBIDDEN", "Role ADMIN tidak dapat dibuat melalui public registration.");
@@ -49,3 +57,5 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
   });
 }
+
+export const OPTIONS = createOptionsHandler("/api/auth/register");

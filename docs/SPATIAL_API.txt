@@ -1,0 +1,216 @@
+GETRA SPATIAL API
+Tanggal: 2026-08-16
+
+GLOBAL CONTRACT
+
+Semua endpoint adalah public HTTP surface secara teknis tetapi memerlukan Bearer
+authentication. Request menggunakan request_id existing, no-store response,
+structured API logger, request-scoped Supabase client, RLS, strict Zod input,
+static entity whitelist, result cap, dan existing rate-limit hook.
+
+RateLimiter Phase 3 masih NoOp. Hook sudah dipanggil tetapi production rate
+enforcement belum aktif.
+
+============================================================
+DISTANCE
+============================================================
+
+METHOD:
+POST
+
+ENDPOINT:
+/api/spatial/distance
+
+AUTH:
+Bearer access token required.
+
+ROLE:
+Semua authenticated role; RPC permission dan RLS tetap berlaku.
+
+QUERY:
+NONE
+
+BODY:
+{
+  "origin": { "longitude": 0, "latitude": 0 },
+  "destination": { "longitude": 0.001, "latitude": 0.001 }
+}
+
+Angka di atas adalah TEST/example sintetis, bukan lokasi penelitian.
+
+VALIDATION:
+- Content-Type application/json.
+- Streamed body maximum 4096 bytes.
+- Strict object; extra field ditolak.
+- longitude -180..180; latitude -90..90; finite only.
+- Invalid coordinate tidak memanggil repository.
+
+SUCCESS RESPONSE:
+{
+  "success": true,
+  "data": {
+    "analysis_method": "postgis_geography_distance",
+    "distance_meters": "<PostGIS result>",
+    "limitation_flags": [],
+    "source": "GETRA_SPATIAL_ENGINE",
+    "srid": 4326
+  },
+  "request_id": "<uuid>"
+}
+
+ERROR RESPONSE:
+- 400 SPATIAL_INVALID_COORDINATE
+- 401 UNAUTHORIZED
+- 413 SPATIAL_REQUEST_TOO_LARGE
+- 429 reserved for future rate-limit implementation
+- 500 SPATIAL_QUERY_FAILED
+
+STATUS CODE:
+200 success; codes above for controlled error.
+
+ANALYSIS METHOD:
+postgis_geography_distance
+
+LIMITATION:
+Straight geodesic/geography distance, bukan network route distance.
+
+============================================================
+NEARBY
+============================================================
+
+METHOD:
+GET
+
+ENDPOINT:
+/api/spatial/nearby
+
+AUTH:
+Bearer access token required.
+
+ROLE:
+Semua authenticated role. UMKM rows tetap owner/admin scoped oleh RLS.
+
+QUERY:
+lng=<longitude>&lat=<latitude>&radius=<meters>&type=<entity>&limit=<count>
+
+type whitelist:
+- transport_node
+- umkm_profile
+
+limit optional; default 20, maximum 100.
+
+VALIDATION:
+- Duplicate/unknown query key ditolak.
+- longitude/latitude finite dan dalam WGS84 bounds.
+- radius > 0 dan <= configured SPATIAL_MAX_RADIUS_METERS.
+- type harus whitelist; limit integer 1..100.
+
+SUCCESS RESPONSE:
+{
+  "success": true,
+  "data": {
+    "analysis_method": "postgis_dwithin",
+    "origin": { "longitude": 0, "latitude": 0 },
+    "radius_meters": 1000,
+    "records": [],
+    "returned_count": 0,
+    "source": "GETRA_SPATIAL_ENGINE",
+    "srid": 4326,
+    "limitation_flags": ["NO_PRODUCTION_DATA"]
+  },
+  "request_id": "<uuid>"
+}
+
+ERROR RESPONSE:
+- 400 SPATIAL_INVALID_COORDINATE
+- 400 SPATIAL_INVALID_RADIUS
+- 400 VALIDATION_ERROR untuk type/limit/query key
+- 401 UNAUTHORIZED
+- 500 SPATIAL_QUERY_FAILED
+
+STATUS CODE:
+200 success termasuk empty records.
+
+ANALYSIS METHOD:
+postgis_dwithin
+
+LIMITATION:
+Tidak mengembalikan distance per record. Existing RPC hanya memfilter/mengurutkan
+oleh PostGIS distance. Application radius cap belum menjadi DB-level cap.
+
+============================================================
+BOUNDING BOX
+============================================================
+
+METHOD:
+GET
+
+ENDPOINT:
+/api/spatial/bbox
+
+AUTH:
+Bearer access token required.
+
+ROLE:
+Semua authenticated role. UMKM rows tetap owner/admin scoped oleh RLS.
+
+QUERY:
+west=<lng>&south=<lat>&east=<lng>&north=<lat>&type=<entity>&limit=<count>
+
+type whitelist:
+- study_area
+- transport_corridor
+- transport_node
+- umkm_profile
+
+limit optional; default 20, maximum 100.
+
+BODY:
+NONE
+
+VALIDATION:
+- west/east -180..180; south/north -90..90.
+- west < east dan south < north.
+- Duplicate/unknown key ditolak.
+- type whitelist dan limit 1..100.
+- Raw SQL/WKT/GeoJSON tidak diterima.
+
+SUCCESS RESPONSE:
+{
+  "success": true,
+  "data": {
+    "analysis_method": "postgis_bbox_intersection",
+    "bbox": { "west": 0, "south": 0, "east": 1, "north": 1 },
+    "records": [],
+    "returned_count": 0,
+    "source": "GETRA_SPATIAL_ENGINE",
+    "srid": 4326,
+    "limitation_flags": ["NO_PRODUCTION_DATA"]
+  },
+  "request_id": "<uuid>"
+}
+
+ERROR RESPONSE:
+- 400 SPATIAL_INVALID_BBOX
+- 400 VALIDATION_ERROR untuk type/limit/query key
+- 401 UNAUTHORIZED
+- 500 SPATIAL_QUERY_FAILED
+
+STATUS CODE:
+200 success termasuk empty records.
+
+ANALYSIS METHOD:
+postgis_bbox_intersection
+
+LIMITATION:
+Antimeridian-crossing bbox tidak didukung pada Phase 7.
+
+SECURITY NOTES
+
+- Tidak ada endpoint routing atau service-area karena graph belum tersedia.
+- Response SpatialFeature hanya memuat id, label, geometry, entity_type, dan
+  provenance allowlist; owner_id, metadata, timestamps internal, SQL, dan raw
+  PostGIS representation tidak dikembalikan.
+- Error response tidak memuat stack, query, PostgREST detail, credential, atau
+  service-role key.
+

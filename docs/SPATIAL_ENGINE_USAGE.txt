@@ -1,0 +1,191 @@
+GETRA SPATIAL ENGINE USAGE
+Tanggal: 2026-08-16
+
+PRINSIP
+
+GIS menghitung. AI menginterpretasikan.
+
+Semua distance, radius predicate, bbox intersection, SRID, dan geometry validity
+berasal dari PostGIS. Node.js hanya melakukan validation, orchestration, mapping,
+dan estimator walking-time yang diberi label eksplisit.
+
+1. STRUKTUR FOLDER
+
+  src/modules/spatial/       types, schema, config, DTO, mapper, repository,
+                             services, routing/service-area contracts
+  src/lib/spatial/           coordinate, GeoJSON/EWKT, SRID, geometry, request guard
+  app/api/spatial/           distance, nearby, dan bbox Route Handlers
+  tests/unit/spatial/        unit test spatial
+  tests/integration/spatial/ API dan fixture pipeline test
+  tests/fixtures/spatial/    synthetic TEST fixtures
+  supabase/tests/database/   pgTAP PostGIS integration test
+
+Module dan repository yang mengakses database memakai server-only boundary.
+
+2. COORDINATE CONVENTION
+
+Object GETRA selalu eksplisit:
+
+  { longitude: number, latitude: number }
+
+Longitude tidak boleh ditukar diam-diam dengan latitude. Longitude valid dari
+-180 sampai 180; latitude valid dari -90 sampai 90. NaN dan Infinity ditolak.
+
+3. GEOJSON CONVENTION
+
+GeoJSON memakai tuple:
+
+  [longitude, latitude]
+
+Contoh dalam dokumentasi/test bukan data penelitian. Geometry yang diterima oleh
+helper memiliki type whitelist, coordinate bounds, closed polygon ring, dan
+maximum 10000 positions. Input client tidak pernah diteruskan sebagai raw SQL.
+
+4. CRS
+
+Storage dan API standard adalah EPSG:4326. Nilai meter tidak dihitung langsung
+dari degree. public.wgs84_distance_meters memakai ST_Distance pada geography.
+Near RPC memakai ST_DWithin pada geography. Geometry RPC memeriksa ST_SRID,
+ST_IsEmpty, ST_IsValid, GeometryType, dan WGS84 coordinate bounds.
+
+getGeometrySRID() bukan arbitrary-SRID inspector. Method itu mengembalikan 4326
+hanya setelah existing PostGIS validation RPC membuktikan geometry valid dan
+ST_SRID = 4326.
+
+5. DISTANCE SERVICE
+
+DistanceService menerima origin/destination Coordinate, memvalidasi keduanya,
+dan memanggil SpatialRepository.calculateDistance(). Repository menggunakan RPC
+public.wgs84_distance_meters dengan EWKT sebagai parameter data, bukan SQL.
+
+Output:
+
+  analysis_method = postgis_geography_distance
+  source = GETRA_SPATIAL_ENGINE
+  srid = 4326
+
+6. NEARBY / PROXIMITY SERVICE
+
+ProximityService memakai public.find_transport_nodes_near atau
+public.find_umkm_profiles_near. Kedua RPC memakai ST_DWithin dan geography GiST
+index existing. Entity whitelist hanya:
+
+  transport_node
+  umkm_profile
+
+Operational default maximum radius adalah 50000 meter, configurable melalui
+SPATIAL_MAX_RADIUS_METERS sampai maximum 100000 meter. Result limit default 20,
+maximum 100. Radius adalah safety cap, bukan business discovery radius.
+
+RPC mengurutkan row berdasarkan PostGIS distance, tetapi Phase 7 tidak
+mengembalikan per-record distance karena RPC existing tidak memiliki distance
+column. N+1 distance query sengaja tidak dibuat.
+
+7. BBOX SERVICE
+
+BBoxService memakai public.find_*_within_bbox untuk:
+
+  study_area
+  transport_corridor
+  transport_node
+  umkm_profile
+
+API memakai west/south/east/north. Repository melakukan mapping eksplisit ke
+min_lng/min_lat/max_lng/max_lat. west harus lebih kecil dari east; south harus
+lebih kecil dari north. RPC memakai GiST-compatible && prefilter dan
+ST_Intersects. Antimeridian-crossing bbox belum didukung.
+
+8. WALKING-TIME ESTIMATOR
+
+WalkingTimeService menghitung:
+
+  estimated_seconds = ceil(distance_meters / walking_speed_mps)
+
+Default speed adalah 1.4 m/s dan dapat diubah server-side melalui
+DEFAULT_WALKING_SPEED_MPS (valid 0.1 sampai 3). Output selalu:
+
+  analysis_method = estimated_from_distance
+  limitation_flags = [ESTIMATED_WALKING_TIME]
+
+Ini estimator berdasarkan distance, bukan network route duration.
+
+9. SERVICE-AREA CONTRACT
+
+ServiceAreaRequest dan ServiceAreaResult tersedia. Karena pedestrian/network
+graph production belum tersedia, ServiceAreaService tidak membuat polygon.
+Ia fail-closed dengan SPATIAL_NETWORK_NOT_READY.
+
+SERVICE AREA PRODUCTION: NOT AVAILABLE
+
+10. ROUTING CONTRACT
+
+RoutingRequest, RoutingResult, RoutingEngine, dan UnavailableRoutingEngine
+tersedia. Phase 7 tidak membuat route LineString atau duration palsu. Request
+valid tetap menghasilkan ROUTING_GRAPH_NOT_AVAILABLE.
+
+ROUTING PRODUCTION: NOT AVAILABLE
+
+11. LIMITATION FLAGS
+
+Contract mendukung:
+
+  NETWORK_GRAPH_UNAVAILABLE
+  ESTIMATED_WALKING_TIME
+  FIXTURE_DATA
+  NO_PRODUCTION_DATA
+
+Distance exact dari PostGIS tidak diberi limitation flag. Nearby/bbox Phase 7
+menyatakan NO_PRODUCTION_DATA. Fixture flow menambahkan FIXTURE_DATA pada test.
+
+12. REPOSITORY USAGE
+
+SpatialRepository hanya memakai static RPC whitelist dan explicit column lists.
+Semua coordinate, radius, bbox, dan geometry dikirim sebagai parameter Supabase
+RPC. Route wajib authenticated dan membuat request-scoped client dari Bearer JWT
+agar SECURITY INVOKER serta RLS tetap berlaku. UMKM result hanya terlihat oleh
+owner/admin sesuai policy existing. Service-role client tidak digunakan.
+
+13. MENAMBAH SPATIAL FUNCTION
+
+1. Buktikan existing RPC tidak memenuhi kebutuhan.
+2. Buat forward-only migration di supabase/migrations/.
+3. Gunakan fixed search_path, least privilege, dan SECURITY INVOKER bila query
+   harus menghormati RLS.
+4. Gunakan PostGIS/index-compatible predicate dan parameterized arguments.
+5. Tambahkan pgTAP, repository test, API-safe mapper, docs, dan EXPLAIN review.
+6. Jalankan migration list, db push --dry-run, db push, lalu verification.
+7. Jangan menjalankan supabase db reset --linked.
+
+14. MENJALANKAN TEST
+
+  npm run typecheck
+  npm run lint
+  npm test
+  npm run build
+
+Real pgTAP membutuhkan local Supabase/Docker:
+
+  npm run db:test
+
+Jangan menyatakan pgTAP PASS jika Docker/database test tidak tersedia.
+
+15. MIGRATION WORKFLOW
+
+Phase 7 tidak menambah migration karena seluruh RPC/index yang dibutuhkan sudah
+ada pada Phase 4/5. Untuk perubahan berikutnya ikuti docs/SUPABASE_MIGRATION.txt.
+Workspace CLI harus linked sebelum dry-run/push. Remote reset dilarang tanpa
+approval eksplisit.
+
+16. BATASAN SEBELUM DATA PRODUCTION
+
+- Tidak ada pedestrian/network graph production.
+- Tidak ada routing atau service-area production.
+- Tidak ada real transit/UMKM/survey dataset pada Phase 7.
+- RateLimiter existing adalah NoOp foundation, bukan production enforcement.
+- Direct authenticated Data API caller dapat melewati application radius cap;
+  DB-level radius cap memerlukan migration hardening tersendiri.
+- Nearby hanya tersedia untuk transport_node dan umkm_profile.
+- Bbox tidak mendukung crossing antimeridian.
+- Per-record nearby distance tidak tersedia pada RPC existing.
+- Long-running/high-volume spatial workloads memerlukan production load review.
+

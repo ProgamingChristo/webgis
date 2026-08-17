@@ -10,12 +10,17 @@ import { requireAuthenticatedUser } from "@/src/lib/auth";
 import { ProfileRepository } from "@/src/repositories/profile.repository";
 import { ProfileService } from "@/src/services/profile.service";
 import { withApiLogger } from "@/src/lib/api-logger";
+import { rateLimiter } from "@/src/lib/rate-limit";
+import { createOptionsHandler } from "@/src/lib/api-security";
+
+export const maxDuration = 15;
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const reqId = getRequestId(req);
   
   return withApiLogger(req, reqId, async () => {
     const userId = await requireAuthenticatedUser(req);
+    await rateLimiter.checkLimit(req, `${userId}:api:auth:me`);
     const supabase = getServerSupabaseClient();
     
     const authHeader = req.headers.get("Authorization")!;
@@ -42,3 +47,5 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     });
   });
 }
+
+export const OPTIONS = createOptionsHandler("/api/auth/me");

@@ -8,13 +8,24 @@ import type { UserRole } from "@/src/schemas/auth.schema";
 import { ProfileRepository } from "@/src/repositories/profile.repository";
 import { ProfileService } from "@/src/services/profile.service";
 
-export async function requireAuthenticatedUser(req: NextRequest): Promise<string> {
+const MAX_BEARER_TOKEN_CHARACTERS = 8_192;
+
+function getBearerToken(req: NextRequest): string {
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new ApplicationError("UNAUTHORIZED", "Missing or invalid authorization header");
+  if (!authHeader || authHeader.length > MAX_BEARER_TOKEN_CHARACTERS) {
+    throw new ApplicationError("UNAUTHORIZED");
   }
 
-  const token = authHeader.split(" ")[1];
+  const match = /^Bearer ([^\s]+)$/i.exec(authHeader);
+  if (!match?.[1]) {
+    throw new ApplicationError("UNAUTHORIZED");
+  }
+
+  return match[1];
+}
+
+export async function requireAuthenticatedUser(req: NextRequest): Promise<string> {
+  const token = getBearerToken(req);
   const supabase = getServerSupabaseClient();
   
   const { data: { user }, error } = await supabase.auth.getUser(token);

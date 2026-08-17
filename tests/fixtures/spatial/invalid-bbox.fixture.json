@@ -1,0 +1,38 @@
+{
+  "fixture_notice": "TEST FIXTURE - NOT PRODUCTION DATA",
+  "cases": [
+    {
+      "label": "TEST WEST EQUALS EAST",
+      "api_query": {
+        "west": "1",
+        "south": "-1",
+        "east": "1",
+        "north": "1",
+        "type": "transport_node",
+        "limit": "5"
+      }
+    },
+    {
+      "label": "TEST SOUTH ABOVE NORTH",
+      "api_query": {
+        "west": "-1",
+        "south": "2",
+        "east": "1",
+        "north": "1",
+        "type": "transport_node",
+        "limit": "5"
+      }
+    },
+    {
+      "label": "TEST WEST OUTSIDE WGS84",
+      "api_query": {
+        "west": "-180.0001",
+        "south": "-1",
+        "east": "1",
+        "north": "1",
+        "type": "transport_node",
+        "limit": "5"
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "_fixture": "TEST FIXTURE - NOT REAL MAPID PRODUCTION DATA",
+  "contract": "GETRA_MAPID_TEST_FIXTURE_V1",
+  "records": [
+    {
+      "entity_kind": "transport_node",
+      "attributes": {
+        "corridor_id": null,
+        "name": "TEST RECORD WITHOUT EXTERNAL ID",
+        "node_type": "TEST_NODE",
+        "transport_mode": "TEST_MODE"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [0, 0]
+      }
+    },
+    {
+      "external_id": "TEST-MAPID-INVALID-GEOMETRY",
+      "entity_kind": "transport_node",
+      "attributes": {
+        "corridor_id": null,
+        "name": "TEST RECORD WITH UNSUPPORTED GEOMETRY",
+        "node_type": "TEST_NODE",
+        "transport_mode": "TEST_MODE"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[0, 0], [1, 1]]
+      }
+    }
+  ]
+}

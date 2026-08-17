@@ -1,0 +1,253 @@
+PHASE:
+06
+
+TITLE:
+MAPID / External Data Adapter Foundation
+
+DATE:
+2026-08-16
+
+OBJECTIVE:
+Membangun integration foundation server-only, fixture-tested, dry-run first,
+tanpa menebak endpoint/auth/response schema MAPID dan tanpa ingestion production.
+
+FILES CREATED:
+- src/integrations/core/external-provider.types.ts
+- src/integrations/core/external-provider.errors.ts
+- src/integrations/core/index.ts
+- src/integrations/mapid/mapid.types.ts
+- src/integrations/mapid/mapid.schema.ts
+- src/integrations/mapid/mapid.config.ts
+- src/integrations/mapid/mapid.client.ts
+- src/integrations/mapid/mapid.adapter.ts
+- src/integrations/mapid/mapid.normalizer.ts
+- src/integrations/mapid/mapid.mapper.ts
+- src/integrations/mapid/mapid.errors.ts
+- src/integrations/mapid/index.ts
+- src/types/integrations/external-record.ts
+- src/services/external-data/external-data.service.ts
+- src/repositories/external-record.repository.ts
+- tests/fixtures/mapid/valid-response.fixture.json
+- tests/fixtures/mapid/invalid-response.fixture.json
+- tests/fixtures/mapid/empty-response.fixture.json
+- tests/fixtures/mapid/duplicate-record.fixture.json
+- tests/unit/integrations/mapid/mapid-config.test.ts
+- tests/unit/integrations/mapid/mapid-client.test.ts
+- tests/unit/integrations/mapid/mapid-contract.test.ts
+- tests/unit/integrations/external-data.service.test.ts
+- tests/unit/integrations/external-record.repository.test.ts
+- tests/integration/integrations/mapid-fixture-flow.test.ts
+- docs/MAPID_ADAPTER_USAGE.txt
+- docs/EXTERNAL_DATA_INTEGRATION.txt
+- docs/changes/PHASE_06_MAPID_ADAPTER_CHANGES.txt
+
+FILES MODIFIED:
+- .env.example
+- README.md
+
+FILES REMOVED:
+- NONE
+
+DEPENDENCIES:
+- NONE. Native fetch, AbortController, Zod, Vitest, dan repository existing dipakai.
+
+ENVIRONMENT VARIABLES:
+- MAPID_BASE_URL= (server-only placeholder)
+- MAPID_API_KEY= (server-only placeholder)
+- MAPID_TIMEOUT_MS= (server-only placeholder; blank -> 10000 ms)
+- Tidak ada NEXT_PUBLIC_MAPID_*.
+- Tidak ada nilai MAPID yang ditambahkan ke .env.local.
+
+MAPID INTEGRATION STATUS:
+FOUNDATION IMPLEMENTED; REAL CONNECTION BLOCKED.
+
+OFFICIAL ENDPOINT VERIFIED:
+NO
+
+AUTH CONTRACT VERIFIED:
+NO
+
+RESPONSE CONTRACT VERIFIED:
+NO
+
+ADAPTER CREATED:
+YES. Client/validator/normalizer di-inject; adapter tidak melakukan SQL.
+
+CLIENT CREATED:
+YES. Relative-path GET foundation, timeout, bounded retry, injected auth strategy,
+mockable transport, dan sanitized error mapping. Tidak ada real endpoint/path.
+
+VALIDATOR CREATED:
+YES. TEST FIXTURE CONTRACT ONLY; NOT PRODUCTION MAPID SCHEMA.
+
+NORMALIZER CREATED:
+YES. TEST fixture -> Phase 5 normalized transport-node record.
+
+MAPPER CREATED:
+YES. Normalized record -> whitelisted transport-node create/update input.
+
+PROVENANCE:
+- source_type existing: external
+- source identity: injected source_id for spatial_sources row named MAPID
+- source_record_id: validated external fixture ID
+- validation_status: PENDING
+- validated_at: null
+- raw payload: not persisted
+
+REPOSITORY IMPACT:
+- Added ExternalRecordRepository composition facade.
+- Reuses ProvenanceRepository and TransportNodeRepository.
+- Reuses Phase 5 source_id + source_record_id unique indexes.
+- No dynamic table name and no raw external record repository/table.
+
+DATABASE CHANGES:
+NONE
+
+TABLE:
+NONE
+
+COLUMN:
+NONE
+
+INDEX:
+NONE
+
+RLS:
+NONE
+
+FUNCTION/TRIGGER:
+NONE
+
+MIGRATION FILES:
+NONE
+
+DRY RUN RESULT:
+SUCCESS. Full test suite menjalankan fixture pipeline client -> validator ->
+normalizer -> adapter -> service -> in-memory repository. Dry-run menghasilkan
+normalized/invalid/duplicate counts dan zero write/persisted_records = 0.
+
+MIGRATION STATUS:
+NOT REQUIRED - tidak ada perubahan schema dan diff supabase/migrations kosong.
+`npx supabase migration list` dijalankan tetapi gagal dengan
+LegacyProjectNotLinkedError karena workspace belum linked. Tidak ada dry-run,
+push, reset, atau operasi remote yang dijalankan.
+
+REMOTE SUPABASE PUSH:
+NOT REQUIRED - NO DATABASE CHANGE
+
+REMOTE VERIFICATION:
+NOT REQUIRED FOR PHASE 6 - NO DATABASE CHANGE
+
+SUPABASE REMOTE STATUS:
+- Application connectivity: CONNECTED; /api/health mengembalikan HTTP 200.
+- Supabase CLI project link: NOT CONFIGURED.
+- Remote migration verification: NOT REQUIRED; Phase 6 tidak mengubah database.
+
+GENERATED TYPES:
+NOT REQUIRED - SCHEMA UNCHANGED. Generated database types were not present in
+the inspected Phase 5 repository.
+
+TEST FIXTURES:
+- valid response: synthetic TEST nodes
+- invalid response: missing ID and unsupported TEST geometry
+- empty response
+- duplicate source record
+- All fixtures explicitly state NOT REAL MAPID PRODUCTION DATA.
+
+TESTS EXECUTED:
+- Baseline npm test before changes: PASS, 21 files / 133 tests.
+- npm run typecheck: PASS.
+- npm run lint: PASS, zero warning.
+- npm test: PASS, 27 files / 181 tests.
+- Unit coverage: config, request builder, auth strategy injection, timeout,
+  retry/status mapping, validator, normalizer, mapper, repository, duplicate,
+  persistence gate, sanitized logging, dan unsafe context rejection.
+- Integration coverage: real Phase 6 fixture pipeline dengan in-memory
+  repository, dry-run zero write, persistence fixture, dan replay idempotency.
+
+TEST RESULT:
+PASS - 27 test files, 181 tests.
+
+BUILD RESULT:
+PASS - Next.js 16.3.1 production build compiled, type-checked, dan generated
+seluruh route existing tanpa route MAPID baru.
+
+API CHANGES:
+NONE. No public/internal MAPID endpoint was created.
+
+SECURITY AUDIT:
+PASS.
+- .env.local ignored dan tidak tracked.
+- .env.example hanya placeholder kosong.
+- Tidak ada NEXT_PUBLIC_MAPID_* pada runtime source/config.
+- Tidak ada MAPID value pada .env.local.
+- Tidak ada endpoint atau authentication header yang ditebak.
+- Tidak ada MAPID/Supabase credential non-fixture yang hard-coded.
+- Fixture dan PM2 log tidak memiliki marker credential.
+- Server-only integration marker tidak masuk .next/static browser bundle.
+- Raw response/upstream detail tidak disimpan, dikembalikan, atau di-log.
+- npm audit: 0 vulnerability.
+- git diff --check: PASS.
+
+MAPID REAL API INTEGRATION:
+BLOCKED - OFFICIAL ENDPOINT/API CONTRACT NOT VERIFIED
+
+REAL MAPID CONNECTION:
+NOT IMPLEMENTED
+
+REASON:
+Official endpoint/authentication/response contract has not been verified.
+
+KNOWN LIMITATIONS:
+- Fixture validator/normalizer is not a production MAPID contract.
+- Production persistence composition is disabled by default.
+- Existing server has no configured service-role credential/client.
+- Duplicate lookup is per record; batching belongs to production ingestion design.
+- No generated Supabase database types exist in the inspected repository.
+- Supabase CLI workspace belum linked; diperlukan sebelum future DB migration.
+- PM2 does not automatically become a Windows startup service after reboot.
+
+BLOCKERS:
+- Official MAPID endpoint/path for GETRA use case.
+- Official authentication/header contract.
+- Official response schema/versioning contract.
+- Approved server-only credential and production ingestion policy.
+- Supabase CLI link/access dibutuhkan hanya jika phase berikutnya mengubah DB.
+
+COMMANDS EXECUTED:
+- Repository/file/schema/migration/test inspection: PASS.
+- Next.js local environment/testing/self-hosting docs inspection: PASS.
+- Official MAPID public documentation search: page found, contract details needed
+  by GETRA not verified.
+- Baseline npm test: PASS, 21 files / 133 tests.
+- npm run typecheck: PASS.
+- npm run lint: PASS.
+- npm test: PASS, 27 files / 181 tests.
+- npm run build: PASS.
+- npx supabase migration list: FAILED - workspace not linked; read-only check.
+- git diff --name-only -- supabase/migrations: NONE.
+- npm run dev: existing process verified RUNNING on port 3001; health HTTP 200.
+- npm run dev -- --port 3100: second instance intentionally exited because
+  Next.js detected the existing dev server; no second listener remained.
+- npm run process:restart: PASS; PM2 rebuilt dan restarted getra-backend.
+- npm run process:status: PASS; getra-backend ONLINE.
+- npx pm2 logs getra-backend --nostream --lines 50: PASS; startup connectivity
+  log verified and no credential marker found.
+- GET http://127.0.0.1:3000/api/health: HTTP 200, database connected.
+- GET http://127.0.0.1:3001/api/health: HTTP 200, database connected.
+- npm audit --json: PASS, 0 vulnerability.
+- Security pattern scans dan git diff --check: PASS.
+
+PERSISTENT BACKEND STATUS:
+ONLINE. PM2 autorestart tetap enabled; build final dijalankan melalui
+npm run process:restart. Status, restart, stop, dan logs memakai script existing.
+
+NPM RUN DEV STATUS:
+RUNNING. Existing npm run dev process terverifikasi pada port 3001 dan health
+endpoint mengembalikan HTTP 200.
+
+ROLLBACK NOTES:
+- No database or remote rollback is required because Phase 6 adds no migration.
+- Remove Phase 6 source/test/docs files and revert .env.example/README links.
+- Do not use supabase db reset --linked.
+- Existing Phase 4/5 tables, indexes, RLS, functions, and migrations remain intact.

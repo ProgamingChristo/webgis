@@ -1,0 +1,12 @@
+{
+  "fixture_notice": "TEST FIXTURE - NOT PRODUCTION DATA",
+  "coordinate": {
+    "longitude": 0.25,
+    "latitude": -0.5
+  },
+  "geojson": {
+    "type": "Point",
+    "coordinates": [0.25, -0.5]
+  },
+  "expected_ewkt": "SRID=4326;POINT(0.25 -0.5)"
+}

@@ -15,6 +15,11 @@ export interface MultiLineStringGeometry {
   coordinates: Wgs84Position[][];
 }
 
+export interface PolygonGeometry {
+  type: "Polygon";
+  coordinates: Wgs84Position[][];
+}
+
 export interface MultiPolygonGeometry {
   type: "MultiPolygon";
   coordinates: Wgs84Position[][][];
@@ -26,6 +31,7 @@ export type GeoJsonGeometry =
   | PointGeometry
   | LineStringGeometry
   | MultiLineStringGeometry
+  | PolygonGeometry
   | MultiPolygonGeometry;
 
 /** Raw database geometry is intentionally opaque until a mapper validates it. */

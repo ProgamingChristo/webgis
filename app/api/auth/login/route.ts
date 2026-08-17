@@ -9,6 +9,10 @@ import { withApiLogger } from "@/src/lib/api-logger";
 import { rateLimiter } from "@/src/lib/rate-limit";
 import { ProfileRepository } from "@/src/repositories/profile.repository";
 import { ProfileService } from "@/src/services/profile.service";
+import { MAX_AUTH_JSON_BODY_BYTES } from "@/src/lib/request-body";
+import { createOptionsHandler } from "@/src/lib/api-security";
+
+export const maxDuration = 15;
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const reqId = getRequestId(req);
@@ -18,7 +22,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     await rateLimiter.checkLimit(req, "auth:login");
 
     // 2. Validation
-    const body = await validateBody(req, loginSchema);
+    const body = await validateBody(req, loginSchema, MAX_AUTH_JSON_BODY_BYTES);
     
     const supabase = getServerSupabaseClient();
     
@@ -49,3 +53,5 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
   });
 }
+
+export const OPTIONS = createOptionsHandler("/api/auth/login");

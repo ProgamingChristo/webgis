@@ -1,0 +1,21 @@
+{
+  "fixture_notice": "TEST FIXTURE - NOT PRODUCTION DATA",
+  "api_query": {
+    "west": "-1",
+    "south": "-1",
+    "east": "1",
+    "north": "1",
+    "type": "transport_node",
+    "limit": "5"
+  },
+  "domain_query": {
+    "bbox": {
+      "west": -1,
+      "south": -1,
+      "east": 1,
+      "north": 1
+    },
+    "entity_type": "transport_node",
+    "limit": 5
+  }
+}

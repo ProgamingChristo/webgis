@@ -3,6 +3,9 @@ import { getRequestId } from "@/src/lib/request-id";
 import { createSuccessResponse } from "@/src/lib/api-response";
 import { HealthChecker, createHealthService } from "@/src/services/health.service";
 import { withApiLogger } from "@/src/lib/api-logger";
+import { createOptionsHandler } from "@/src/lib/api-security";
+
+export const maxDuration = 15;
 
 export const createHealthHandler = (healthService: HealthChecker) => async (req: NextRequest | Request) => {
   const reqId = getRequestId(req as NextRequest);
@@ -13,6 +16,7 @@ export const createHealthHandler = (healthService: HealthChecker) => async (req:
 };
 
 export const GET = createHealthHandler(createHealthService());
+export const OPTIONS = createOptionsHandler("/api/health");
 
 // Assuming default export or standard GET for Next.js App Router
 // But wait, the test tests createHealthHandler.

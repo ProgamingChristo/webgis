@@ -1,0 +1,50 @@
+{
+  "fixture_notice": "TEST FIXTURE - NOT PRODUCTION DATA",
+  "api_query": {
+    "lat": "0",
+    "lng": "0",
+    "radius": "1000",
+    "type": "transport_node",
+    "limit": "10"
+  },
+  "domain_query": {
+    "origin": {
+      "longitude": 0,
+      "latitude": 0
+    },
+    "radius_meters": 1000,
+    "entity_type": "transport_node",
+    "limit": 10
+  },
+  "repository_records": [
+    {
+      "entity_type": "transport_node",
+      "record": {
+        "id": "70000000-0000-4000-8000-000000000001",
+        "corridor_id": null,
+        "name": "TEST SPATIAL NODE",
+        "node_type": "TEST_NODE",
+        "transport_mode": "TEST_MODE",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0.005, 0.005]
+        },
+        "provenance": {
+          "source_id": null,
+          "source_type": null,
+          "source_record_id": null,
+          "data_version": "TEST-FIXTURE-v1",
+          "retrieved_at": "2026-08-16T00:00:00.000Z",
+          "validated_at": null,
+          "validation_status": "PENDING",
+          "metadata": {
+            "fixture": true
+          }
+        },
+        "created_at": "2026-08-16T00:00:00.000Z",
+        "updated_at": "2026-08-16T00:00:00.000Z",
+        "internal_test_marker": "MUST_NOT_REACH_API_DTO"
+      }
+    }
+  ]
+}

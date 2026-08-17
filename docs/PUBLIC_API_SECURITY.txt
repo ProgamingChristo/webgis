@@ -1,0 +1,293 @@
+GETRA PUBLIC API SECURITY
+=========================
+
+Tanggal pembaruan: 2026-08-16 (Asia/Jakarta)
+
+TUJUAN DAN SECURITY MODEL
+-------------------------
+Backend dapat dijangkau melalui network tanpa menjadi API yang bebas. Lapisan
+pengamanan yang digunakan adalah:
+
+  Internet/browser
+        -> exact-origin CORS policy
+        -> authentication (untuk endpoint protected)
+        -> bounded rate limit
+        -> strict Zod/request validation
+        -> service/repository
+        -> request-scoped Supabase JWT
+        -> PostgreSQL RLS
+
+Urutan authentication dan rate limit berbeda menurut endpoint. Login/register
+dibatasi sebelum auth/validation. Endpoint protected memverifikasi bearer token
+dahulu agar bucket dapat diikat ke user ID, lalu menerapkan limit per endpoint.
+CORS dievaluasi sebelum handler. CORS bukan pengganti authentication atau RLS.
+
+AUTHENTICATION
+--------------
+- Provider: Supabase Auth.
+- Contract: `Authorization: Bearer <access_token>`.
+- Header harus tepat satu bearer token, tanpa whitespace tambahan, maksimal
+  8192 karakter. Token diperiksa server-side melalui Supabase `getUser`.
+- User ID tidak dipercaya dari body/query.
+- Login/register adalah PUBLIC; logout, me, profile, dan spatial adalah
+  AUTHENTICATED.
+- Login hanya mengembalikan access token yang diperlukan contract sekarang.
+- Logout bersifat stateless: server mengakui request authenticated dan frontend
+  wajib membuang token. Endpoint tidak memakai service-role key untuk global
+  revocation dan tidak mengelola session cookie server-side.
+
+AUTHORIZATION
+-------------
+Role canonical adalah COMMUTER, UMKM, COMMUNITY, dan ADMIN. `requireAnyRole` dan
+`requireRole` mengambil role profile melalui request-scoped Supabase client,
+bukan dari body frontend. Public registration menolak ADMIN.
+
+Saat dokumen ini dibuat tidak ada endpoint ROLE_RESTRICTED, ADMIN, atau INTERNAL
+yang terekspos. Role guard tetap tersedia dan diuji sebagai foundation. Endpoint
+future wajib ditambahkan ke endpoint policy/matrix dan menjalankan guard di
+server; menyembunyikan tombol di frontend bukan authorization.
+
+ROW LEVEL SECURITY (RLS)
+------------------------
+RLS Phase 2/4 tetap aktif dan tidak diganti oleh Docker/API hardening:
+
+- profiles: user membaca/mengubah profile sendiri; admin sesuai policy existing.
+- spatial reference tables: authenticated read dan admin management sesuai policy.
+- umkm_profiles: owner dan admin sesuai policy existing.
+
+Profile/spatial repository memakai Supabase client request-scoped yang meneruskan
+Authorization bearer. Service-role key tidak digunakan pada route public saat ini.
+API guard dan RLS adalah dua boundary yang saling melengkapi.
+
+CORS
+----
+Environment:
+
+  FRONTEND_ALLOWED_ORIGINS=<origin1,origin2,...>
+
+Aturan:
+
+- Cross-origin browser request hanya diterima bila Origin cocok eksak dengan
+  allowlist (scheme, hostname, dan port).
+- Same-origin request diterima.
+- Request tanpa Origin diterima untuk server-to-server/CLI; auth tetap berlaku.
+- `*`, literal `null`, credential/userinfo URL, path, query, fragment, control
+  character, dan origin non-HTTP(S) ditolak pada startup/config validation.
+- Unknown Origin menghasilkan HTTP 403 `CORS_ORIGIN_DENIED` tanpa
+  `Access-Control-Allow-Origin`.
+- Response yang diizinkan meng-echo origin valid, menambahkan `Vary: Origin`, dan
+  mengekspos hanya `X-Request-ID` serta `Retry-After`.
+- `Access-Control-Allow-Credentials` tidak diberikan karena auth memakai bearer,
+  bukan cross-site cookie.
+
+Blank allowlist berarti hanya same-origin dan request tanpa Origin. Jangan
+hard-code domain staging/production yang belum resmi.
+
+PREFLIGHT
+---------
+Semua route existing memiliki OPTIONS handler. Preflight hanya mengizinkan:
+
+- origin valid;
+- method yang benar-benar tercatat untuk path tersebut;
+- subset header `authorization`, `content-type`, dan/atau `x-request-id` sesuai
+  endpoint matrix.
+
+Preflight valid mengembalikan HTTP 204 dan `Access-Control-Max-Age: 600`.
+Method/header/origin lain mengembalikan HTTP 403 `CORS_PREFLIGHT_DENIED`.
+
+RATE LIMIT
+----------
+Implementasi default adalah fixed-window limiter nyata, bounded, dan process-local.
+Defaults tervalidasi:
+
+  window:          60000 ms
+  auth:            5 request/window/client/endpoint
+  API read:        60 request/window/user/endpoint
+  mutation:        20 request/window/user/endpoint
+  spatial:         30 request/window/user/endpoint
+  bucket capacity: 10000 in-memory entries
+
+Environment:
+
+  RATE_LIMIT_WINDOW_MS
+  RATE_LIMIT_AUTH_MAX_REQUESTS
+  RATE_LIMIT_API_MAX_REQUESTS
+  RATE_LIMIT_MUTATION_MAX_REQUESTS
+  RATE_LIMIT_SPATIAL_MAX_REQUESTS
+
+Limit terlampaui menghasilkan HTTP 429, code `RATE_LIMIT_EXCEEDED`, response
+retryable, dan header integer `Retry-After` dalam detik. Health tidak dibatasi.
+
+TRUST PROXY DAN IDENTITAS CLIENT
+--------------------------------
+Default `TRUST_PROXY=false`. Dalam mode ini limiter auth tidak mempercayai
+X-Forwarded-For dan memakai satu bucket shared-untrusted-client. Ini fail-closed
+terhadap spoofing, tetapi dapat terlalu ketat untuk banyak client.
+
+Set `TRUST_PROXY=true` hanya jika:
+
+- container tidak dapat diakses langsung dari internet;
+- request selalu melewati proxy/ingress tepercaya;
+- proxy menghapus/menimpa header forwarded dari client;
+- nilai paling kiri X-Forwarded-For atau X-Real-IP adalah IP client tervalidasi.
+
+Jangan mengaktifkannya hanya karena deployment memakai Docker.
+
+LIMITASI RATE LIMIT:
+State tidak dibagi antar replica dan hilang pada restart. Ini memadai untuk satu
+instance, bukan enforcement konsisten pada horizontal scaling. Sebelum multi-
+replica/public traffic besar, gunakan shared atomic store/gateway limiter tanpa
+mengubah response contract. Capacity eviction juga berarti limiter bukan
+pengganti proteksi DDoS di edge.
+
+SECURITY HEADERS
+----------------
+Semua response `/api/*` dikonfigurasi dengan:
+
+  Content-Security-Policy:
+    default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'
+  Cross-Origin-Opener-Policy: same-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+  X-DNS-Prefetch-Control: off
+  X-Frame-Options: DENY
+
+`X-Powered-By` dinonaktifkan. HSTS hanya diberikan ketika APP_ENV=production dan
+APP_BASE_URL adalah HTTPS:
+
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+Container berbicara HTTP internal; TLS wajib diterminasi oleh platform/reverse
+proxy. Jangan memakai HSTS untuk local HTTP atau domain yang belum dikendalikan.
+
+BODY LIMITS DAN VALIDATION
+--------------------------
+Semua JSON body wajib `Content-Type: application/json`, dibaca sebagai stream
+dengan batas byte, di-decode UTF-8 strict, di-parse JSON, lalu divalidasi Zod.
+Malformed JSON, content type salah, duplicate/unknown field pada strict schema,
+enum invalid, coordinate invalid, dan query invalid ditolak sebelum repository.
+
+Default global:
+
+  API_MAX_JSON_BODY_BYTES=65536   (min 1024, max 1048576)
+
+Route-specific cap yang lebih kecil selalu menang:
+
+  login/register:          8192 byte
+  profile PATCH:           4096 byte
+  spatial distance POST:   4096 byte
+
+Payload terlalu besar menghasilkan HTTP 413 (`REQUEST_TOO_LARGE` atau
+`SPATIAL_REQUEST_TOO_LARGE`). GET nearby/bbox tidak menerima body dan memakai
+strict query parsing, duplicate-key rejection, entity whitelist, serta result
+limit default 20/max 100.
+
+SPATIAL OPERATIONAL LIMITS
+--------------------------
+- Radius default max 50000 meter; configurable max absolut 100000 meter.
+- Bounding-box default max span 10 derajat longitude dan 10 derajat latitude.
+- BBox configuration max absolut 360/180 derajat, tetapi nilai production harus
+  dipilih konservatif sesuai deployment.
+- Distance body max 4096 byte.
+- Route `maxDuration=15` memberi execution limit hint pada runtime Next; ini
+  bukan pengganti cancellation DB query oleh provider.
+- Query spatial memakai static entity/RPC whitelist, parameter values, explicit
+  projections, PostGIS, dan RLS; tidak menerima raw SQL/geometry SQL dari client.
+
+TIMEOUT
+-------
+Semua Supabase client server-side memakai fetch dengan AbortController timeout.
+
+  SUPABASE_REQUEST_TIMEOUT_MS=10000
+  allowed range: 1000..60000 ms
+
+MAPID client foundation memiliki `MAPID_TIMEOUT_MS`, tetapi real MAPID endpoint/
+auth/response contract belum diverifikasi dan tidak dipanggil production. Timeout
+tidak menjadikan long-running Postgres statement cancellable bila provider telah
+menerima request; database-level statement timeout dapat ditambahkan melalui
+migration terpisah bila kelak diperlukan dan disetujui.
+
+ERROR HANDLING
+--------------
+Envelope aman:
+
+  {
+    "success": false,
+    "error": {
+      "code": "...",
+      "message": "...",
+      "retryable": false
+    },
+    "request_id": "UUID"
+  }
+
+Application error dipetakan ke canonical public message. Stack trace, SQL,
+PostgREST details, filesystem/container path, environment, raw upstream response,
+dan credential tidak dikembalikan. Response memakai `Cache-Control: no-store`.
+
+Status utama: 400 validation, 401 unauthenticated, 403 forbidden/CORS, 404 not
+found, 409 conflict, 413 body too large, 429 rate limit, 500 internal/database
+operation, dan 503 dependency/network not ready. Response 422 belum diproduksi
+oleh error catalog saat ini; frontend tetap harus menangani semua non-2xx secara
+generic untuk compatibility future.
+
+LOGGING
+-------
+Structured log minimal memuat request_id, method, path, status, duration_ms, dan
+error_code saat gagal. Startup log menunjukkan environment/Supabase/backend state.
+`Database connected` hanya ditulis setelah real connectivity probe sukses.
+
+Jangan log password, request body auth, JWT/access token, refresh token,
+Authorization header, publishable key, service role, MAPID key, database password,
+raw credential, atau expanded Compose environment. Logger saat ini tidak menulis
+body/header tersebut.
+
+CSRF DECISION
+-------------
+CSRF protection khusus cookie tidak diterapkan karena API tidak mengautentikasi
+mutation menggunakan ambient cookie. Client mengirim bearer token eksplisit dan
+server tidak mengeluarkan auth cookie. CORS tetap bukan pengganti CSRF.
+
+Jika future phase beralih ke cookie auth, phase tersebut wajib mengevaluasi token
+CSRF/origin checks dan cookie HttpOnly, Secure, SameSite, Domain, Path, serta
+expiration sebelum deployment.
+
+COOKIE SECURITY
+---------------
+GETRA Backend saat ini tidak set/read auth cookie, sehingga HttpOnly/Secure/
+SameSite tidak applicable. Jangan menambah token JS-readable cookie tanpa threat
+model dan dokumentasi baru.
+
+INTERNAL ENDPOINT PROTECTION
+----------------------------
+Tidak ada `/api/internal/*`, `/api/admin/*`, atau endpoint debug provider yang
+aktif saat ini. Nama path tidak pernah dianggap sebagai security boundary.
+Endpoint future wajib memiliki endpoint policy, role/admin guard, environment
+guard atau scoped internal credential bila relevan, rate limit, dan test negatif.
+Jangan memakai satu public API key sebagai internal credential universal.
+
+SECRET MANAGEMENT
+-----------------
+- `.env.local`, `.env.production`, dan `.env*` di-ignore; `.env.example` adalah
+  template kosong yang tetap versioned.
+- Docker build context mengabaikan `.env` dan `.env.*`.
+- Secret diberikan hanya pada runtime container/host secret manager.
+- Database password, service role, dan MAPID key tidak boleh NEXT_PUBLIC_.
+- Dockerfile tidak memakai ARG untuk secret.
+- Jangan commit secret file, log, fixture, Compose expansion, atau token.
+
+API VERSIONING
+--------------
+Endpoint existing tetap unversioned untuk compatibility. Tidak ada alias
+`/api/v1` palsu pada phase ini. Semua public domain endpoint baru setelah contract
+stabil harus dibuat di `/api/v1/...`. Perubahan breaking pada endpoint existing
+memerlukan parallel compatibility window, dokumentasi deprecation, dan test.
+
+SECURITY VERIFICATION STATUS
+----------------------------
+Unit/security tests tersedia untuk configuration, CORS, endpoint policy, auth
+guards, bounded body, rate limit, response 429, dan Docker configuration.
+Full suite PASS (44 files/353 tests); live PM2 CORS/auth/header/rate tests PASS.
+Live Docker/image/failure/restart checks BLOCKED oleh Docker Desktop Linux Engine
+HTTP 500 dan tidak diklaim berhasil. Lihat changelog Phase Extra untuk detail.
