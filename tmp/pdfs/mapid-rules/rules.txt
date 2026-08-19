@@ -1,0 +1,502 @@
+ Ketentuan Data & WebGIS - MAPID
+       WebGIS Competition 2026
+
+                 MAPID WebGIS Competition - 2026
+
+                    Maps That Think! - Mass Transportation Edition
+
+                           DATA COMMUNITY MAPS | DATA MISSION | WEBGIS | AI
+
+Panduan ini menjelaskan data yang dapat digunakan, ketentuan pengembangan WebGIS,
+               serta peran AI dalam membangun solusi WebGIS untuk kompetisi.
+A. Panduan Data
+
+A.1 Ketentuan Umum Penggunaan Data
+
+Data yang digunakan dalam kompetisi terdiri dari data dasar yang disediakan panitia
+community maps, data hasil survey activities bagi tim terkurasi, serta data pendukung atau
+data sekunder yang relevan.
+Peserta tidak diwajibkan mengumpulkan seluruh data dari nol, namun wajib menggunakan
+data yang tersedia secara bertanggung jawab dan sesuai dengan kebutuhan solusi WebGIS.
+
+        Ketentuan                                                   Penjelasan
+Penggunaan data dasar
+                       Tim yang lolos sebagai 50 tim terkurasi wajib menggunakan data dasar yang
+           panitia     disediakan panitia, termasuk Community Maps MAPID.
+    Survey activities
+                       Tim terkurasi wajib mengikuti survey activities menggunakan MAPID APPS
+   Data pendukung /    untuk melakukan pengayaan, validasi, atau pelengkapan data sesuai arahan
+         sekunder      panitia dan kebutuhan solusi WebGIS.
+
+Penggunaan data hasil  Peserta dapat menggunakan data tambahan selama data tersebut resmi,
+           survey      terbuka, relevan dengan solusi, dan mencantumkan sumbernya.
+
+Larangan penggunaan    Data hasil survey activities wajib digunakan untuk memperkaya analisis dan
+            data       WebGIS.
+
+                       Data Community Maps MAPID atau data kompetisi tidak boleh digunakan
+                       untuk tujuan di luar kompetisi tanpa izin. Data mentah MAPID atau partner
+                       tidak boleh disebarluaskan kepada pihak luar.
+
+Catatan: Data yang disediakan dalam format csv, SHP,GeoJSON, dan Geopackage. Setelah melalui
+kurasi 50 tim, peserta dapat mengakses data dengan menggunakan API yang akan diberikan
+dokumentasinya oleh tim MAPID.
+
+A.2 Struktur Data yang Dapat Digunakan
+
+Kelompok Data          Cakupan                                         Keterangan Akses
+
+Data Community Maps Data aktivitas dari interaksi pengguna  Disediakan sebagai bagian dari data
+                                   didalam MAPID APPS.      dasar kompetisi.
+
+Data Mission           Dataset misi lapangan yang mencakup  Disediakan sebagai dataset
+                       Properti Go, Struk Go, dan Menu Go.  pendukung sesuai ketentuan
+                                                            panitia.
+Data Pendukung / Data Kumpulan data tambahan yang resmi,
+                                                            Dapat dicari melalui menu Import
+Sekunder               terbuka, dan relevan.                Data pada mode Editor GEO
+                                                            MAPID dan juga data sekunder dari
+                                                            sumber terbuka lainnya (InaRISK,
+                                                            BIG, KLHK).
+Catatan: Peserta tidak harus memilih semua kelompok Data Community Maps dan Data Mission
+untuk digunakan, tapi bisa memilih wajib paling minimal satu untuk digunakan dalam WebGIS yang
+dibuat. Sedangkan kelompok data pendukung/data sekunder juga bisa dapat digunakan dalam
+memperkaya pembuatan WebGIS.
+
+A.3 Data Community Maps (Activity)
+
+Data Community Maps pada dokumen data disebut sebagai data activity. Data ini dihasilkan
+dari interaksi pengguna dalam MAPID APPS yang mencakup judul kegiatan, deskripsi,
+dokumentasi foto maupun video, serta lokasi aktivitas. Data ini dapat digunakan sebagai
+informasi berbasis lokasi dan untuk melihat tren maupun aktivitas partisipasi pengguna.
+
+Catatan: Untuk mengetahui pengenalan Data Community MAPS di MAPID APPS, lebih lanjut peserta
+diperkenankan menginstall MAPID APPS dan bisa melihat pengenalan fitur survey activity di dalam
+video berikut : mapid.co.id/CommunityMAPSMAPID
+
+No.  Atribut Kolom       Jenis Data                               Keterangan
+                    Text             Judul kegiatan / aktivitas.
+1 title             Text             Deskripsi kegiatan / aktivitas.
+                    Angka Desimal    Koordinat lintang lokasi aktivitas.
+2 description       Angka Desimal    Koordinat bujur lokasi aktivitas.
+                    Link             Beberapa media foto atau video; dipisahkan dengan
+3 latitude                           koma (,).
+                                     Tautan gambar.
+4 longitude                          Tautan video.
+
+5 medias
+
+6 images            Link
+
+7 videos            Link
+
+Sample data: mapid.co.id/SampleActivityMAPIDAPPS
+
+A.4 Data Mission
+
+Data mission merupakan dataset dari misi pengumpulan data. Dalam dokumen data MAPID
+Catalyst, data mission yang dijelaskan terdiri dari Properti Go, Struk Go, dan Menu Go. Data
+ini dihasilkan dari interaksi pengguna dalam MAPID APPS.
+
+Catatan: Untuk mengetahui pengenalan Mission di MAPID APPS lebih lanjut , peserta diperkenankan
+menginstall MAPID APPS dan bisa melihat pengenalan Mission di dalam video berikut :
+mapid.co.id/MissionMAPIDAPPS
+A.4.1 Properti Go
+
+Properti Go merupakan misi lapangan untuk mendokumentasikan properti yang sedang
+dipasarkan, baik dijual maupun disewakan, di berbagai kota di Indonesia. Pengambilan data
+dapat dilakukan pada area publik atau area yang telah diizinkan untuk pengambilan gambar.
+
+No.  Atribut Kolom              Jenis Data                              Pilihan / Keterangan
+
+1 Kategori Properti       Pilihan (dropdown)          Rumah; Kantor; Gudang; Restoran; Coworking Space;
+                                                      Ruko; Laundry; Coffee Shop; Minimarket; Retail F&B;
+                                                      Hotel; Retail (toko baju, peralatan olahraga, toko
+                                                      elektronik, dll.); Tanah; Kos.
+
+2 Jenis Properti          Pilihan (dropdown) Sewa; Jual.
+
+3 Tanggal                 Tanggal                     Tanggal pencatatan data.
+
+4 Alamat                  Text                        Alamat properti.
+
+5 Foto Tampak Depan       Link Gambar                 Tautan foto tampak depan properti.
+
+6 Foto Spanduk/Papan      Link Gambar                 Tautan foto spanduk atau papan promosi.
+        Promosi
+                          Angka Desimal               Koordinat lintang.
+7 Latitude                Angka Desimal               Koordinat bujur.
+
+8 Longitude
+
+Sample data (15 titik): mapid.co.id/SamplePropertiGo
+
+A.4.2 Struk Go
+
+Struk Go merupakan misi pengumpulan data pengeluaran riil per transaksi dari berbagai
+tempat, termasuk restoran, warung, minimarket, apotek, e-commerce, dan transportasi.
+
+No.  Atribut Kolom              Jenis Data                              Pilihan / Keterangan
+
+1 Nama Tempat/Merchant Text                           Nama tempat atau merchant transaksi.
+
+2 Kategori Tempat         Pilihan (dropdown)          Restoran/kafe; Warung/kaki lima;
+                                                      Minimarket/supermarket; Apotek; Transportasi;
+                                                      Lainnya (isi sendiri).
+
+3 Tanggal Transaksi       Text                        Tanggal transaksi.
+
+4 Waktu Transaksi         Text                        Waktu transaksi.
+
+5 Metode Pembayaran       Pilihan (dropdown) Tunai; QRIS; Debit; Kartu Kredit; E-wallet.
+
+6 Foto Struk/Bukti Bayar  Link Gambar                 Tautan foto struk atau bukti bayar.
+
+7 Latitude                Text                        Koordinat lintang.
+
+8 Longitude               Text                        Koordinat bujur.
+
+Sample data (15 titik): mapid.co.id/SampleStrukGo
+A.4.3 Menu Go
+
+Menu Go merupakan misi lapangan untuk mendokumentasikan profil tempat makan,
+terutama kaki lima/gerobak, warung, fast food, kafe, hingga restoran. Data ini bertujuan
+memetakan lokasi kuliner beserta ketersediaan menu dan harga.
+
+No.        Atribut Kolom                  Jenis Data                      Pilihan / Keterangan
+
+1 Nama Tempat/Makan                 Text                Nama tempat makan.
+
+2 Jenis Tempat Makan                Pilihan (dropdown)  Restoran; Kaki Lima/Gerobak; Kafe; Warung/Tenda
+                                                        (Menetap); Fast Food.
+
+3 Tanggal                           Text                Tanggal pencatatan data.
+
+4 Waktu                             Text                Waktu pencatatan data.
+
+5 Foto Tempat                       Link Foto           Tautan foto tempat makan.
+                                    Link Foto           Tautan foto menu utama.
+6 Foto Menu 1 (Foto Menu
+        Utama)
+
+7 Foto Menu 2 (Foto Menu            Link Foto           Tautan foto menu lainnya.
+        Lainnya)
+
+8 Menu Dalam Bentuk Link            Text (Opsional)     Tautan menu digital, apabila tersedia.
+        Digital
+
+9 Apa Menu Utama/Andalan            Text                Menu utama atau menu andalan.
+
+     Yang Dijual?
+
+10 Berapa Harga Rata-rata Menu Angka                    Harga rata-rata menu per porsi.
+         Tersebut (Per porsi)?
+
+11 Bagaimana Kondisi Pembeli        Pilihan (dropdown)  Sepi: hanya ada penjual/tidak ada antrean atau pembeli
+         Saat Kunjungan Dilakukan?                      lain. Sedang: ada 1-3 pembeli menunggu/makan.
+                                                        Ramai: antrean lebih dari 3 orang atau kursi/meja
+                                                        mayoritas terisi.
+
+12 Apakah Berjualan Dengan          Pilihan (dropdown) Ya (Berkeliling); Tidak (Menetap/Mangkal di satu titik).
+         Berkeliling (Mobilitas)?
+
+13 Latitude                         Angka Desimal       Koordinat lintang.
+
+14 Longitude                        Angka Desimal       Koordinat bujur.
+
+Sample data (15 titik): mapid.co.id/SampleMenuGo
+
+A.5 Data Pendukung / Data Sekunder
+
+Data pendukung adalah kumpulan dataset yang tersedia di MAPID Data Catalogue. Dataset
+ini berfungsi sebagai referensi tambahan untuk analisis spasial, validasi lapangan, atau
+kebutuhan lain yang relevan. Data pendukung dapat dicari melalui menu Import Data pada
+mode Editor GEO MAPID.
+
+     Aspek                                              Ketentuan / Penjelasan
+
+     Sumber utama         MAPID Data Catalogue. Informasi lebih lanjut tersedia pada
+                          mapid.co.id/data-catalog.
+
+Akses di GEO MAPID Melalui menu Import Data pada mode Editor GEO MAPID.
+          Fungsi         Referensi tambahan untuk analisis spasial, validasi lapangan, atau kebutuhan
+                         lain yang relevan dengan solusi.
+Data tambahan di luar
+    Data Catalogue       Diperbolehkan selama data resmi, terbuka, relevan, dan sumbernya
+         Batasan         dicantumkan.
+
+                         Data pendukung tidak menggantikan kewajiban penggunaan data dasar panitia
+                         bagi tim yang lolos kurasi.
+
+Referensi Data Catalogue: https://mapid.co.id/data-catalog
+
+A.6 Data Hasil Survey
+
+Bagi tim terkurasi, data hasil survey activities merupakan bagian dari dataset kompetisi yang
+digunakan untuk pengayaan, validasi, atau pelengkapan data dari WebGIS yang dibuat.
+Untuk survey activities ini menggunakan MAPID APPS di bagian mission/activities. Bentuk
+data yang dapat dikumpulkan dapat berupa foto, catatan lapangan, dokumentasi kondisi
+fasilitas, validasi konektivitas, skor kondisi, atribut tambahan, dan narasi pengalaman
+pengguna, sesuai ketentuan panitia dan kebutuhan solusi WebGIS.
+
+         Aspek                                                         Ketentuan
+    Tujuan survey
+    Lokasi survey        Pengayaan, validasi, atau pelengkapan data yang digunakan dalam solusi
+   Rencana survey        WebGIS.
+ Pemanfaatan hasil
+Penggunaan budget        Dapat dilakukan di sekitar transportasi massal, di dalam transportasi massal,
+                         atau pada lokasi lain yang sesuai dengan solusi WebGIS.
+
+                         Tim terkurasi wajib membuat rencana survey activities (teknis dan format akan
+                         diberikan setelah terkurasi 50 tim)
+
+                         Data hasil survey activities wajib digunakan untuk memperkaya analisis dan
+                         WebGIS.
+
+                         Survey activity budget hanya boleh digunakan untuk aktivitas yang
+                         berhubungan langsung dengan pengembangan solusi WebGIS.
+
+A.7 Ringkasan Checklist Data
+
+         Checklist                                        Status yang Perlu Dipastikan
+Data Community MAPS
+                         Jenis data ini digunakan dalam WebGIS yang dibuat (Community Maps,
+   Data pendukung /      Properti Go, Struk Go, Menu Go)
+         sekunder
+                         Data tambahan yang digunakan resmi, terbuka, relevan, dan sumbernya
+ Data survey activities  dicantumkan.
+ Etika dan kerahasiaan
+                         Data primer lapangan yang diambil dari 50 tim terkurasi.
+
+                         Data kompetisi digunakan hanya untuk kebutuhan kompetisi dan tidak
+                         disebarluaskan tanpa izin.
+B. Ketentuan dan Panduan WebGIS
+
+Dalam kompetisi ini, WebGIS bukan hanya website peta interaktif. WebGIS merupakan
+media untuk menyajikan hasil pengolahan data, analisis spasial, insight, dan interaksi
+berbasis AI. Peserta perlu memiliki alur yang jelas dari data awal, proses pengolahan,
+penggunaan AI, analisis spasial, hingga output yang ditampilkan kepada pengguna.
+
+B.1 Tujuan Produk WebGIS
+
+      Aspek                                                     Ketentuan
+  Fokus produk
+                  WebGIS harus membantu pengguna memahami konteks, pola, hubungan, dan
+ Bentuk produk    makna dari data komunitas, data hasil survey, serta data pendukung yang
+                  digunakan.
+ Output utama
+Konteks masalah   Peserta bebas membentuk produk WebGIS, misalnya dashboard, story map,
+                  analytical map, decision-support map, mobility intelligence map, accessibility
+                  dashboard, atau format lain yang relevan.
+
+                  WebGIS final harus menghasilkan insight dan rekomendasi; bukan hanya
+                  menampilkan data mentah atau titik pada peta.
+
+                  WebGIS perlu menghubungkan data dengan isu nyata. Contoh Aksesibilitas,
+                  konektivitas antarmoda, ekosistem ekonomi, potensi lokasi (Site selection),
+                  atau pengalaman pengguna transportasi.
+
+B.2 Komponen Wajib WebGIS
+
+Komponen                   Ketentuan Minimum
+
+Peta interaktif   Peta interaktif wajib menjadi elemen utama WebGIS.
+
+Basemap           WebGIS wajib menggunakan MAPID MAPS sebagai basemap utama.
+
+Interaksi peta    Peta harus mendukung zoom, klik objek, filter data, tabel lokasi, tabel informasi
+                  atribut, dan layer control.
+
+Visualisasi data  Data dapat ditampilkan dalam bentuk layer peta, table, grafik, chart, infografik,
+                  atau visualisasi lain yang relevan.
+
+Fitur AI didalam Interface AI wajib hadir sebagai bagian dari interaksi pengguna di dalam WebGIS.
+           WebGIS
+
+Akses publik      Pada tahap final, WebGIS wajib dapat diakses dengan menggunakan server
+                  seperti contoh provider : :Vercel dan Netlify
+B.3 Alur Pengolahan Data hingga WebGIS
+
+Setiap tim perlu menjelaskan hubungan antara data yang digunakan, metode pengolahan,
+penggunaan AI, analisis spasial, dan informasi yang diterima pengguna. Alur berikut dapat
+digunakan sebagai kerangka penjelasan:
+
+Tahap                             Penjelasan
+
+1. Identifikasi data awal  Menentukan data Community Maps, data mission, data hasil survey activities, dan
+                           data sekunder yang relevan dengan masalah.
+ 2. Data cleaning dan
+      standardisasi        Membersihkan data, memperbaiki table tp atribut, serta menyamakan format agar
+                           data dapat dipahami dengan jelas
+
+3. Pengayaan dan validasi Melakukan pengayaan atau validasi melalui survey activities sesuai kebutuhan solusi
+                                       WebGIS.
+
+4. Pengolahan data tidak   Mengolah foto, teks, deskripsi, atau catatan lapangan menjadi informasi yang lebih
+         terstruktur       siap dianalisis.
+
+5. Penggunaan AI           Menggunakan AI untuk ekstraksi, klasifikasi, ringkasan, rekomendasi, atau
+                           pemrosesan lain yang relevan.
+
+6. Analisis spasial        Melakukan analisis spasial untuk menemukan pola, keterkaitan, prioritas, atau
+                           konteks lokasi.
+
+7. Output final data spasial Merumuskan temuan utama(Data Spasial dan Insight) yang dapat dipahami
+
+dan insight                pengguna dan relevan bagi stakeholder.
+
+8. Integrasi dalam WebGIS Menampilkan dat hasil analisis, insight, rekomendasi, dan interaksi AI melalui
+                                        interface WebGIS.
+
+B.4 Pengolahan dan Analisis Data
+
+Peserta wajib mengolah data mentah yang disediakan panitia dan data hasil survey
+activities. Tidak semua metode berikut harus digunakan; tim perlu memilih metode yang
+sesuai dengan masalah dan data yang digunakan.
+
+Kelompok Pengolahan        Contoh Metode yang Diperbolehkan
+
+Penyiapan data             Data cleaning, standardisasi atribut, filtering, geocoding, dan penggabungan
+                           data.
+
+Pengolahan informasi       Klasifikasi, ekstraksi informasi dari teks, interpretasi informasi dari foto atau
+                           dokumentasi visual, dan AI-assisted tagging.
+
+Analisis spasial           Spatial join, network/context analysis, clustering, scoring, indexing, dan visual
+                           analytics.
+
+Validasi                   Validasi data hasil survey serta penggabungan data panitia, data survey, dan
+                           data sekunder.
+
+Penyusunan rekomendasi Menerjemahkan insight menjadi rekomendasi yang relevan bagi stakeholder.
+B.5 Rekomendasi Struktur WebGIS
+
+  Status struktur: Struktur bersifat referensi, tetapi semua WebGIS wajib memiliki minimal: Peta
+  Interaktif + Insight + AI Interface
+
+Bagian WebGIS         Fungsi
+
+Beranda / Overview    Menjelaskan masalah, tujuan solusi, wilayah atau konteks analisis, serta ringkasan
+                      insight utama.
+
+Peta Interaktif       Menjadi ruang utama eksplorasi layer, filter, pencarian lokasi, popup atribut, dan
+                      layer control.
+
+Analisis dan Insight  Menampilkan hasil analisis spasial, indikator, grafik, tabel, perbandingan area, atau
+                      visual analytics.
+
+Interkasi AI didalam interface Didalam WebGIS diwajibkan ada interface dan interaksi AI didalam WebGIS
+              WebGIS
+
+AI Insight            Memuat interaksi AI yang membantu pengguna meminta ringkasan, penjelasan
+                      area, perbandingan, atau rekomendasi.
+
+Survey Activities     Menjelaskan data lapangan yang dikumpulkan, dokumentasi, serta peran survey
+                      dalam pengayaan atau validasi data.
+
+Metodologi dan Sumber Data Menjelaskan data, proses pengolahan, metode analisis, penggunaan AI, serta
+                                           sumber dan batasan data.
+
+Rekomendasi           Menyajikan rekomendasi berbasis insight untuk stakeholder yang relevan.
+
+B.6 Desain, Responsivitas, dan Aksesibilitas
+
+         Aspek                                                      Ketentuan
+        Desain        Desain harus profesional, informatif, dan relevan dengan tema transportasi
+                      massal.
+     Storytelling     Visualisasi dan narasi harus membantu audiens memahami data dengan cepat
+                      serta menghubungkan data dengan isu nyata.
+Desktop dan mobile    Website harus dapat diakses melalui desktop dan mobile.
+ Kenyamanan peta      Tampilan peta harus tetap nyaman digunakan pada berbagai ukuran layar.
+                      Website harus memiliki waktu loading yang wajar.
+       Performa       WebGIS wajib dapat diakses publik pada tahap final.
+     Akses publik
+B.7 Larangan dalam Pengembangan WebGIS
+
+          Larangan                                                    Penjelasan
+ WebGIS tanpa analisis
+                          Dilarang membuat WebGIS yang hanya menampilkan data tanpa proses
+Penggunaan data di luar   analisis atau insight.
+          kompetisi
+                          Dilarang menggunakan data Community Maps MAPID atau data kompetisi
+ Pengolahan Data Non -    untuk tujuan di luar kompetisi tanpa izin.
+        OpenSource
+                          Analisis spasial disarankan menggunakan tools open-source seperti QGIS
+Penyebaran data mentah    atau Google Earth Engine
+
+     Konten tidak etis    Dilarang menyebarluaskan data mentah MAPID atau partner kepada pihak
+ Pelanggaran hak cipta    luar.
+   Data pribadi sensitif
+                          Dilarang memasukkan konten diskriminatif, provokatif, atau tidak etis.
+     Fitur tidak publik
+                          Dilarang menggunakan konten yang melanggar hak cipta.
+
+                          Dilarang mengambil data pribadi sensitif tanpa izin.
+
+                          Dilarang menggunakan fitur berbayar yang tidak dapat diakses publik, kecuali
+                          telah disetujui panitia.
+C. Panduan Penggunaan AI
+
+AI digunakan untuk membantu mengubah data menjadi informasi yang lebih bermakna dan
+mudah dieksplorasi. Dalam kompetisi ini, AI wajib hadir sebagai bagian dari pengalaman
+pengguna di dalam interface WebGIS. Oleh karena itu, penggunaan AI tidak cukup hanya
+dijelaskan sebagai proses internal; pengguna harus dapat mengakses hasil atau interaksi AI
+melalui WebGIS.
+
+C.1 Ketentuan Utama Penggunaan AI
+
+Ketentuan                                                    Penjelasan
+
+Posisi AI                    AI wajib hadir sebagai bagian dari interaksi pengguna di dalam WebGIS,
+                             dengan peran sebagai pemroses dan penerjemah data menjadi insight spasia,
+                             dan hadir didalam interface WebGIS.
+
+Bentuk implementasi          Bentuk implementasi tidak dibatasi dan dapat disesuaikan dengan ide
+                             masing-masing tim.
+
+Keterkaitan dengan data AI harus digunakan secara relevan terhadap data, masalah, dan insight yang
+                                     dibangun oleh tim.
+
+Keterjelasan metode Peserta harus dapat menjelaskan input, proses, output, dan validasi hasil AI.
+
+Tujuan akhir                 AI harus membantu pengguna memahami insight, bukan sekadar menjadi fitur
+                             tambahan yang tidak terhubung dengan analisis.
+
+C.2 Contoh Transformasi Data dengan AI
+
+ Contoh : Ini adalah contoh yang bisa diimplementasi, bukan kewajiban harus seperti tabel berikut. 
+ AI harus menghasilkan output yang dapat dipetakan atau dikaitkan dengan lokasi (spatial output)
+
+          Data Awal          Peran AI                        Output yang Dapat Digunakan di WebGIS
+Foto fasilitas atau kondisi
+                             Klasifikasi atau interpretasi   Kategori kondisi fasilitas atau indikator kondisi.
+          lapangan           visual.
+   Teks deskripsi lokasi
+                             Ekstraksi informasi penting, tag, Tema isu lokasi, tag aksesibilitas, atau konteks
+     Catatan lapangan
+                             atau keyword.                   area.
+            Atribut
+                             Klasifikasi atau peringkasan    Kategori hambatan, ringkasan observasi, atau
+ Layer dan hasil analisis    informasi.                      indikator pengalaman pengguna.
+
+                             Pengayaan atau                  Profil ekonomi kawasan, kelompok kategori, atau
+                             pengelompokan informasi.        insight pendukung.
+
+                             Penyusunan ringkasan,           Summary area, penjelasan terpilih, comparison
+                             penjelasan, perbandingan, atau  insight, atau prioritas area.
+                             rekomendasi.
+C.3 Checklist WebGIS dan AI
+
+     Checklist                                          Status yang Perlu Dipastikan
+  Peta interaktif   Peta menjadi elemen utama dan memuat interaksi dasar yang diwajibkan.
+                    MAPID MAPS digunakan sebagai basemap utama.
+      Basemap       WebGIS menunjukkan proses pengolahan data dan menghasilkan insight, bukan
+ Data dan analisis  hanya menampilkan data mentah.
+                    Bagi tim terkurasi, data hasil survey digunakan untuk memperkaya atau memvalidasi
+ Survey activities  analisis.
+                    Pengguna dapat mengakses fitur atau hasil AI secara langsung dari WebGIS.
+AI dalam interface  Input, proses, output, validasi, dan integrasi AI dapat dijelaskan oleh tim.
+   Penjelasan AI    Insight diterjemahkan menjadi rekomendasi bagi stakeholder yang relevan.
+   Rekomendasi      WebGIS dapat diakses publik, responsif untuk desktop dan mobile, serta memiliki
+   Akses publik     loading yang wajar.
+
