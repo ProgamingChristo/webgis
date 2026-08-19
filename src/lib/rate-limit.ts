@@ -25,7 +25,7 @@ export class NoOpRateLimiter implements RateLimiter {
 type RateLimitPolicy = keyof ApiSecurityConfig["rateLimits"];
 type RateLimitSecurityConfig = Pick<
   ApiSecurityConfig,
-  "rateLimits" | "trustProxy"
+  "rateLimits" | "trustProxy" | "appEnv"
 >;
 
 interface RateLimitBucket {
@@ -43,8 +43,16 @@ const DEFAULT_MAX_BUCKETS = 10_000;
 const SHARED_UNTRUSTED_CLIENT = "shared-untrusted-client";
 
 function selectPolicy(identifier: string): RateLimitPolicy {
+  if (identifier.startsWith("auth:register")) {
+    return "auth_register";
+  }
+
+  if (identifier.startsWith("auth:login")) {
+    return "auth_login";
+  }
+
   if (identifier.startsWith("auth:")) {
-    return "auth";
+    return "auth_general";
   }
 
   if (identifier.includes(":spatial:")) {
@@ -58,16 +66,29 @@ function selectPolicy(identifier: string): RateLimitPolicy {
   return "api";
 }
 
-function getTrustedClientIp(req: NextRequest, trustProxy: boolean): string | null {
-  if (!trustProxy) {
-    return null;
+function getTrustedClientIp(req: NextRequest, config: RateLimitSecurityConfig): string | null {
+  let candidate = "";
+
+  if (config.trustProxy) {
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    candidate =
+      forwardedFor?.split(",", 1)[0]?.trim() ??
+      req.headers.get("x-real-ip")?.trim() ??
+      "";
   }
 
-  const forwardedFor = req.headers.get("x-forwarded-for");
-  const candidate =
-    forwardedFor?.split(",", 1)[0]?.trim() ??
-    req.headers.get("x-real-ip")?.trim() ??
-    "";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!candidate && (req as any).ip) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    candidate = (req as any).ip;
+  }
+  
+  if (!candidate && config.appEnv === "development") {
+    // In local development Next.js dev server, req.ip might be undefined
+    // but the headers might contain the local IP, or we can fallback to localhost loopback
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    candidate = forwardedFor?.split(",", 1)[0]?.trim() ?? "127.0.0.1";
+  }
 
   return isIP(candidate) === 0 ? null : candidate;
 }
@@ -108,7 +129,7 @@ export class InMemoryRateLimiter implements RateLimiter {
     const policy = selectPolicy(identifier);
     const rule = config.rateLimits[policy];
     const now = this.clock();
-    const key = this.createBucketKey(req, identifier, policy, config.trustProxy);
+    const key = this.createBucketKey(req, identifier, policy, config);
 
     this.removeExpiredBuckets(now);
 
@@ -141,13 +162,13 @@ export class InMemoryRateLimiter implements RateLimiter {
     req: NextRequest,
     identifier: string,
     policy: RateLimitPolicy,
-    trustProxy: boolean,
+    config: RateLimitSecurityConfig,
   ): string {
-    if (policy !== "auth") {
+    if (!policy.startsWith("auth")) {
       return `${policy}:${identifier}`;
     }
 
-    const client = getTrustedClientIp(req, trustProxy) ?? SHARED_UNTRUSTED_CLIENT;
+    const client = getTrustedClientIp(req, config) ?? SHARED_UNTRUSTED_CLIENT;
     return `${policy}:${identifier}:${client}`;
   }
 

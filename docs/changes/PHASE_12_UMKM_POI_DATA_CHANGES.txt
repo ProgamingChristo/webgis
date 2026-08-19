@@ -1,0 +1,32 @@
+========================================================================
+PHASE 12: UMKM & POI DATA INGESTION (DUMMY MODE)
+========================================================================
+DATE: 2026-08-19
+
+1. DATABASE SCHEMA:
+   - Added `umkm` table for business entities.
+   - Added `pois` table for generic non-business points of interest.
+   - Added `entity_network_access` table to materialize spatial linkages between UMKM/POI and the pedestrian network.
+   - Added PostGIS spatial indexes (GiST) on `geometry`.
+   - Enabled Row-Level Security (RLS) on all new tables.
+   - Created `find_umkm_nearby`, `find_pois_nearby`, and `find_nearest_pedestrian_node` RPCs to support ST_DWithin and ST_Distance spatial queries.
+
+2. TYPES & SCHEMAS:
+   - Created `UmkmEntity`, `PoiEntity`, `EntityNetworkAccessEntity` in `domain.ts`.
+   - Created DTOs and Input interfaces for repository interactions.
+   - Mapped precise Zod schemas in `data-model.schema.ts` explicitly enforcing `environment: "DUMMY"` in creation pipelines.
+
+3. REPOSITORIES:
+   - Created `UmkmRepository`, `PoiRepository`, and `EntityNetworkAccessRepository` utilizing standard Provenance patterns.
+
+4. SERVICES:
+   - `UmkmService` and `PoiService` implemented to wrap basic CRUD operations.
+   - `EntityAccessService` implemented to automatically snap UMKM/POI entities to the nearest pedestrian node using the network graph upon creation.
+
+5. INTERNAL API:
+   - Exposed `GET /api/internal/umkm/nearby` to spatially query UMKMs.
+   - Exposed `GET /api/internal/poi/nearby` to spatially query POIs.
+
+6. INGESTION PIPELINE:
+   - Added `seed-dummy-umkm-poi.ts` to idempotently insert dummy UMKMs and POIs within the Phase 9 Pilot Area bounds.
+   - Added `cleanup-dummy-data.ts` to purge only the dummy environment data without affecting existing constraints.

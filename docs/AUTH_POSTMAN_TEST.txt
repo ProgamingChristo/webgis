@@ -1,0 +1,97 @@
+GETRA AUTH POSTMAN TESTING GUIDE
+================================
+
+PANDUAN TESTING AUTHENTICATION GETRA (STABLE WORKFLOW)
+
+Terdapat 2 skenario pengujian auth yang dipisahkan agar testing harian tidak memicu rate-limit Supabase:
+
+--------------------------------------------------------------------------------
+SKENARIO 1: NORMAL DAILY TEST (Gunakan Akun Stabil yang Sudah Disediakan)
+--------------------------------------------------------------------------------
+Gunakan akun uji coba yang sudah stabil (stable test accounts). Jangan melakukan registrasi berulang kali untuk menguji API protected.
+
+Akun Stabil yang Tersedia:
+- COMMUTER:  getra.commuter.test@example.com   / PasswordDevelopment123!
+- UMKM:      getra.umkm.test@example.com       / PasswordDevelopment123!
+- COMMUNITY: getra.community.test@example.com  / PasswordDevelopment123!
+- ADMIN:     getra.admin.test@example.com      / PasswordDevelopment123!
+
+1. LOGIN
+   Method: POST
+   URL: {{APP_BASE_URL}}/api/auth/login
+   Headers:
+     Content-Type: application/json
+   Body (raw JSON):
+     {
+       "email": "getra.commuter.test@example.com",
+       "password": "PasswordDevelopment123!"
+     }
+   Expected Response: 200 OK
+   Simpan `data.session.access_token` dari response.
+
+2. GET /api/auth/me
+   Method: GET
+   URL: {{APP_BASE_URL}}/api/auth/me
+   Headers:
+     Authorization: Bearer <access_token>
+   Expected Response: 200 OK
+
+3. GET /api/profile
+   Method: GET
+   URL: {{APP_BASE_URL}}/api/profile
+   Headers:
+     Authorization: Bearer <access_token>
+   Expected Response: 200 OK
+
+4. PATCH /api/profile
+   Method: PATCH
+   URL: {{APP_BASE_URL}}/api/profile
+   Headers:
+     Authorization: Bearer <access_token>
+     Content-Type: application/json
+   Body (raw JSON):
+     {
+       "display_name": "Updated Name"
+     }
+   Expected Response: 200 OK
+
+5. LOGOUT
+   Method: POST
+   URL: {{APP_BASE_URL}}/api/auth/logout
+   Headers:
+     Authorization: Bearer <access_token>
+   Expected Response: 200 OK
+
+6. SPATIAL APIS (Authenticated)
+   - GET /api/spatial/nearby?lat=-6.2088&lng=106.8456&radius=1000&type=transport_node
+   - POST /api/spatial/distance (Body: {"origin": {"latitude": -6.2088, "longitude": 106.8456}, "destination": {"latitude": -6.2000, "longitude": 106.8500}})
+   - GET /api/spatial/bbox?west=106.8&south=-6.3&east=106.9&north=-6.2&type=transport_node
+
+--------------------------------------------------------------------------------
+SKENARIO 2: REGISTER FEATURE TEST (Khusus Pengujian Fitur Pendaftaran)
+--------------------------------------------------------------------------------
+Jalankan skenario ini HANYA saat memvalidasi fitur pendaftaran user baru. Jangan diulang-ulang secara agresif dalam interval singkat.
+
+1. REGISTER USER BARU (Unik)
+   Method: POST
+   URL: {{APP_BASE_URL}}/api/auth/register
+   Headers:
+     Content-Type: application/json
+   Body (raw JSON):
+     {
+       "email": "getra.register.test.{{$timestamp}}@gmail.com",
+       "password": "PasswordDevelopment123!",
+       "display_name": "New User",
+       "role": "COMMUTER"
+     }
+   Expected: 200 OK (atau 429 jika kuota email bawaan Supabase sedang cooldown).
+
+2. DUPLICATE REGISTER TEST
+   Kirim kembali request yang sama persis dengan email yang baru saja didaftarkan.
+   Expected: 409 Conflict (AUTH_EMAIL_ALREADY_EXISTS).
+
+3. ADMIN REGISTRATION REJECTION
+   Method: POST
+   URL: {{APP_BASE_URL}}/api/auth/register
+   Body: {"email": "admin.attempt@gmail.com", "password": "...", "role": "ADMIN"}
+   Expected: 403 Forbidden (Role ADMIN dilarang via public registration).

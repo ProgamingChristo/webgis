@@ -1,0 +1,21 @@
+UMKM & POI DATA MODEL (Phase 12)
+
+The UMKM and POI domain model establishes distinct tracking for business entities vs generic map landmarks, both utilizing the core Provenance layer for traceability.
+
+1. UMKM (Business Entities)
+- Purpose: Entities that represent small/medium enterprises. Will eventually be claimed by user profiles and used for scoring/accessibility demand.
+- Properties: `code`, `name`, `category` (e.g. FOOD, RETAIL, SERVICE), `description`, `geometry` (Point), `study_area_id`.
+- Provenance: Always includes `source_id`, `data_version`, and `validation_status`.
+
+2. POI (Points of Interest)
+- Purpose: Static context points that generate or attract demand (e.g. SCHOOL, MARKET, STATION) but do not represent independent trackable businesses.
+- Properties: `code`, `name`, `category`, `geometry` (Point), `study_area_id`.
+- Provenance: Shared identical structure with UMKM.
+
+3. Entity Network Access
+- Purpose: A junction table that materializes the spatial linkage between a given UMKM/POI and the pedestrian network.
+- Why: Avoids performing continuous PostGIS cross-joins when calculating accessibility. By storing `pedestrian_node_id` against the `entity_id`, routing tests can start immediately from a known routing node rather than executing snapping logic every request.
+
+4. DUMMY Mode Enforcement
+- All tables include an `environment` column (enforced uniquely per code/id).
+- Zod schemas `createUmkmSchema` and `createPoiSchema` strictly type check for `environment: z.literal("DUMMY")` during Phase 12 to prevent production spillage.

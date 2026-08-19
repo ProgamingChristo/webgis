@@ -3,6 +3,7 @@ import { z } from "zod";
 const publicEnvironmentSchema = z.object({
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().trim().min(1),
   NEXT_PUBLIC_SUPABASE_URL: z.string().trim().url(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().trim().min(1).optional(),
 });
 
 export type PublicEnvironment = z.infer<typeof publicEnvironmentSchema>;
@@ -40,6 +41,7 @@ export function getEnvironment(): PublicEnvironment {
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   });
 
   return cachedEnvironment;

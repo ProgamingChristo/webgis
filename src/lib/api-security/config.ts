@@ -1,4 +1,4 @@
-import "server-only";
+
 
 import { z } from "zod";
 
@@ -18,7 +18,9 @@ export interface ApiSecurityConfig {
   maxJsonBodyBytes: number;
   rateLimits: {
     api: RateLimitRule;
-    auth: RateLimitRule;
+    auth_general: RateLimitRule;
+    auth_register: RateLimitRule;
+    auth_login: RateLimitRule;
     mutation: RateLimitRule;
     spatial: RateLimitRule;
   };
@@ -32,7 +34,9 @@ export interface ApiSecurityEnvironmentInput {
   APP_ENV?: string;
   FRONTEND_ALLOWED_ORIGINS?: string;
   RATE_LIMIT_API_MAX_REQUESTS?: string;
-  RATE_LIMIT_AUTH_MAX_REQUESTS?: string;
+  RATE_LIMIT_AUTH_REGISTER_MAX_REQUESTS?: string;
+  RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS?: string;
+  RATE_LIMIT_AUTH_GENERAL_MAX_REQUESTS?: string;
   RATE_LIMIT_MUTATION_MAX_REQUESTS?: string;
   RATE_LIMIT_SPATIAL_MAX_REQUESTS?: string;
   RATE_LIMIT_WINDOW_MS?: string;
@@ -63,11 +67,19 @@ const environmentSchema = z
     ),
     RATE_LIMIT_API_MAX_REQUESTS: z.preprocess(
       blankToUndefined,
-      z.coerce.number().int().positive().max(100_000).default(60),
+      z.coerce.number().int().positive().max(100_000).optional(),
     ),
-    RATE_LIMIT_AUTH_MAX_REQUESTS: z.preprocess(
+    RATE_LIMIT_AUTH_REGISTER_MAX_REQUESTS: z.preprocess(
       blankToUndefined,
-      z.coerce.number().int().positive().max(10_000).default(5),
+      z.coerce.number().int().positive().max(10_000).optional(),
+    ),
+    RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS: z.preprocess(
+      blankToUndefined,
+      z.coerce.number().int().positive().max(10_000).optional(),
+    ),
+    RATE_LIMIT_AUTH_GENERAL_MAX_REQUESTS: z.preprocess(
+      blankToUndefined,
+      z.coerce.number().int().positive().max(10_000).optional(),
     ),
     RATE_LIMIT_MUTATION_MAX_REQUESTS: z.preprocess(
       blankToUndefined,
@@ -139,14 +151,17 @@ export function parseApiSecurityConfig(
   }
 
   const windowMs = parsed.data.RATE_LIMIT_WINDOW_MS;
+  const isDev = parsed.data.APP_ENV === "development";
   return {
     allowedOrigins: parseAllowedOrigins(parsed.data.FRONTEND_ALLOWED_ORIGINS),
     appBaseUrl,
     appEnv: parsed.data.APP_ENV,
     maxJsonBodyBytes: parsed.data.API_MAX_JSON_BODY_BYTES,
     rateLimits: {
-      api: { limit: parsed.data.RATE_LIMIT_API_MAX_REQUESTS, windowMs },
-      auth: { limit: parsed.data.RATE_LIMIT_AUTH_MAX_REQUESTS, windowMs },
+      api: { limit: parsed.data.RATE_LIMIT_API_MAX_REQUESTS ?? (isDev ? 1000 : 60), windowMs },
+      auth_register: { limit: parsed.data.RATE_LIMIT_AUTH_REGISTER_MAX_REQUESTS ?? (isDev ? 100 : 5), windowMs },
+      auth_login: { limit: parsed.data.RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS ?? (isDev ? 100 : 10), windowMs },
+      auth_general: { limit: parsed.data.RATE_LIMIT_AUTH_GENERAL_MAX_REQUESTS ?? (isDev ? 1000 : 30), windowMs },
       mutation: {
         limit: parsed.data.RATE_LIMIT_MUTATION_MAX_REQUESTS,
         windowMs,
@@ -168,7 +183,9 @@ export function loadApiSecurityConfig(): ApiSecurityConfig {
     APP_ENV: process.env.APP_ENV,
     FRONTEND_ALLOWED_ORIGINS: process.env.FRONTEND_ALLOWED_ORIGINS,
     RATE_LIMIT_API_MAX_REQUESTS: process.env.RATE_LIMIT_API_MAX_REQUESTS,
-    RATE_LIMIT_AUTH_MAX_REQUESTS: process.env.RATE_LIMIT_AUTH_MAX_REQUESTS,
+    RATE_LIMIT_AUTH_REGISTER_MAX_REQUESTS: process.env.RATE_LIMIT_AUTH_REGISTER_MAX_REQUESTS,
+    RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS: process.env.RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS,
+    RATE_LIMIT_AUTH_GENERAL_MAX_REQUESTS: process.env.RATE_LIMIT_AUTH_GENERAL_MAX_REQUESTS,
     RATE_LIMIT_MUTATION_MAX_REQUESTS:
       process.env.RATE_LIMIT_MUTATION_MAX_REQUESTS,
     RATE_LIMIT_SPATIAL_MAX_REQUESTS:

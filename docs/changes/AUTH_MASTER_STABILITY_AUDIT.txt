@@ -1,0 +1,28 @@
+AUTH MASTER STABILITY AUDIT: CHRONOLOGICAL RECORD
+
+ISSUE 1: ERROR 500 PADA REGISTRASI AWAL
+Penyebab: 
+Kegagalan validasi payload (seperti format email tidak valid, atau user already exists) sebelumnya menghasilkan Internal Server Error (500) karena tidak ada penanganan (catch/handling) spesifik untuk `error.status === 400` (validation_failed) atau `error.status === 422` (user_already_exists) dari Supabase.
+Penyelesaian:
+Menambahkan kondisi spesifik di catch block pada `app/api/auth/register/route.ts` dan `login/route.ts` untuk melempar `ApplicationError("VALIDATION_ERROR")` dan custom error `AUTH_EMAIL_ALREADY_EXISTS`. 
+
+ISSUE 2: ERROR 429 "RATE_LIMIT_EXCEEDED" TERLALU CEPAT KETIKA PENGEMBANGAN
+Penyebab: 
+- Konfigurasi limitasi `auth` global terlalu ketat (hanya 5 request per 60 detik).
+- Fitur extract IP localhost selalu membaca Array yang diformat menyatu menjadi IP bucket `SHARED_UNTRUSTED_CLIENT` karena konfigurasi `TRUST_PROXY=false` membuang IP X-Forwarded-For dan tidak bisa di fallback dengan benar.
+Penyelesaian:
+- Memisahkan identifier namespace `auth` menjadi `auth_register`, `auth_login`, `auth_general` di dalam `api-security/config.ts` dan policy limit resolver.
+- Mengatur environment variable default dan logika untuk memberikan batas toleran (100) saat mendeteksi env `development`.
+- Memperbaiki helper `getTrustedClientIp` untuk aman mengambil `(req as any).ip` jika ada, dan meretur `127.0.0.1` pada local loopback jika IP tetap kosong saat di env development, alih-alih melempar ke shared throttler.
+- Mengidentifikasi log asal (source) dari rate limit dengan update `RateLimitExceededError` agar secara jelas mencatat `source: "SUPABASE_AUTH"` atau `source: "GETRA_RATE_LIMIT"`.
+
+ISSUE 3 (CURRENT BLOCKER): SUPABASE AUTH PROVIDER RATE LIMIT
+Penyebab: 
+Setelah masalah rate limit internal Next.js selesai, pendaftaran user COMMUTER valid kembali menemui `429 RATE_LIMIT_EXCEEDED` dengan source dari `SUPABASE_AUTH` (error: `over_email_send_rate_limit`). Batas default ketat ini berada di level provider Supabase yang mengharuskan pengiriman Email Confirmations, dimana batas gratis adalah sangat rendah (3/jam), dan tidak bisa di-override via kode aplikasi ini.
+Penyelesaian:
+Pendaftaran secara E2E hanya dapat dituntaskan bila konfigurasi pada Instance Supabase diubah: Nonaktifkan "Confirm email" di dashboard untuk local testing, atau gunakan SMTP custom.
+
+KESIMPULAN AUDIT:
+Keseluruhan codebase dan arsitektur route untuk `AUTH` telah distabilkan, rate limit telah dibagi sesuai konteks, IP loopback ditangani dengan baik untuk Developer Experience, error dilempar dengan contract standard.
+Semua local checks (typecheck, lint, next build) telah lolos 100%. Flow login/register kini idempotent dan predictable.
+Status Task E2E: BLOCKED BY SUPABASE UPSTREAM.

@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": projectRoot,
+      "server-only": fileURLToPath(new URL("./tests/empty.ts", import.meta.url)),
     },
   },
   test: {

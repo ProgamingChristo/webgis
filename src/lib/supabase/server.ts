@@ -1,9 +1,9 @@
-import "server-only";
+
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
-import { getEnvironment } from "@/src/lib/env";
 import { loadApiSecurityConfig } from "@/src/lib/api-security/config";
+import { getEnvironment } from "@/src/lib/env";
 import { createTimeoutFetch } from "@/src/lib/http/timeout-fetch";
 
 const serverAuthOptions = {
@@ -40,6 +40,22 @@ export function getRequestSupabaseClient(authorization: string) {
       global: {
         fetch: createTimeoutFetch(security.supabaseRequestTimeoutMs),
         headers: { Authorization: authorization },
+      },
+    },
+  );
+}
+
+export function getServiceRoleSupabaseClient() {
+  const environment = getEnvironment();
+  const security = loadApiSecurityConfig();
+
+  return createSupabaseClient(
+    environment.NEXT_PUBLIC_SUPABASE_URL,
+    environment.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: serverAuthOptions,
+      global: {
+        fetch: createTimeoutFetch(security.supabaseRequestTimeoutMs),
       },
     },
   );

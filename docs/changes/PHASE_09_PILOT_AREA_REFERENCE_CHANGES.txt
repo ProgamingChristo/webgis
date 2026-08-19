@@ -1,0 +1,77 @@
+PHASE:
+09
+
+TITLE:
+Pilot Area & Master Reference Data — Dummy Mode
+
+FILES CREATED:
+- src/modules/study-area/study-area.service.ts
+- src/modules/study-area/index.ts
+- src/modules/reference-data/reference-data.service.ts
+- src/modules/reference-data/index.ts
+- tests/fixtures/phase-09/dummy-pilot-area.geojson
+- scripts/ingestion/phase-09/import-reference-data.ts
+- scripts/ingestion/phase-09/import-pilot-area.ts
+- scripts/ingestion/phase-09/cleanup-dummy-pilot.ts
+- app/api/v1/study-areas/route.ts
+- app/api/v1/study-areas/[id]/route.ts
+- tests/unit/study-area/study-area.service.test.ts
+- tests/integration/study-area/study-area.repository.test.ts
+
+FILES MODIFIED:
+- app/api/admin/ingestion/jobs/route.ts (Fixed TS errors)
+- src/modules/ingestion/repositories/data-source.repository.ts (Fixed TS errors)
+- src/modules/ingestion/repositories/import-job.repository.ts (Fixed TS errors)
+- src/modules/ingestion/services/ingestion-pipeline.service.ts (Fixed TS errors)
+
+DATABASE CHANGES:
+- No new tables created. Reusing Phase 8 foundation (`study_areas`, `data_sources`, `spatial_sources`).
+
+MIGRATIONS:
+- None required. Spatial schema is fully prepared for Pilot Area geometry insertion.
+
+REMOTE PUSH:
+- Not applicable for schema changes in this phase (no migrations).
+
+DATA SOURCES:
+- Registered new Data Source: `PHASE_09_DUMMY_PILOT` (environment: DUMMY)
+- Registered new Spatial Source: `GETRA_INTERNAL` (type: system)
+
+DUMMY DATA:
+- Created a dummy GeoJSON for Pilot Area.
+
+PILOT AREA:
+- Name: `GETRA_DUMMY_PILOT_A`
+- Extent: Small MultiPolygon in Jakarta near Monas for testing.
+- SRID: 4326
+
+REFERENCE DATA:
+- Implemented `ReferenceDataService` handling Transport Modes and UMKM Categories enum values.
+
+INGESTION JOBS:
+- Implemented `import-pilot-area.ts` utilizing the `ImportJobRepository` to track the ingestion lifecycle. Idempotent checking included.
+
+GEOMETRY VALIDATION:
+- Integrated with `SpatialService` to validate geometries strictly to SRID 4326 before ingestion.
+
+PROVENANCE:
+- Included DUMMY metadata in provenance columns during insertion into `study_areas`.
+
+API:
+- Read endpoints implemented with GET `/api/v1/study-areas` and GET `/api/v1/study-areas/[id]`. Supports `?environment=DUMMY` query.
+
+TESTS:
+- Added Unit tests for `StudyAreaService`.
+- Added Integration tests for `StudyAreaRepository`.
+
+BUILD:
+- `npm run typecheck` passes cleanly.
+
+SECURITY AUDIT:
+- `DUMMY` environment isolation logic built into both the ingestion layer and cleanup script.
+
+KNOWN LIMITATIONS:
+- Ingestion scripts require `SUPABASE_SERVICE_ROLE_KEY` to bypass Row Level Security when running against the remote Supabase database.
+
+FINAL STATUS:
+Ready for Execution / User Credential Injection.

@@ -1,0 +1,17 @@
+[
+  {
+    "corridor_source_record_id": "CORRIDOR_DUMMY_KRL_BOGOR",
+    "node_source_record_id": "NODE_DUMMY_JUANDA",
+    "stop_sequence": 1
+  },
+  {
+    "corridor_source_record_id": "CORRIDOR_DUMMY_KRL_BOGOR",
+    "node_source_record_id": "NODE_DUMMY_GAMBIR",
+    "stop_sequence": 2
+  },
+  {
+    "corridor_source_record_id": "CORRIDOR_DUMMY_TJ_K1",
+    "node_source_record_id": "NODE_DUMMY_MONAS",
+    "stop_sequence": 1
+  }
+]

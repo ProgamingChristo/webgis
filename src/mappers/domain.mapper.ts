@@ -21,6 +21,9 @@ import type {
   TransportNodeDatabaseRow,
   TransportNodeDTO,
   TransportNodeEntity,
+  TransportRouteStopDatabaseRow,
+  TransportRouteStopDTO,
+  TransportRouteStopEntity,
   UmkmProfileDatabaseRow,
   UmkmProfileDTO,
   UmkmProfileEntity,
@@ -189,6 +192,38 @@ export function mapTransportNodeRowToDTO(
   row: TransportNodeDatabaseRow,
 ): TransportNodeDTO {
   return mapTransportNodeEntityToDTO(mapTransportNodeRowToEntity(row));
+}
+
+export function mapTransportRouteStopRowToEntity(
+  row: TransportRouteStopDatabaseRow,
+): TransportRouteStopEntity {
+  return {
+    id: row.id,
+    corridor_id: row.corridor_id,
+    node_id: row.node_id,
+    stop_sequence: row.stop_sequence,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
+export function mapTransportRouteStopEntityToDTO(
+  entity: TransportRouteStopEntity,
+): TransportRouteStopDTO {
+  return {
+    id: entity.id,
+    corridor_id: entity.corridor_id,
+    node_id: entity.node_id,
+    stop_sequence: entity.stop_sequence,
+    created_at: entity.created_at,
+    updated_at: entity.updated_at,
+  };
+}
+
+export function mapTransportRouteStopRowToDTO(
+  row: TransportRouteStopDatabaseRow,
+): TransportRouteStopDTO {
+  return mapTransportRouteStopEntityToDTO(mapTransportRouteStopRowToEntity(row));
 }
 
 export function mapUmkmProfileRowToEntity(

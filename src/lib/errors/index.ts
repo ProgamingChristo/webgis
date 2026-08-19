@@ -4,6 +4,7 @@ export const applicationErrorCodes = [
   "FORBIDDEN",
   "NOT_FOUND",
   "CONFLICT",
+  "AUTH_EMAIL_ALREADY_EXISTS",
   "DATABASE_ERROR",
   "DATABASE_UNAVAILABLE",
   "INTERNAL_ERROR",
@@ -28,6 +29,7 @@ export type ApplicationErrorCode = (typeof applicationErrorCodes)[number];
 
 const publicMessages: Record<ApplicationErrorCode, string> = {
   CONFLICT: "Resource conflict",
+  AUTH_EMAIL_ALREADY_EXISTS: "Email is already registered",
   CORS_ORIGIN_DENIED: "Request origin is not allowed",
   CORS_PREFLIGHT_DENIED: "CORS preflight request is not allowed",
   DATABASE_ERROR: "Database operation failed",
@@ -54,6 +56,7 @@ const publicMessages: Record<ApplicationErrorCode, string> = {
 
 const httpStatuses: Record<ApplicationErrorCode, number> = {
   CONFLICT: 409,
+  AUTH_EMAIL_ALREADY_EXISTS: 409,
   CORS_ORIGIN_DENIED: 403,
   CORS_PREFLIGHT_DENIED: 403,
   DATABASE_ERROR: 500,
@@ -96,8 +99,13 @@ export class DatabaseUnavailableError extends ApplicationError {
   }
 }
 
+export type RateLimitSource = "GETRA_RATE_LIMIT" | "SUPABASE_AUTH";
+
 export class RateLimitExceededError extends ApplicationError {
-  constructor(readonly retryAfterSeconds: number) {
+  constructor(
+    readonly retryAfterSeconds: number,
+    readonly source: RateLimitSource = "GETRA_RATE_LIMIT"
+  ) {
     super("RATE_LIMIT_EXCEEDED", publicMessages.RATE_LIMIT_EXCEEDED, true);
     this.name = "RateLimitExceededError";
   }

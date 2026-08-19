@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "source_record_id": "NODE_DUMMY_GAMBIR",
+        "name": "Stasiun Gambir Dummy",
+        "node_type": "STATION",
+        "transport_mode": "TRAIN"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.8306, -6.1767]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "source_record_id": "NODE_DUMMY_MONAS",
+        "name": "Halte Monas Dummy",
+        "node_type": "STOP",
+        "transport_mode": "BUS"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.8248, -6.1752]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "source_record_id": "NODE_DUMMY_JUANDA",
+        "name": "Stasiun Juanda Dummy",
+        "node_type": "STATION",
+        "transport_mode": "TRAIN"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.8284, -6.1666]
+      }
+    }
+  ]
+}

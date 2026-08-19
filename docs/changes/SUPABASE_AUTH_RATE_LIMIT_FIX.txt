@@ -1,0 +1,37 @@
+SUPABASE AUTH RATE LIMIT — ROOT FIX REPORT
+==========================================
+
+1. ROOT CAUSE AUDIT
+- Upstream Supabase Auth (project ref: `sesakxnjaphrxqxllqjm`) uses the default built-in email provider.
+- In Supabase default configuration (`config.toml: [auth.rate_limit] email_sent = 2` / hourly quotas), public registration attempts quickly hit the `over_email_send_rate_limit` (HTTP 429) because signup triggers email confirmation/notifications.
+- Previously, daily and automated test suites were attempting to call `POST /api/auth/register` before every test, causing frequent 429 rate-limit errors and preventing subsequent tests from running.
+- In addition, table permissions on `public.profiles` for the `authenticated` role were missing in newer PostgreSQL cloud configurations, causing PostgREST to return 42501 (Forbidden) when reading profiles during login.
+
+2. SOLUTIONS IMPLEMENTED
+- Decoupled Testing Strategy:
+  - Created `scripts/provision-test-users.ts` to provision 4 stable, idempotent test users (COMMUTER, UMKM, COMMUNITY, ADMIN) directly with confirmed email status.
+  - Created `scripts/api-smoke-test.ts` to test health, negative auth tests, all role-based authenticated flows (login -> /me -> profile -> logout), and all spatial endpoints without calling register.
+  - Created `scripts/auth-register-smoke-test.ts` to isolate public signup testing to a dedicated script that reports upstream rate-limits cleanly without breaking the rest of the test suite.
+- Database Permission Migration:
+  - Created migration `20260818143000_grant_authenticated_permissions.sql` to explicitly grant table and sequence permissions to `authenticated`, `anon`, and `service_role` roles for Data API access.
+  - Pushed migration to remote Supabase via `supabase db push`.
+- Code & Route Hardening:
+  - Updated `app/api/auth/login/route.ts` to use `getRequestSupabaseClient(bearerToken)` for reading user profile under RLS.
+  - Ensured `RateLimitExceededError` explicitly identifies `details: { source: "SUPABASE_AUTH" }` vs `GETRA_RATE_LIMIT`.
+  - Added `GETRA_TEST_USER_PASSWORD` documentation to `.env.example`.
+
+3. SUPABASE AUDIT & MANUAL ACTION
+- Built-in Email Provider: Active (Low quota, ~2-3 emails/hour for confirmation).
+- Custom SMTP: Not configured.
+- If repeated signups are required for development/production:
+  MANUAL SUPABASE ACTION REQUIRED:
+  Dashboard: Supabase -> Project -> Authentication -> Emails -> SMTP Settings
+  Configure project-owned custom SMTP (SendGrid, Resend, AWS SES, etc.).
+  Or in Development: Disable email confirmations at Authentication -> Providers -> Email -> "Confirm email".
+
+4. VERIFICATION
+- `npm run typecheck`: PASS
+- `npm run lint`: PASS (0 warnings, 0 errors)
+- `npm test`: PASS (44 test files, 353 tests passed)
+- `npm run build`: PASS
+- `scripts/api-smoke-test.ts`: PASS on Run 1 and Run 2 (100% of routes passed).

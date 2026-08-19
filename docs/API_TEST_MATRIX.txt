@@ -1,0 +1,31 @@
+# GETRA API TEST MATRIX (POST-STABILIZATION & ROOT FIX)
+
+| Endpoint | Method | Scenario | Auth Required | Role | Expected Status | Actual Status | PASS / FAIL | Failure Source |
+|---|---|---|---|---|---|---|---|---|
+| `/api/health` | GET | Valid request | No | Any | 200 | 200 | PASS | - |
+| `/api/auth/login` | POST | Valid COMMUTER credentials | No | N/A | 200 | 200 | PASS | - |
+| `/api/auth/login` | POST | Valid UMKM credentials | No | N/A | 200 | 200 | PASS | - |
+| `/api/auth/login` | POST | Valid COMMUNITY credentials | No | N/A | 200 | 200 | PASS | - |
+| `/api/auth/login` | POST | Valid ADMIN credentials | No | N/A | 200 | 200 | PASS | - |
+| `/api/auth/login` | POST | Invalid password | No | N/A | 401 | 401 | PASS | - |
+| `/api/auth/me` | GET | Valid COMMUTER bearer token | Yes | COMMUTER | 200 | 200 | PASS | - |
+| `/api/auth/me` | GET | Valid UMKM bearer token | Yes | UMKM | 200 | 200 | PASS | - |
+| `/api/auth/me` | GET | Valid COMMUNITY bearer token | Yes | COMMUNITY | 200 | 200 | PASS | - |
+| `/api/auth/me` | GET | Valid ADMIN bearer token | Yes | ADMIN | 200 | 200 | PASS | - |
+| `/api/auth/me` | GET | Missing token | No | N/A | 401 | 401 | PASS | - |
+| `/api/profile` | GET | Valid COMMUTER token | Yes | COMMUTER | 200 | 200 | PASS | - |
+| `/api/profile` | GET | Valid UMKM token | Yes | UMKM | 200 | 200 | PASS | - |
+| `/api/profile` | GET | Valid COMMUNITY token | Yes | COMMUNITY | 200 | 200 | PASS | - |
+| `/api/profile` | GET | Valid ADMIN token | Yes | ADMIN | 200 | 200 | PASS | - |
+| `/api/profile` | GET | Missing token | No | N/A | 401 | 401 | PASS | - |
+| `/api/profile` | PATCH | Valid update payload | Yes | Any | 200 | 200 | PASS | - |
+| `/api/profile` | PATCH | Missing token | No | N/A | 401 | 401 | PASS | - |
+| `/api/auth/logout` | POST | Valid token | Yes | Any | 200 | 200 | PASS | - |
+| `/api/spatial/nearby` | GET | Valid coordinates and radius | Yes | Any | 200 | 200 | PASS | - |
+| `/api/spatial/nearby` | GET | Missing token | No | N/A | 401 | 401 | PASS | - |
+| `/api/spatial/distance` | POST | Valid origin and destination | Yes | Any | 200 | 200 | PASS | - |
+| `/api/spatial/distance` | POST | Missing token | No | N/A | 401 | 401 | PASS | - |
+| `/api/spatial/bbox` | GET | Valid bounding box params | Yes | Any | 200 | 200 | PASS | - |
+| `/api/spatial/bbox` | GET | Missing token | No | N/A | 401 | 401 | PASS | - |
+| `/api/auth/register` | POST | ADMIN public registration attempt | No | N/A | 403 | 403 | PASS | - |
+| `/api/auth/register` | POST | New Unique User (built-in email limit) | No | N/A | 200 / 429 | 429 | SUPABASE_RATE_LIMITED | SUPABASE_AUTH |

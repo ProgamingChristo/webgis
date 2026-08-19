@@ -5,6 +5,7 @@ import {
   STUDY_AREA_SORT_FIELDS,
   TRANSPORT_CORRIDOR_SORT_FIELDS,
   TRANSPORT_NODE_SORT_FIELDS,
+  TRANSPORT_ROUTE_STOP_SORT_FIELDS,
   UMKM_PROFILE_SORT_FIELDS,
 } from "@/src/types/domain";
 import { SORT_DIRECTIONS } from "@/src/types/entity";
@@ -15,7 +16,9 @@ import {
   type JsonValue,
 } from "@/src/types/provenance";
 import {
+  boundingBoxSchema,
   corridorGeometrySchema,
+  lineStringGeometrySchema,
   multiPolygonGeometrySchema,
   pointGeometrySchema,
 } from "@/src/schemas/spatial.schema";
@@ -451,6 +454,23 @@ export const updateTransportNodeSchema = z
   .strict()
   .superRefine(requireAtLeastOneField);
 
+export const createTransportRouteStopSchema = z
+  .object({
+    corridor_id: uuidSchema,
+    node_id: uuidSchema,
+    stop_sequence: z.number().int().min(0),
+  })
+  .strict();
+
+export const updateTransportRouteStopSchema = z
+  .object({
+    corridor_id: uuidSchema.optional(),
+    node_id: uuidSchema.optional(),
+    stop_sequence: z.number().int().min(0).optional(),
+  })
+  .strict()
+  .superRefine(requireAtLeastOneField);
+
 export const createUmkmProfileSchema = z
   .object({
     business_name: nonemptyTextSchema,
@@ -491,6 +511,10 @@ const transportNodeFilterShape = {
   node_type: nonemptyTextSchema.optional(),
   validation_status: validationStatusSchema.optional(),
 };
+const transportRouteStopFilterShape = {
+  corridor_id: uuidSchema.optional(),
+  node_id: uuidSchema.optional(),
+};
 const umkmProfileFilterShape = {
   owner_id: uuidSchema.optional(),
   source_id: uuidSchema.optional(),
@@ -507,6 +531,9 @@ export const transportCorridorFilterSchema = z
   .strict();
 export const transportNodeFilterSchema = z
   .object(transportNodeFilterShape)
+  .strict();
+export const transportRouteStopFilterSchema = z
+  .object(transportRouteStopFilterShape)
   .strict();
 export const umkmProfileFilterSchema = z
   .object(umkmProfileFilterShape)
@@ -533,6 +560,12 @@ export const transportCorridorSortSchema = z
 export const transportNodeSortSchema = z
   .object({
     sort: z.enum(TRANSPORT_NODE_SORT_FIELDS).default("created_at"),
+    order: z.enum(SORT_DIRECTIONS).default("desc"),
+  })
+  .strict();
+export const transportRouteStopSortSchema = z
+  .object({
+    sort: z.enum(TRANSPORT_ROUTE_STOP_SORT_FIELDS).default("created_at"),
     order: z.enum(SORT_DIRECTIONS).default("desc"),
   })
   .strict();
@@ -587,6 +620,17 @@ export const transportNodeListQuerySchema = z
   .superRefine(validatePaginationOffset)
   .transform(normalizePagination);
 
+export const transportRouteStopListQuerySchema = z
+  .object({
+    ...paginationShape,
+    ...transportRouteStopFilterShape,
+    sort: z.enum(TRANSPORT_ROUTE_STOP_SORT_FIELDS).default("created_at"),
+    order: z.enum(SORT_DIRECTIONS).default("desc"),
+  })
+  .strict()
+  .superRefine(validatePaginationOffset)
+  .transform(normalizePagination);
+
 export const umkmProfileListQuerySchema = z
   .object({
     ...paginationShape,
@@ -597,3 +641,183 @@ export const umkmProfileListQuerySchema = z
   .strict()
   .superRefine(validatePaginationOffset)
   .transform(normalizePagination);
+
+export const createPedestrianNodeSchema = z
+  .object({
+    code: nonemptyTextSchema,
+    geometry: pointGeometrySchema,
+    study_area_id: uuidSchema,
+    provenance: createProvenanceSchema,
+  })
+  .strict();
+
+export const updatePedestrianNodeSchema = z
+  .object({
+    code: nonemptyTextSchema.optional(),
+    geometry: pointGeometrySchema.optional(),
+    study_area_id: uuidSchema.optional(),
+    provenance: updateProvenanceSchema.optional(),
+  })
+  .strict()
+  .superRefine(requireAtLeastOneField);
+
+export const createPedestrianEdgeSchema = z
+  .object({
+    code: nonemptyTextSchema,
+    source: z.number().int().positive(),
+    target: z.number().int().positive(),
+    geometry: lineStringGeometrySchema,
+    length_meters: z.number().positive(),
+    cost: z.number(),
+    reverse_cost: z.number(),
+    walkable: z.boolean(),
+    study_area_id: uuidSchema,
+    environment: z.string(),
+    provenance: createProvenanceSchema,
+  })
+  .strict();
+
+export const updatePedestrianEdgeSchema = z
+  .object({
+    geometry: lineStringGeometrySchema.optional(),
+    length_meters: z.number().positive().optional(),
+    cost: z.number().optional(),
+    reverse_cost: z.number().optional(),
+    walkable: z.boolean().optional(),
+    provenance: updateProvenanceSchema.optional(),
+  })
+  .strict()
+  .superRefine(requireAtLeastOneField);
+
+const pedestrianNodeFilterShape = {
+  source_id: uuidSchema.optional(),
+  study_area_id: uuidSchema.optional(),
+  validation_status: validationStatusSchema.optional(),
+};
+
+const pedestrianEdgeFilterShape = {
+  source_id: uuidSchema.optional(),
+  study_area_id: uuidSchema.optional(),
+  validation_status: validationStatusSchema.optional(),
+};
+
+export const pedestrianNodeFilterSchema = z.object(pedestrianNodeFilterShape).strict();
+export const pedestrianEdgeFilterSchema = z.object(pedestrianEdgeFilterShape).strict();
+
+export const pedestrianNodeSortSchema = z
+  .object({
+    sort: z.enum(["created_at", "updated_at", "code"]).default("created_at"),
+    order: z.enum(SORT_DIRECTIONS).default("desc"),
+  })
+  .strict();
+
+export const pedestrianEdgeSortSchema = z
+  .object({
+    sort: z.enum(["created_at", "updated_at", "code", "length_meters"]).default("created_at"),
+    order: z.enum(SORT_DIRECTIONS).default("desc"),
+  })
+  .strict();
+
+export const pedestrianNodeListQuerySchema = z
+  .object({
+    ...paginationShape,
+    ...pedestrianNodeFilterShape,
+    sort: z.enum(["created_at", "updated_at", "code"]).default("created_at"),
+    order: z.enum(SORT_DIRECTIONS).default("desc"),
+  })
+  .strict()
+  .superRefine(validatePaginationOffset)
+  .transform(normalizePagination);
+
+export const pedestrianEdgeListQuerySchema = z
+  .object({
+    ...paginationShape,
+    ...pedestrianEdgeFilterShape,
+    sort: z.enum(["created_at", "updated_at", "code", "length_meters"]).default("created_at"),
+    order: z.enum(SORT_DIRECTIONS).default("desc"),
+  })
+  .strict()
+  .superRefine(validatePaginationOffset)
+  .transform(normalizePagination);
+
+export const createTransportAccessLinkSchema = z
+  .object({
+    transport_node_id: uuidSchema,
+    pedestrian_node_id: uuidSchema,
+    distance_meters: z.number().nonnegative(),
+    environment: nonemptyTextSchema,
+  })
+  .strict();
+
+// ==========================================
+// Phase 12: UMKM / POI Entity Schemas
+// ==========================================
+
+export const UMKM_SORT_FIELDS = ["created_at", "updated_at", "name", "distance"] as const;
+export const POI_SORT_FIELDS = ["created_at", "updated_at", "name", "distance"] as const;
+
+export const createUmkmSchema = z
+  .object({
+    code: nonemptyTextSchema,
+    name: nonemptyTextSchema,
+    category: nonemptyTextSchema,
+    description: z.string().optional(),
+    geometry: pointGeometrySchema,
+    studyAreaId: uuidSchema,
+    environment: z.literal("DUMMY"), // Strictly forcing DUMMY in phase 12
+    provenance: createProvenanceSchema,
+  })
+  .strict();
+
+export const updateUmkmSchema = z
+  .object({
+    name: nonemptyTextSchema.optional(),
+    category: nonemptyTextSchema.optional(),
+    description: z.string().optional(),
+    geometry: pointGeometrySchema.optional(),
+    provenance: updateProvenanceSchema.optional(),
+  })
+  .strict();
+
+export const createPoiSchema = z
+  .object({
+    code: nonemptyTextSchema,
+    name: nonemptyTextSchema,
+    category: nonemptyTextSchema,
+    geometry: pointGeometrySchema,
+    studyAreaId: uuidSchema,
+    environment: z.literal("DUMMY"),
+    provenance: createProvenanceSchema,
+  })
+  .strict();
+
+export const updatePoiSchema = z
+  .object({
+    name: nonemptyTextSchema.optional(),
+    category: nonemptyTextSchema.optional(),
+    geometry: pointGeometrySchema.optional(),
+    provenance: updateProvenanceSchema.optional(),
+  })
+  .strict();
+
+export const createEntityNetworkAccessSchema = z
+  .object({
+    entityType: z.enum(["UMKM", "POI"]),
+    entityId: uuidSchema,
+    pedestrianNodeId: uuidSchema,
+    snapDistanceMeters: z.number().nonnegative(),
+    environment: z.literal("DUMMY"),
+  })
+  .strict();
+
+export const spatialNearbyQuerySchema = z
+  .object({
+    lat: z.number().min(-90).max(90),
+    lng: z.number().min(-180).max(180),
+    radiusMeters: z.number().positive().max(5000), // Hard limit to 5km max
+    limit: z.number().positive().max(100).optional().default(20),
+    category: z.string().optional(),
+    environment: z.literal("DUMMY").optional().default("DUMMY"),
+  })
+  .strict();
+

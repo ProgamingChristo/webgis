@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "GETRA_DUMMY_PILOT_A",
+        "description": "Dummy pilot area around Monas for Phase 9 testing",
+        "environment": "DUMMY"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [106.820, -6.180],
+            [106.835, -6.180],
+            [106.835, -6.170],
+            [106.820, -6.170],
+            [106.820, -6.180]
+          ]
+        ]
+      }
+    }
+  ]
+}

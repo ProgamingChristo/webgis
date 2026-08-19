@@ -1,0 +1,17 @@
+# Transport Data APIs
+
+GETRA provides internal and public facing APIs to fetch transport entities.
+
+## Endpoints
+
+### Nodes
+`GET /api/v1/transport/nodes`
+Fetches a paginated list of transport nodes.
+Query params: `limit`, `page`.
+
+### Corridors
+`GET /api/v1/transport/corridors`
+Fetches a paginated list of transport corridors (lines).
+Query params: `limit`, `page`.
+
+*(More advanced querying like proximity or bounding box is handled by the spatial RPCs underlying these endpoints)*

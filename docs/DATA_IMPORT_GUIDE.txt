@@ -1,0 +1,31 @@
+# GETRA DATA IMPORT GUIDE
+
+## PREREQUISITES
+Ensure that your `.env.local` contains valid Supabase credentials with the Service Role key to bypass Row Level Security during ingestion.
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...
+```
+
+## PHASE 9: PILOT AREA & REFERENCE DATA INGESTION
+
+To run the dummy data ingestion pipeline, use the following commands:
+
+1. **Import Master Reference Data & Setup Internal Data Source**
+   Run this first to initialize the `GETRA_INTERNAL` spatial source and the `PHASE_09_DUMMY_PILOT` ingestion data source.
+   ```bash
+   npx tsx --env-file=.env.local scripts/ingestion/phase-09/import-reference-data.ts
+   ```
+
+2. **Import Dummy Pilot Area**
+   Run this script to inject the valid GeoJSON test boundary into the `study_areas` table, utilizing the full ingestion pipeline.
+   ```bash
+   npx tsx --env-file=.env.local scripts/ingestion/phase-09/import-pilot-area.ts
+   ```
+
+3. **Cleanup Dummy Pilot Area (Optional/Manual)**
+   If you ever need to purge the dummy data safely without affecting production data, use the cleanup script:
+   ```bash
+   npx tsx --env-file=.env.local scripts/ingestion/phase-09/cleanup-dummy-pilot.ts
+   ```

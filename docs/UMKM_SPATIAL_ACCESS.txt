@@ -1,0 +1,15 @@
+UMKM & POI SPATIAL ACCESS ARCHITECTURE
+
+Spatial access logic handles discovering objects near a user and mapping those objects securely onto the walking graph.
+
+1. Proximity Search (`findNearby`)
+- Supported by internal endpoints `GET /api/internal/umkm/nearby` and `GET /api/internal/poi/nearby`.
+- Database Layer: Uses `ST_DWithin` and `ST_Distance` on `geometry::geography` to perform highly accurate haversine-equivalent bounding box intersections and precise sorting.
+- Max Radius: Hardcapped to 5000 meters in the API input schema, but typically used at ~500m for walking scale.
+
+2. Network Snapping (`snapEntityToNetwork`)
+- Performed implicitly by `EntityAccessService` when an entity is created.
+- Logic: Queries `pedestrian_nodes` within a `maxSnapDistanceMeters` threshold (typically 50m). It selects the closest point using `<->` operator in GiST indexes.
+- Materialization: It caches the result in `entity_network_access`, storing the node ID and exact snap distance (in meters). This provides Phase 16 with instant hook points into the routing graph.
+
+All spatial indexing relies on native PostGIS `geometry` backed by `GiST` indexing strategies on SRID 4326.

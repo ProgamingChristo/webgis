@@ -15,6 +15,7 @@ import type {
 import type {
   CorridorGeometry,
   DatabaseGeometry,
+  LineStringGeometry,
   MultiLineStringGeometry,
   MultiPolygonGeometry,
   PointGeometry,
@@ -40,6 +41,11 @@ export const TRANSPORT_NODE_SORT_FIELDS = [
   "updated_at",
   "name",
 ] as const;
+export const TRANSPORT_ROUTE_STOP_SORT_FIELDS = [
+  "created_at",
+  "updated_at",
+  "stop_sequence",
+] as const;
 export const UMKM_PROFILE_SORT_FIELDS = [
   "created_at",
   "updated_at",
@@ -53,6 +59,8 @@ export type TransportCorridorSortField =
   (typeof TRANSPORT_CORRIDOR_SORT_FIELDS)[number];
 export type TransportNodeSortField =
   (typeof TRANSPORT_NODE_SORT_FIELDS)[number];
+export type TransportRouteStopSortField =
+  (typeof TRANSPORT_ROUTE_STOP_SORT_FIELDS)[number];
 export type UmkmProfileSortField =
   (typeof UMKM_PROFILE_SORT_FIELDS)[number];
 
@@ -253,6 +261,45 @@ export type TransportNodeListQuery = TransportNodeFilter &
   RepositoryPagination &
   RepositorySort<TransportNodeSortField>;
 
+export interface TransportRouteStopDatabaseRow extends BaseEntity {
+  corridor_id: string;
+  node_id: string;
+  stop_sequence: number;
+}
+
+export interface TransportRouteStopEntity extends BaseEntity {
+  corridor_id: string;
+  node_id: string;
+  stop_sequence: number;
+}
+
+export interface TransportRouteStopDTO extends BaseEntity {
+  corridor_id: string;
+  node_id: string;
+  stop_sequence: number;
+}
+
+export interface CreateTransportRouteStopInput {
+  corridor_id: string;
+  node_id: string;
+  stop_sequence: number;
+}
+
+export interface UpdateTransportRouteStopInput {
+  corridor_id?: string;
+  node_id?: string;
+  stop_sequence?: number;
+}
+
+export interface TransportRouteStopFilter {
+  corridor_id?: string;
+  node_id?: string;
+}
+
+export type TransportRouteStopListQuery = TransportRouteStopFilter &
+  RepositoryPagination &
+  RepositorySort<TransportRouteStopSortField>;
+
 export interface UmkmProfileDatabaseRow
   extends BaseEntity,
     ProvenanceDatabaseColumns {
@@ -311,3 +358,317 @@ export interface UmkmProfileFilter {
 export type UmkmProfileListQuery = UmkmProfileFilter &
   RepositoryPagination &
   RepositorySort<UmkmProfileSortField>;
+
+export const PEDESTRIAN_NODE_SORT_FIELDS = [
+  "created_at",
+  "updated_at",
+  "code",
+] as const;
+export type PedestrianNodeSortField = (typeof PEDESTRIAN_NODE_SORT_FIELDS)[number];
+
+export interface PedestrianNodeDatabaseRow
+  extends BaseEntity,
+    ProvenanceDatabaseColumns {
+  routing_id: number;
+  code: string;
+  geometry: DatabaseGeometry;
+  study_area_id: string;
+  environment: string;
+}
+
+export interface PedestrianNodeEntity extends BaseEntity {
+  routing_id: number;
+  code: string;
+  geometry: PointGeometry;
+  study_area_id: string;
+  provenance: Provenance;
+}
+
+export interface PedestrianNodeDTO extends BaseEntity {
+  routing_id: number;
+  code: string;
+  geometry: PointGeometry;
+  study_area_id: string;
+  provenance: Provenance;
+}
+
+export interface CreatePedestrianNodeInput {
+  code: string;
+  geometry: PointGeometry;
+  study_area_id: string;
+  provenance: CreateProvenanceInput;
+}
+
+export interface UpdatePedestrianNodeInput {
+  code?: string;
+  geometry?: PointGeometry;
+  study_area_id?: string;
+  provenance?: UpdateProvenanceInput;
+}
+
+export interface PedestrianNodeFilter {
+  source_id?: string;
+  study_area_id?: string;
+  validation_status?: ValidationStatus;
+}
+
+export type PedestrianNodeListQuery = PedestrianNodeFilter &
+  RepositoryPagination &
+  RepositorySort<PedestrianNodeSortField>;
+
+export const PEDESTRIAN_EDGE_SORT_FIELDS = [
+  "created_at",
+  "updated_at",
+  "code",
+  "length_meters",
+] as const;
+export type PedestrianEdgeSortField = (typeof PEDESTRIAN_EDGE_SORT_FIELDS)[number];
+
+export interface PedestrianEdgeDatabaseRow
+  extends BaseEntity,
+    Omit<ProvenanceDatabaseColumns, "source"> {
+  routing_id: number;
+  code: string;
+  source: number;
+  target: number;
+  geometry: DatabaseGeometry;
+  length_meters: number;
+  cost: number;
+  reverse_cost: number;
+  walkable: boolean;
+  study_area_id: string;
+  environment: string;
+}
+
+export interface UmkmDatabaseRow
+  extends BaseEntity,
+    ProvenanceDatabaseColumns {
+  code: string;
+  name: string;
+  category: string;
+  description: string | null;
+  geometry: DatabaseGeometry;
+  study_area_id: string;
+  environment: string;
+}
+
+export interface PoiDatabaseRow
+  extends BaseEntity,
+    ProvenanceDatabaseColumns {
+  code: string;
+  name: string;
+  category: string;
+  geometry: DatabaseGeometry;
+  study_area_id: string;
+  environment: string;
+}
+
+export interface EntityNetworkAccessDatabaseRow {
+  id: string;
+  entity_type: "UMKM" | "POI";
+  entity_id: string;
+  pedestrian_node_id: string;
+  snap_distance_meters: number;
+  environment: string;
+  created_at: string;
+}
+
+export interface PedestrianEdgeEntity extends BaseEntity {
+  routing_id: number;
+  code: string;
+  source: number;
+  target: number;
+  geometry: MultiLineStringGeometry;
+  length_meters: number;
+  cost: number;
+  reverse_cost: number;
+  walkable: boolean;
+  study_area_id: string;
+  provenance: Provenance;
+}
+
+export interface PedestrianEdgeDTO extends BaseEntity {
+  routing_id: number;
+  code: string;
+  source: number;
+  target: number;
+  geometry: MultiLineStringGeometry;
+  length_meters: number;
+  cost: number;
+  reverse_cost: number;
+  walkable: boolean;
+  study_area_id: string;
+  provenance: Provenance;
+}
+
+export interface CreatePedestrianEdgeInput {
+  code: string;
+  source: number;
+  target: number;
+  geometry: MultiLineStringGeometry;
+  length_meters: number;
+  cost: number;
+  reverse_cost: number;
+  walkable: boolean;
+  study_area_id: string;
+  provenance: CreateProvenanceInput;
+}
+
+export interface UpdatePedestrianEdgeInput {
+  code?: string;
+  source?: number;
+  target?: number;
+  geometry?: MultiLineStringGeometry;
+  length_meters?: number;
+  cost?: number;
+  reverse_cost?: number;
+  walkable?: boolean;
+  study_area_id?: string;
+  provenance?: UpdateProvenanceInput;
+}
+
+export interface PedestrianEdgeFilter {
+  source_id?: string;
+  study_area_id?: string;
+  validation_status?: ValidationStatus;
+}
+
+export type PedestrianEdgeListQuery = PedestrianEdgeFilter &
+  RepositoryPagination &
+  RepositorySort<PedestrianEdgeSortField>;
+
+export interface TransportAccessLinkDatabaseRow extends BaseEntity {
+  transport_node_id: string;
+  pedestrian_node_id: string;
+  distance_meters: number;
+  environment: string;
+}
+
+export interface TransportAccessLinkEntity extends BaseEntity {
+  transport_node_id: string;
+  pedestrian_node_id: string;
+  distance_meters: number;
+  environment: string;
+}
+
+export interface TransportAccessLinkDTO extends BaseEntity {
+  transport_node_id: string;
+  pedestrian_node_id: string;
+  distance_meters: number;
+  environment: string;
+}
+
+export interface CreateTransportAccessLinkInput {
+  transport_node_id: string;
+  pedestrian_node_id: string;
+  distance_meters: number;
+  environment: string;
+}
+
+export interface WalkingRouteResult {
+  originNodeId: number;
+  destinationNodeId: number;
+  edgeIds: string[];
+  distanceMeters: number;
+  durationSeconds: number;
+  geometry: LineStringGeometry;
+  analysisMethod: string;
+  environment: string;
+}
+
+export interface UmkmEntity extends BaseEntity {
+  code: string;
+  name: string;
+  category: string;
+  description?: string;
+  geometry: PointGeometry;
+  studyAreaId: string;
+  environment: string;
+  provenance: Provenance;
+}
+
+export interface PoiEntity extends BaseEntity {
+  code: string;
+  name: string;
+  category: string;
+  geometry: PointGeometry;
+  studyAreaId: string;
+  environment: string;
+  provenance: Provenance;
+}
+
+export interface EntityNetworkAccessEntity {
+  id: string;
+  entityType: "UMKM" | "POI";
+  entityId: string;
+  pedestrianNodeId: string;
+  snapDistanceMeters: number;
+  environment: string;
+  createdAt: string;
+}
+
+export interface UmkmDTO extends BaseEntity {
+  code: string;
+  name: string;
+  category: string;
+  description?: string;
+  geometry: PointGeometry;
+  studyAreaId: string;
+  environment: string;
+  provenance: Provenance;
+}
+
+export interface CreateUmkmInput {
+  code: string;
+  name: string;
+  category: string;
+  description?: string;
+  geometry: PointGeometry;
+  studyAreaId: string;
+  environment: string;
+  provenance: CreateProvenanceInput;
+}
+
+export interface UpdateUmkmInput {
+  name?: string;
+  category?: string;
+  description?: string;
+  geometry?: PointGeometry;
+  provenance?: UpdateProvenanceInput;
+}
+
+export interface PoiDTO extends BaseEntity {
+  code: string;
+  name: string;
+  category: string;
+  geometry: PointGeometry;
+  studyAreaId: string;
+  environment: string;
+  provenance: Provenance;
+}
+
+export interface CreatePoiInput {
+  code: string;
+  name: string;
+  category: string;
+  geometry: PointGeometry;
+  studyAreaId: string;
+  environment: string;
+  provenance: CreateProvenanceInput;
+}
+
+export interface UpdatePoiInput {
+  name?: string;
+  category?: string;
+  geometry?: PointGeometry;
+  provenance?: UpdateProvenanceInput;
+}
+
+export interface SpatialNearbyQuery {
+  lat: number;
+  lng: number;
+  radiusMeters: number;
+  limit?: number;
+  category?: string;
+  environment?: string;
+}

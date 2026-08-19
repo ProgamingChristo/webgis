@@ -1,0 +1,19 @@
+UMKM & POI INGESTION PROCESS
+
+The dummy data pipeline for UMKM and POIs is built to be idempotent and safe, leveraging the existing Supabase server-side clients.
+
+1. Seeding Script (`scripts/ingestion/phase-12/seed-dummy-umkm-poi.ts`)
+- Target: `environment = "DUMMY"`
+- Behavior: 
+  1. Resolves/Creates a `Phase 12 Dummy Data` spatial source.
+  2. Resolves the `Pilot Area Dummy` from Phase 9.
+  3. Purges existing UMKM, POI, and EntityNetworkAccess dummy records.
+  4. Iterates through predefined coordinates inside the Pilot Area (e.g. Sudirman context 106.8/ -6.2).
+  5. Inserts UMKM and POI records with `validation_status = "VALIDATED"`.
+  6. Automatically executes a spatial nearest-neighbor search (`find_nearest_pedestrian_node`) and persists the resulting snap into `entity_network_access`.
+
+2. Cleanup Script (`scripts/ingestion/phase-12/cleanup-dummy-data.ts`)
+- Behavior: Safely wipes out ONLY records explicitly marked as `DUMMY` from the newly created tables. Used to ensure a clean state before repeating testing runs.
+
+Execution Command:
+`npx tsx scripts/ingestion/phase-12/seed-dummy-umkm-poi.ts`

@@ -56,6 +56,9 @@ export function createErrorResponse(
       code: error.code,
       message: getPublicErrorMessage(error.code) || error.message,
       retryable: error.retryable,
+      ...(error instanceof RateLimitExceededError && {
+        details: { source: error.source }
+      })
     },
     request_id: requestId,
   };

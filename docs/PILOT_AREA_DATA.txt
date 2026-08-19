@@ -1,0 +1,34 @@
+# PILOT AREA DATA
+
+## PURPOSE
+To provide a spatial scope and boundary foundation for Phase 10-14 testing without using real production data. It acts as the initial dummy reference geometry.
+
+## SCHEMA
+Uses the existing `study_areas` table established in Phase 8.
+
+## GEOMETRY
+- **Type**: MultiPolygon
+- **SRID**: 4326
+- **Coordinates**: Valid WGS84 coordinates inside Jakarta around the Monas area.
+
+## SOURCE & ENVIRONMENT
+- **Source**: GETRA_INTERNAL (system)
+- **Environment**: DUMMY (in `data_sources` and metadata provenance).
+
+## DUMMY NAMING
+Area is predictably named `GETRA_DUMMY_PILOT_A` to indicate it is not for production use.
+
+## IMPORT FLOW
+Data enters through `scripts/ingestion/phase-09/import-pilot-area.ts`.
+Flow:
+1. Load dummy GeoJSON file.
+2. Initialize an `import_job` with status PENDING -> RUNNING.
+3. Call `SpatialService` for geometric validation (SRID check).
+4. Perform an Idempotency check. If already exists, UPDATE. If not, INSERT.
+5. End job by setting status to COMPLETED and recording metrics.
+
+## VALIDATION
+Handled natively via the central `SpatialService` validating GeoJSON against internal Spatial Config rules before hitting the database.
+
+## CLEANUP
+A dedicated, idempotent script exists at `scripts/ingestion/phase-09/cleanup-dummy-pilot.ts`. It strictly targets `study_areas` rows linked to the `GETRA_INTERNAL` source that have an environment metadata tag of `DUMMY`. It does not delete automatically after testing, as the pilot area is required persistently for subsequent phases.

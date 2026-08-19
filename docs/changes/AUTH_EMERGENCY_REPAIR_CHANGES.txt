@@ -1,0 +1,119 @@
+TITLE:
+GETRA Authentication Emergency Repair
+
+DATE:
+August 18, 2026
+
+ORIGINAL ERROR:
+Register returned 500, Login returned 401.
+
+REGISTER STATUS BEFORE:
+500
+
+LOGIN STATUS BEFORE:
+401
+
+ROOT CAUSE:
+The application caught all Supabase errors and indiscriminately mapped them to 500 INTERNAL_ERROR. The actual underlying error was a 429 "over_email_send_rate_limit" due to the remote Supabase project having Email Confirmation enabled and the local IP hitting the signup rate limit.
+
+FILES INSPECTED:
+app/api/auth/register/route.ts
+app/api/auth/login/route.ts
+src/lib/errors/index.ts
+src/lib/supabase/server.ts
+src/lib/api-logger.ts
+supabase/migrations/20260815203150_create_profiles.sql
+supabase/migrations/20260815205854_add_roles_to_profiles.sql
+
+FILES MODIFIED:
+app/api/auth/register/route.ts
+app/api/auth/login/route.ts
+
+DATABASE ROOT CAUSE:
+None. Triggers and RLS are perfectly fine.
+
+DATABASE CHANGES:
+None required.
+
+MIGRATION FILE:
+None created.
+
+DRY RUN:
+NOT APPLICABLE
+
+REMOTE PUSH:
+NOT APPLICABLE
+
+REMOTE VERIFICATION:
+NOT APPLICABLE
+
+AUTH CODE CHANGES:
+Modified error handling in register and login routes to capture the exact Supabase error. Mapped `AuthRetryableFetchError` and `over_email_send_rate_limit` to 429 `RATE_LIMIT_EXCEEDED` instead of 500 `INTERNAL_ERROR`. Also explicitly handled validation errors and duplicate email conflicts.
+
+RLS CHANGES:
+None
+
+TRIGGER CHANGES:
+None
+
+ENV ISSUE:
+None.
+
+COOKIE ISSUE:
+None.
+
+EMAIL CONFIRMATION STATUS:
+ENABLED. This is the source of the rate limit blocker.
+
+TEST ACCOUNTS USED:
+commuter.new@example.com
+commuter.test200@example.com
+admin.public.test@example.com
+
+REGISTER TEST:
+FAILED (429 Rate Limit Exceeded). The 500 error is resolved, but the flow is blocked by the rate limit.
+
+LOGIN TEST:
+FAILED (401 Unauthorized). Could not test valid login due to registration block.
+
+ME TEST:
+BLOCKED.
+
+LOGOUT TEST:
+BLOCKED.
+
+COMMUTER FLOW:
+BLOCKED by Rate Limit.
+
+UMKM FLOW:
+BLOCKED by Rate Limit.
+
+COMMUNITY FLOW:
+BLOCKED by Rate Limit.
+
+ADMIN NEGATIVE TEST:
+EXPECTED REJECTION PASS. Received 403 Forbidden.
+
+DUPLICATE EMAIL TEST:
+BLOCKED by Rate Limit.
+
+WRONG PASSWORD TEST:
+BLOCKED by Rate Limit.
+
+TYPECHECK:
+NOT RUN
+
+LINT:
+NOT RUN
+
+TEST:
+NOT RUN
+
+BUILD:
+NOT RUN
+
+FINAL STATUS:
+BLOCKED
+
+KNOWN LIMITATIONS:
+Testing is fundamentally blocked by the remote Supabase project's email sending rate limit. This is an external blocker that cannot be bypassed from code/CLI without a Service Role key or disabling Email Confirmation in the Supabase Dashboard.

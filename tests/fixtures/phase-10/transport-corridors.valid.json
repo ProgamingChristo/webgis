@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "source_record_id": "CORRIDOR_DUMMY_KRL_BOGOR",
+        "name": "Commuter Line Bogor Dummy",
+        "transport_mode": "TRAIN",
+        "description": "Dummy corridor for KRL Bogor"
+      },
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [106.8284, -6.1666],
+            [106.8306, -6.1767],
+            [106.8322, -6.1868]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "source_record_id": "CORRIDOR_DUMMY_TJ_K1",
+        "name": "TransJakarta Koridor 1 Dummy",
+        "transport_mode": "BUS",
+        "description": "Dummy corridor for TJ K1"
+      },
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [106.8222, -6.1666],
+            [106.8248, -6.1752],
+            [106.8211, -6.1868]
+          ]
+        ]
+      }
+    }
+  ]
+}

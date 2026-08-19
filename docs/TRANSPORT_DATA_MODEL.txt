@@ -1,0 +1,21 @@
+# Transport Data Model
+
+The transport domain consists of three core entities:
+
+1. **Transport Nodes (`transport_nodes`)**
+   - Represents physical stops, stations, ports, and interchanges.
+   - Geometry: `Point` (SRID 4326).
+   - Attributes: `name`, `node_type`, `transport_mode`, `corridor_id` (optional legacy direct relation).
+
+2. **Transport Corridors (`transport_corridors`)**
+   - Represents a transit line or route geometry.
+   - Geometry: `MultiLineString` (SRID 4326).
+   - Attributes: `name`, `transport_mode`, `description`.
+
+3. **Route Stops Relation (`transport_route_stops`)**
+   - Represents the ordered sequence of nodes for a corridor.
+   - Foreign Keys: `corridor_id`, `node_id`.
+   - Attributes: `stop_sequence` (integer >= 0).
+
+## Provenance
+All entities track their origin through `provenance`, validating source types, versions, and ingestion status.

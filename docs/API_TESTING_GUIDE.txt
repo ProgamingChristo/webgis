@@ -1,0 +1,49 @@
+GETRA API TESTING GUIDE
+=======================
+
+1. OVERVIEW & STRATEGY
+Testing autentikasi dan API GETRA dipisahkan menjadi dua alur mandiri:
+- Alur Stable Smoke Test: Menggunakan user uji coba tetap (idempotent provisioned) sehingga seluruh endpoint (auth, profile, spatial) dapat diuji berulang kali tanpa memicu limit pendaftaran Supabase.
+- Alur Register Feature Test: Menguji logika signup unik, penolakan registrasi ADMIN publik, dan pencegahan duplikasi akun.
+
+2. TEST USERS PROVISIONING
+Script: `scripts/provision-test-users.ts`
+Menyediakan akun idempotent untuk 4 role:
+- COMMUTER:  getra.commuter.test@example.com
+- UMKM:      getra.umkm.test@example.com
+- COMMUNITY: getra.community.test@example.com
+- ADMIN:     getra.admin.test@example.com
+
+Cara menjalankan provisioning:
+`npx tsx scripts/provision-test-users.ts`
+
+Script ini otomatis memeriksa keberadaan user dan profile di remote Supabase, dan jika belum ada, membuatnya secara aman dengan password yang dapat dikonfigurasi melalui `GETRA_TEST_USER_PASSWORD` (default: `PasswordDevelopment123!`).
+
+3. AUTOMATED API SMOKE TEST
+Script: `scripts/api-smoke-test.ts`
+Cara menjalankan:
+`npx tsx scripts/api-smoke-test.ts`
+
+Cakupan pengujian (Dijalankan 2x berturut-turut):
+- GET /api/health (200)
+- POST /api/auth/login with wrong password (401)
+- Unauthorized request without token: /api/auth/me, /api/profile, /api/spatial/nearby (401)
+- Role COMMUTER: login (200) -> /api/auth/me (200) -> GET /api/profile (200) -> PATCH /api/profile (200) -> POST /api/auth/logout (200)
+- Role UMKM: login (200) -> /api/auth/me (200) -> GET /api/profile (200) -> PATCH /api/profile (200) -> POST /api/auth/logout (200)
+- Role COMMUNITY: login (200) -> /api/auth/me (200) -> GET /api/profile (200) -> PATCH /api/profile (200) -> POST /api/auth/logout (200)
+- Role ADMIN: login (200) -> /api/auth/me (200) -> GET /api/profile (200) -> PATCH /api/profile (200) -> POST /api/auth/logout (200)
+- Spatial API:
+  - GET /api/spatial/nearby?lat=-6.2088&lng=106.8456&radius=1000&type=transport_node (200)
+  - POST /api/spatial/distance (200)
+  - GET /api/spatial/bbox?west=106.8&south=-6.3&east=106.9&north=-6.2&type=transport_node (200)
+
+4. REGISTER SMOKE TEST
+Script: `scripts/auth-register-smoke-test.ts`
+Cara menjalankan:
+`npx tsx scripts/auth-register-smoke-test.ts`
+
+Cakupan pengujian:
+- Mendaftar satu user unik berbasis timestamp
+- Mencegah duplikasi email (409)
+- Menolak pendaftaran publik sebagai ADMIN (403)
+- Mampu mendeteksi dan melaporkan bila Supabase upstream rate limit aktif (429 SUPABASE_AUTH) tanpa crash.

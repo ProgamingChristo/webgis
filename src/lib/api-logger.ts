@@ -65,11 +65,18 @@ export async function withApiLogger(
     const duration = Date.now() - start;
     const applicationError = toApplicationError(error);
     
-    logger.error(`[API] ${method} ${path} - Failed`, {
+    const logPayload: Record<string, string | number | boolean> = {
       request_id: requestId,
       error_code: applicationError.code,
       duration_ms: duration,
-    });
+    };
+    
+    if (error && typeof error === "object" && "name" in error && error.name === "RateLimitExceededError") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      logPayload.source = (error as any).source as string;
+    }
+    
+    logger.error(`[API] ${method} ${path} - Failed`, logPayload);
     
     return secureResponse(
       createErrorResponse(requestId, applicationError),

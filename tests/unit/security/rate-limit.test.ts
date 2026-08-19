@@ -4,6 +4,7 @@ vi.mock("server-only", () => ({}));
 
 import { NextRequest } from "next/server";
 
+import { AppEnvironment } from "@/src/lib/api-security/config";
 import { RateLimitExceededError } from "@/src/lib/errors";
 import {
   InMemoryRateLimiter,
@@ -16,15 +17,21 @@ const makeRequest = (headers: HeadersInit = {}): NextRequest =>
 const makeConfig = (
   overrides: Partial<{
     trustProxy: boolean;
-    auth: { limit: number; windowMs: number };
+    appEnv: AppEnvironment;
+    auth_register: { limit: number; windowMs: number };
+    auth_login: { limit: number; windowMs: number };
+    auth_general: { limit: number; windowMs: number };
     api: { limit: number; windowMs: number };
     mutation: { limit: number; windowMs: number };
     spatial: { limit: number; windowMs: number };
   }> = {},
 ) => ({
   trustProxy: overrides.trustProxy ?? false,
+  appEnv: overrides.appEnv ?? "production",
   rateLimits: {
-    auth: overrides.auth ?? { limit: 2, windowMs: 2_500 },
+    auth_register: overrides.auth_register ?? { limit: 2, windowMs: 2_500 },
+    auth_login: overrides.auth_login ?? { limit: 2, windowMs: 2_500 },
+    auth_general: overrides.auth_general ?? { limit: 2, windowMs: 2_500 },
     api: overrides.api ?? { limit: 2, windowMs: 2_500 },
     mutation: overrides.mutation ?? { limit: 2, windowMs: 2_500 },
     spatial: overrides.spatial ?? { limit: 2, windowMs: 2_500 },
@@ -69,7 +76,7 @@ describe("InMemoryRateLimiter", () => {
       const limiter = new InMemoryRateLimiter({
         clock: () => now,
         config: makeConfig({
-          auth: { limit: 1, windowMs: 60_000 },
+          auth_login: { limit: 1, windowMs: 60_000 },
           api: { limit: 2, windowMs: 60_000 },
           mutation: { limit: 3, windowMs: 60_000 },
           spatial: { limit: 4, windowMs: 60_000 },
@@ -93,7 +100,7 @@ describe("InMemoryRateLimiter", () => {
       clock: () => now,
       config: makeConfig({
         trustProxy: true,
-        auth: { limit: 1, windowMs: 60_000 },
+        auth_login: { limit: 1, windowMs: 60_000 },
       }),
     });
 
@@ -118,7 +125,7 @@ describe("InMemoryRateLimiter", () => {
   it("does not trust spoofable forwarding headers by default", async () => {
     const limiter = new InMemoryRateLimiter({
       clock: () => now,
-      config: makeConfig({ auth: { limit: 1, windowMs: 60_000 } }),
+      config: makeConfig({ auth_register: { limit: 1, windowMs: 60_000 } }),
     });
 
     await limiter.checkLimit(
@@ -138,7 +145,7 @@ describe("InMemoryRateLimiter", () => {
       clock: () => now,
       config: makeConfig({
         trustProxy: true,
-        auth: { limit: 1, windowMs: 60_000 },
+        auth_login: { limit: 1, windowMs: 60_000 },
       }),
     });
 

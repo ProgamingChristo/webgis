@@ -1,0 +1,39 @@
+# REFERENCE DATA
+
+## SUMMARY
+Phase 9 sets the foundational domain terms for upcoming testing (Phases 10-14). We establish these constants early to standardize inputs.
+
+## TRANSPORT MODES
+Values supported in dummy and eventual production:
+- KRL
+- MRT
+- TRANSJAKARTA
+- BUS
+- WALK
+- OTHER
+
+## UMKM CATEGORIES
+Basic categorization required for upcoming Phase 12 testing:
+- FOOD
+- RETAIL
+- SERVICE
+- OTHER
+
+## VALIDATION STATUS
+Reuses the database ENUM `validation_status`:
+- PENDING
+- VALIDATED
+- REJECTED
+- ARCHIVED
+
+## DATA ENVIRONMENT
+Reuses the database ENUM `data_environment`:
+- PRODUCTION
+- DUMMY
+- FIXTURE
+- TEST
+- DEV
+
+## SOURCE PROVIDER
+Phase 9 registers internal generation source:
+- `GETRA_INTERNAL` (type: system)

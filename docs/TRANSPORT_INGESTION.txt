@@ -1,0 +1,16 @@
+# Transport Ingestion Guide
+
+Transport ingestion handles the bulk loading of nodes, corridors, and relations. 
+
+## Order of Execution
+The insertion order is strict due to foreign key constraints:
+1. `npx tsx scripts/ingestion/phase-10/import-transport-corridors.ts`
+2. `npx tsx scripts/ingestion/phase-10/import-transport-nodes.ts`
+3. `npx tsx scripts/ingestion/phase-10/import-route-stop-relations.ts`
+
+## Input Format
+We use GeoJSON FeatureCollections for Nodes and Corridors.
+Relations use a generic JSON array format mapping `corridor_source_record_id` to `node_source_record_id` alongside `stop_sequence`.
+
+## Environment Isolation
+Dummy data is ingested by marking properties with `environment: "DUMMY"`. The system skips processing features missing this flag during dummy phases.

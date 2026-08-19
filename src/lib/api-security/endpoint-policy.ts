@@ -37,6 +37,12 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
   { method: "POST", path: "/api/spatial/distance", classification: "AUTHENTICATED", role: "AUTHENTICATED", rateLimit: "spatial", cors: "allowlist", allowedRequestHeaders: AUTH_CONTENT_HEADERS, purpose: "PostGIS geography distance" },
   { method: "GET", path: "/api/spatial/nearby", classification: "AUTHENTICATED", role: "AUTHENTICATED", rateLimit: "spatial", cors: "allowlist", allowedRequestHeaders: AUTH_HEADERS, purpose: "Bounded PostGIS proximity query" },
   { method: "GET", path: "/api/spatial/bbox", classification: "AUTHENTICATED", role: "AUTHENTICATED", rateLimit: "spatial", cors: "allowlist", allowedRequestHeaders: AUTH_HEADERS, purpose: "Bounded PostGIS bbox query" },
+  { method: "POST", path: "/api/admin/ingestion/jobs", classification: "ADMIN", role: "ADMIN", rateLimit: "mutation", cors: "allowlist", allowedRequestHeaders: AUTH_CONTENT_HEADERS, purpose: "Create ingestion job" },
+  { method: "POST", path: "/api/admin/ingestion/run", classification: "ADMIN", role: "ADMIN", rateLimit: "mutation", cors: "allowlist", allowedRequestHeaders: AUTH_CONTENT_HEADERS, purpose: "Run ingestion job" },
+  { method: "GET", path: "/api/v1/study-areas", classification: "AUTHENTICATED", role: "AUTHENTICATED", rateLimit: "api", cors: "allowlist", allowedRequestHeaders: AUTH_HEADERS, purpose: "List study areas" },
+  { method: "GET", path: "/api/v1/study-areas/[id]", classification: "AUTHENTICATED", role: "AUTHENTICATED", rateLimit: "api", cors: "allowlist", allowedRequestHeaders: AUTH_HEADERS, purpose: "Get study area" },
+  { method: "GET", path: "/api/v1/transport/nodes", classification: "AUTHENTICATED", role: "AUTHENTICATED", rateLimit: "api", cors: "allowlist", allowedRequestHeaders: AUTH_HEADERS, purpose: "List transport nodes" },
+  { method: "GET", path: "/api/v1/transport/corridors", classification: "AUTHENTICATED", role: "AUTHENTICATED", rateLimit: "api", cors: "allowlist", allowedRequestHeaders: AUTH_HEADERS, purpose: "List transport corridors" },
 ] as const;
 
 export function findApiEndpointPolicy(

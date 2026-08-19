@@ -137,6 +137,9 @@ describe("auth route public hardening", () => {
     expect(response.headers.get("retry-after")).toBe("9");
     expect(body.error).toEqual({
       code: "RATE_LIMIT_EXCEEDED",
+      details: {
+        source: "GETRA_RATE_LIMIT",
+      },
       message: "Too many requests. Please try again later",
       retryable: true,
     });

@@ -20,6 +20,9 @@ describe("rate-limit API response", () => {
     expect(body).toEqual({
       error: {
         code: "RATE_LIMIT_EXCEEDED",
+        details: {
+          source: "GETRA_RATE_LIMIT",
+        },
         message: "Too many requests. Please try again later",
         retryable: true,
       },

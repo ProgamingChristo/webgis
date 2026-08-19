@@ -6,9 +6,13 @@ import { POST as LoginPOST } from "@/app/api/auth/login/route";
 vi.mock("server-only", () => ({}));
 vi.mock("@/src/lib/supabase/server", () => ({
   getServerSupabaseClient: vi.fn(),
+  getRequestSupabaseClient: vi.fn(),
 }));
 
-import { getServerSupabaseClient } from "@/src/lib/supabase/server";
+import {
+  getRequestSupabaseClient,
+  getServerSupabaseClient,
+} from "@/src/lib/supabase/server";
 
 describe("Auth API", () => {
   beforeEach(() => {
@@ -68,6 +72,9 @@ describe("Auth API", () => {
       };
       vi.mocked(getServerSupabaseClient).mockReturnValue(
         mockSupabaseClient as unknown as ReturnType<typeof getServerSupabaseClient>,
+      );
+      vi.mocked(getRequestSupabaseClient).mockReturnValue(
+        mockSupabaseClient as unknown as ReturnType<typeof getRequestSupabaseClient>,
       );
 
       const req = new NextRequest("http://localhost:3000/api/auth/login", {

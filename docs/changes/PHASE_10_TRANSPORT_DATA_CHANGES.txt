@@ -1,0 +1,23 @@
+# Phase 10: Transport Data Ingestion Changes
+
+## Objective
+Establish the Transport Data foundation using Dummy Mode to validate the ingestion pipelines without polluting production data.
+
+## Schema Changes
+- Created `transport_route_stops` migration to support proper route sequencing (`stop_sequence`) matching real-world transit networks (Many-to-Many relation).
+- Existing `transport_corridors` represent transit lines.
+- Existing `transport_nodes` represent stations, stops, and interchanges.
+
+## Added Modules
+- `transport-node`: Validates geospatial attributes and transport type enums.
+- `transport-corridor`: Validates lines and transport type enums.
+- `transport-route-stop`: Validates sequencing and relations.
+
+## Ingestion Pipelines
+Added ingestion pipelines referencing the spatial Phase 9 setup:
+1. `import-transport-nodes.ts`
+2. `import-transport-corridors.ts`
+3. `import-route-stop-relations.ts`
+4. `cleanup-dummy-transport.ts`
+
+All dummy data uses `environment = DUMMY` and is explicitly restricted from cross-pollinating with real data.
