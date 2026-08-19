@@ -1,0 +1,17 @@
+DEMAND DATA MODEL (Phase 13)
+
+Demand is currently tracked explicitly through synthetic survey responses (Evidence).
+
+1. Raw Survey Evidence
+Raw, user-submitted locations (`origin_geometry`, `destination_geometry`) and preferences (`answers` JSONB) directly representing a single trip intent or accessibility profile.
+
+2. Normalized Evidence
+During ingestion, raw answers are type-cast, enum-checked, and safely packed into the `answers` JSONB object by the `SurveyService`.
+
+3. Descriptive Aggregate
+Instead of creating a new `demand_aggregates` database table prematurely, Phase 13 implements `DemandAggregationService`. This reads the normalized evidence on-the-fly, groupings counts and computing averages. 
+By calculating these dynamically, we avoid synchronization issues during testing. 
+If query times exceed tolerances in Phase 17/18, this layer will be materialized into a permanent `demand_aggregates` table.
+
+4. Future Demand Intelligence
+Phase 13 explicitly stops short of Opportunity Scoring, Ranking, and AI Interpretation. The foundation built here purely provides statistically clean, privacy-aware descriptive data for future AI grounding (Phase 19).

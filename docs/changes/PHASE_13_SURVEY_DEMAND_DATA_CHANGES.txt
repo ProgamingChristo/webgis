@@ -1,0 +1,92 @@
+PHASE:
+13
+
+TITLE:
+Survey & Demand Data Ingestion — Dummy Mode
+
+FILES CREATED:
+- src/modules/survey/survey.types.ts
+- src/modules/survey/survey.schema.ts
+- src/modules/survey/survey.repository.ts
+- src/modules/survey/survey.service.ts
+- src/modules/demand/demand.types.ts
+- src/modules/demand/demand-aggregation.service.ts
+- src/modules/privacy/privacy.constants.ts
+- scripts/ingestion/phase-13/seed-dummy-surveys.ts
+- scripts/ingestion/phase-13/aggregate-demand.ts
+- scripts/ingestion/phase-13/cleanup-dummy-survey.ts
+- tests/unit/survey/survey.service.test.ts
+- tests/fixtures/phase-13/survey-definitions.json
+
+FILES MODIFIED:
+- task.md
+
+DATABASE CHANGES:
+- Created table `surveys`
+- Created table `survey_questions`
+- Created table `survey_responses`
+- Added GiST indexes on origin_geometry and destination_geometry in `survey_responses`
+
+MIGRATIONS:
+- 20260819150000_add_survey_and_demand_foundation.sql
+
+REMOTE PUSH:
+Pending user execution (`supabase db push`)
+
+SURVEY MODEL:
+Relational headers (`surveys`) tracking `code`, `version`, and `environment`.
+
+QUESTION MODEL:
+Relational schema (`survey_questions`) mapping question rules, required state, and multiple-choice options.
+
+RESPONSE MODEL:
+Combined relational header with JSONB payload (`survey_responses`) for answers to allow high-flexibility insertion while still strictly validating via application-layer Zod schemas against the `survey_questions` definition.
+
+PRIVACY:
+Scaffolded `MIN_AGGREGATION_SAMPLE_SIZE` (currently set to 5 for dummy mode testing) to simulate suppression of small group identifiers. 
+
+DATA SOURCE:
+New manual source registered as "Phase 13 Dummy Survey Data".
+
+DUMMY DATA:
+Seed script `seed-dummy-surveys.ts` inserts sample synthetic response data bounded inside the Pilot Area (SRID 4326).
+
+IMPORT JOB:
+N/A (Uses manual ingestion script scaffold)
+
+VALIDATION:
+Application layer Zod strict validation checks type safety, array boundaries, and missing keys.
+
+SPATIAL VALIDATION:
+Currently stored as raw Point fields, later integrations will validate intersections with Pilot Area polygons dynamically.
+
+DEDUPLICATION:
+Responses are deduplicated using a unique constraint on `(survey_id, response_code, source_id, environment)` in PostgreSQL, and handled cleanly in code by skipping.
+
+AGGREGATION:
+`DemandAggregationService` counts categorical values and averages numerical values across valid responses.
+
+SUPPRESSION:
+Aggregation stops and returns "SUPPRESSED" if raw rows < 5.
+
+RLS:
+`surveys` active definitions are PUBLIC readable. 
+`survey_responses` are STRICTLY INTERNAL/ADMIN accessible only. Public frontend must rely on aggregated summaries later.
+
+API:
+N/A - Direct service injection for Phase 13.
+
+TESTS:
+`survey.service.test.ts` covers type checking, strict choices matching, missing fields, and deduplication logic.
+
+BUILD:
+Vitest passed. `npm run typecheck` returned 0 errors.
+
+SECURITY:
+No PII defaults added (e.g. no `full_name` or `email` fields exist).
+
+KNOWN LIMITATIONS:
+Aggregation currently happens in-memory after fetching rows, which is acceptable for dummy scale but will need DB-layer MapReduce or specialized SQL queries if scaling to millions of responses in production.
+
+FINAL STATUS:
+COMPLETE

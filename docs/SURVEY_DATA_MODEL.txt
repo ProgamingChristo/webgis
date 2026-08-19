@@ -1,0 +1,21 @@
+SURVEY DATA MODEL (Phase 13)
+
+The Survey Data Model is a hybrid relational-JSON architecture designed to maximize queryability for survey metadata while keeping response payloads flexible but strictly validated.
+
+1. SURVEYS (`surveys`)
+- Represents the definition of a survey.
+- Unique via `(code, version, environment)`.
+- Status tracks lifecycle (`DRAFT`, `ACTIVE`, `ARCHIVED`).
+
+2. QUESTIONS (`survey_questions`)
+- Bound to a `survey_id`.
+- Stores the expected `question_type` (e.g., NUMBER, MULTIPLE_CHOICE, SINGLE_CHOICE).
+- Contains validation metadata (`required`, `options`).
+- Provides the schema that the application layer uses to validate incoming JSONB responses dynamically.
+
+3. RESPONSES (`survey_responses`)
+- Bound to a `survey_id` and unique `response_code` (anonymous tracking id).
+- Contains spatial bounding boxes `origin_geometry` and `destination_geometry`.
+- `answers` is stored as JSONB. This avoids thousands of relational rows per response while allowing deep indexing if needed.
+- Contains strict `environment` markers to isolate dummy vs production data.
+- Includes `validation_status` to allow async validation pipelines if needed in the future.

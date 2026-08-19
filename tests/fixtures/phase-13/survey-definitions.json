@@ -1,0 +1,31 @@
+[
+  {
+    "code": "PHASE13_DUMMY_SURVEY",
+    "name": "Transport & UMKM Demand Survey (Dummy)",
+    "version": "1.0",
+    "status": "ACTIVE",
+    "environment": "DUMMY",
+    "questions": [
+      {
+        "questionCode": "preferred_transport_mode",
+        "questionType": "SINGLE_CHOICE",
+        "required": true,
+        "options": ["WALKING", "BUS", "COMMUTER", "RIDE_HAILING"],
+        "sequence": 1
+      },
+      {
+        "questionCode": "max_walking_minutes",
+        "questionType": "NUMBER",
+        "required": true,
+        "sequence": 2
+      },
+      {
+        "questionCode": "frequent_umkm_category",
+        "questionType": "MULTIPLE_CHOICE",
+        "required": false,
+        "options": ["FOOD", "RETAIL", "SERVICE"],
+        "sequence": 3
+      }
+    ]
+  }
+]

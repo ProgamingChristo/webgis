@@ -1,0 +1,19 @@
+DEMAND AGGREGATION (Phase 13)
+
+Aggregation transforms raw user surveys into descriptive metrics (counts, averages) without violating individual privacy.
+
+1. Behavior
+The `DemandAggregationService` executes `aggregateDescriptiveDemand` to:
+- Count the frequency of categorical values (e.g. `preferred_transport_mode = COMMUTER -> 50`).
+- Average the value of numeric fields (e.g. `max_walking_minutes -> 14.5`).
+
+2. Sample Size tracking
+Every aggregation result enforces the return of `sampleSize`. This guarantees that future systems consuming this data know exactly how robust the finding is. 
+
+3. Privacy Suppression
+If the raw query yields fewer responses than `MIN_AGGREGATION_SAMPLE_SIZE` (currently 5 for dummy testing), the service short-circuits. It returns:
+`sampleSize: "SUPPRESSED"`
+and omits the breakdown data entirely. This prevents identifying individuals in sparsely populated study areas.
+
+Execution Command for Testing:
+`npx tsx scripts/ingestion/phase-13/aggregate-demand.ts`

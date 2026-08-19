@@ -1,0 +1,19 @@
+DATA PRIVACY FRAMEWORK (Phase 13)
+
+To ensure Getra handles sensitive mobility and accessibility data responsibly, Phase 13 introduces foundational privacy mechanics.
+
+1. Data Minimization
+- The `survey_responses` model does NOT contain `full_name`, `email`, `phone`, or `address`.
+- Respondent identity is tracked strictly via a generated, anonymous `response_code`.
+
+2. Raw Access
+- Row Level Security (RLS) policies restrict `survey_responses` to INTERNAL/ADMIN service roles.
+- The public and unauthorized web clients CANNOT query the `survey_responses` table directly, guaranteeing location privacy.
+
+3. Aggregation & Suppression
+- The `DemandAggregationService` provides the safe interface for querying demand.
+- It leverages `MIN_AGGREGATION_SAMPLE_SIZE` (default: 5 for dummy, likely 10-20 for production) to block micro-targeting.
+- If a query attempts to aggregate data in a block with only 3 users, the framework will return `SUPPRESSED` rather than revealing those 3 individuals' preferred routes or UMKM intents.
+
+4. Dummy Isolation
+- All Phase 13 data is strictly marked `environment = 'DUMMY'` and is safely isolated from production logic. No real PII is generated or stored.

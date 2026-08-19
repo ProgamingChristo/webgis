@@ -1,0 +1,18 @@
+SURVEY INGESTION PIPELINE (Phase 13)
+
+The Survey Ingestion pipeline is designed to idempotently insert dummy definitions and responses for demand testing.
+
+1. Execution Command:
+`npx tsx scripts/ingestion/phase-13/seed-dummy-surveys.ts`
+
+2. Pipeline Steps:
+- Verifies spatial sources and Pilot Area dummy boundaries.
+- Resolves/Creates `PHASE13_DUMMY_SURVEY` with a version `1.0`.
+- Inserts 3 core questions (`preferred_transport_mode`, `max_walking_minutes`, `frequent_umkm_category`).
+- Pushes synthetic JSON response payloads through the `SurveyService`.
+- Application layer executes strict validation: rejecting invalid strings, out-of-bound choices, and unknown keys.
+- Unique constraints ensure repeated script execution silently skips duplicate insertions rather than bloating the DB.
+
+3. Cleanup:
+`npx tsx scripts/ingestion/phase-13/cleanup-dummy-survey.ts`
+Can be used to wipe the slate clean if the definitions need massive structural revisions.
