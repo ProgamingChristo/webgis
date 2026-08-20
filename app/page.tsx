@@ -1,9 +1,5 @@
-export default function Home() {
-  return (
-    <main>
-      <h1>GETRA</h1>
-      <h2>Backend Foundation</h2>
-      <p>Development Environment Ready</p>
-    </main>
-  );
+import { GetraDashboard } from "@/components/getra-dashboard";
+
+export default function HomePage() {
+  return <GetraDashboard />;
 }

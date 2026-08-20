@@ -1,18 +1,12 @@
 import type { NextConfig } from "next";
-import { API_STATIC_SECURITY_HEADERS } from "./src/lib/api-security/security-headers";
 
 const nextConfig: NextConfig = {
-  // Dibutuhkan untuk Docker image Christo
-  output: "standalone",
-
-  // Jangan expose header X-Powered-By
-  poweredByHeader: false,
-
-  reactStrictMode: true,
+  allowedDevOrigins: [
+    "10.193.85.160",
+  ],
 
   async headers() {
     return [
-      // Global security headers untuk seluruh GETRA
       {
         source: "/(.*)",
         headers: [
@@ -30,19 +24,14 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(self)",
+            value:
+              "camera=(), microphone=(), geolocation=(self)",
           },
           {
             key: "Cross-Origin-Opener-Policy",
             value: "same-origin",
           },
         ],
-      },
-
-      // Security headers tambahan khusus API Christo
-      {
-        source: "/api/:path*",
-        headers: [...API_STATIC_SECURITY_HEADERS],
       },
     ];
   },
