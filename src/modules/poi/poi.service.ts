@@ -1,9 +1,8 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { PoiRepository } from "@/src/repositories/poi.repository";
 import { EntityAccessService } from "@/src/modules/accessibility/entity-access.service";
-import { createPoiSchema, updatePoiSchema, spatialNearbyQuerySchema } from "@/src/schemas/data-model.schema";
-import type { CreatePoiInput, UpdatePoiInput, SpatialNearbyQuery, PoiDTO } from "@/src/types/domain";
-import { z } from "zod";
+import { createPoiSchema, spatialNearbyQuerySchema } from "@/src/schemas/data-model.schema";
+import type { CreatePoiInput, SpatialNearbyQuery, PoiDTO } from "@/src/types/domain";
 
 export class PoiService {
   constructor(

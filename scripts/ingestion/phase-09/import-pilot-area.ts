@@ -7,7 +7,7 @@ import { ImportJobRepository } from "@/src/modules/ingestion/repositories/import
 import { StudyAreaRepository } from "@/src/repositories/study-area.repository";
 import { createSpatialService } from "@/src/modules/spatial/spatial.service";
 import { loadSpatialConfig } from "@/src/modules/spatial/spatial.config";
-import type { DataEnvironment, ImportJobStatus } from "@/src/modules/ingestion/ingestion.types";
+import type { ImportJobStatus } from "@/src/modules/ingestion/ingestion.types";
 import type { MultiPolygonGeometry } from "@/src/types/spatial";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:54321";

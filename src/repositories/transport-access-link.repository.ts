@@ -5,7 +5,7 @@ import {
   type TransportAccessLinkEntity,
 } from "@/src/types/domain";
 import { type SupabaseClient } from "@supabase/supabase-js";
-import { mapDatabaseError, RepositoryError } from "./errors";
+import { mapDatabaseError } from "./errors";
 
 export class TransportAccessLinkRepository {
   constructor(private readonly client: SupabaseClient) {}

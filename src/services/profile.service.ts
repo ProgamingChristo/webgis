@@ -1,28 +1,54 @@
 import "server-only";
 
-import type { ProfileRepository } from "@/src/repositories/profile.repository";
-import { mapRepositoryError, ServiceError } from "@/src/services/errors";
 import type {
+  ProfileRepository,
+} from "@/src/repositories/profile.repository";
+
+import {
+  mapRepositoryError,
+  ServiceError,
+} from "@/src/services/errors";
+
+import type {
+  AccountRole,
   ProfileDTO,
   ProfileUpdateData,
 } from "@/src/types/profile";
 
 export class ProfileService {
-  constructor(private readonly profileRepository: ProfileRepository) {}
+  constructor(
+    private readonly profileRepository:
+      ProfileRepository,
+  ) {}
 
-  async findProfile(userId: string): Promise<ProfileDTO | null> {
+  async findProfile(
+    userId: string,
+  ): Promise<
+    ProfileDTO | null
+  > {
     try {
-      return await this.profileRepository.findById(userId);
+      return await this
+        .profileRepository
+        .findById(userId);
     } catch (error) {
-      throw mapRepositoryError(error);
+      throw mapRepositoryError(
+        error,
+      );
     }
   }
 
-  async getProfile(userId: string): Promise<ProfileDTO> {
-    const profile = await this.findProfile(userId);
+  async getProfile(
+    userId: string,
+  ): Promise<ProfileDTO> {
+    const profile =
+      await this.findProfile(
+        userId,
+      );
 
     if (!profile) {
-      throw new ServiceError("NOT_FOUND");
+      throw new ServiceError(
+        "NOT_FOUND",
+      );
     }
 
     return profile;
@@ -30,17 +56,31 @@ export class ProfileService {
 
   async updateProfile(
     userId: string,
-    updateData: ProfileUpdateData,
+    updateData:
+      ProfileUpdateData,
   ): Promise<ProfileDTO> {
     try {
-      return await this.profileRepository.update(userId, updateData);
+      return await this
+        .profileRepository
+        .update(
+          userId,
+          updateData,
+        );
     } catch (error) {
-      throw mapRepositoryError(error);
+      throw mapRepositoryError(
+        error,
+      );
     }
   }
 
-  async getUserRole(userId: string): Promise<ProfileDTO["role"]> {
-    const profile = await this.getProfile(userId);
-    return profile.role;
+  async getAccountRole(
+    userId: string,
+  ): Promise<AccountRole> {
+    const profile =
+      await this.getProfile(
+        userId,
+      );
+
+    return profile.account_role;
   }
 }

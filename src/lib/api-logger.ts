@@ -72,7 +72,7 @@ export async function withApiLogger(
     };
     
     if (error && typeof error === "object" && "name" in error && error.name === "RateLimitExceededError") {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       logPayload.source = (error as any).source as string;
     }
     

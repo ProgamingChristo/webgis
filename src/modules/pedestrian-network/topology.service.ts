@@ -11,58 +11,111 @@ export class TopologyService {
   constructor(
     private readonly client: SupabaseClient,
     private readonly nodeRepo: PedestrianNodeRepository,
-    private readonly edgeRepo: PedestrianEdgeRepository
+    private readonly edgeRepo: PedestrianEdgeRepository,
   ) {}
 
   /**
-   * Validates the routing topology by identifying self-loops, disconnected subgraphs,
-   * or duplicate edges. This is primarily a QA method used during ingestion.
+   * Validates the routing topology by identifying
+   * self-loops, disconnected subgraphs, or duplicate
+   * edges.
+   *
+   * This is primarily a QA method used during
+   * ingestion.
    */
-  async validateNetwork(studyAreaId: string, environment: string = "DUMMY"): Promise<TopologyValidationResult> {
+  async validateNetwork(
+    studyAreaId: string,
+    environment: string = "DUMMY",
+  ): Promise<TopologyValidationResult> {
     const errors: string[] = [];
 
-    // Check for self-loops (source == target)
-    const { data: selfLoops, error: selfLoopError } = await this.client
-      .from("pedestrian_edges")
-      .select("id, code")
-      .eq("study_area_id", studyAreaId)
-      .eq("environment", environment)
-      .eq("source", this.client.rpc("get_target_for_self_loop_check" as any)); // Not straightforward in PostgREST, we'll do raw or custom rpc
-
-    // Alternative: A custom RPC is better for complex topology checks.
-    // For Phase 11, we'll just call an RPC if we have it, or do basic checks.
-    const { data: directSelfLoops, error: dslError } = await this.client
-      .rpc("check_pedestrian_network_topology", { p_study_area_id: studyAreaId, p_environment: environment })
+    /*
+     * Prefer RPC for topology validation.
+     * If the RPC is unavailable, fall back
+     * to direct edge validation.
+     */
+    const {
+      data: directSelfLoops,
+      error: dslError,
+    } = await this.client
+      .rpc(
+        "check_pedestrian_network_topology",
+        {
+          p_study_area_id:
+            studyAreaId,
+          p_environment:
+            environment,
+        },
+      )
       .single();
 
     if (dslError) {
-      // Fallback if RPC doesn't exist yet: basic logic 
-      const { data: edges, error: edgesError } = await this.client
+      /*
+       * Fallback if the topology RPC
+       * does not exist or cannot run.
+       */
+      const {
+        data: edges,
+        error: edgesError,
+      } = await this.client
         .from("pedestrian_edges")
-        .select("id, code, source, target, length_meters")
-        .eq("study_area_id", studyAreaId)
-        .eq("environment", environment);
+        .select(
+          "id, code, source, target, length_meters",
+        )
+        .eq(
+          "study_area_id",
+          studyAreaId,
+        )
+        .eq(
+          "environment",
+          environment,
+        );
 
       if (edgesError) {
-        errors.push(`Failed to fetch edges: ${edgesError.message}`);
-        return { isValid: false, errors };
+        errors.push(
+          `Failed to fetch edges: ${edgesError.message}`,
+        );
+
+        return {
+          isValid: false,
+          errors,
+        };
       }
 
       edges.forEach((edge) => {
-        if (edge.source === edge.target) {
-          errors.push(`Edge ${edge.code} (${edge.id}) is a self-loop.`);
+        if (
+          edge.source ===
+          edge.target
+        ) {
+          errors.push(
+            `Edge ${edge.code} (${edge.id}) is a self-loop.`,
+          );
         }
-        if (Number(edge.length_meters) <= 0) {
-          errors.push(`Edge ${edge.code} (${edge.id}) has zero or negative length.`);
+
+        if (
+          Number(
+            edge.length_meters,
+          ) <= 0
+        ) {
+          errors.push(
+            `Edge ${edge.code} (${edge.id}) has zero or negative length.`,
+          );
         }
       });
     } else if (directSelfLoops) {
-       // Assuming RPC returns { errors: string[] }
-       errors.push(...(directSelfLoops as any).errors);
+      /*
+       * RPC is expected to return:
+       * { errors: string[] }
+       */
+      errors.push(
+        ...(directSelfLoops as {
+          errors: string[];
+        }).errors,
+      );
     }
 
     return {
-      isValid: errors.length === 0,
+      isValid:
+        errors.length === 0,
       errors,
     };
   }

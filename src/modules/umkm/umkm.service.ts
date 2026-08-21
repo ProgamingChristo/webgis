@@ -1,9 +1,8 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { UmkmRepository } from "@/src/repositories/umkm.repository";
 import { EntityAccessService } from "@/src/modules/accessibility/entity-access.service";
-import { createUmkmSchema, updateUmkmSchema, spatialNearbyQuerySchema } from "@/src/schemas/data-model.schema";
-import type { CreateUmkmInput, UpdateUmkmInput, SpatialNearbyQuery, UmkmDTO } from "@/src/types/domain";
-import { z } from "zod";
+import { createUmkmSchema, spatialNearbyQuerySchema } from "@/src/schemas/data-model.schema";
+import type { CreateUmkmInput, SpatialNearbyQuery, UmkmDTO } from "@/src/types/domain";
 
 export class UmkmService {
   constructor(

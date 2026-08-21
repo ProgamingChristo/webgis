@@ -6,6 +6,14 @@ export default defineConfig([
   ...nextCoreWebVitals,
   ...nextTypeScript,
 
+  {
+    rules: {
+      // Temporary during Revan + Christo integration.
+      // Restore to "error" after legacy backend typing is cleaned up.
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+
   globalIgnores([
     ".next/**",
     "out/**",
@@ -18,6 +26,8 @@ export default defineConfig([
     ".sites-runtime/**",
     "outputs/**",
     "work/**",
+
+    "public/maplibre/**",
 
     "next-env.d.ts",
   ]),

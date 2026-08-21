@@ -16,7 +16,6 @@ import {
   type JsonValue,
 } from "@/src/types/provenance";
 import {
-  boundingBoxSchema,
   corridorGeometrySchema,
   lineStringGeometrySchema,
   multiPolygonGeometrySchema,

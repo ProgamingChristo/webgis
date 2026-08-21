@@ -35,7 +35,7 @@ async function run() {
   const sourceId = source.id;
 
   // 2. Get the DUMMY study area (created in Phase 9/11)
-  let { data: area } = await supabase
+  const { data: area } = await supabase
     .from("study_areas")
     .select("id")
     .eq("name", "Pilot Area Dummy")

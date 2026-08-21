@@ -1,5 +1,4 @@
 import {
-  type DatabaseGeometry,
   type MultiLineStringGeometry,
 } from "@/src/types/spatial";
 import {
@@ -7,12 +6,9 @@ import {
   type PedestrianEdgeDatabaseRow,
   type PedestrianEdgeDTO,
   type PedestrianEdgeEntity,
-  type PedestrianEdgeFilter,
-  type PedestrianEdgeListQuery,
-  type UpdatePedestrianEdgeInput,
 } from "@/src/types/domain";
 import { type SupabaseClient } from "@supabase/supabase-js";
-import { mapDatabaseError, RepositoryError } from "./errors";
+import { mapDatabaseError } from "./errors";
 export class PedestrianEdgeRepository {
   constructor(private readonly client: SupabaseClient) {}
 
