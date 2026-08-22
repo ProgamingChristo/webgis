@@ -16,6 +16,9 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { StakeholderModeSwitcher } from "@/src/components/stakeholder/stakeholder-mode-switcher";
+import { StakeholderContextShell } from "@/src/components/stakeholder/stakeholder-context-shell";
+
 import { GetraMap } from "@/components/getra-map";
 import {
   COFFEE_SHOP_BRANDS,
@@ -417,23 +420,7 @@ export function GetraDashboard() {
           </div>
         </div>
 
-        <nav
-          className="stakeholder-switch"
-          aria-label="Mode data"
-        >
-          <button className="stakeholder-button stakeholder-button--active">
-            Coffee
-          </button>
-          <button className="stakeholder-button" disabled>
-            Transit
-          </button>
-          <button className="stakeholder-button" disabled>
-            UMKM
-          </button>
-          <button className="stakeholder-button" disabled>
-            Investor
-          </button>
-        </nav>
+        <StakeholderModeSwitcher />
 
         <div className="topbar-actions">
           <div className="pilot-badge">
@@ -455,8 +442,9 @@ export function GetraDashboard() {
         </div>
       </header>
 
-      <section className="workspace-grid">
-        <aside className="left-panel panel">
+      <StakeholderContextShell>
+        <section className="workspace-grid">
+          <aside className="left-panel panel">
           <div className="panel-heading">
             <div>
               <span className="eyebrow">
@@ -848,6 +836,7 @@ export function GetraDashboard() {
           )}
         </aside>
       </section>
+      </StakeholderContextShell>
     </main>
   );
 }

@@ -641,7 +641,7 @@ select:focus-visible {
   bottom: 42px;
   z-index: 5;
   display: grid;
-  grid-template-columns: repeat(3, minmax(72px, 1fr));
+  grid-template-columns: repeat(5, minmax(72px, 1fr));
   gap: 4px;
   padding: 5px;
   border: 1px solid rgba(238, 248, 250, 0.14);
@@ -981,8 +981,8 @@ select:focus-visible {
   .basemap-switcher {
     right: 10px;
     bottom: 34px;
-    grid-template-columns: 1fr;
-    width: 118px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 220px;
   }
 
   .basemap-button {

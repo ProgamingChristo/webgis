@@ -26,8 +26,8 @@ import {
   BASEMAP_OPTIONS,
   type BasemapId,
   FALLBACK_MAP_STYLE,
-  MAPID_STYLE_NAME,
-  MAPID_STYLE_URL,
+  getBasemapOption,
+  getDefaultBasemapId,
 } from "@/lib/mapid";
 
 setWorkerUrl(
@@ -198,7 +198,7 @@ export function GetraMap({
     setActiveBasemapId,
   ] =
     useState<BasemapId>(
-      "osm",
+      getDefaultBasemapId(),
     );
 
   const containerRef =
@@ -231,8 +231,9 @@ export function GetraMap({
           containerRef.current,
 
         style:
-          MAPID_STYLE_URL ||
-          BASEMAP_OPTIONS[0]?.style ||
+          getBasemapOption(
+            getDefaultBasemapId(),
+          ).style ||
           FALLBACK_MAP_STYLE,
 
         center: [
@@ -361,8 +362,7 @@ export function GetraMap({
       mapRef.current;
 
     if (
-      !map ||
-      MAPID_STYLE_URL
+      !map
     ) {
       return;
     }
@@ -581,9 +581,7 @@ export function GetraMap({
       <div className="map-status map-status--top-left">
         <span
           className={
-            MAPID_STYLE_URL
-              ? "status-dot status-dot--ok"
-              : "status-dot"
+            "status-dot status-dot--ok"
           }
         />
 
@@ -593,50 +591,46 @@ export function GetraMap({
           </strong>
 
           <span>
-            {MAPID_STYLE_URL
-              ? `MAPID · ${MAPID_STYLE_NAME}`
-              : BASEMAP_OPTIONS.find(
-                  (option) =>
-                    option.id ===
-                    activeBasemapId,
-                )?.description ?? "OpenStreetMap"}
+            {BASEMAP_OPTIONS.find(
+              (option) =>
+                option.id ===
+                activeBasemapId,
+            )?.description ?? "MAPID basemap"}
           </span>
         </div>
       </div>
 
-      {!MAPID_STYLE_URL ? (
-        <div
-          className="basemap-switcher"
-          aria-label="Pilih basemap"
-        >
-          {BASEMAP_OPTIONS.map(
-            (option) => (
-              <button
-                key={option.id}
-                type="button"
-                className={
-                  option.id ===
-                  activeBasemapId
-                    ? "basemap-button basemap-button--active"
-                    : "basemap-button"
-                }
-                onClick={() =>
-                  setActiveBasemapId(
-                    option.id,
-                  )
-                }
-              >
-                <span>
-                  {option.label}
-                </span>
-                <small>
-                  {option.description}
-                </small>
-              </button>
-            ),
-          )}
-        </div>
-      ) : null}
+      <div
+        className="basemap-switcher"
+        aria-label="Pilih basemap"
+      >
+        {BASEMAP_OPTIONS.map(
+          (option) => (
+            <button
+              key={option.id}
+              type="button"
+              className={
+                option.id ===
+                activeBasemapId
+                  ? "basemap-button basemap-button--active"
+                  : "basemap-button"
+              }
+              onClick={() =>
+                setActiveBasemapId(
+                  option.id,
+                )
+              }
+            >
+              <span>
+                {option.label}
+              </span>
+              <small>
+                {option.description}
+              </small>
+            </button>
+          ),
+        )}
+      </div>
 
     </div>
   );
