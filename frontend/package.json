@@ -12,6 +12,7 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
 }
