@@ -1,0 +1,27 @@
+# GETRA: PHASE 14 DATA RELATIONSHIPS
+
+## Core Joins & Constraints
+The Golden Dataset enforces these relationships at the database schema level via Foreign Keys (FK) and PostGIS constraints.
+
+### 1. Ingestion Provenance
+- EVERYTHING (except system enums) optionally points to `data_sources.id`.
+- Most bulk records point to `import_jobs.id`.
+
+### 2. Spatial Hierarchy
+- `pedestrian_nodes.study_area_id` -> `study_areas.id`
+- `pedestrian_edges.source_node_id` -> `pedestrian_nodes.id`
+- `pedestrian_edges.target_node_id` -> `pedestrian_nodes.id`
+
+### 3. Multimodal Bridging
+- `transport_access_links.pedestrian_node_id` -> `pedestrian_nodes.id`
+- `transport_access_links.transport_node_id` -> `transport_nodes.id`
+
+### 4. POI & UMKM
+- `umkm_profiles.poi_id` -> `pois.id` (Nullable, UMKM can be standalone).
+- `umkm_profiles.user_id` -> `profiles.id` (Nullable for unverified dummy UMKM).
+
+### 5. Survey Intelligence
+- `surveys.study_area_id` -> `study_areas.id`
+- `survey_submissions.user_id` -> `profiles.id`
+- `survey_responses.submission_id` -> `survey_submissions.id`
+- `survey_responses.question_id` -> `survey_questions.id`

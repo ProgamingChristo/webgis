@@ -1,0 +1,16 @@
+# GETRA: GOLDEN DATASET (DUMMY V1)
+
+## What is the Golden Dataset?
+The "Golden Dataset" is a verified, logically isolated snapshot of dummy data that serves as the universal baseline for GETRA regression testing and module development (Phases 15+).
+
+## Why "Logical"?
+Instead of physical pg_dump snapshots (which are rigid), GETRA uses a logical versioning model. The `dataset_versions` table marks a specific state in time (`GETRA_DUMMY_GOLDEN_V1`), accompanied by strict `quality_runs` that prove all related tables were 100% compliant at the moment of activation.
+
+## Characteristics of DUMMY_GOLDEN_V1
+- **Integrity**: Zero environment cross-contamination. 
+- **Completeness**: Contains Study Areas, Transport Corridors, Transport Nodes, Transport Route Stops, Pedestrian Routing Graphs, UMKM Profiles, POIs, and Survey Responses.
+- **Reproducibility**: If the database is wiped, the ingestion scripts can rebuild `GETRA_DUMMY_GOLDEN_V1` exactly by re-running the Phase 9-13 dummy importers and triggering the Phase 14 quality freeze script.
+
+## Interacting with the Golden Dataset
+Developers should NEVER directly mutate rows flagged as `environment = DUMMY` in testing. 
+For integration tests, create a new row with `environment = FIXTURE` or `environment = TEST`, referencing the Golden Dataset's IDs as needed, but leaving the Golden base intact.

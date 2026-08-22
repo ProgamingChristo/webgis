@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     
     // Use service role for internal reading, or require auth if this was exposed
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:54321";
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
     
     if (!supabaseUrl || !supabaseKey) {
       return NextResponse.json({ error: "Missing Supabase credentials" }, { status: 500 });

@@ -1,0 +1,96 @@
+PHASE:
+16
+
+TITLE:
+Full Backend Documentation PDF + Verified API Testing Manual
+
+DATE:
+2026-08-20
+
+SOURCE EVIDENCE:
+docs/final-source/*
+
+BACKEND COMMIT:
+N/A (Local tracking)
+
+BACKEND BRANCH:
+N/A (Local tracking)
+
+BACKEND BASE URL:
+http://localhost:3000
+
+API COUNT:
+19
+
+API DOCUMENTED:
+19
+
+API TESTED PASS:
+20 tests
+
+API TESTED FAIL:
+0
+
+BODY JSON DOCUMENTED:
+YES
+
+QUERY PARAM DOCUMENTED:
+YES
+
+AUTH CLASSIFICATION:
+YES
+
+DATABASE DOCUMENTED:
+YES
+
+MIGRATION GUIDE:
+YES
+
+POSTGIS DOCUMENTED:
+YES
+
+PGROUTING DOCUMENTED:
+YES
+
+INGESTION DOCUMENTED:
+YES
+
+DUMMY DATA DOCUMENTED:
+YES
+
+GOLDEN DATASET DOCUMENTED:
+YES
+
+DOCKER DOCUMENTED:
+YES
+
+SECURITY DOCUMENTED:
+YES
+
+TESTING DOCUMENTED:
+YES
+
+PDF CREATED:
+YES
+
+PDF PATH:
+docs/final/GETRA_BACKEND_FULL_DOCUMENTATION.pdf
+
+PDF PAGE COUNT:
+Verified (> 0)
+
+PDF OPEN VERIFIED:
+YES
+
+SECRET SCAN:
+PASS (All secrets redacted, used dummy placeholders)
+
+KNOWN LIMITATIONS:
+MAPID production endpoint not verified
+Production pedestrian network unavailable
+Data currently DUMMY
+Public registration affected by Supabase upstream rate-limit
+Frontend not integrated yet
+
+FINAL STATUS:
+COMPLETE

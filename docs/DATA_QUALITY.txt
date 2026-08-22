@@ -1,0 +1,20 @@
+# GETRA: DATA QUALITY STANDARDS
+
+## Overview
+This document outlines the data quality requirements and tolerances for the GETRA project. All imported datasets MUST pass the quality rules defined here before being promoted to `ACTIVE`.
+
+## Environments
+1. **PRODUCTION**: Strict quality boundaries. Critical failures = 0, Warning limits = <1%.
+2. **DUMMY**: Exact same schema constraints as PRODUCTION, but allowed for synthetic variations. All `environment` flags MUST = 'DUMMY'.
+
+## Check Categories
+- **ENVIRONMENT**: Asserts 100% of rows match the declared environment context.
+- **SPATIAL**: Geometries must be SRID 4326. Polygons cannot self-intersect.
+- **PROVENANCE**: Every row must link back to a valid `data_source` and `import_job` (except system defaults).
+- **TOPOLOGY**: Transport routes must have continuous ordered stops. Pedestrian edges must connect to existing pedestrian nodes.
+- **REFERENTIAL INTEGRITY**: Zero orphans allowed. Every UMKM profile must link to a valid POI geometry. Every survey must belong to a known study area.
+
+## Status Definitions
+- `PASS`: No issues found.
+- `WARN`: Non-critical issues found (e.g., duplicate name but different ID).
+- `FAIL`: Critical issues found violating the baseline integrity (e.g., environment cross-contamination, malformed geometries).

@@ -39,17 +39,17 @@ export async function GET() {
 
   try {
     const [
-      categories,
-      spatialSources,
+      profiles,
+      pois,
       studyAreas,
       transportNodes,
-      merchants,
+      umkm,
     ] = await Promise.all([
-      publicCount(client, "categories"),
-      publicCount(client, "spatial_sources"),
+      publicCount(client, "profiles"),
+      publicCount(client, "pois"),
       publicCount(client, "study_areas"),
       publicCount(client, "transport_nodes"),
-      publicCount(client, "merchants"),
+      publicCount(client, "umkm_profiles"),
     ]);
 
     return NextResponse.json({
@@ -58,15 +58,15 @@ export async function GET() {
       databaseReachable: true,
       accessMode: "publishable-key + RLS",
       publicReferenceData: {
-        categories,
-        spatialSources,
+        profiles,
+        pois,
         studyAreas,
         transportNodes,
-        merchants,
+        umkm,
       },
       expectedFoundationState: {
-        categoriesSeeded: categories > 0,
-        merchantsEmpty: merchants === 0,
+        profilesSeeded: profiles > 0,
+        umkmEmpty: umkm === 0,
         transportNodesEmpty: transportNodes === 0,
         studyAreasEmpty: studyAreas === 0,
       },

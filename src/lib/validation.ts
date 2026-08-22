@@ -17,6 +17,7 @@ export async function validateBody<T>(
   const parseResult = schema.safeParse(body);
   
   if (!parseResult.success) {
+    console.error("[ZOD ERROR]", parseResult.error.issues);
     const errorMsg = parseResult.error.issues[0]?.message || "Validation failed";
     throw new ApplicationError("VALIDATION_ERROR", errorMsg);
   }

@@ -1,0 +1,28 @@
+# GETRA: PHASE 14 DATA DICTIONARY
+
+## 1. Study Areas
+- `study_areas`: Polygons defining the bounds of the operational area (e.g. "Kawasan Margonda").
+
+## 2. Transport Network
+- `transport_corridors`: LineStrings representing primary transit paths (Angkot routes, BRT paths).
+- `transport_nodes`: Points representing stations, terminals, or major hubs.
+- `transport_route_stops`: Relational join mapping a corridor to specific node sequences.
+
+## 3. Pedestrian Network
+- `pedestrian_nodes`: Topological graph points for walking.
+- `pedestrian_edges`: LineStrings connecting pedestrian nodes, with weight/distance properties.
+- `transport_access_links`: Virtual edges linking pedestrian nodes to transport nodes for multimodal routing.
+
+## 4. POI & UMKM
+- `pois`: Points of Interest (Schools, Malls, Hospitals).
+- `umkm_profiles`: Business metadata (Name, Category, Owner) linked to either a POI or a direct spatial point.
+
+## 5. Survey & Demand
+- `surveys`: The survey campaigns.
+- `survey_responses`: Individual answers (OD matrix endpoints, modal choice preferences).
+- `survey_submissions`: Transactional wrappers grouping responses.
+
+## 6. System & Quality
+- `dataset_versions`: Logical snapshots defining complete graph states.
+- `quality_runs`: Execution logs of validation scripts.
+- `quality_check_results`: Pass/Fail lines for individual assertions.

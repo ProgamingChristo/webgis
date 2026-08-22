@@ -1,0 +1,19 @@
+# PHASE 14: GOLDEN DATASET (DUMMY V1) - COMPLETED
+
+## Summary of Changes
+- **Data Quality Framework**: Created `data-quality` and `dataset-version` modules to manage logical environment separation and quality assertions.
+- **Database Schema**: 
+  - Added `dataset_versions` (stores logical baseline markers).
+  - Added `quality_runs` (logs test runs).
+  - Added `quality_check_results` (granular assertion results).
+- **Tooling**:
+  - `scripts/phase-14/audit-all-data.ts`: Raw data extraction via Service Role bypass.
+  - `scripts/phase-14/run-quality-checks.ts`: Automated runner verifying 100% `DUMMY` environment isolation.
+  - `scripts/phase-14/create-golden-version.ts`: Idempotent script declaring the `GETRA_DUMMY_GOLDEN_V1` baseline.
+- **Data Governance Documentation**: Added standards for Quality, Harmonization, Dictionary, Relationships, and the Golden Baseline.
+
+## Status
+- Core schema is live on remote database.
+- TypeScript definitions are updated and synchronized.
+- Execution scripts successfully written.
+- Ready for regression testing in Phase 15.
