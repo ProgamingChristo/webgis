@@ -3,79 +3,455 @@
 import { useCallback, useMemo, useState } from "react";
 import {
   Bot,
-  Clock3,
+  CalendarDays,
+  Coffee,
   Database,
-  Footprints,
   Layers3,
+  LogOut,
+  LocateFixed,
   MapPinned,
+  Phone,
   Search,
   ShieldCheck,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+
 import { GetraMap } from "@/components/getra-map";
-import { DEMO_MERCHANTS, PILOT_ORIGIN } from "@/data/demo-merchants";
-import type { Merchant } from "@/types/getra";
+import {
+  COFFEE_SHOP_BRANDS,
+  COFFEE_SHOP_ORIGIN,
+  COFFEE_SHOP_SOURCE_NAME,
+  COFFEE_SHOPS,
+} from "@/data/coffee-shops-jakarta-barat";
+import { authenticatedFetch, clearAuthSession } from "@/src/lib/auth-client";
+import type { Merchant, UserLocation } from "@/types/getra";
 
-const CATEGORY_OPTIONS = ["Semua", "Kopi", "Makanan", "Minimarket", "Apotek", "Jasa"] as const;
+const BRAND_OPTIONS = [
+  "Semua",
+  ...COFFEE_SHOP_BRANDS,
+] as const;
 
-type CategoryFilter = (typeof CATEGORY_OPTIONS)[number];
+type BrandFilter =
+  (typeof BRAND_OPTIONS)[number];
+
+type LocatedMerchant =
+  Merchant & {
+    userDistanceMeters?: number;
+    userWalkingMinutes?: number;
+  };
+
+function distanceMeters(
+  a: {
+    latitude: number;
+    longitude: number;
+  },
+  b: {
+    latitude: number;
+    longitude: number;
+  },
+) {
+  const earthRadiusMeters =
+    6371008.8;
+
+  const toRad =
+    (value: number) =>
+      (value * Math.PI) /
+      180;
+
+  const dLat =
+    toRad(
+      b.latitude -
+        a.latitude,
+    );
+
+  const dLng =
+    toRad(
+      b.longitude -
+        a.longitude,
+    );
+
+  const lat1 =
+    toRad(
+      a.latitude,
+    );
+
+  const lat2 =
+    toRad(
+      b.latitude,
+    );
+
+  const h =
+    Math.sin(
+      dLat / 2,
+    ) ** 2 +
+    Math.cos(lat1) *
+      Math.cos(lat2) *
+      Math.sin(
+        dLng / 2,
+      ) ** 2;
+
+  return Math.round(
+    earthRadiusMeters *
+      2 *
+      Math.atan2(
+        Math.sqrt(h),
+        Math.sqrt(
+          1 - h,
+        ),
+      ),
+  );
+}
+
+function formatDistance(
+  meters: number,
+) {
+  if (meters >= 1000) {
+    return `${(meters / 1000).toFixed(1)} km`;
+  }
+
+  return `${meters} m`;
+}
 
 export function GetraDashboard() {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<CategoryFilter>("Semua");
-  const [maxMinutes, setMaxMinutes] = useState(10);
-  const [openOnly, setOpenOnly] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(DEMO_MERCHANTS[0]?.id ?? null);
+  const router =
+    useRouter();
 
-  const merchants = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+  const [
+    query,
+    setQuery,
+  ] =
+    useState("");
 
-    return DEMO_MERCHANTS.filter((merchant) => {
-      if (category !== "Semua" && merchant.category !== category) return false;
-      if (merchant.walkingMinutes > maxMinutes) return false;
-      if (openOnly && !merchant.openNow) return false;
-      if (
-        normalizedQuery &&
-        !`${merchant.name} ${merchant.category} ${merchant.priceLabel}`
-          .toLowerCase()
-          .includes(normalizedQuery)
-      ) {
-        return false;
-      }
-      return true;
-    }).sort((a, b) => {
-      if (a.walkingMinutes !== b.walkingMinutes) return a.walkingMinutes - b.walkingMinutes;
-      return b.accessibilityScore - a.accessibilityScore;
-    });
-  }, [category, maxMinutes, openOnly, query]);
+  const [
+    brand,
+    setBrand,
+  ] =
+    useState<BrandFilter>(
+      "Semua",
+    );
+
+  const [
+    openOnly,
+    setOpenOnly,
+  ] =
+    useState(true);
+
+  const [
+    loggingOut,
+    setLoggingOut,
+  ] =
+    useState(false);
+
+  const [
+    locating,
+    setLocating,
+  ] =
+    useState(false);
+
+  const [
+    locationError,
+    setLocationError,
+  ] =
+    useState<string | null>(
+      null,
+    );
+
+  const [
+    userLocation,
+    setUserLocation,
+  ] =
+    useState<UserLocation | null>(
+      null,
+    );
+
+  const [
+    selectedId,
+    setSelectedId,
+  ] =
+    useState<string | null>(
+      COFFEE_SHOPS[0]?.id ??
+        null,
+    );
+
+  const merchants =
+    useMemo(() => {
+      const normalizedQuery =
+        query
+          .trim()
+          .toLowerCase();
+
+      const filtered =
+        COFFEE_SHOPS
+        .filter((merchant) => {
+          if (
+            brand !==
+              "Semua" &&
+            merchant.brand !==
+              brand
+          ) {
+            return false;
+          }
+
+          if (
+            openOnly &&
+            !merchant.openNow
+          ) {
+            return false;
+          }
+
+          if (
+            normalizedQuery &&
+            !`${merchant.name} ${merchant.brand} ${merchant.address ?? ""} ${merchant.district ?? ""} ${merchant.village ?? ""}`
+              .toLowerCase()
+              .includes(
+                normalizedQuery,
+              )
+          ) {
+            return false;
+          }
+
+          return true;
+        });
+
+      const withDistance: LocatedMerchant[] =
+        userLocation
+          ? filtered.map(
+              (
+                merchant,
+              ) => {
+                const userDistanceMeters =
+                  distanceMeters(
+                    userLocation,
+                    merchant,
+                  );
+
+                return {
+                  ...merchant,
+                  userDistanceMeters,
+                  userWalkingMinutes:
+                    Math.max(
+                      1,
+                      Math.round(
+                        userDistanceMeters /
+                          80,
+                      ),
+                    ),
+                };
+              },
+            )
+          : filtered;
+
+      return withDistance.sort(
+        (
+          a,
+          b,
+        ) => {
+          if (
+            userLocation &&
+            a.userDistanceMeters !==
+              undefined &&
+            b.userDistanceMeters !==
+              undefined &&
+            a.userDistanceMeters !==
+              b.userDistanceMeters
+          ) {
+            return (
+              a.userDistanceMeters -
+              b.userDistanceMeters
+            );
+          }
+
+          return (
+            a.name.localeCompare(
+              b.name,
+              "id",
+            ) ||
+            a.longitude -
+              b.longitude ||
+            a.latitude -
+              b.latitude
+          );
+        },
+      );
+    }, [
+      brand,
+      openOnly,
+      query,
+      userLocation,
+    ]);
 
   const selectedMerchant =
-    merchants.find((merchant) => merchant.id === selectedId) ?? merchants[0] ?? null;
+    merchants.find(
+      (merchant) =>
+        merchant.id ===
+        selectedId,
+    ) ??
+    merchants[0] ??
+    null;
 
-  const handleSelect = useCallback((merchant: Merchant) => {
-    setSelectedId(merchant.id);
-  }, []);
+  const handleSelect =
+    useCallback(
+      (
+        merchant: Merchant,
+      ) => {
+        setSelectedId(
+          merchant.id,
+        );
+      },
+      [],
+    );
+
+  const handleLocateUser =
+    useCallback(() => {
+      setLocationError(
+        null,
+      );
+
+      if (
+        !("geolocation" in navigator)
+      ) {
+        setLocationError(
+          "Perangkat atau browser belum mendukung GPS/location.",
+        );
+        return;
+      }
+
+      setLocating(
+        true,
+      );
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            latitude:
+              position.coords.latitude,
+            longitude:
+              position.coords.longitude,
+            accuracyMeters:
+              Math.round(
+                position.coords.accuracy,
+              ),
+            capturedAt:
+              new Date().toISOString(),
+          });
+
+          setLocating(
+            false,
+          );
+        },
+        (error) => {
+          const message =
+            error.code ===
+            error.PERMISSION_DENIED
+              ? "Izin lokasi ditolak. Aktifkan permission location di browser untuk memakai GPS."
+              : error.code ===
+                  error.POSITION_UNAVAILABLE
+                ? "Lokasi perangkat belum tersedia. Coba nyalakan GPS/Wi-Fi location lalu ulangi."
+                : "Pengambilan lokasi terlalu lama. Coba ulangi dari perangkat.";
+
+          setLocationError(
+            message,
+          );
+          setLocating(
+            false,
+          );
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 12000,
+          maximumAge: 30000,
+        },
+      );
+    }, []);
+
+  const handleLogout =
+    useCallback(async () => {
+      if (loggingOut) return;
+
+      setLoggingOut(
+        true,
+      );
+
+      try {
+        try {
+          await authenticatedFetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`,
+            {
+              method:
+                "POST",
+            },
+          );
+        } catch {
+          // Browser logout must still clear its local session if the API is down.
+        }
+
+        await clearAuthSession();
+        router.replace(
+          "/login",
+        );
+        router.refresh();
+      } catch {
+        setLoggingOut(
+          false,
+        );
+      }
+    }, [
+      loggingOut,
+      router,
+    ]);
 
   return (
     <main className="workspace">
       <header className="topbar">
         <div className="brand">
-          <div className="brand-mark">G</div>
+          <div className="brand-mark">
+            G
+          </div>
           <div>
-            <strong>GETRA</strong>
-            <span>Geo-Enabled Transit & Retail Analytics</span>
+            <strong>
+              GETRA
+            </strong>
+            <span>
+              Geo-Enabled Transit & Retail Analytics
+            </span>
           </div>
         </div>
 
-        <nav className="stakeholder-switch" aria-label="Mode stakeholder">
-          <button className="stakeholder-button stakeholder-button--active">Komuter</button>
-          <button className="stakeholder-button" disabled>UMKM</button>
-          <button className="stakeholder-button" disabled>Investor</button>
-          <button className="stakeholder-button" disabled>Pemerintah</button>
+        <nav
+          className="stakeholder-switch"
+          aria-label="Mode data"
+        >
+          <button className="stakeholder-button stakeholder-button--active">
+            Coffee
+          </button>
+          <button className="stakeholder-button" disabled>
+            Transit
+          </button>
+          <button className="stakeholder-button" disabled>
+            UMKM
+          </button>
+          <button className="stakeholder-button" disabled>
+            Investor
+          </button>
         </nav>
 
-        <div className="pilot-badge">
-          <ShieldCheck size={15} />
-          Pilot · synthetic
+        <div className="topbar-actions">
+          <div className="pilot-badge">
+            <ShieldCheck size={15} />
+            GeoJSON Q2 2026
+          </div>
+
+          <button
+            className="logout-button"
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+          >
+            <LogOut size={15} />
+            {loggingOut
+              ? "Keluar..."
+              : "Keluar"}
+          </button>
         </div>
       </header>
 
@@ -83,8 +459,12 @@ export function GetraDashboard() {
         <aside className="left-panel panel">
           <div className="panel-heading">
             <div>
-              <span className="eyebrow">Geo search</span>
-              <h1>Cari layanan dari transit</h1>
+              <span className="eyebrow">
+                GeoJSON search
+              </span>
+              <h1>
+                Coffee shop Jakarta Barat
+              </h1>
             </div>
             <Search size={20} />
           </div>
@@ -92,44 +472,84 @@ export function GetraDashboard() {
           <div className="origin-box">
             <MapPinned size={17} />
             <div>
-              <span>Origin pilot</span>
-              <strong>{PILOT_ORIGIN.name}</strong>
+              <span>
+                Lokasi pengguna
+              </span>
+              <strong>
+                {userLocation
+                  ? `${userLocation.latitude.toFixed(6)}, ${userLocation.longitude.toFixed(6)}`
+                  : COFFEE_SHOP_ORIGIN.name}
+              </strong>
+              {userLocation ? (
+                <small>
+                  Akurasi GPS sekitar {userLocation.accuracyMeters} m
+                </small>
+              ) : null}
             </div>
           </div>
 
-          <label className="field-label" htmlFor="search-query">Pencarian</label>
+          <button
+            className="locate-button"
+            type="button"
+            onClick={handleLocateUser}
+            disabled={locating}
+          >
+            <LocateFixed size={16} />
+            {locating
+              ? "Mengambil lokasi..."
+              : userLocation
+                ? "Perbarui lokasi saya"
+                : "Gunakan lokasi saya"}
+          </button>
+
+          {locationError ? (
+            <p className="location-error">
+              {locationError}
+            </p>
+          ) : null}
+
+          <label
+            className="field-label"
+            htmlFor="search-query"
+          >
+            Pencarian
+          </label>
           <div className="search-box">
             <Search size={17} />
             <input
               id="search-query"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="contoh: kopi hemat"
+              onChange={(event) =>
+                setQuery(
+                  event.target.value,
+                )
+              }
+              placeholder="contoh: Starbucks Puri"
             />
           </div>
 
-          <div className="filter-grid">
+          <div className="filter-grid filter-grid--single">
             <label>
-              <span>Kategori</span>
+              <span>
+                Brand
+              </span>
               <select
-                value={category}
-                onChange={(event) => setCategory(event.target.value as CategoryFilter)}
+                value={brand}
+                onChange={(event) =>
+                  setBrand(
+                    event.target
+                      .value as BrandFilter,
+                  )
+                }
               >
-                {CATEGORY_OPTIONS.map((option) => (
-                  <option key={option} value={option}>{option}</option>
+                {BRAND_OPTIONS.map((option) => (
+                  <option
+                    key={option}
+                    value={option}
+                  >
+                    {option}
+                  </option>
                 ))}
-              </select>
-            </label>
-
-            <label>
-              <span>Maks. jalan</span>
-              <select
-                value={maxMinutes}
-                onChange={(event) => setMaxMinutes(Number(event.target.value))}
-              >
-                <option value={5}>5 menit</option>
-                <option value={8}>8 menit</option>
-                <option value={10}>10 menit</option>
               </select>
             </label>
           </div>
@@ -138,69 +558,136 @@ export function GetraDashboard() {
             <input
               type="checkbox"
               checked={openOnly}
-              onChange={(event) => setOpenOnly(event.target.checked)}
+              onChange={(event) =>
+                setOpenOnly(
+                  event.target
+                    .checked,
+                )
+              }
             />
-            <span>Hanya yang buka sekarang</span>
+            <span>
+              Hanya status BUKA
+            </span>
           </label>
 
           <div className="section-divider" />
 
           <div className="results-header">
             <div>
-              <span className="eyebrow">Hasil pilot</span>
-              <strong>{merchants.length} lokasi</strong>
+              <span className="eyebrow">
+                Hasil GeoJSON
+              </span>
+              <strong>
+                {merchants.length} dari {COFFEE_SHOPS.length} titik
+              </strong>
             </div>
-            <span className="source-stamp">Demo GETRA</span>
+            <span className="source-stamp">
+              2026
+            </span>
           </div>
 
           <div className="result-list">
             {merchants.length === 0 ? (
               <div className="empty-state">
-                Tidak ada data demo yang cocok. Lebarkan walking time atau ubah filter.
+                Tidak ada titik yang cocok. Ubah brand, kata kunci, atau status buka.
               </div>
             ) : (
-              merchants.map((merchant, index) => (
-                <button
-                  key={merchant.id}
-                  className={
-                    merchant.id === selectedMerchant?.id
-                      ? "result-row result-row--selected"
-                      : "result-row"
-                  }
-                  onClick={() => handleSelect(merchant)}
-                >
-                  <span className="result-rank">{index + 1}</span>
-                  <span className="result-main">
-                    <strong>{merchant.name}</strong>
-                    <span>{merchant.category} · {merchant.priceLabel}</span>
-                    <span className="result-meta">
-                      <Footprints size={13} /> {merchant.walkingMinutes} menit
-                      <span>·</span>
-                      {merchant.distanceMeters} m
+              merchants.map(
+                (
+                  merchant,
+                  index,
+                ) => (
+                  <button
+                    key={merchant.id}
+                    className={
+                      merchant.id ===
+                      selectedMerchant?.id
+                        ? "result-row result-row--selected"
+                        : "result-row"
+                    }
+                    onClick={() =>
+                      handleSelect(
+                        merchant,
+                      )
+                    }
+                  >
+                    <span className="result-rank">
+                      {index + 1}
                     </span>
-                  </span>
-                  <span className="score-box">
-                    <strong>{merchant.accessibilityScore}</strong>
-                    <span>akses</span>
-                  </span>
-                </button>
-              ))
+                    <span className="result-main">
+                      <strong>
+                        {merchant.name}
+                      </strong>
+                      <span>
+                        {merchant.brand}
+                        {" · "}
+                        {merchant.district}
+                      </span>
+                      <span className="result-meta">
+                        {merchant.userDistanceMeters !==
+                        undefined ? (
+                          <>
+                            <LocateFixed size={13} />
+                            {formatDistance(
+                              merchant.userDistanceMeters,
+                            )}
+                            <span>
+                              ·
+                            </span>
+                            {merchant.userWalkingMinutes} menit
+                          </>
+                        ) : (
+                          <>
+                            <MapPinned size={13} />
+                            {merchant.latitude.toFixed(
+                              6,
+                            )}
+                            ,
+                            {" "}
+                            {merchant.longitude.toFixed(
+                              6,
+                            )}
+                          </>
+                        )}
+                      </span>
+                    </span>
+                    <span className="score-box">
+                      <strong>
+                        {merchant.openNow
+                          ? "BUKA"
+                          : "TUTUP"}
+                      </strong>
+                      <span>
+                        status
+                      </span>
+                    </span>
+                  </button>
+                ),
+              )
             )}
           </div>
 
           <div className="ai-teaser">
             <Bot size={17} />
             <div>
-              <strong>AI belum diaktifkan pada milestone ini</strong>
-              <span>Fondasi peta dibuat stabil dulu. Endpoint AI lama bisa disambungkan setelah ini.</span>
+              <strong>
+                Data sudah memakai GeoJSON lokal
+              </strong>
+              <span>
+                Aktifkan lokasi perangkat agar daftar diurutkan dari titik kamu saat ini.
+              </span>
             </div>
           </div>
         </aside>
 
-        <section className="map-panel" aria-label="Peta GETRA">
+        <section
+          className="map-panel"
+          aria-label="Peta GETRA"
+        >
           <GetraMap
             merchants={merchants}
-            selectedId={selectedMerchant?.id ?? null}
+            selectedId={selectedId}
+            userLocation={userLocation}
             onSelect={handleSelect}
           />
         </section>
@@ -208,8 +695,12 @@ export function GetraDashboard() {
         <aside className="right-panel panel">
           <div className="panel-heading">
             <div>
-              <span className="eyebrow">Evidence</span>
-              <h2>Detail lokasi</h2>
+              <span className="eyebrow">
+                Evidence
+              </span>
+              <h2>
+                Detail lokasi
+              </h2>
             </div>
             <Database size={20} />
           </div>
@@ -217,73 +708,143 @@ export function GetraDashboard() {
           {selectedMerchant ? (
             <>
               <div className="detail-title">
-                <span className="source-stamp source-stamp--warning">Synthetic</span>
-                <h3>{selectedMerchant.name}</h3>
-                <p>{selectedMerchant.category} · {selectedMerchant.priceLabel}</p>
+                <span className="source-stamp source-stamp--warning">
+                  GeoJSON
+                </span>
+                <h3>
+                  {selectedMerchant.name}
+                </h3>
+                <p>
+                  {selectedMerchant.brand}
+                  {" · "}
+                  {selectedMerchant.category}
+                </p>
               </div>
 
               <div className="metric-grid">
                 <div className="metric">
-                  <Footprints size={18} />
-                  <span>Walking time</span>
-                  <strong>{selectedMerchant.walkingMinutes} menit</strong>
+                  <Coffee size={18} />
+                  <span>
+                    Brand
+                  </span>
+                  <strong>
+                    {selectedMerchant.brand}
+                  </strong>
                 </div>
                 <div className="metric">
                   <MapPinned size={18} />
-                  <span>Distance</span>
-                  <strong>{selectedMerchant.distanceMeters} m</strong>
+                  <span>
+                    Kecamatan
+                  </span>
+                  <strong>
+                    {selectedMerchant.district ||
+                      "-"}
+                  </strong>
                 </div>
                 <div className="metric">
                   <Layers3 size={18} />
-                  <span>Accessibility</span>
-                  <strong>{selectedMerchant.accessibilityScore}/100</strong>
+                  <span>
+                    Dari lokasi kamu
+                  </span>
+                  <strong>
+                    {selectedMerchant.userDistanceMeters !==
+                    undefined
+                      ? `${formatDistance(selectedMerchant.userDistanceMeters)} · ${selectedMerchant.userWalkingMinutes} menit`
+                      : "Aktifkan GPS"}
+                  </strong>
                 </div>
                 <div className="metric">
-                  <Clock3 size={18} />
-                  <span>Status</span>
-                  <strong>{selectedMerchant.openNow ? "Buka*" : "Tutup*"}</strong>
+                  <CalendarDays size={18} />
+                  <span>
+                    Status
+                  </span>
+                  <strong>
+                    {selectedMerchant.openNow
+                      ? "BUKA"
+                      : "TUTUP"}
+                  </strong>
                 </div>
               </div>
 
               <section className="evidence-section">
-                <h4>Provenance</h4>
+                <h4>
+                  Alamat
+                </h4>
+                <p className="limitation-box">
+                  {selectedMerchant.address ||
+                    "Alamat tidak tersedia pada GeoJSON."}
+                </p>
+              </section>
+
+              <section className="evidence-section">
+                <h4>
+                  Provenance
+                </h4>
                 <dl className="evidence-list">
                   <div>
-                    <dt>Sumber</dt>
-                    <dd>{selectedMerchant.source}</dd>
+                    <dt>
+                      Sumber
+                    </dt>
+                    <dd>
+                      {COFFEE_SHOP_SOURCE_NAME}
+                    </dd>
                   </div>
                   <div>
-                    <dt>Status</dt>
-                    <dd>{selectedMerchant.status}</dd>
+                    <dt>
+                      Desa
+                    </dt>
+                    <dd>
+                      {selectedMerchant.village ||
+                        "-"}
+                    </dd>
                   </div>
                   <div>
-                    <dt>Waktu</dt>
-                    <dd>{selectedMerchant.updatedAt}</dd>
+                    <dt>
+                      Telepon
+                    </dt>
+                    <dd>
+                      {selectedMerchant.phone ? (
+                        <span className="inline-icon-value">
+                          <Phone size={12} />
+                          {selectedMerchant.phone}
+                        </span>
+                      ) : (
+                        "-"
+                      )}
+                    </dd>
                   </div>
                   <div>
-                    <dt>Metode</dt>
-                    <dd>Nilai demo; belum pedestrian network</dd>
+                    <dt>
+                      Koordinat
+                    </dt>
+                    <dd>
+                      {selectedMerchant.latitude.toFixed(6)}, {selectedMerchant.longitude.toFixed(6)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>
+                      Update
+                    </dt>
+                    <dd>
+                      {selectedMerchant.updatedAt}
+                    </dd>
                   </div>
                 </dl>
               </section>
 
               <section className="evidence-section">
-                <h4>Limitation</h4>
-                <p className="limitation-box">{selectedMerchant.limitation}</p>
-              </section>
-
-              <section className="evidence-section">
-                <h4>Target tahap berikutnya</h4>
-                <ol className="next-list">
-                  <li>Ganti merchant synthetic dengan Supabase.</li>
-                  <li>Hitung walking time melalui pedestrian network.</li>
-                  <li>Masukkan Community Activity / Menu Go sebagai evidence.</li>
-                  <li>Sambungkan AI untuk parsing intent dan explanation.</li>
-                </ol>
+                <h4>
+                  Catatan
+                </h4>
+                <p className="limitation-box">
+                  {selectedMerchant.limitation}
+                </p>
               </section>
             </>
           ) : (
-            <div className="empty-state">Pilih satu lokasi pada peta atau daftar hasil.</div>
+            <div className="empty-state">
+              Pilih satu titik pada peta atau daftar hasil.
+            </div>
           )}
         </aside>
       </section>

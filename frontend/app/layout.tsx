@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 
+import { AuthProvider } from "@/src/components/providers/AuthProvider";
+
 export const metadata: Metadata = {
   title: "GETRA — Geo-Enabled Transit & Retail Analytics",
   description:
@@ -11,7 +13,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

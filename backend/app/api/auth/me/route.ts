@@ -132,6 +132,17 @@ export async function GET(
             userId,
           );
 
+      const { data: modesData, error: modesError } = await userClient
+        .from("user_stakeholder_modes")
+        .select("mode")
+        .eq("user_id", userId);
+
+      if (modesError) {
+        throw new ApplicationError("INTERNAL_ERROR", "Failed to load stakeholder modes");
+      }
+
+      const stakeholder_modes = (modesData ?? []).map(row => row.mode);
+
       return createSuccessResponse(
         reqId,
         {
@@ -162,6 +173,8 @@ export async function GET(
                     profile.trust_score,
                 }
               : null,
+
+          stakeholder_modes,
         },
       );
     },

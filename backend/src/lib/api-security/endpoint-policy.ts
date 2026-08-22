@@ -116,6 +116,28 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     purpose: "Update own profile through RLS",
   },
 
+  // Onboarding
+  {
+    method: "GET",
+    path: "/api/onboarding",
+    classification: "AUTHENTICATED",
+    role: "AUTHENTICATED",
+    rateLimit: "api",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_HEADERS,
+    purpose: "Get onboarding status and modes",
+  },
+  {
+    method: "POST",
+    path: "/api/onboarding",
+    classification: "AUTHENTICATED",
+    role: "AUTHENTICATED",
+    rateLimit: "mutation",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_CONTENT_HEADERS,
+    purpose: "Submit onboarding modes",
+  },
+
   // Spatial
   {
     method: "POST",

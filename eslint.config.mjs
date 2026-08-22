@@ -16,19 +16,31 @@ export default defineConfig([
 
   globalIgnores([
     ".next/**",
+    "**/.next/**",
     "out/**",
+    "**/out/**",
     "build/**",
+    "**/build/**",
     "dist/**",
+    "**/dist/**",
     "coverage/**",
+    "**/coverage/**",
     "node_modules/**",
+    "**/node_modules/**",
 
     ".wrangler/**",
+    "**/.wrangler/**",
     ".sites-runtime/**",
+    "**/.sites-runtime/**",
     "outputs/**",
+    "**/outputs/**",
     "work/**",
+    "**/work/**",
 
     "public/maplibre/**",
+    "**/public/maplibre/**",
 
     "next-env.d.ts",
+    "**/next-env.d.ts",
   ]),
 ]);

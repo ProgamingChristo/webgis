@@ -6,7 +6,6 @@ const DOCS_DIR = path.join(process.cwd(), 'docs', 'final-source');
 const FINAL_DIR = path.join(process.cwd(), 'docs', 'final');
 const FINAL_MD_PATH = path.join(DOCS_DIR, 'GETRA_BACKEND_FULL_DOCUMENTATION.md');
 const FINAL_TXT_PATH = path.join(DOCS_DIR, 'GETRA_BACKEND_FULL_DOCUMENTATION.txt');
-const FINAL_PDF_PATH = path.join(FINAL_DIR, 'GETRA_BACKEND_FULL_DOCUMENTATION.pdf');
 
 // Ensure directories exist
 if (!fs.existsSync(FINAL_DIR)) fs.mkdirSync(FINAL_DIR, { recursive: true });
@@ -17,15 +16,12 @@ function readFile(filename: string): string {
   return fs.existsSync(p) ? fs.readFileSync(p, 'utf-8') : `(Missing file: ${filename})`;
 }
 
-const statusContent = readFile('BACKEND_SYSTEM_STATUS.txt');
 const apiMatrixContent = readFile('API_TEST_MATRIX_PHASE_15.txt');
 const apiCatalogContent = readFile('API_CATALOG_VERIFIED.txt');
-const apiBodiesContent = readFile('API_REQUEST_BODIES_VERIFIED.txt');
-const apiResponsesContent = readFile('API_RESPONSES_VERIFIED.txt');
 
 const dateStr = new Date().toISOString().split('T')[0];
 
-let md = `
+const md = `
 # GETRA
 ## Geo-Enabled Transit & Retail Analytics
 

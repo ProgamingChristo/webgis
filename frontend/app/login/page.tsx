@@ -18,6 +18,16 @@ import {
 
 import styles from "../auth.module.css";
 
+const DEV_LOGIN_EMAIL =
+  "getra.admin.test@example.com";
+
+const DEV_LOGIN_PASSWORD =
+  "PasswordDevelopment123!";
+
+const isDevelopment =
+  process.env.NODE_ENV ===
+  "development";
+
 interface LoginResponse {
   success: boolean;
 
@@ -51,13 +61,21 @@ export default function LoginPage() {
     email,
     setEmail,
   ] =
-    useState("");
+    useState(
+      isDevelopment
+        ? DEV_LOGIN_EMAIL
+        : "",
+    );
 
   const [
     password,
     setPassword,
   ] =
-    useState("");
+    useState(
+      isDevelopment
+        ? DEV_LOGIN_PASSWORD
+        : "",
+    );
 
   const [
     errorMessage,
@@ -89,7 +107,7 @@ export default function LoginPage() {
     try {
       const response =
         await fetch(
-          "/api/auth/login",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
           {
             method:
               "POST",
@@ -116,9 +134,14 @@ export default function LoginPage() {
         !response.ok ||
         !json.success
       ) {
-        throw new Error(
+        const message =
           json.error?.message ||
-          "Login gagal. Periksa email dan password.",
+          "Login gagal. Periksa email dan password.";
+
+        throw new Error(
+          message === "Unauthorized"
+            ? "Email atau password tidak cocok. Untuk akun dev gunakan getra.admin.test@example.com dan password fixture development."
+            : message,
         );
       }
 
@@ -154,10 +177,17 @@ export default function LoginPage() {
     } catch (
       error: unknown
     ) {
-      setErrorMessage(
+      const rawMessage =
         error instanceof Error
           ? error.message
-          : "Login gagal.",
+          : "Login gagal.";
+
+      setErrorMessage(
+        email.trim().endsWith(
+          "@example.co",
+        )
+          ? "Email fixture kurang huruf m: gunakan @example.com, bukan @example.co."
+          : rawMessage,
       );
     } finally {
       setLoading(

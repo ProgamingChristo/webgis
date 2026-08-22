@@ -55,5 +55,9 @@ next-env.d.ts
 /dist/
 /.wrangler/
 /.sites-runtime/
+**/.sites-runtime/
 /outputs/
 /work/
+
+# Local audit output
+**/lint_output.txt

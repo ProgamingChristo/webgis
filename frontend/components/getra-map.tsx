@@ -3,6 +3,7 @@
 import {
   useEffect,
   useRef,
+  useState,
 } from "react";
 
 import {
@@ -14,13 +15,16 @@ import {
   setWorkerUrl,
 } from "maplibre-gl";
 
-import type { Merchant } from "@/types/getra";
+import type { Merchant, UserLocation } from "@/types/getra";
 
 import {
-  PILOT_ORIGIN,
-} from "@/data/demo-merchants";
+  COFFEE_SHOP_BOUNDS,
+  COFFEE_SHOP_ORIGIN,
+} from "@/data/coffee-shops-jakarta-barat";
 
 import {
+  BASEMAP_OPTIONS,
+  type BasemapId,
   FALLBACK_MAP_STYLE,
   MAPID_STYLE_NAME,
   MAPID_STYLE_URL,
@@ -33,11 +37,13 @@ setWorkerUrl(
 type GetraMapProps = {
   merchants: Merchant[];
   selectedId: string | null;
+  userLocation: UserLocation | null;
   onSelect: (merchant: Merchant) => void;
 };
 
 function createMerchantMarker(
   selected: boolean,
+  merchant: Merchant,
 ) {
   const element =
     document.createElement("button");
@@ -50,17 +56,151 @@ function createMerchantMarker(
 
   element.setAttribute(
     "aria-label",
-    "Pilih lokasi UMKM",
+    `Pilih ${merchant.name}`,
+  );
+
+  element.dataset.brand =
+    merchant.brand;
+
+  const halo =
+    document.createElement("span");
+
+  halo.className =
+    "map-marker__halo";
+
+  const glyph =
+    document.createElement("span");
+
+  glyph.className =
+    "map-marker__glyph";
+
+  glyph.textContent =
+    merchant.brand
+      .trim()
+      .slice(0, 1)
+      .toUpperCase() || "C";
+
+  element.append(
+    halo,
+    glyph,
   );
 
   return element;
 }
 
+function createPopupContent(
+  title: string,
+  detail: string,
+) {
+  const content =
+    document.createElement("div");
+
+  const heading =
+    document.createElement("strong");
+
+  heading.textContent =
+    title;
+
+  content.append(
+    heading,
+    document.createElement("br"),
+    document.createTextNode(detail),
+  );
+
+  return content;
+}
+
+function addDatasetExtent(map: MapLibreMap) {
+  if (
+    !map.isStyleLoaded() ||
+    map.getSource(
+      "coffee-shop-extent",
+    )
+  ) {
+    return;
+  }
+
+  map.addSource(
+    "coffee-shop-extent",
+    {
+      type: "geojson",
+      data: {
+        type: "Feature",
+        properties: {
+          status:
+            "geojson_extent",
+        },
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              [
+                COFFEE_SHOP_BOUNDS.west,
+                COFFEE_SHOP_BOUNDS.south,
+              ],
+              [
+                COFFEE_SHOP_BOUNDS.east,
+                COFFEE_SHOP_BOUNDS.south,
+              ],
+              [
+                COFFEE_SHOP_BOUNDS.east,
+                COFFEE_SHOP_BOUNDS.north,
+              ],
+              [
+                COFFEE_SHOP_BOUNDS.west,
+                COFFEE_SHOP_BOUNDS.north,
+              ],
+              [
+                COFFEE_SHOP_BOUNDS.west,
+                COFFEE_SHOP_BOUNDS.south,
+              ],
+            ],
+          ],
+        },
+      },
+    },
+  );
+
+  map.addLayer({
+    id: "coffee-shop-extent-fill",
+    type: "fill",
+    source: "coffee-shop-extent",
+    paint: {
+      "fill-color": "#22d3ee",
+      "fill-opacity": 0.045,
+    },
+  });
+
+  map.addLayer({
+    id: "coffee-shop-extent-line",
+    type: "line",
+    source: "coffee-shop-extent",
+    paint: {
+      "line-color": "#22d3ee",
+      "line-width": 1.5,
+      "line-opacity": 0.75,
+      "line-dasharray": [
+        2,
+        2,
+      ],
+    },
+  });
+}
+
 export function GetraMap({
   merchants,
   selectedId,
+  userLocation,
   onSelect,
 }: GetraMapProps) {
+  const [
+    activeBasemapId,
+    setActiveBasemapId,
+  ] =
+    useState<BasemapId>(
+      "osm",
+    );
+
   const containerRef =
     useRef<HTMLDivElement | null>(null);
 
@@ -72,6 +212,11 @@ export function GetraMap({
       new Map(),
     );
 
+  const userLocationMarkerRef =
+    useRef<Marker | null>(
+      null,
+    );
+
   useEffect(() => {
     if (
       !containerRef.current ||
@@ -80,11 +225,6 @@ export function GetraMap({
       return;
     }
 
-    console.log(
-      "[GETRA] MAPID STYLE:",
-      MAPID_STYLE_URL,
-    );
-
     const map =
       new MapLibreMap({
         container:
@@ -92,14 +232,15 @@ export function GetraMap({
 
         style:
           MAPID_STYLE_URL ||
+          BASEMAP_OPTIONS[0]?.style ||
           FALLBACK_MAP_STYLE,
 
         center: [
-          PILOT_ORIGIN.longitude,
-          PILOT_ORIGIN.latitude,
+          COFFEE_SHOP_ORIGIN.longitude,
+          COFFEE_SHOP_ORIGIN.latitude,
         ],
 
-        zoom: 15.1,
+        zoom: 12,
 
         minZoom: 4,
 
@@ -141,154 +282,56 @@ export function GetraMap({
       "transit-marker";
 
     originElement.title =
-      PILOT_ORIGIN.name;
+      COFFEE_SHOP_ORIGIN.name;
 
     new Marker({
       element: originElement,
       anchor: "center",
     })
       .setLngLat([
-        PILOT_ORIGIN.longitude,
-        PILOT_ORIGIN.latitude,
+        COFFEE_SHOP_ORIGIN.longitude,
+        COFFEE_SHOP_ORIGIN.latitude,
       ])
       .setPopup(
         new Popup({
           offset: 18,
-        }).setHTML(`
-          <strong>
-            ${PILOT_ORIGIN.name}
-          </strong>
-          <br />
-          Titik asal pilot GETRA
-        `),
+        }).setDOMContent(
+          createPopupContent(
+            COFFEE_SHOP_ORIGIN.name,
+            "Pusat extent dataset GeoJSON",
+          ),
+        ),
       )
       .addTo(map);
 
-    /*
-     * Debug status
-     */
     map.on("load", () => {
-      console.log(
-        "[GETRA] MAP LOADED",
+      addDatasetExtent(
+        map,
       );
 
-      console.log(
-        "[GETRA] STYLE:",
-        map.getStyle(),
-      );
-
-      /*
-       * Service Area synthetic
-       */
-      map.addSource(
-        "demo-service-area",
+      map.fitBounds(
+        [
+          [
+            COFFEE_SHOP_BOUNDS.west,
+            COFFEE_SHOP_BOUNDS.south,
+          ],
+          [
+            COFFEE_SHOP_BOUNDS.east,
+            COFFEE_SHOP_BOUNDS.north,
+          ],
+        ],
         {
-          type: "geojson",
-
-          data: {
-            type: "Feature",
-
-            properties: {
-              status: "synthetic",
-            },
-
-            geometry: {
-              type: "Polygon",
-
-              coordinates: [
-                [
-                  [
-                    106.81995,
-                    -6.1984,
-                  ],
-                  [
-                    106.82205,
-                    -6.1974,
-                  ],
-                  [
-                    106.8253,
-                    -6.19795,
-                  ],
-                  [
-                    106.82655,
-                    -6.20035,
-                  ],
-                  [
-                    106.8253,
-                    -6.203,
-                  ],
-                  [
-                    106.8227,
-                    -6.20345,
-                  ],
-                  [
-                    106.82015,
-                    -6.2024,
-                  ],
-                  [
-                    106.81945,
-                    -6.20025,
-                  ],
-                  [
-                    106.81995,
-                    -6.1984,
-                  ],
-                ],
-              ],
-            },
-          },
+          padding: 42,
+          duration: 0,
         },
       );
-
-      map.addLayer({
-        id:
-          "demo-service-area-fill",
-
-        type: "fill",
-
-        source:
-          "demo-service-area",
-
-        paint: {
-          "fill-color":
-            "#9af24a",
-
-          "fill-opacity":
-            0.08,
-        },
-      });
-
-      map.addLayer({
-        id:
-          "demo-service-area-line",
-
-        type: "line",
-
-        source:
-          "demo-service-area",
-
-        paint: {
-          "line-color":
-            "#9af24a",
-
-          "line-width":
-            2,
-
-          "line-opacity":
-            0.8,
-
-          "line-dasharray":
-            [2, 2],
-        },
-      });
     });
 
     map.on(
       "error",
-      (event) => {
+      () => {
         console.error(
-          "[GETRA MAP ERROR]",
-          event.error,
+          "[GETRA MAP ERROR] Map resource failed to load.",
         );
       },
     );
@@ -301,11 +344,55 @@ export function GetraMap({
 
       merchantMarkers.clear();
 
+      userLocationMarkerRef.current?.remove();
+      userLocationMarkerRef.current = null;
+
       map.remove();
 
       mapRef.current = null;
     };
   }, []);
+
+  /*
+   * Basemap switcher
+   */
+  useEffect(() => {
+    const map =
+      mapRef.current;
+
+    if (
+      !map ||
+      MAPID_STYLE_URL
+    ) {
+      return;
+    }
+
+    const activeBasemap =
+      BASEMAP_OPTIONS.find(
+        (option) =>
+          option.id ===
+          activeBasemapId,
+      ) ?? BASEMAP_OPTIONS[0];
+
+    if (!activeBasemap) {
+      return;
+    }
+
+    map.setStyle(
+      activeBasemap.style,
+    );
+
+    map.once(
+      "style.load",
+      () => {
+        addDatasetExtent(
+          map,
+        );
+      },
+    );
+  }, [
+    activeBasemapId,
+  ]);
 
   /*
    * Merchant marker
@@ -333,6 +420,7 @@ export function GetraMap({
         createMerchantMarker(
           merchant.id ===
             selectedId,
+          merchant,
         );
 
       element.onclick = () => {
@@ -353,16 +441,12 @@ export function GetraMap({
           .setPopup(
             new Popup({
               offset: 16,
-            }).setHTML(`
-              <strong>
-                ${merchant.name}
-              </strong>
-              <br />
-              ${merchant.category}
-              ·
-              ${merchant.walkingMinutes}
-              menit
-            `),
+            }).setDOMContent(
+              createPopupContent(
+                merchant.name,
+                `${merchant.brand} · ${merchant.address ?? "Alamat tidak tersedia"}`,
+              ),
+            ),
           )
           .addTo(map);
 
@@ -375,6 +459,72 @@ export function GetraMap({
     merchants,
     selectedId,
     onSelect,
+  ]);
+
+  /*
+   * User GPS marker
+   */
+  useEffect(() => {
+    const map =
+      mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    userLocationMarkerRef.current?.remove();
+    userLocationMarkerRef.current = null;
+
+    if (!userLocation) {
+      return;
+    }
+
+    const element =
+      document.createElement("div");
+
+    element.className =
+      "user-location-marker";
+
+    element.title =
+      "Lokasi kamu saat ini";
+
+    const marker =
+      new Marker({
+        element,
+        anchor: "center",
+      })
+        .setLngLat([
+          userLocation.longitude,
+          userLocation.latitude,
+        ])
+        .setPopup(
+          new Popup({
+            offset: 18,
+          }).setDOMContent(
+            createPopupContent(
+              "Lokasi kamu",
+              `Akurasi sekitar ${userLocation.accuracyMeters} m`,
+            ),
+          ),
+        )
+        .addTo(map);
+
+    userLocationMarkerRef.current =
+      marker;
+
+    map.easeTo({
+      center: [
+        userLocation.longitude,
+        userLocation.latitude,
+      ],
+      zoom: Math.max(
+        map.getZoom(),
+        14,
+      ),
+      duration: 650,
+    });
+  }, [
+    userLocation,
   ]);
 
   /*
@@ -445,10 +595,48 @@ export function GetraMap({
           <span>
             {MAPID_STYLE_URL
               ? `MAPID · ${MAPID_STYLE_NAME}`
-              : "Fallback GETRA"}
+              : BASEMAP_OPTIONS.find(
+                  (option) =>
+                    option.id ===
+                    activeBasemapId,
+                )?.description ?? "OpenStreetMap"}
           </span>
         </div>
       </div>
+
+      {!MAPID_STYLE_URL ? (
+        <div
+          className="basemap-switcher"
+          aria-label="Pilih basemap"
+        >
+          {BASEMAP_OPTIONS.map(
+            (option) => (
+              <button
+                key={option.id}
+                type="button"
+                className={
+                  option.id ===
+                  activeBasemapId
+                    ? "basemap-button basemap-button--active"
+                    : "basemap-button"
+                }
+                onClick={() =>
+                  setActiveBasemapId(
+                    option.id,
+                  )
+                }
+              >
+                <span>
+                  {option.label}
+                </span>
+                <small>
+                  {option.description}
+                </small>
+              </button>
+            ),
+          )}
+        </div>
+      ) : null}
 
     </div>
   );

@@ -1,0 +1,1 @@
+ALTER TABLE public.staging_mapid_activities ADD CONSTRAINT staging_mapid_activities_raw_evidence_id_key UNIQUE (raw_evidence_id);
