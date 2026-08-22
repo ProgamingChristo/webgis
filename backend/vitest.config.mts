@@ -14,10 +14,8 @@ export default defineConfig({
     clearMocks: true,
     environment: "node",
     include: [
-      "backend/tests/**/*.test.ts",
-      "backend/tests/**/*.test.mjs",
-      "frontend/tests/**/*.test.ts",
-      "frontend/tests/**/*.test.mjs"
+      "tests/**/*.test.ts",
+      "tests/**/*.test.mjs"
     ],
     restoreMocks: true,
   },

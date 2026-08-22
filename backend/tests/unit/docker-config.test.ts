@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-const projectRoot = join(import.meta.dirname, "..", "..");
+const projectRoot = join(import.meta.dirname, "..", "..", "..");
 
 function readProjectFile(path: string): string {
   return readFileSync(join(projectRoot, path), "utf8");

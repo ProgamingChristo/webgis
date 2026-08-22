@@ -23,9 +23,9 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/data/*": ["../data/*"],
+      "@/types/*": ["../types/*"],
+      "@/*": ["./*"]
     }
   },
   "include": [
@@ -37,8 +37,6 @@
     "**/*.mts"
   ],
   "exclude": [
-    "node_modules",
-    "frontend",
-    "backend"
+    "node_modules"
   ]
 }

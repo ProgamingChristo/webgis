@@ -408,6 +408,7 @@ describe(
             ).toEqual({
               access_token:
                 "token",
+              expires_at: null,
             });
 
             expect(
