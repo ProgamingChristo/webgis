@@ -3,13 +3,18 @@ import type {
   ProfileDTO,
 } from "@/src/types/profile";
 
-export function mapProfileRow(row: ProfileDatabaseRow): ProfileDTO {
+export function mapProfileRow(
+  row: ProfileDatabaseRow,
+): ProfileDTO {
   return {
-    avatar_url: row.avatar_url,
-    created_at: row.created_at,
-    display_name: row.display_name,
     id: row.id,
-    role: row.role,
+    display_name: row.display_name,
+    avatar_url: row.avatar_url,
+    account_role: row.account_role,
+    trust_score: row.trust_score,
+    onboarding_complete:
+      row.onboarding_complete,
+    created_at: row.created_at,
     updated_at: row.updated_at,
   };
 }

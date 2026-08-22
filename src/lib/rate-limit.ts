@@ -77,9 +77,9 @@ function getTrustedClientIp(req: NextRequest, config: RateLimitSecurityConfig): 
       "";
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   if (!candidate && (req as any).ip) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     candidate = (req as any).ip;
   }
   

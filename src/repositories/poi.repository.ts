@@ -1,11 +1,10 @@
 import { type SupabaseClient } from "@supabase/supabase-js";
-import { mapDatabaseError, RepositoryError } from "./errors";
+import { mapDatabaseError } from "./errors";
 import type {
   PoiDatabaseRow,
   PoiEntity,
   PoiDTO,
   CreatePoiInput,
-  UpdatePoiInput,
   SpatialNearbyQuery,
 } from "@/src/types/domain";
 

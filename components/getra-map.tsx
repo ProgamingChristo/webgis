@@ -108,6 +108,14 @@ export function GetraMap({
 
     mapRef.current = map;
 
+    /*
+     * Snapshot marker collection untuk cleanup.
+     * Hindari membaca .current secara langsung
+     * saat cleanup effect dijalankan.
+     */
+    const merchantMarkers =
+      merchantMarkersRef.current;
+
     map.addControl(
       new NavigationControl({
         visualizePitch: true,
@@ -286,12 +294,12 @@ export function GetraMap({
     );
 
     return () => {
-      merchantMarkersRef.current.forEach(
+      merchantMarkers.forEach(
         (marker) =>
           marker.remove(),
       );
 
-      merchantMarkersRef.current.clear();
+      merchantMarkers.clear();
 
       map.remove();
 

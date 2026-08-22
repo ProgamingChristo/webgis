@@ -15,34 +15,70 @@ export class FixtureAdapter implements IngestionAdapter<FixtureRawRecord> {
 
   validateRaw(record: unknown): FixtureRawRecord {
     const r = record as FixtureRawRecord;
+
     if (r.should_fail_validation) {
-      throw new Error(`Validation failed for record ${r.id}`);
+      throw new Error(
+        `Validation failed for record ${r.id}`,
+      );
     }
+
     return r;
   }
 
-  async normalize(record: FixtureRawRecord): Promise<unknown | null> {
-    if (record.value === "SKIP") return null;
+  async normalize(
+    record: FixtureRawRecord,
+  ): Promise<unknown | null> {
+    if (record.value === "SKIP") {
+      return null;
+    }
+
     return {
       normalizedId: `N_${record.id}`,
       normalizedValue: record.value,
-      should_fail_upsert: record.should_fail_upsert,
+      should_fail_upsert:
+        record.should_fail_upsert,
     };
   }
 
-  async *fetchRecords(_job: ImportJob): AsyncGenerator<unknown, void, unknown> {
+  async *fetchRecords(
+    _job: ImportJob,
+  ): AsyncGenerator<
+    unknown,
+    void,
+    unknown
+  > {
+    /*
+     * Parameter tetap dipertahankan karena
+     * mengikuti kontrak IngestionAdapter.
+     */
+    void _job;
+
     for (const record of this.records) {
       yield record;
     }
   }
 
-  async upsert(normalizedRecord: unknown): Promise<boolean> {
-    const rec = normalizedRecord as { normalizedId: string; should_fail_upsert?: boolean };
+  async upsert(
+    normalizedRecord: unknown,
+  ): Promise<boolean> {
+    const rec =
+      normalizedRecord as {
+        normalizedId: string;
+        should_fail_upsert?: boolean;
+      };
+
     if (rec.should_fail_upsert) {
-      throw new Error(`Upsert failed for normalized record ${rec.normalizedId}`);
+      throw new Error(
+        `Upsert failed for normalized record ${rec.normalizedId}`,
+      );
     }
+
     // Simulate DB delay
-    await new Promise((res) => setTimeout(res, 10));
+    await new Promise(
+      (resolve) =>
+        setTimeout(resolve, 10),
+    );
+
     return true;
   }
 }
