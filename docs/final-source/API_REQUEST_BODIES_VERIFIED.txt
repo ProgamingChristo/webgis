@@ -1,0 +1,97 @@
+API:
+POST http://localhost:3000/api/auth/login
+TESTED: YES
+BODY:
+{
+  "email": "getra.admin.test@example.com",
+  "password": "PasswordDevelopment123!"
+}
+NOTES: Admin login
+
+API:
+POST http://localhost:3000/api/auth/login
+TESTED: YES
+BODY:
+{
+  "email": "getra.admin.test@example.com",
+  "password": "wrongpassword"
+}
+NOTES: Negative test: Wrong password
+
+API:
+POST http://localhost:3000/api/spatial/distance
+TESTED: YES
+BODY:
+{
+  "origin": {
+    "longitude": 106.8272,
+    "latitude": -6.1751
+  },
+  "destination": {
+    "longitude": 106.829,
+    "latitude": -6.176
+  }
+}
+NOTES: Distance calculation
+
+API:
+POST http://localhost:3000/api/spatial/distance
+TESTED: YES
+BODY:
+{
+  "origin": {
+    "longitude": 999,
+    "latitude": 999
+  },
+  "destination": {
+    "longitude": 106.829,
+    "latitude": -6.176
+  }
+}
+NOTES: Negative test: invalid coordinates
+
+API:
+POST http://localhost:3000/api/internal/routing/walking
+TESTED: YES
+BODY:
+{
+  "origin": {
+    "longitude": 106.8272,
+    "latitude": -6.1751
+  },
+  "destination": {
+    "longitude": 106.829,
+    "latitude": -6.176
+  }
+}
+NOTES: Walking routing (Dummy validation error expected 400)
+
+API:
+POST http://localhost:3000/api/admin/ingestion/jobs
+TESTED: YES
+BODY:
+{
+  "source_id": "123e4567-e89b-12d3-a456-426614174000",
+  "dataset_type": "study_areas",
+  "environment": "DUMMY",
+  "payload": []
+}
+NOTES: Job validation error (Expected 400)
+
+API:
+POST http://localhost:3000/api/admin/ingestion/run
+TESTED: YES
+BODY:
+{
+  "job_id": "123e4567-e89b-12d3-a456-426614174000",
+  "dry_run": true
+}
+NOTES: Run validation error (Expected 400)
+
+API:
+POST http://localhost:3000/api/auth/logout
+TESTED: YES
+BODY:
+undefined
+NOTES: Logout authenticated user
+

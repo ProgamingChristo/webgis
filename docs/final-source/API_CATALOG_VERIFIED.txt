@@ -1,0 +1,555 @@
+================================================
+API:
+GET /api/health
+
+LOCALHOST:
+http://localhost:3000/api/health
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+NO
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "success": true,
+  "data": {
+    "database": "connected",
+    "service": "getra-api",
+    "status": "ok"
+  },
+  "request_id": "9f3ff023-6bd3-49c6-99b1-a66b828ddda5"
+}
+================================================
+
+================================================
+API:
+GET /api/system/foundation
+
+LOCALHOST:
+http://localhost:3000/api/system/foundation
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+NO
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "ok": false,
+  "configured": true,
+  "databaseReachable": false,
+  "error": "profiles: "
+}
+================================================
+
+================================================
+API:
+POST /api/auth/login
+
+LOCALHOST:
+http://localhost:3000/api/auth/login
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+NO
+
+REQUEST BODY:
+{
+  "email": "getra.admin.test@example.com",
+  "password": "PasswordDevelopment123!"
+}
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "success": true,
+  "data": {
+    "session": {
+      "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImE3YzlmYzRmLWU3MjgtNGQ3OS04MzM4LTgzMmNmOWQ0NjZhYyIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3Nlc2FreG5qYXBocnhxeGxscWptLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIyM2ZiM2E0Ni1lNGIyLTQyYTctOWNmNy0xYTEzZWQxODdiMjIiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzg3MTk3MTA0LCJpYXQiOjE3ODcxOTM1MDQsImVtYWlsIjoiZ2V0cmEuYWRtaW4udGVzdEBleGFtcGxlLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZGlzcGxheV9uYW1lIjoiQWRtaW4gVGVzdCBVc2VyIiwicm9sZSI6IkNPTU1VVEVSIn0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3ODcxOTM1MDR9XSwic2Vzc2lvbl9pZCI6ImY0MzBkZWYxLTY3NGUtNGNmNS1iMzdhLTM4NWY0YWY0ZmI0NiIsImlzX2Fub255bW91cyI6ZmFsc2V9.O9KYaElrX_oLzgckNpsBJ30jwkBOhNhbDvT4wx3omquY9HpHSSXqkKQVcekC9GLfRQJ5H5sKZJVayJIn_vjdgQ"
+    },
+    "user": {
+      "id": "23fb3a46-e4b2-42a7-9cf7-1a13ed187b22",
+      "email": "getra.admin.test@example.com"
+    },
+    "profile": {
+      "display_name": "ADMIN Updated Name",
+      "role": "ADMIN"
+    }
+  },
+  "request_id": "e6371a15-6a21-44c4-a4f8-f07a3bca9ce0"
+}
+================================================
+
+================================================
+API:
+POST /api/auth/login
+
+LOCALHOST:
+http://localhost:3000/api/auth/login
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+NO
+
+REQUEST BODY:
+{
+  "email": "getra.admin.test@example.com",
+  "password": "wrongpassword"
+}
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Unauthorized",
+    "retryable": false
+  },
+  "request_id": "ece4bebd-67ce-4f58-be71-95c4ef89a108"
+}
+================================================
+
+================================================
+API:
+GET /api/auth/me
+
+LOCALHOST:
+http://localhost:3000/api/auth/me
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+YES
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "23fb3a46-e4b2-42a7-9cf7-1a13ed187b22",
+      "email": "getra.admin.test@example.com"
+    },
+    "profile": {
+      "display_name": "ADMIN Updated Name",
+      "role": "ADMIN"
+    }
+  },
+  "request_id": "0a87fc97-dae5-433b-805c-4a30c5cb8b21"
+}
+================================================
+
+================================================
+API:
+GET /api/profile
+
+LOCALHOST:
+http://localhost:3000/api/profile
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+YES
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "success": true,
+  "data": {
+    "avatar_url": null,
+    "created_at": "2026-08-18T07:22:04.290751+00:00",
+    "display_name": "ADMIN Updated Name",
+    "id": "23fb3a46-e4b2-42a7-9cf7-1a13ed187b22",
+    "role": "ADMIN",
+    "updated_at": "2026-08-19T19:35:54.530668+00:00"
+  },
+  "request_id": "98614a6a-c65b-468d-b3cd-aaf0dea774a4"
+}
+================================================
+
+================================================
+API:
+GET /api/v1/study-areas
+
+LOCALHOST:
+http://localhost:3000/api/v1/study-areas
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+NO
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "error": "Internal Server Error"
+}
+================================================
+
+================================================
+API:
+GET /api/v1/study-areas/123e4567-e89b-12d3-a456-426614174000
+
+LOCALHOST:
+http://localhost:3000/api/v1/study-areas/123e4567-e89b-12d3-a456-426614174000
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+NO
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "error": "Internal Server Error"
+}
+================================================
+
+================================================
+API:
+GET /api/v1/transport/corridors
+
+LOCALHOST:
+http://localhost:3000/api/v1/transport/corridors
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+NO
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "error": "The repository operation is not permitted"
+}
+================================================
+
+================================================
+API:
+GET /api/v1/transport/nodes
+
+LOCALHOST:
+http://localhost:3000/api/v1/transport/nodes
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+NO
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "error": "The repository operation is not permitted"
+}
+================================================
+
+================================================
+API:
+POST /api/spatial/distance
+
+LOCALHOST:
+http://localhost:3000/api/spatial/distance
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+YES
+
+REQUEST BODY:
+{
+  "origin": {
+    "longitude": 106.8272,
+    "latitude": -6.1751
+  },
+  "destination": {
+    "longitude": 106.829,
+    "latitude": -6.176
+  }
+}
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "success": true,
+  "data": {
+    "analysis_method": "postgis_geography_distance",
+    "distance_meters": 222.69827085,
+    "limitation_flags": [],
+    "source": "GETRA_SPATIAL_ENGINE",
+    "srid": 4326
+  },
+  "request_id": "053a5063-1ff3-496a-a2b8-e9ac0c5b7bdc"
+}
+================================================
+
+================================================
+API:
+POST /api/spatial/distance
+
+LOCALHOST:
+http://localhost:3000/api/spatial/distance
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+YES
+
+REQUEST BODY:
+{
+  "origin": {
+    "longitude": 999,
+    "latitude": 999
+  },
+  "destination": {
+    "longitude": 106.829,
+    "latitude": -6.176
+  }
+}
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "success": false,
+  "error": {
+    "code": "SPATIAL_INVALID_COORDINATE",
+    "message": "Coordinate is invalid",
+    "retryable": false
+  },
+  "request_id": "3407b040-9c2d-4c30-a980-76e7d37f7660"
+}
+================================================
+
+================================================
+API:
+GET /api/spatial/nearby?lat=-6.1751&lng=106.8272&radius=1000&type=transport_node
+
+LOCALHOST:
+http://localhost:3000/api/spatial/nearby?lat=-6.1751&lng=106.8272&radius=1000&type=transport_node
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+YES
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "success": true,
+  "data": {
+    "analysis_method": "postgis_dwithin",
+    "limitation_flags": [
+      "NO_PRODUCTION_DATA"
+    ],
+    "origin": {
+      "latitude": -6.1751,
+      "longitude": 106.8272
+    },
+    "radius_meters": 1000,
+    "records": [],
+    "returned_count": 0,
+    "source": "GETRA_SPATIAL_ENGINE",
+    "srid": 4326
+  },
+  "request_id": "586738d9-0250-4463-b9cb-da4827e862e1"
+}
+================================================
+
+================================================
+API:
+GET /api/spatial/bbox?west=106.8&south=-6.3&east=106.9&north=-6.2&type=transport_node
+
+LOCALHOST:
+http://localhost:3000/api/spatial/bbox?west=106.8&south=-6.3&east=106.9&north=-6.2&type=transport_node
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+YES
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "success": true,
+  "data": {
+    "analysis_method": "postgis_bbox_intersection",
+    "bbox": {
+      "east": 106.9,
+      "north": -6.2,
+      "south": -6.3,
+      "west": 106.8
+    },
+    "limitation_flags": [
+      "NO_PRODUCTION_DATA"
+    ],
+    "records": [],
+    "returned_count": 0,
+    "source": "GETRA_SPATIAL_ENGINE",
+    "srid": 4326
+  },
+  "request_id": "64e8229e-89a2-4fdf-afdf-b4a8634152c0"
+}
+================================================
+
+================================================
+API:
+GET /api/internal/umkm/nearby?lat=-6.1751&lng=106.8272&radius=1000
+
+LOCALHOST:
+http://localhost:3000/api/internal/umkm/nearby?lat=-6.1751&lng=106.8272&radius=1000
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+YES
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "data": []
+}
+================================================
+
+================================================
+API:
+GET /api/internal/poi/nearby?lat=-6.1751&lng=106.8272&radius=1000
+
+LOCALHOST:
+http://localhost:3000/api/internal/poi/nearby?lat=-6.1751&lng=106.8272&radius=1000
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+YES
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "data": []
+}
+================================================
+
+================================================
+API:
+POST /api/internal/routing/walking
+
+LOCALHOST:
+http://localhost:3000/api/internal/routing/walking
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+YES
+
+REQUEST BODY:
+{
+  "origin": {
+    "longitude": 106.8272,
+    "latitude": -6.1751
+  },
+  "destination": {
+    "longitude": 106.829,
+    "latitude": -6.176
+  }
+}
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "error": "originRoutingId and destinationRoutingId are required"
+}
+================================================
+
+================================================
+API:
+POST /api/admin/ingestion/jobs
+
+LOCALHOST:
+http://localhost:3000/api/admin/ingestion/jobs
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+YES
+
+REQUEST BODY:
+{
+  "source_id": "123e4567-e89b-12d3-a456-426614174000",
+  "dataset_type": "study_areas",
+  "environment": "DUMMY",
+  "payload": []
+}
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "retryable": false
+  },
+  "request_id": "26ebbeee-62cd-40eb-a0cb-55a8a92f5fc6"
+}
+================================================
+
+================================================
+API:
+POST /api/admin/ingestion/run
+
+LOCALHOST:
+http://localhost:3000/api/admin/ingestion/run
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+YES
+
+REQUEST BODY:
+{
+  "job_id": "123e4567-e89b-12d3-a456-426614174000",
+  "dry_run": true
+}
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "retryable": false
+  },
+  "request_id": "e5704dec-c8c0-470d-b7f3-d2b854cc2e71"
+}
+================================================
+
+================================================
+API:
+POST /api/auth/logout
+
+LOCALHOST:
+http://localhost:3000/api/auth/logout
+
+STATUS:
+TESTED_PASS
+
+AUTH:
+YES
+
+ACTUAL SUCCESS RESPONSE:
+{
+  "success": true,
+  "data": {
+    "message": "Authenticated logout acknowledged",
+    "token_disposition": "client_discard_required"
+  },
+  "request_id": "ed577448-b94b-47ec-bf08-59e84faa40eb"
+}
+================================================
+

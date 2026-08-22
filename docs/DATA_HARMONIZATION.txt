@@ -1,0 +1,20 @@
+# GETRA: DATA HARMONIZATION STANDARDS
+
+## Objective
+Harmonization ensures all spatial and descriptive data imported from disparate Phase 9-13 sources speak the exact same language in the GETRA spatial engine.
+
+## Rules
+1. **Spatial Reference**: 
+   - ALL geometries (Points, LineStrings, Polygons) must be converted to EPSG:4326 (`SRID=4326`) before ingestion.
+   - Any raw source in Cartesian or local projections (e.g. UTM) is projected on the fly or pre-processed.
+2. **Measurement Units**: 
+   - Distance queries and routing link weights are universally computed in **meters**.
+   - Time calculations use seconds or minutes (explicitly defined per column).
+3. **Temporal Conventions**:
+   - All `created_at`, `updated_at`, `completed_at` timestamps MUST be strictly UTC (`TIMESTAMPTZ` in PostGIS).
+4. **Taxonomies & Categories**:
+   - `mode_of_transport`: Harmonized to ENUM or known String literals (e.g. 'BUS', 'TRAIN', 'WALK', 'ANGKOT').
+   - `umkm_type`: Mapped to standard categories via `merchant_categories`.
+5. **Identifiers**:
+   - All internal system IDs are `UUID v4`.
+   - External IDs from sources (e.g. OpenStreetMap node IDs) must be persisted in a `metadata->>'source_id'` field to allow idempotency.

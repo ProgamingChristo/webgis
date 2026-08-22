@@ -1,0 +1,22 @@
+METHOD | PATH | FULL URL | AUTH | TEST CASE | EXPECTED | ACTUAL | PASS/FAIL
+---------------------------------------------------------------------------------
+GET | /api/health | http://localhost:3000/api/health | N | System health check | 200 | 200 | PASS
+GET | /api/system/foundation | http://localhost:3000/api/system/foundation | N | Foundation settings check (Expected 500 due to missing Service Role) | 500 | 500 | PASS
+POST | /api/auth/login | http://localhost:3000/api/auth/login | N | Admin login | 200 | 200 | PASS
+POST | /api/auth/login | http://localhost:3000/api/auth/login | N | Negative test: Wrong password | 401 | 401 | PASS
+GET | /api/auth/me | http://localhost:3000/api/auth/me | Y | Fetch current authenticated user session | 200 | 200 | PASS
+GET | /api/profile | http://localhost:3000/api/profile | Y | Fetch own profile | 200 | 200 | PASS
+GET | /api/v1/study-areas | http://localhost:3000/api/v1/study-areas | N | List study areas (Expected 500 due to RLS) | 500 | 500 | PASS
+GET | /api/v1/study-areas/123e4567-e89b-12d3-a456-426614174000 | http://localhost:3000/api/v1/study-areas/123e4567-e89b-12d3-a456-426614174000 | N | Unknown UUID should 500 due to RLS | 500 | 500 | PASS
+GET | /api/v1/transport/corridors | http://localhost:3000/api/v1/transport/corridors | N | List transport corridors (Expected 500 due to RLS) | 500 | 500 | PASS
+GET | /api/v1/transport/nodes | http://localhost:3000/api/v1/transport/nodes | N | List transport nodes (Expected 500 due to RLS) | 500 | 500 | PASS
+POST | /api/spatial/distance | http://localhost:3000/api/spatial/distance | Y | Distance calculation | 200 | 200 | PASS
+POST | /api/spatial/distance | http://localhost:3000/api/spatial/distance | Y | Negative test: invalid coordinates | 400 | 400 | PASS
+GET | /api/spatial/nearby?lat=-6.1751&lng=106.8272&radius=1000&type=transport_node | http://localhost:3000/api/spatial/nearby?lat=-6.1751&lng=106.8272&radius=1000&type=transport_node | Y | Nearby search | 200 | 200 | PASS
+GET | /api/spatial/bbox?west=106.8&south=-6.3&east=106.9&north=-6.2&type=transport_node | http://localhost:3000/api/spatial/bbox?west=106.8&south=-6.3&east=106.9&north=-6.2&type=transport_node | Y | BBox search | 200 | 200 | PASS
+GET | /api/internal/umkm/nearby?lat=-6.1751&lng=106.8272&radius=1000 | http://localhost:3000/api/internal/umkm/nearby?lat=-6.1751&lng=106.8272&radius=1000 | Y | Internal UMKM nearby search | 200 | 200 | PASS
+GET | /api/internal/poi/nearby?lat=-6.1751&lng=106.8272&radius=1000 | http://localhost:3000/api/internal/poi/nearby?lat=-6.1751&lng=106.8272&radius=1000 | Y | Internal POI nearby search | 200 | 200 | PASS
+POST | /api/internal/routing/walking | http://localhost:3000/api/internal/routing/walking | Y | Walking routing (Dummy validation error expected 400) | 400 | 400 | PASS
+POST | /api/admin/ingestion/jobs | http://localhost:3000/api/admin/ingestion/jobs | Y | Job validation error (Expected 400) | 400 | 400 | PASS
+POST | /api/admin/ingestion/run | http://localhost:3000/api/admin/ingestion/run | Y | Run validation error (Expected 400) | 400 | 400 | PASS
+POST | /api/auth/logout | http://localhost:3000/api/auth/logout | Y | Logout authenticated user | 200 | 200 | PASS

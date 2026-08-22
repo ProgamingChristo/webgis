@@ -5,7 +5,7 @@ import { StudyAreaRepository } from "@/src/repositories/study-area.repository";
 export async function GET(request: Request) {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:54321";
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
     const supabase = createClient(supabaseUrl, supabaseKey);
     // Public endpoint for Phase 9 dummy areas, or rely on RLS. We can skip strong auth check for dummy read foundation.
     // Auth check commented out to allow generic read if RLS permits.
