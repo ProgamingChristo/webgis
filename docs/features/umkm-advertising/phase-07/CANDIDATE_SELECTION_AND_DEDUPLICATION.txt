@@ -1,0 +1,29 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 07 — SPONSORED PIN & AD SERVING ENGINE
+CANDIDATE SELECTION AND DEDUPLICATION
+================================================================================
+
+1. CANDIDATE SELECTION WORKFLOW
+--------------------------------------------------------------------------------
+1. Context Validation:
+   Parse [longitude, latitude] query parameters. Verify bounded range:
+   -180 <= lng <= 180, -90 <= lat <= 90, finite numbers.
+
+2. Broad Non-Terminal Scan:
+   Fetch active/potential campaigns from database where status NOT IN ('CANCELLED', 'ENDED').
+
+3. Serving Eligibility Verification:
+   Filter each record against the 4 pillars (Lifecycle, Merchant, Creative, Targeting).
+
+4. Single Pin per Merchant Deduplication:
+   To prevent single merchant monopolization on map pins, GETRA enforces:
+   - Exactly ONE Sponsored Pin per physical merchant per serving response.
+   - Tie-Break Rule: When a merchant has multiple active campaigns matching the context,
+     the campaign with the latest `updated_at` timestamp is selected.
+
+5. Technical Deterministic Ordering:
+   - Sort eligible candidates by `updated_at DESC`.
+   - Clamped limit: `Math.min(Math.max(1, limit), 20)` (Default: 5).
+   - NOT an ad auction or bid ranker (which is outside GETRA's fair local focus).

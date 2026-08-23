@@ -1,0 +1,131 @@
+TRACK:
+UMKM INTELLIGENCE & ADVERTISING
+
+PHASE:
+03
+
+FEATURE:
+umkm-advertising
+
+TITLE:
+Advertising Domain Model & Campaign Foundation
+
+DATE:
+2026-08-23
+
+BASE COMMIT:
+dfc61f0d9293fa47d3c8c892c77ef0edfe8c8038
+
+BRANCH:
+finalmerge
+
+FRONTEND FEATURE ROOT:
+frontend/src/features/umkm-advertising/
+
+BACKEND FEATURE ROOT:
+backend/src/features/umkm-advertising/
+
+FILES CREATED:
+backend/supabase/migrations/20260823094310_umkm_advertising_campaign_foundation.sql
+backend/src/features/umkm-advertising/types/campaign.types.ts
+backend/src/features/umkm-advertising/schemas/campaign.schema.ts
+backend/src/features/umkm-advertising/dto/campaign.dto.ts
+backend/src/features/umkm-advertising/mappers/campaign.mapper.ts
+backend/src/features/umkm-advertising/repositories/campaign.repository.ts
+backend/src/features/umkm-advertising/services/campaign.service.ts
+backend/app/api/umkm/advertising/campaigns/route.ts
+backend/app/api/umkm/advertising/campaigns/[id]/route.ts
+backend/app/api/umkm/advertising/campaigns/[id]/cancel/route.ts
+frontend/src/features/umkm-advertising/types/campaign.types.ts
+frontend/src/features/umkm-advertising/schemas/campaign.schema.ts
+frontend/src/features/umkm-advertising/services/campaign.service.ts
+frontend/src/features/umkm-advertising/hooks/use-campaigns.ts
+frontend/src/features/umkm-advertising/hooks/use-create-campaign.ts
+frontend/src/features/umkm-advertising/components/campaign/campaign-list.tsx
+frontend/src/features/umkm-advertising/components/campaign/campaign-card.tsx
+frontend/src/features/umkm-advertising/components/campaign/campaign-empty-state.tsx
+frontend/src/features/umkm-advertising/components/campaign/campaign-create-form.tsx
+frontend/app/umkm/advertising/page.tsx
+
+FILES MODIFIED:
+frontend/src/lib/api-client.ts
+frontend/tests/community-page.test.ts
+
+FILES MOVED:
+None
+
+FILES DELETED:
+None
+
+DATABASE CHANGES:
+Created `public.ad_campaigns` table.
+
+MIGRATION:
+20260823094310_umkm_advertising_campaign_foundation.sql
+
+DRY RUN:
+PASS
+
+REMOTE PUSH:
+PASS
+
+REMOTE VERIFY:
+PASS
+
+GENERATED DB TYPES:
+SYNCED (database.types.ts)
+
+CAMPAIGN TABLE:
+`public.ad_campaigns`
+
+CAMPAIGN STATUS MODEL:
+`DRAFT`, `CANCELLED`
+
+RLS:
+Enabled. Select/Update restricted to verified merchant owners.
+
+CAMPAIGN SERVICE:
+Validates Advertising Eligibility and handles business logic for Create, List, Detail, Update, Cancel.
+
+CAMPAIGN REPOSITORY:
+Handles direct Supabase queries.
+
+CAMPAIGN API:
+GET /campaigns
+POST /campaigns
+GET /campaigns/[id]
+PATCH /campaigns/[id]
+POST /campaigns/[id]/cancel
+
+FRONTEND CAMPAIGN LIST:
+Implemented in `CampaignList`.
+
+FRONTEND CREATE DRAFT:
+Implemented in `CampaignCreateForm`.
+
+TYPECHECK:
+PASS
+
+LINT:
+PASS
+
+TEST:
+PASS
+
+BUILD:
+PASS
+
+HTTP SMOKE:
+PASS
+
+SECURITY:
+Ownership required for mutations. No service role leakage.
+
+KNOWN LIMITATIONS:
+Campaign creation MVP requires manual input of merchant UUID if not provided by context.
+
+ROLLBACK:
+Drop table `ad_campaigns`. Remove new files. Revert `api-client.ts`.
+
+FINAL STATUS:
+COMPLETE

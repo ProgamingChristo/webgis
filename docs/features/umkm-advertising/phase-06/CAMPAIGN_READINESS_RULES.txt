@@ -1,0 +1,90 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK — PHASE 06
+CAMPAIGN READINESS EVALUATION RULES & SPECIFICATION
+================================================================================
+
+1. EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+Campaign Readiness is the gatekeeper of GETRA's advertising integrity. A campaign
+is ONLY deemed READY for scheduling and serving when all four fundamental pillars
+pass rigorous validation:
+
+  [ Pillar 1 ] Merchant Advertising Eligibility
+  [ Pillar 2 ] Creative Ready State
+  [ Pillar 3 ] Spatial Targeting Configuration
+  [ Pillar 4 ] Schedule Consistency & Validity
+
+
+2. READINESS PILLARS BREAKDOWN
+--------------------------------------------------------------------------------
+
+Pillar 1: Merchant Advertising Eligibility
+------------------------------------------
+- Evaluator: `AdvertisingEligibilityService.verifyEligibility(merchantId)`
+- Requirements:
+  1. Merchant record exists and is active.
+  2. Merchant is claimed and bound to an authenticated owner (Phase 2).
+  3. Merchant has valid geospatial geometry (`geom` point).
+  4. Merchant profile is complete (Name, Category, Address).
+- Failure Blocker Code: `MERCHANT_NOT_ELIGIBLE`
+
+Pillar 2: Creative Ready State
+------------------------------
+- Evaluator: Queries `public.ad_creatives` for `campaign_id = :campaignId`.
+- Requirements:
+  1. At least ONE creative asset associated with the campaign.
+  2. The creative asset has `status = 'READY'`.
+  3. Creative has a non-empty `headline` and valid `cta_type`.
+- Failure Blocker Code: `CREATIVE_NOT_READY`
+
+Pillar 3: Spatial Targeting Configuration
+-----------------------------------------
+- Evaluator: Queries `public.ad_campaign_targets` for `campaign_id = :campaignId`.
+- Requirements:
+  1. A target record exists for this campaign (1:1 relation).
+  2. For `target_type = 'RADIUS'`: `radius_meters > 0` and merchant geometry valid.
+  3. For `target_type = 'STUDY_AREA'`: `study_area_id` is non-null and valid.
+- Failure Blocker Code: `TARGETING_NOT_CONFIGURED`
+
+Pillar 4: Schedule Consistency & Validity
+-----------------------------------------
+- Evaluator: Inspects `start_at` and `end_at` on `ad_campaigns`.
+- Requirements:
+  1. Both `start_at` and `end_at` are non-null.
+  2. Valid ISO 8601 UTC timestamps.
+  3. Boundary order: `end_at > start_at`.
+  4. Temporal boundary: `end_at > now` (cannot be scheduled entirely in the past).
+- Failure Blocker Codes:
+  - `SCHEDULE_NOT_CONFIGURED`: When timestamps are missing.
+  - `SCHEDULE_INVALID`: When timestamps violate order or format.
+
+
+3. DATA STRUCTURE CONTRACT
+--------------------------------------------------------------------------------
+The readiness evaluation returns a structured payload:
+
+```typescript
+export interface CampaignReadinessResult {
+  ready: boolean;
+  checks: {
+    merchant: boolean;
+    creative: boolean;
+    targeting: boolean;
+    schedule: boolean;
+  };
+  blockers: CampaignReadinessBlocker[];
+}
+```
+
+The boolean `ready` is strictly computed as:
+  `ready = checks.merchant && checks.creative && checks.targeting && checks.schedule`
+
+
+4. FRONTEND UX MAPPING
+--------------------------------------------------------------------------------
+In the GETRA UMKM Dashboard, `CampaignReadinessPanel` renders:
+- Live completion percentage (0%, 25%, 50%, 75%, 100%).
+- Individual status badges for each pillar (Green check vs Amber warning).
+- Explanatory copy in Indonesian guiding the merchant on what steps remain.
+- Automatic live re-check upon saving schedule or updating creatives/targeting.

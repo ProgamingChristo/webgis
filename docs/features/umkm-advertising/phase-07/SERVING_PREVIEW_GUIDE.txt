@@ -1,0 +1,24 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 07 — SPONSORED PIN & AD SERVING ENGINE
+SERVING PREVIEW & OWNER DIAGNOSTICS GUIDE
+================================================================================
+
+1. OVERVIEW
+--------------------------------------------------------------------------------
+The Serving Preview Panel allows UMKM merchants to test and simulate whether their
+campaign will be shown to users at different geographic coordinates.
+
+Features:
+1. "Gunakan Titik Toko": Quick shortcut to test coordinates directly at the merchant's physical address.
+2. Custom Coordinates / Map Dragging: Allows clicking or dragging the "Titik Uji" pin on the map to test edge of radius boundaries.
+3. 4-Pillar Diagnostic Checklist:
+   - 1. Status (ACTIVE vs Draft/Scheduled/Paused/Ended)
+   - 2. Toko UMKM (Eligible vs Incomplete claim)
+   - 3. Materi Iklan (Sponsored Pin Ready vs Incomplete)
+   - 4. Targeting (Inside vs Outside target area)
+4. Live Pin & Card Preview:
+   Renders the exact Sponsored Pin on the map and Sponsored Pin Card when servable.
+5. Zero Event Side Effects:
+   Owner previews do NOT trigger impressions, clicks, or billable ad events.

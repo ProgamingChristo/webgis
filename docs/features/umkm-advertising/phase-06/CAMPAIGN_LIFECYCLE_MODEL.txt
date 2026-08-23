@@ -1,0 +1,114 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK — PHASE 06
+CAMPAIGN LIFECYCLE & STATE TRANSITION MODEL
+================================================================================
+
+1. OVERVIEW & PHILOSOPHY
+--------------------------------------------------------------------------------
+The GETRA UMKM Advertising track utilizes a deterministic, time-injected state
+machine for campaign lifecycles. Instead of relying on a fragile, always-on
+background cron runner to flip database status flags each minute, the lifecycle
+engine guarantees accurate effective status computation on read, write, and
+serving operations.
+
+Temporal intervals for campaign run-windows are strictly half-open:
+  [start_at, end_at)
+where `start_at` is inclusive (exact second campaign becomes eligible to serve)
+and `end_at` is exclusive (exact second campaign stops serving and transitions
+to ENDED).
+
+
+2. CANONICAL LIFECYCLE STATES
+--------------------------------------------------------------------------------
+The state space comprises 7 deterministic states:
+
+  1. DRAFT
+     - Description: Campaign configuration is incomplete. One or more readiness
+       checks (Merchant Eligibility, Creative Ready, Spatial Targeting, or
+       Valid Schedule) are not met.
+     - Serving: Inactive.
+     - Editability: Full (Schedule, Creatives, Targeting, Metadata).
+
+  2. READY
+     - Description: All 4 readiness checks are satisfied, but either start time
+       has not been set or the campaign is explicitly held ready for schedule.
+     - Serving: Inactive.
+     - Editability: Full.
+
+  3. SCHEDULED
+     - Description: All 4 readiness checks are satisfied, `start_at` and `end_at`
+       are configured, and the current clock time is strictly before `start_at`
+       (now < start_at).
+     - Serving: Inactive (pending future activation).
+     - Editability: Schedule and components editable; can be manually paused.
+
+  4. ACTIVE
+     - Description: All readiness checks pass, and current clock time is within
+       the active window [start_at, end_at).
+     - Serving: Eligible for ad serving (Sponsored Pin, Map Banner, etc.).
+     - Editability: Guarded. Schedule modification requires pausing first.
+
+  5. PAUSED
+     - Description: Manually paused by merchant owner while in SCHEDULED or
+       ACTIVE state. Retains configuration and schedule.
+     - Serving: Temporarily disabled.
+     - Editability: Editable (schedule can be extended or modified). Can be
+       resumed back to SCHEDULED, ACTIVE, or ENDED (if end_at has lapsed).
+
+  6. ENDED
+     - Description: Campaign has reached or surpassed `end_at` (now >= end_at).
+     - Serving: Permanently inactive.
+     - Editability: Terminal state for penayangan. Read-only historical record.
+
+  7. CANCELLED
+     - Description: Manually cancelled by merchant owner prior to natural end.
+     - Serving: Permanently inactive.
+     - Editability: Terminal state. Cannot be uncancelled or resumed.
+
+
+3. STATE TRANSITION MATRIX
+--------------------------------------------------------------------------------
++----------------+----------------+----------------+--------------------------+
+| Source State   | Target State   | Trigger        | Conditions / Guard       |
++----------------+----------------+----------------+--------------------------+
+| DRAFT          | READY          | Auto/Evaluate  | All 4 checks satisfied   |
+| DRAFT          | SCHEDULED      | Set Schedule   | All checks pass, now<start|
+| DRAFT          | ACTIVE         | Set Schedule   | All checks pass, start<=now<end |
+| DRAFT          | CANCELLED      | Merchant Action| User confirms cancel     |
+| READY          | SCHEDULED      | Time / Auto    | now < start_at           |
+| READY          | ACTIVE         | Time / Auto    | start_at <= now < end_at |
+| READY          | DRAFT          | Invalidation   | Any check becomes false  |
+| READY          | CANCELLED      | Merchant Action| User confirms cancel     |
+| SCHEDULED      | ACTIVE         | Time Elapsed   | now >= start_at          |
+| SCHEDULED      | PAUSED         | Merchant Action| pauseCampaign()          |
+| SCHEDULED      | DRAFT          | Component Edit | Creative/Target invalidated|
+| SCHEDULED      | CANCELLED      | Merchant Action| cancelCampaign()         |
+| ACTIVE         | ENDED          | Time Elapsed   | now >= end_at            |
+| ACTIVE         | PAUSED         | Merchant Action| pauseCampaign()          |
+| ACTIVE         | CANCELLED      | Merchant Action| cancelCampaign()         |
+| PAUSED         | SCHEDULED      | Merchant Action| resumeCampaign(), now<start|
+| PAUSED         | ACTIVE         | Merchant Action| resumeCampaign(), start<=now<end |
+| PAUSED         | ENDED          | Time / Resume  | now >= end_at            |
+| PAUSED         | CANCELLED      | Merchant Action| cancelCampaign()         |
+| ENDED          | (Terminal)     | None           | Immutable                |
+| CANCELLED      | (Terminal)     | None           | Immutable                |
++----------------+----------------+----------------+--------------------------+
+
+
+4. TIME INJECTION & RECONCILIATION
+--------------------------------------------------------------------------------
+To support deterministic unit testing, timezone handling, and historical
+playback, the lifecycle engine accepts an optional `now: Date` parameter:
+
+  getEffectiveCampaignStatus(
+    persistedStatus: string,
+    readiness: CampaignReadinessResult,
+    startAt: string | null,
+    endAt: string | null,
+    now: Date = new Date()
+  ): CampaignLifecycleStatus
+
+When a user reads or updates a campaign, the service transparently writes the
+reconciled status back to PostgreSQL if natural temporal progression occurred
+(e.g., SCHEDULED transitioned to ACTIVE upon arrival of `start_at`).

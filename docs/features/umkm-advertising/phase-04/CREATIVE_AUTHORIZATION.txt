@@ -1,0 +1,25 @@
+# CREATIVE AUTHORIZATION & SECURITY (PHASE 4)
+
+## Campaign Ownership Verification
+- Every creative API endpoint calls `verifyCampaignOwnershipAndStatus()`.
+- It fetches the campaign and verifies `campaign.merchant_id === user's merchant ID`.
+- It verifies UMKM eligibility via `AdvertisingEligibilityService`.
+
+## Status Lock
+- Creatives cannot be mutated if the parent campaign is `CANCELLED`.
+
+## RLS (Database Level)
+- `ad_creatives` has Row Level Security enabled.
+- `SELECT`, `UPDATE` policies enforce that the authenticated user must own the merchant linked to the campaign.
+- `INSERT` is protected both by RLS and the Backend API `CreativeService`.
+
+## Mass Assignment & Type Spoofing
+- `Zod` schemas strictly strip out fields like `id`, `campaign_id`, `status` during POST/PATCH.
+- A creative's `status` can only transition to `READY` via the explicit `/ready` endpoint, which performs additional validation.
+
+## Storage Policy
+- Handled securely via the backend proxy.
+
+## Cross-Merchant Attack
+- Test case: User A tries to create a creative for Campaign B (owned by User B).
+- Result: Denied, because `campaign.merchant_id` will not match User A's merchant ID.

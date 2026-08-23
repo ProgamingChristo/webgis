@@ -1,32 +1,52 @@
-# GETRA
+# GETRA — Geo-Enabled Transit & Retail Analytics
 
-Backend foundation for the GETRA WebGIS project.
+Welcome to GETRA. This project operates on the **GETRA Integration Baseline (v1.0)**, establishing a highly robust, secure, and geospatially-aware web application architecture.
 
-- API conventions: `docs/API_FOUNDATION.md`
-- Supabase CLI workflow: `docs/SUPABASE_CLI.md`
-- Safe remote migration workflow: `docs/SUPABASE_MIGRATION.txt`
-- Persistent backend process: `docs/RUNNING_BACKEND.txt`
-- Per-phase change log: `docs/changes/`
-- Database and PostGIS architecture: `docs/database/database-architecture.md`
-- External data integration architecture: `docs/EXTERNAL_DATA_INTEGRATION.txt`
-- MAPID adapter foundation usage: `docs/MAPID_ADAPTER_USAGE.txt`
-- Spatial engine foundation usage: `docs/SPATIAL_ENGINE_USAGE.txt`
-- Spatial API contract: `docs/SPATIAL_API.txt`
-- Docker/container workflow: `docs/DOCKER_USAGE.txt`
-- Public API security model: `docs/PUBLIC_API_SECURITY.txt`
-- Frontend integration contract: `docs/FRONTEND_INTEGRATION.txt`
-- API endpoint classification: `docs/API_ENDPOINT_MATRIX.txt`
+## System Overview
 
-Run the application with `npm run dev`. Run code checks with `npm run typecheck`,
-`npm run lint`, and `npm test`. Local database commands are documented in the
-Supabase CLI guide.
+GETRA seamlessly bridges Public Transit, Pedestrian Networking, and Retail/UMKM analytics through a unified interface.
+The platform uses **Next.js** for both the frontend (App Router) and the backend API (API Routes), powered by a strict **Supabase/PostgreSQL** foundation using **PostGIS** and **pgRouting** for spatial calculations.
+An AI Interpretation layer provides conversational assistance strictly grounded in verified database facts.
 
-For a persistent production-like local/server process, use
-`npm run process:start`; status, logs, restart, and stop commands are documented
-in `docs/RUNNING_BACKEND.txt`. This mode runs the production build with
-`next start`; it does not replace the normal `npm run dev` workflow.
+## Architecture & Paths
+- **Frontend**: `frontend/` - Contains the Next.js React application, MapLibre UI, and client data hooks. Runs on `http://localhost:3000`.
+- **Backend**: `backend/` - Contains the secure Next.js API layer acting as a traditional server. Houses all API routes, spatial services, RLS interactions, AI orchestration, and automated tests. Runs on `http://localhost:8080`.
+- **Database**: PostgreSQL (via Supabase). The schema and migrations are located in `backend/supabase/`.
 
-For the production standalone container, use `npm run docker:build` and
-`npm run docker:start`. The default host mapping is port 3002 so PM2 on port
-3000 and Next development on port 3001 can remain online. Runtime credentials
-come from the ignored `.env.local`; they are never baked into the image.
+## Quick Start (Local Development)
+
+### 1. Prerequisites
+Ensure you have Node.js, `npm`, and Docker installed. You must configure your `.env.local` files in both `frontend/` and `backend/` using the structure defined in the [Environment Reference](docs/GETRA_Environment_Reference.md).
+
+### 2. Start Backend
+```bash
+cd backend
+npm install
+npm run dev
+# The backend is now reachable at http://localhost:8080
+```
+Verify the backend is healthy: `curl http://localhost:8080/api/health`
+
+### 3. Start Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+# The frontend is now available at http://localhost:3000
+```
+
+## Documentation
+The comprehensive system documentation, architecture diagrams, testing runbooks, API references, and deployment handovers are located in the `docs/` folder.
+👉 **[View the Documentation Index](docs/README.md)**
+
+## Testing & Quality Gates
+GETRA employs a strict test suite powered by Vitest, testing route hardening, payload validation, Spatial API correctness, and database availability.
+```bash
+cd backend
+npm run test
+```
+
+## Security Warning
+- **Never expose the `SUPABASE_SERVICE_ROLE_KEY` to the client.**
+- All spatial logic must remain in PostGIS/pgRouting. The AI engine is exclusively for *interpretation*, not calculation.
+- See the [Security Reference](docs/GETRA_Final_System_Documentation.pdf) for full RLS boundaries and authentication flows.

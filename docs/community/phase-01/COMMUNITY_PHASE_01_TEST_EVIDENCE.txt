@@ -1,0 +1,71 @@
+GETRA COMMUNITY PHASE 01 TEST EVIDENCE
+Date: 2026-08-23
+
+Commands Run:
+
+1. frontend typecheck
+Command: npm run typecheck
+Working directory: frontend
+Result: PASS
+
+2. frontend lint
+Command: npm run lint
+Working directory: frontend
+Result: PASS
+
+3. frontend build
+Command: npm run build
+Working directory: frontend
+Result: PASS
+Evidence: Next.js 16.3.1 compiled successfully and listed /community as a static route.
+
+4. frontend Community test
+Command: npm test -- frontend/tests/community-page.test.ts
+Working directory: repo root
+Result: PASS
+Evidence: 1 test passed.
+
+5. backend focused Community tests
+Command: npm test -- tests/unit/community/community.schema.test.ts tests/unit/community/community.service.test.ts tests/integration/community-feed-route.test.ts
+Working directory: backend
+Result: PASS
+Evidence: 3 test files passed, 5 tests passed.
+
+6. backend lint
+Command: npm run lint
+Working directory: backend
+Result: PASS
+
+7. backend typecheck
+Command: npm run typecheck
+Working directory: backend
+Result: FAIL / BLOCKED BY PRE-EXISTING NON-COMMUNITY ERRORS
+Evidence:
+- backend/app/api/merchants/[id]/ownership/route has Next.js 16 route context params typed as object instead of Promise.
+- backend/src/features/merchant-ownership/schemas/merchant-ownership.schema.ts has zod API arity error.
+- backend/src/features/umkm-advertising/services/advertising-eligibility.service.ts references profiles.stakeholder_mode that generated types report as missing.
+
+8. backend build
+Command: npm run build
+Working directory: backend
+Result: FAIL / BLOCKED BY SAME PRE-EXISTING NON-COMMUNITY TYPE ERRORS
+
+9. backend full tests
+Command: npm test
+Working directory: backend
+Result: FAIL / BLOCKED BY NON-COMMUNITY ENDPOINT POLICY DRIFT
+Evidence:
+- 54 test files passed, 1 skipped.
+- 380 tests passed, 1 skipped.
+- endpoint-policy.test failed because unrelated untracked routes /api/merchants/[id]/ownership and /api/umkm/advertising/eligibility are discoverable but not registered in endpoint-policy.
+- /api/community/feed is registered and covered by focused Community route test.
+
+10. Supabase migration list
+Command: npx supabase migration list --local
+Working directory: backend
+Result: BLOCKED
+Evidence: local Postgres connection refused at 127.0.0.1:54322. No Community migration exists or is required.
+
+Smoke:
+- Runtime server smoke was not started because quality gates already exposed unrelated backend build blockers.
+- Frontend production build verified /community route generation.

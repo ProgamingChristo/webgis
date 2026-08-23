@@ -1,0 +1,42 @@
+GETRA COMMUNITY PHASE 01 AUDIT
+Date: 2026-08-23
+
+Git:
+- Branch: finalmerge
+- HEAD: dfc61f0d9293fa47d3c8c892c77ef0edfe8c8038
+- Initial working tree: dirty before Community work.
+- Initial modified examples: README.md, backend auth routes, backend endpoint-policy.ts, backend database types, frontend globals/onboarding/signup/dashboard/map/auth provider, package-lock.json, next.config.ts.
+- Initial untracked examples: backend/app/api/ai, backend/app/api/mapid, backend/app/api/routing, backend/app/api/transport, backend/src/modules/ai, frontend/components/ai, frontend/src/hooks, frontend/src/services, docs handoff/reference files.
+
+Repository Architecture:
+- Actual repo uses frontend/ and backend/ workspaces.
+- Frontend App Router lives under frontend/app.
+- Frontend shared/components currently also exist under frontend/components and frontend/src/components.
+- Backend App Router API lives under backend/app/api.
+- Backend has legacy/global folders under backend/src/repositories, backend/src/services, backend/src/modules.
+- Phase 1 Community implementation uses the requested new backend/src/features/community and frontend/src/features/community folders.
+
+Existing Community Code Inventory:
+- backend/src/modules/community/.gitkeep existed as an empty placeholder.
+- backend/src/types/database.types.ts contains public.community_activities.
+- backend/supabase/foundation and migrations contain community_activities as raw MAPID Community Maps Activity/source evidence.
+- docs and historical migrations contain legacy COMMUNITY role references.
+- GETRA_PROGRESS_HANDOFF.md states COMMUNITY is not an authorization role and Community is a general feature.
+- frontend had incidental "community" text in onboarding/general context, but no dedicated /community route.
+
+Database Audit:
+- community_activities columns include id, title, description, latitude, longitude, geometry, medias/images/videos, raw_payload, source_id, source_record_id, ingestion_run_id, validation_status, ingested_at.
+- community_activities relationships point to dataset_ingestion_runs and spatial_sources.
+- community_activities is classified as RAW DATA / MAPID evidence, not a canonical social feed table.
+- No compatible canonical community_posts table was found in generated types.
+- No Phase 1 DB migration was added.
+
+Supabase CLI:
+- Direct supabase command was not on PATH.
+- npx supabase migration list --local found the CLI but failed because local Postgres was not running on 127.0.0.1:54322.
+
+Security/Auth Findings:
+- Current backend auth helper uses bearer token verification and account_role checks where needed.
+- Community Phase 1 feed route uses authenticated user handoff and project rate limiter.
+- No author_id is accepted from the client.
+- No location, camera, upload, AI, realtime, Redis, or Socket.IO was added.

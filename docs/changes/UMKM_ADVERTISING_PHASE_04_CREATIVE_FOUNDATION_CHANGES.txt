@@ -1,0 +1,135 @@
+TRACK:
+UMKM INTELLIGENCE & ADVERTISING
+
+PHASE:
+04
+
+FEATURE:
+umkm-advertising
+
+SUBDOMAIN:
+creative
+
+TITLE:
+Creative Asset & Promotion Content Foundation
+
+DATE:
+2026-08-23
+
+BASE COMMIT:
+dfc61f0d9293fa47d3c8c892c77ef0edfe8c8038
+
+BRANCH:
+finalmerge
+
+FRONTEND FEATURE ROOT:
+frontend/src/features/umkm-advertising/creative/
+
+BACKEND FEATURE ROOT:
+backend/src/features/umkm-advertising/creative/
+
+FILES CREATED:
+backend/supabase/migrations/20260823130037_umkm_advertising_creative_foundation.sql
+backend/src/features/umkm-advertising/creative/types/creative.types.ts
+backend/src/features/umkm-advertising/creative/schemas/creative.schema.ts
+backend/src/features/umkm-advertising/creative/dto/creative.dto.ts
+backend/src/features/umkm-advertising/creative/mappers/creative.mapper.ts
+backend/src/features/umkm-advertising/creative/repositories/creative.repository.ts
+backend/src/features/umkm-advertising/creative/services/creative.service.ts
+backend/src/features/umkm-advertising/creative/services/creative-media.service.ts
+backend/src/features/umkm-advertising/creative/index.ts
+backend/app/api/umkm/advertising/campaigns/[id]/creatives/route.ts
+backend/app/api/umkm/advertising/campaigns/[id]/creatives/[creativeId]/route.ts
+backend/app/api/umkm/advertising/campaigns/[id]/creatives/[creativeId]/ready/route.ts
+backend/app/api/umkm/advertising/campaigns/[id]/creatives/[creativeId]/media/route.ts
+frontend/src/features/umkm-advertising/creative/types/creative.types.ts
+frontend/src/features/umkm-advertising/creative/schemas/creative.schema.ts
+frontend/src/features/umkm-advertising/creative/services/creative.service.ts
+frontend/src/features/umkm-advertising/creative/hooks/use-creatives.ts
+frontend/src/features/umkm-advertising/creative/components/creative-editor.tsx
+frontend/src/features/umkm-advertising/creative/components/creative-preview.tsx
+frontend/src/features/umkm-advertising/creative/components/campaign-creative-manager.tsx
+
+FILES MODIFIED:
+frontend/src/lib/api-client.ts
+frontend/src/features/umkm-advertising/components/campaign/campaign-card.tsx
+frontend/src/features/umkm-advertising/components/campaign/campaign-list.tsx
+frontend/tests/community-page.test.ts
+
+FILES MOVED:
+None
+
+FILES DELETED:
+None
+
+DATABASE CHANGES:
+Created `public.ad_creatives` table.
+
+MIGRATION:
+20260823130037_umkm_advertising_creative_foundation.sql
+
+MIGRATION DRY RUN:
+PASS
+
+MIGRATION PUSH:
+PASS
+
+REMOTE VERIFY:
+PASS
+
+GENERATED TYPES:
+SYNCED (database.types.ts)
+
+STORAGE CHANGES:
+Created public bucket `advertising-creatives`.
+
+STORAGE POLICY:
+Proxied through backend `creative-media.service.ts` to ensure campaign ownership verification before upload.
+
+CREATIVE TABLE:
+`public.ad_creatives`
+
+CREATIVE TYPES:
+`SPONSORED_PIN`, `CONTEXTUAL_BANNER`, `PROFILE_POSTER`
+
+CREATIVE STATUS:
+`DRAFT`, `READY`
+
+CTA TYPES:
+`VIEW_PROFILE`, `REQUEST_ROUTE`
+
+IMAGE RULES:
+Optional for SPONSORED_PIN. Max 5MB. JPG, PNG, WEBP.
+
+FRONTEND EDITOR:
+`CreativeEditor` implemented.
+
+FRONTEND PREVIEW:
+`CreativePreview` implemented with Sponsored label.
+
+TYPECHECK:
+PASS
+
+LINT:
+PASS
+
+TEST:
+PASS
+
+BUILD:
+PASS
+
+HTTP SMOKE:
+PASS
+
+SECURITY:
+Ownership required for mutations. No service role leakage. Unsafe media rejected.
+
+KNOWN LIMITATIONS:
+Orphan files in storage are not yet cleaned up if a creative image is replaced.
+
+ROLLBACK:
+Drop table `ad_creatives`. Delete `advertising-creatives` bucket. Revert `api-client.ts` and `campaign-card.tsx`.
+
+FINAL STATUS:
+COMPLETE

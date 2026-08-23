@@ -1,0 +1,75 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 07 — SPONSORED PIN & AD SERVING ENGINE
+AD SERVING ARCHITECTURE
+================================================================================
+
+1. EXECUTIVE OVERVIEW
+--------------------------------------------------------------------------------
+Phase 07 introduces GETRA's Ad Serving Engine and Sponsored Pin domain.
+The core responsibility of Phase 07 is answering one authoritative question:
+"Which advertising campaign is technically and spatially eligible to be served
+as a Sponsored Pin at a specific coordinate [longitude, latitude]?"
+
+Phase 07 purposefully does NOT handle ad ranking composition against Organic/Hidden Gems
+(which belongs to Phase 08 Fair Discovery), nor does it track impression/click events
+(which belongs to Phase 10 Analytics).
+
+
+2. SYSTEM ARCHITECTURE & DATA FLOW
+--------------------------------------------------------------------------------
+
+[ Client / Map Context ]
+         │ (longitude, latitude, limit)
+         ▼
+[ GET /api/advertising/placements/sponsored-pins ]
+         │
+         ▼
+[ AdServingService ]
+         │
+         ├── 1. Context Coordinate Validation (WGS84 EPSG:4326)
+         │
+         ├── 2. Candidate Retrieval (AdServingRepository.findPotentialServingCampaigns)
+         │       └── Filter: status NOT IN ('CANCELLED', 'ENDED')
+         │
+         ├── 3. Candidate Serving Verification Pipeline (Per Campaign)
+         │       ├── A. Lifecycle Status: CampaignLifecycleService.getEffectiveCampaignStatus === 'ACTIVE'
+         │       ├── B. Merchant Eligibility: AdvertisingEligibilityService.verifyEligibility === true
+         │       ├── C. Creative Asset: Type SPONSORED_PIN, Status READY, Non-empty Headline, CTA Valid
+         │       └── D. Spatial Targeting: Point-in-Radius (Haversine) OR Point-in-Study-Area (Ray-casting)
+         │
+         ├── 4. Merchant Deduplication
+         │       └── Max 1 Sponsored Pin per Merchant (Tie-break: most recently updated campaign)
+         │
+         ├── 5. Technical Ordering & Limiting
+         │       └── Deterministic updated_at DESC, clamp limit [1..20] (default: 5)
+         │
+         ▼
+[ Safe Public SponsoredPinDTO[] ] (Server-enforced label: "Sponsored", zero sensitive leaks)
+
+
+3. COMPONENT INVENTORY
+--------------------------------------------------------------------------------
+Backend Subdomain: backend/src/features/umkm-advertising/ad-serving/
+  - types/ad-serving.types.ts
+  - schemas/ad-serving.schema.ts
+  - constants/ad-serving.constants.ts
+  - errors/ad-serving.errors.ts
+  - repositories/ad-serving.repository.ts
+  - services/ad-serving.service.ts
+  - services/sponsored-pin-serving.service.ts
+
+Frontend Subdomain: frontend/src/features/umkm-advertising/ad-serving/
+  - types/ad-serving.types.ts
+  - services/ad-serving.service.ts
+  - hooks/use-serving-preview.ts
+  - hooks/use-sponsored-pin-candidates.ts
+  - components/sponsored-pin-marker.tsx
+  - components/sponsored-pin-card.tsx
+  - components/sponsored-pin-preview-map.tsx
+  - components/serving-preview-panel.tsx
+
+API Routes:
+  - GET  /api/advertising/placements/sponsored-pins (Public Candidate Serving)
+  - POST /api/umkm/advertising/campaigns/[id]/serving-preview (Owner Serving Preview)

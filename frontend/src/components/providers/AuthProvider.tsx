@@ -7,11 +7,13 @@ import { getUserContext, type UserContext } from "@/src/lib/auth-client";
 interface AuthContextValue {
   context: UserContext | null;
   loading: boolean;
+  refresh: () => Promise<UserContext | null>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   context: null,
   loading: true,
+  refresh: async () => null,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -21,6 +23,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+
+  async function refresh() {
+    const result = await getUserContext();
+    setContext(result);
+    return result;
+  }
 
   useEffect(() => {
     let mounted = true;
@@ -34,9 +42,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const isPublicRoute = ["/login", "/signup"].includes(pathname);
       const isApiRoute = pathname.startsWith("/api");
+      const isAdminRoute = pathname.startsWith("/admin");
 
       if (!result && !isPublicRoute && !isApiRoute) {
         router.replace("/login");
+        return;
+      }
+
+      if (
+        result &&
+        isAdminRoute &&
+        result.profile?.account_role !== "ADMIN"
+      ) {
+        router.replace("/");
         return;
       }
 
@@ -62,8 +80,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [pathname, router]);
 
   if (loading) {
-    return <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>Loading...</div>;
+    return (
+      <div className="auth-loading">
+        <div className="auth-loading__mark">
+          G
+        </div>
+
+        <span>
+          Menyiapkan GETRA...
+        </span>
+      </div>
+    );
   }
 
-  return <AuthContext.Provider value={{ context, loading }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ context, loading, refresh }}>{children}</AuthContext.Provider>;
 }

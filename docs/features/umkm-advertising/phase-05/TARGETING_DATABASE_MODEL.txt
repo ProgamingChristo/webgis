@@ -1,0 +1,28 @@
+# TARGETING DATABASE MODEL (PHASE 5)
+
+## Table: `public.ad_campaign_targets`
+
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | uuid | PK, DEFAULT gen_random_uuid() | Target record identifier |
+| `campaign_id` | uuid | NOT NULL, UNIQUE, FK -> `ad_campaigns(id)` ON DELETE CASCADE | 1:1 mapping with parent campaign |
+| `target_type` | text | NOT NULL, CHECK IN ('RADIUS', 'STUDY_AREA') | Type of spatial targeting |
+| `radius_meters` | integer | NULLABLE, CHECK (radius_meters >= 250 AND radius_meters <= 10000) | Distance in meters for RADIUS target |
+| `study_area_id` | uuid | NULLABLE, FK -> `study_areas(id)` ON DELETE SET NULL | Reference to canonical study area |
+| `center_geometry` | geometry(Point, 4326) | NULLABLE | Center point geometry (merchant outlet location) |
+| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Record creation timestamp |
+| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Record update timestamp (via trigger) |
+
+## Conditional Constraints
+- `chk_ad_campaign_targets_type_fields`:
+  - If `target_type = 'RADIUS'`: `radius_meters IS NOT NULL AND center_geometry IS NOT NULL AND study_area_id IS NULL`
+  - If `target_type = 'STUDY_AREA'`: `study_area_id IS NOT NULL AND radius_meters IS NULL`
+
+## Indexes
+- `idx_ad_campaign_targets_campaign_id` (B-tree on `campaign_id`)
+- `idx_ad_campaign_targets_study_area_id` (B-tree on `study_area_id`)
+- `idx_ad_campaign_targets_center_geom` (GiST on `center_geometry`)
+
+## Row Level Security (RLS)
+- Enabled on `ad_campaign_targets`.
+- Policies enforce that the user must own the merchant linked to the campaign (`ad_campaigns.merchant_id = merchants.id AND merchants.owner_id = auth.uid()`).

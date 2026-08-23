@@ -1,0 +1,12 @@
+PROFILE COMPLETENESS:
+Based on canonical merchant table fields: name, category, location (geometry), address, opening_hours, price_level, description. 
+
+DISCOVERABILITY:
+Supported via `data_quality_score`, `verification_status`, and `publish_status`.
+Categories provide logical discoverability mapping.
+
+VISIBILITY DIAGNOSIS:
+Currently handled abstractly through `data_quality_score` (UNVERIFIED, SURVEYED, VERIFIED, STALE, REJECTED, SYNTHETIC) and publish status.
+
+STATUS:
+FOUNDATION_ONLY. The schema supports discoverability parameters, but there is no specific "Visibility Score" or diagnosis UI implemented purely for advertising readiness yet.

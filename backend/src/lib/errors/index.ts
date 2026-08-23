@@ -5,6 +5,7 @@ export const applicationErrorCodes = [
   "NOT_FOUND",
   "CONFLICT",
   "AUTH_EMAIL_ALREADY_EXISTS",
+  "AUTH_EMAIL_CONFIRMATION_REQUIRED",
   "DATABASE_ERROR",
   "DATABASE_UNAVAILABLE",
   "INTERNAL_ERROR",
@@ -30,6 +31,7 @@ export type ApplicationErrorCode = (typeof applicationErrorCodes)[number];
 const publicMessages: Record<ApplicationErrorCode, string> = {
   CONFLICT: "Resource conflict",
   AUTH_EMAIL_ALREADY_EXISTS: "Email is already registered",
+  AUTH_EMAIL_CONFIRMATION_REQUIRED: "Email verification is still enabled",
   CORS_ORIGIN_DENIED: "Request origin is not allowed",
   CORS_PREFLIGHT_DENIED: "CORS preflight request is not allowed",
   DATABASE_ERROR: "Database operation failed",
@@ -57,6 +59,7 @@ const publicMessages: Record<ApplicationErrorCode, string> = {
 const httpStatuses: Record<ApplicationErrorCode, number> = {
   CONFLICT: 409,
   AUTH_EMAIL_ALREADY_EXISTS: 409,
+  AUTH_EMAIL_CONFIRMATION_REQUIRED: 409,
   CORS_ORIGIN_DENIED: 403,
   CORS_PREFLIGHT_DENIED: 403,
   DATABASE_ERROR: 500,

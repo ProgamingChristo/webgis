@@ -1,0 +1,54 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 07 — SPONSORED PIN & AD SERVING ENGINE
+FILE INVENTORY
+================================================================================
+
+1. BACKEND FILES CREATED / MODIFIED
+--------------------------------------------------------------------------------
+- backend/src/features/umkm-advertising/ad-serving/types/ad-serving.types.ts
+- backend/src/features/umkm-advertising/ad-serving/schemas/ad-serving.schema.ts
+- backend/src/features/umkm-advertising/ad-serving/constants/ad-serving.constants.ts
+- backend/src/features/umkm-advertising/ad-serving/errors/ad-serving.errors.ts
+- backend/src/features/umkm-advertising/ad-serving/repositories/ad-serving.repository.ts
+- backend/src/features/umkm-advertising/ad-serving/services/ad-serving.service.ts
+- backend/src/features/umkm-advertising/ad-serving/services/sponsored-pin-serving.service.ts
+- backend/src/features/umkm-advertising/ad-serving/index.ts
+- backend/src/features/umkm-advertising/index.ts
+- backend/app/api/advertising/placements/sponsored-pins/route.ts
+- backend/app/api/umkm/advertising/campaigns/[id]/serving-preview/route.ts
+- backend/src/lib/api-security/endpoint-policy.ts
+- backend/src/features/umkm-advertising/scripts/provision-phase07-serving-test-data.ts
+- backend/tests/unit/umkm-advertising/ad-serving.service.test.ts
+
+2. FRONTEND FILES CREATED / MODIFIED
+--------------------------------------------------------------------------------
+- frontend/src/features/umkm-advertising/ad-serving/types/ad-serving.types.ts
+- frontend/src/features/umkm-advertising/ad-serving/services/ad-serving.service.ts
+- frontend/src/features/umkm-advertising/ad-serving/hooks/use-serving-preview.ts
+- frontend/src/features/umkm-advertising/ad-serving/hooks/use-sponsored-pin-candidates.ts
+- frontend/src/features/umkm-advertising/ad-serving/components/sponsored-pin-marker.tsx
+- frontend/src/features/umkm-advertising/ad-serving/components/sponsored-pin-card.tsx
+- frontend/src/features/umkm-advertising/ad-serving/components/sponsored-pin-preview-map.tsx
+- frontend/src/features/umkm-advertising/ad-serving/components/serving-preview-panel.tsx
+- frontend/src/features/umkm-advertising/ad-serving/index.ts
+- frontend/src/features/umkm-advertising/index.ts
+- frontend/src/features/umkm-advertising/components/campaign/campaign-card.tsx
+
+3. DOCUMENTATION
+--------------------------------------------------------------------------------
+- docs/features/umkm-advertising/phase-07/AD_SERVING_ARCHITECTURE.txt
+- docs/features/umkm-advertising/phase-07/SPONSORED_PIN_DOMAIN.txt
+- docs/features/umkm-advertising/phase-07/SERVING_RULES_AND_ELIGIBILITY.txt
+- docs/features/umkm-advertising/phase-07/CANDIDATE_SELECTION_AND_DEDUPLICATION.txt
+- docs/features/umkm-advertising/phase-07/SPATIAL_SERVING_ENGINE.txt
+- docs/features/umkm-advertising/phase-07/PUBLIC_SPONSORED_PIN_CONTRACT.txt
+- docs/features/umkm-advertising/phase-07/SERVING_PREVIEW_GUIDE.txt
+- docs/features/umkm-advertising/phase-07/SECURITY_AND_PERFORMANCE_AUDIT.txt
+- docs/features/umkm-advertising/phase-07/PHASE_07_MANUAL_TESTING_GUIDE.txt
+- docs/features/umkm-advertising/phase-07/PHASE_07_IMPLEMENTATION_SUMMARY.txt
+- docs/features/umkm-advertising/phase-07/PHASE_07_VERIFICATION_REPORT.txt
+- docs/features/umkm-advertising/phase-07/PHASE_07_FILE_INVENTORY.txt
+- docs/features/umkm-advertising/phase-07/PHASE_08_PREPARATION.txt
+- docs/changes/UMKM_ADVERTISING_PHASE_07_SPONSORED_PIN_AD_SERVING_CHANGES.txt

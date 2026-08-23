@@ -1,0 +1,16 @@
+# CAMPAIGN DOMAIN MODEL (PHASE 3)
+
+## PURPOSE
+The Campaign object acts as the core business container for UMKM advertising activities. It represents the merchant's intent to advertise, holding top-level metadata.
+
+## CAMPAIGN VS CREATIVE
+A Campaign is NOT an advertisement in itself. A campaign holds creatives (Phase 4). The campaign defines "what is this effort called", while the creative defines "what does the customer see".
+
+## CAMPAIGN VS TARGETING
+A Campaign does not define "where" it runs in Phase 3. Targeting (Phase 5) will attach spatial constraints (e.g. radius, polygon) to the campaign.
+
+## CAMPAIGN VS LIFECYCLE
+In Phase 3, campaigns are strictly limited to `DRAFT` and `CANCELLED`. We do not support activation, pausing, or scheduling until Phase 6.
+
+## CAMPAIGN VS ANALYTICS
+Analytics counters (impressions, clicks) are explicitly excluded from the Phase 3 domain model to maintain separation of concerns. They will be introduced in a future analytics phase.

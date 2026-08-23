@@ -1,0 +1,30 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 07 — SPONSORED PIN & AD SERVING ENGINE
+SPATIAL SERVING ENGINE & POSTGIS MATCHING
+================================================================================
+
+1. SPATIAL MATCHING STRATEGIES
+--------------------------------------------------------------------------------
+
+A. RADIUS TARGETING (Geodesic Distance)
+   - Evaluates whether context coordinate (user/map center) is within `radius_meters`
+     of campaign target center (or merchant location fallback).
+   - Math: Haversine distance formula on WGS84 sphere (R = 6,371,000 meters).
+   - Authoritative Condition: `distance_meters(context, center) <= radius_meters`.
+
+B. STUDY AREA TARGETING (Polygon Containment)
+   - Evaluates whether context coordinate is topologically inside the predefined
+     Study Area polygon/multipolygon.
+   - Algorithm: Robust Ray-Casting Point-in-Polygon (PIP) with hole exclusion.
+   - Authoritative Condition: `isPointInsideStudyArea(study_area_id, lng, lat) === true`.
+
+2. COORDINATE CONVENTIONS
+--------------------------------------------------------------------------------
+- Standard: WGS84 (EPSG:4326)
+- Order: GeoJSON standard `[longitude, latitude]`
+- Bounds Check:
+  - Longitude: [-180.0, 180.0]
+  - Latitude: [-90.0, 90.0]
+  - Non-finite (NaN, Infinity) rejected with AdServingContextInvalidError (HTTP 400).

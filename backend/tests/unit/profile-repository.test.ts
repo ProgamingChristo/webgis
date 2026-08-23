@@ -27,7 +27,7 @@ import type {
 } from "@/src/types/profile";
 
 const PROFILE_COLUMNS =
-  "id, display_name, avatar_url, account_role, trust_score, onboarding_complete, created_at, updated_at";
+  "id, display_name, username, avatar_url, phone_number, bio, account_role, trust_score, onboarding_complete, created_at, updated_at";
 
 const profileRow:
   ProfileDatabaseRow & {
@@ -35,11 +35,20 @@ const profileRow:
   } = {
     avatar_url: null,
 
+    bio:
+      null,
+
     created_at:
       "2026-08-16T00:00:00.000Z",
 
     display_name:
       "TEST USER",
+
+    username:
+      "test_user",
+
+    phone_number:
+      null,
 
     id:
       "00000000-0000-0000-0000-000000000001",
@@ -63,11 +72,20 @@ const profileRow:
 const expectedProfile = {
   avatar_url: null,
 
+  bio:
+    null,
+
   created_at:
     "2026-08-16T00:00:00.000Z",
 
   display_name:
     "TEST USER",
+
+  username:
+    "test_user",
+
+  phone_number:
+    null,
 
   id:
     "00000000-0000-0000-0000-000000000001",

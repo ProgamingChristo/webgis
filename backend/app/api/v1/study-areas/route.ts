@@ -1,20 +1,13 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
 import { StudyAreaRepository } from "@/src/repositories/study-area.repository";
 
 export async function GET(request: Request) {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:54321";
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    // Public endpoint for Phase 9 dummy areas, or rely on RLS. We can skip strong auth check for dummy read foundation.
-    // Auth check commented out to allow generic read if RLS permits.
-    /*
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    */
+    const authHeader = request.headers.get("Authorization") || "";
+    // Note: To support public reads if RLS allows, we pass the header (which might be empty).
+    // If it requires auth, RLS will block it if empty, or we can explicitly check.
+    const supabase = getRequestSupabaseClient(authHeader);
 
     const { searchParams } = new URL(request.url);
     const environment = searchParams.get("environment");

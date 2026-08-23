@@ -1,0 +1,17 @@
+# FRONTEND ELIGIBILITY FLOW
+
+The frontend implementation utilizes a structural gate pattern to intercept unauthenticated or ineligible users before rendering the Advertising UI.
+
+## COMPONENTS
+- **`AdvertisingEligibilityGate`**: A React component wrapping advertising pages. It executes the logic to fetch eligibility state from the backend and handles rendering all fallback UI states (Loading, Errors, Ineligible constraints).
+
+## HOOKS
+- **`useAdvertisingEligibility`**: Orchestrates the API call via `AdvertisingEligibilityService`. Captures loading states and surfaces errors cleanly.
+
+## UX FLOW
+1. **Initial Mount**: `AdvertisingEligibilityGate` renders "Memeriksa status Advertising Manager..." while `loading` is true.
+2. **Success (Eligible)**: If the backend returns `eligible: true`, the gate allows the `children` prop (the Advertising Campaign Builder) to render.
+3. **Ineligible (Ownership Required)**: Prompts the user "Klaim kepemilikan merchant diperlukan."
+4. **Ineligible (Ownership Pending)**: Informs the user "Klaim sedang ditinjau. Advertising Manager akan tersedia setelah kepemilikan diverifikasi."
+5. **Ineligible (UMKM Mode Required)**: Instructs the user that the mode is incorrect.
+6. **Ineligible (Merchant Inactive/Invalid)**: Notifies the user their merchant profile requires data completion or activation.

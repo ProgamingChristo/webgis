@@ -1,0 +1,72 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK — PHASE 06
+CAMPAIGN LIFECYCLE FRONTEND ARCHITECTURE & UX FLOW
+================================================================================
+
+1. DIRECTORY STRUCTURE
+--------------------------------------------------------------------------------
+Frontend implementation resides under the canonical feature folder:
+`frontend/src/features/umkm-advertising/lifecycle/`
+
+```text
+frontend/src/features/umkm-advertising/lifecycle/
+├── components/
+│   ├── campaign-lifecycle-actions.tsx
+│   ├── campaign-readiness-panel.tsx
+│   ├── campaign-schedule-editor.tsx
+│   └── campaign-status-badge.tsx
+├── hooks/
+│   └── use-campaign-lifecycle.ts
+├── services/
+│   └── lifecycle.service.ts
+├── types/
+│   └── lifecycle.types.ts
+└── index.ts
+```
+
+
+2. UX COMPONENT HIERARCHY & ROLES
+--------------------------------------------------------------------------------
+
+2.1. `CampaignCard` (`components/campaign/campaign-card.tsx`)
+- Embeds `CampaignStatusBadge` in the header, rendering the live effective status.
+- Offers 3 intuitive management tabs:
+  1. "Kelola Materi" -> `CampaignCreativeManager`
+  2. "Targeting Wilayah" -> `CampaignTargetingManager`
+  3. "Jadwal & Kesiapan" -> `CampaignReadinessPanel` + `CampaignScheduleEditor`
+- Embeds `CampaignLifecycleActions` directly on the card header.
+
+2.2. `CampaignStatusBadge` (`lifecycle/components/campaign-status-badge.tsx`)
+- Status-specific badges with distinct color palettes, icons, and Indonesian labels:
+  - `DRAFT`: Slate badge ("Draft")
+  - `READY`: Blue badge ("Siap Tayang")
+  - `SCHEDULED`: Purple badge ("Terjadwal")
+  - `ACTIVE`: Emerald badge with glowing pulse ("Aktif Berjalan")
+  - `PAUSED`: Amber badge ("Dijeda (Paused)")
+  - `ENDED`: Zinc badge ("Selesai (Ended)")
+  - `CANCELLED`: Rose badge ("Dibatalkan")
+
+2.3. `CampaignReadinessPanel` (`lifecycle/components/campaign-readiness-panel.tsx`)
+- Interactive 4-point checklist card with progress bar (0% - 100%).
+- Displays live feedback for Toko UMKM, Materi Iklan, Target Wilayah, and Jadwal.
+
+2.4. `CampaignScheduleEditor` (`lifecycle/components/campaign-schedule-editor.tsx`)
+- Local `datetime-local` input controls with bidirectional ISO 8601 UTC mapping.
+- 4 One-click duration presets: `+3 Hari`, `+7 Hari`, `+14 Hari`, `+30 Hari`.
+- Human-readable duration calculator ("7 hari (168 jam)").
+- Local timezone indicator ("WIB / UTC+7").
+- Real-time client-side boundary validation with error alerts.
+
+2.5. `CampaignLifecycleActions` (`lifecycle/components/campaign-lifecycle-actions.tsx`)
+- Action buttons dynamically rendered according to `allowedActions`:
+  - `Jeda Campaign (Pause)`
+  - `Lanjutkan Tayang (Resume)`
+  - `Batalkan Campaign` (triggers a modal confirmation dialog to prevent accidental cancellation).
+
+
+3. STATE MANAGEMENT FLOW
+--------------------------------------------------------------------------------
+1. When `CampaignCard` renders, `useCampaignLifecycle` queries `GET /api/umkm/advertising/campaigns/:id/lifecycle`.
+2. Saving schedule calls `updateSchedule({ start_at, end_at })` via `PUT /schedule`.
+3. The hook automatically receives the updated lifecycle state and refreshes the readiness score, effective status, and allowed actions without needing a full page reload.

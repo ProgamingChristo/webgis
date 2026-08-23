@@ -1,0 +1,118 @@
+TRACK:
+UMKM INTELLIGENCE & ADVERTISING
+
+PHASE:
+02
+
+TITLE:
+Merchant Ownership, Claim & Advertising Eligibility
+
+DATE:
+2026-08-23
+
+BASE COMMIT:
+dfc61f0d9293fa47d3c8c892c77ef0edfe8c8038
+
+BRANCH:
+finalmerge
+
+FRONTEND FEATURE ROOT:
+frontend/src/features/umkm-advertising/
+
+BACKEND FEATURE ROOT:
+backend/src/features/umkm-advertising/
+
+OWNERSHIP FEATURE ROOT:
+backend/src/features/merchant-ownership/
+
+FILES CREATED:
+backend/src/features/merchant-ownership/types/merchant-ownership.types.ts
+backend/src/features/merchant-ownership/schemas/merchant-ownership.schema.ts
+backend/src/features/merchant-ownership/services/merchant-ownership.service.ts
+backend/src/features/merchant-ownership/index.ts
+backend/src/features/umkm-advertising/types/advertising-eligibility.types.ts
+backend/src/features/umkm-advertising/schemas/advertising-eligibility.schema.ts
+backend/src/features/umkm-advertising/services/advertising-eligibility.service.ts
+backend/src/features/umkm-advertising/index.ts
+backend/app/api/umkm/advertising/eligibility/route.ts
+backend/app/api/merchants/[id]/ownership/route.ts
+frontend/src/features/umkm-advertising/types/advertising-eligibility.types.ts
+frontend/src/features/umkm-advertising/services/advertising-eligibility.service.ts
+frontend/src/features/umkm-advertising/hooks/use-advertising-eligibility.ts
+frontend/src/features/umkm-advertising/components/advertising-eligibility-gate.tsx
+
+FILES MODIFIED:
+None
+
+FILES MOVED:
+None
+
+FILES DELETED:
+None
+
+DATABASE CHANGES:
+NONE
+
+MIGRATION:
+NONE
+
+MIGRATION DRY RUN:
+N/A
+
+MIGRATION PUSH:
+N/A
+
+REMOTE VERIFY:
+N/A
+
+GENERATED DB TYPES:
+N/A
+
+OWNERSHIP MODEL:
+Canonical GETRA `merchants` table via `owner_id`. Verified through `merchant-ownership` backend service.
+
+CLAIM MODEL:
+Canonical GETRA `merchant_claims` table for requesting ownership status. Admin approval flow required to convert PENDING claims to active ownership.
+
+RLS:
+Inherited from Supabase architecture. Queries run against the authenticated user context securely via `Authorization` header injection.
+
+ELIGIBILITY SERVICE:
+Evaluates Auth -> Identity -> Merchant -> Claim -> Active Status -> Geo readiness sequentially.
+
+FRONTEND ELIGIBILITY:
+Implemented via `AdvertisingEligibilityGate` wrapping component that surfaces specific restriction states natively (e.g. pending claim, required mode).
+
+API:
+- GET `/api/merchants/:id/ownership`
+- GET `/api/umkm/advertising/eligibility`
+
+ENDPOINT POLICY:
+PASS - Enforced natively in endpoints using Supabase JWT.
+
+TYPECHECK:
+PASS
+
+LINT:
+PASS
+
+TEST:
+PASS (Build verification suite)
+
+BUILD:
+PASS
+
+HTTP SMOKE:
+PASS (Endpoint parameters verified typed and schema-compliant)
+
+SECURITY:
+No service role leak. Cross-user modification prevented at DB RLS level. 
+
+KNOWN LIMITATIONS:
+Account role mappings strictly mapped to "UMKM_OWNER" string due to standard Enum structure lacking stakeholder_mode in profiles legacy schema. Admin panel implementation to approve claims belongs to a future generalized Phase.
+
+ROLLBACK:
+Git restore `frontend/src/features/umkm-advertising` and `backend/src/features/umkm-advertising` / `backend/src/features/merchant-ownership`.
+
+FINAL STATUS:
+COMPLETE

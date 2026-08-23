@@ -1,0 +1,28 @@
+# CREATIVE DOMAIN MODEL (PHASE 4)
+
+## Campaign vs Creative
+- **Campaign** is the business container (who owns it, when it runs, its lifecycle).
+- **Creative** is the actual promotional content (what it says, the image, the CTA).
+- Relationship: 1 Campaign can have multiple Creatives, but in Phase 4 MVP, we enforce a strict 1-to-1 mapping per `creative_type` to prevent version explosion.
+
+## Creative vs Placement
+- A Creative defines "what the ad says".
+- It does NOT define "where the ad appears" (e.g. Map, Feed, Search). Placements are handled in future phases (Phase 5+, 7, 9).
+
+## Creative Types
+- `SPONSORED_PIN`: The primary MVP target for MapLibre rendering. Requires a headline and CTA. Image is optional.
+- `CONTEXTUAL_BANNER`: Reserved for future use.
+- `PROFILE_POSTER`: Reserved for future use.
+
+## Creative Status
+- `DRAFT`: The initial state. Content can be edited freely.
+- `READY`: The merchant has finished drafting the content and it passes all validation. (Note: READY != ACTIVE. The campaign itself may still be DRAFT).
+
+## Call to Action (CTA)
+- Restricted to safe, internal semantic values to prevent external phishing/redirects.
+- Allowed values: `VIEW_PROFILE`, `REQUEST_ROUTE`.
+- The frontend will map these to localized labels (e.g., "Lihat Profil", "Minta Rute").
+
+## Media (Image)
+- Images are stored securely in Supabase Storage under a managed path convention.
+- Direct public URLs are generated post-upload.

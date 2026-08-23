@@ -1,0 +1,68 @@
+# TARGETING API (PHASE 5)
+
+## 1. Get Campaign Targeting
+- **Endpoint**: `GET /api/umkm/advertising/campaigns/[id]/targeting`
+- **Headers**:
+  - `Authorization: Bearer <token>`
+  - `x-getra-merchant-id: <merchant-uuid>`
+- **Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "id": "target-uuid-or-null",
+    "campaignId": "campaign-uuid",
+    "status": "CONFIGURED" | "NOT_CONFIGURED" | "INVALID",
+    "targetType": "RADIUS" | "STUDY_AREA" | null,
+    "radiusMeters": 1000,
+    "studyAreaId": null,
+    "studyArea": null,
+    "merchantLocation": {
+      "longitude": 106.827153,
+      "latitude": -6.175392
+    },
+    "previewGeoJSON": {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [...]
+      },
+      "properties": {
+        "target_type": "RADIUS",
+        "radius_meters": 1000
+      }
+    },
+    "createdAt": "2026-08-23T14:00:00Z",
+    "updatedAt": "2026-08-23T14:00:00Z"
+  }
+}
+```
+
+## 2. Update/Save Campaign Targeting (Idempotent PUT)
+- **Endpoint**: `PUT /api/umkm/advertising/campaigns/[id]/targeting`
+- **Headers**:
+  - `Authorization: Bearer <token>`
+  - `Content-Type: application/json`
+  - `x-getra-merchant-id: <merchant-uuid>`
+
+### Radius Payload:
+```json
+{
+  "target_type": "RADIUS",
+  "radius_meters": 1500
+}
+```
+
+### Study Area Payload:
+```json
+{
+  "target_type": "STUDY_AREA",
+  "study_area_id": "study-area-uuid"
+}
+```
+
+- **Response**: Returns the updated `CampaignTargetDTO` containing the newly generated PostGIS `previewGeoJSON`.
+
+## 3. List Study Areas (Canonical Reuse)
+- **Endpoint**: `GET /api/v1/study-areas`
+- **Description**: Reuses canonical GETRA study areas list for the Study Area dropdown.

@@ -21,9 +21,6 @@ import styles from "../auth.module.css";
 const DEV_LOGIN_EMAIL =
   "getra.admin.test@example.com";
 
-const DEV_LOGIN_PASSWORD =
-  "PasswordDevelopment123!";
-
 const isDevelopment =
   process.env.NODE_ENV ===
   "development";
@@ -71,11 +68,7 @@ export default function LoginPage() {
     password,
     setPassword,
   ] =
-    useState(
-      isDevelopment
-        ? DEV_LOGIN_PASSWORD
-        : "",
-    );
+    useState("");
 
   const [
     errorMessage,

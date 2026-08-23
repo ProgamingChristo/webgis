@@ -1,7 +1,6 @@
 import "server-only";
 
 import { MapidClient } from "@/src/integrations/mapid/mapid.client";
-import { loadMapidProviderConfig } from "@/src/integrations/mapid/mapid.config";
 import { MapidTestFixtureResponseValidator } from "@/src/integrations/mapid/mapid.schema";
 import { MapidTestFixtureNormalizer } from "@/src/integrations/mapid/mapid.normalizer";
 import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
@@ -46,7 +45,9 @@ export class MapidIngestionAdapter implements IngestionAdapter<any> {
     return normalizedBatch.records.length > 0 ? normalizedBatch.records[0] : null;
   }
 
-  async *fetchRecords(job: ImportJob): AsyncGenerator<unknown, void, unknown> {
+  async *fetchRecords(_job: ImportJob): AsyncGenerator<unknown, void, unknown> {
+    void _job;
+
     const response = await this.client.request({
       path: "/mock-activity", // Hit mock server
       method: "GET"

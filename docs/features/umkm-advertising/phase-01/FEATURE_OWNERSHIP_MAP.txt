@@ -1,0 +1,53 @@
+FILE: frontend/src/components/stakeholder/umkm-context.tsx
+CURRENT LOCATION: frontend/src/components/stakeholder/
+OWNER FEATURE: UMKM Profile / Workspace
+SHARED?: NO
+FUTURE LOCATION: frontend/src/features/umkm-profile/
+MOVE NOW?: NO
+RISK: LOW
+DEPENDENCIES: Auth, Map
+
+FILE: backend/src/modules/umkm/umkm.service.ts
+CURRENT LOCATION: backend/src/modules/umkm/
+OWNER FEATURE: UMKM Data
+SHARED?: NO
+FUTURE LOCATION: backend/src/features/umkm-profile/
+MOVE NOW?: NO
+RISK: LOW
+DEPENDENCIES: Supabase, Accessibility, Repositories
+
+FILE: backend/src/repositories/umkm-profile.repository.ts
+CURRENT LOCATION: backend/src/repositories/
+OWNER FEATURE: UMKM Profile
+SHARED?: NO
+FUTURE LOCATION: backend/src/features/umkm-profile/
+MOVE NOW?: NO
+RISK: LOW
+DEPENDENCIES: Supabase
+
+FILE: backend/src/repositories/merchant.repository.ts (implied by schemas)
+CURRENT LOCATION: backend/src/repositories/
+OWNER FEATURE: Merchant Data
+SHARED?: NO
+FUTURE LOCATION: backend/src/features/merchant/
+MOVE NOW?: NO
+RISK: LOW
+DEPENDENCIES: Supabase
+
+FILE: frontend/components/getra-dashboard.tsx
+CURRENT LOCATION: frontend/components/
+OWNER FEATURE: Dashboard (General)
+SHARED?: YES
+FUTURE LOCATION: frontend/src/features/dashboard/
+MOVE NOW?: NO
+RISK: HIGH
+DEPENDENCIES: Map, Auth
+
+FILE: frontend/components/getra-map.tsx
+CURRENT LOCATION: frontend/components/
+OWNER FEATURE: Map Core
+SHARED?: YES
+FUTURE LOCATION: frontend/src/features/map/
+MOVE NOW?: NO
+RISK: HIGH
+DEPENDENCIES: Routing, POI Layer

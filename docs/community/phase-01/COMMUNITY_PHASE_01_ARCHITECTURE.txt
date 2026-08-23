@@ -1,0 +1,79 @@
+GETRA COMMUNITY PHASE 01 ARCHITECTURE
+Date: 2026-08-23
+
+Actual Tree Added:
+
+frontend/
+  app/
+    community/
+      page.tsx
+      loading.tsx
+      error.tsx
+  src/
+    features/
+      community/
+        components/
+          community-empty-state.tsx
+          community-navigation.tsx
+          community-page.tsx
+          community-shell.tsx
+          community.module.css
+        types/
+          community.types.ts
+        index.ts
+
+backend/
+  app/
+    api/
+      community/
+        feed/
+          route.ts
+  src/
+    features/
+      community/
+        repositories/
+          community.repository.ts
+        schemas/
+          community.schema.ts
+        services/
+          community.service.ts
+        types/
+          community.types.ts
+        index.ts
+
+tests/
+  backend/tests/integration/community-feed-route.test.ts
+  backend/tests/unit/community/community.schema.test.ts
+  backend/tests/unit/community/community.service.test.ts
+  frontend/tests/community-page.test.ts
+
+docs/
+  docs/community/phase-01/
+  docs/changes/COMMUNITY_PHASE_01_FOUNDATION.txt
+
+File Responsibilities:
+- frontend/app/community/page.tsx: thin route entry point.
+- frontend/app/community/loading.tsx: route loading state.
+- frontend/app/community/error.tsx: route error boundary.
+- frontend/src/features/community/components/community-page.tsx: Community feature composition.
+- frontend/src/features/community/components/community-shell.tsx: WebGIS shell frame and status surface.
+- frontend/src/features/community/components/community-navigation.tsx: Phase 1 navigation scaffold with future tabs disabled.
+- frontend/src/features/community/components/community-empty-state.tsx: real empty state, no fake feed.
+- frontend/src/features/community/components/community.module.css: feature-owned visual styling.
+- backend/app/api/community/feed/route.ts: thin HTTP adapter, auth/rate limit/envelope.
+- backend/src/features/community/schemas/community.schema.ts: feed query and Unicode-safe content schema.
+- backend/src/features/community/services/community.service.ts: validation and read use case.
+- backend/src/features/community/repositories/community.repository.ts: Phase 1 empty read repository contract.
+- backend/src/features/community/types/community.types.ts: feature domain/read types.
+
+Request Flow:
+HTTP GET /api/community/feed
+  -> route auth/rate-limit/request_id
+  -> CommunityService.listFeed
+  -> communityFeedQuerySchema
+  -> EmptyCommunityRepository.listFeed
+  -> standard GETRA list envelope
+
+Database:
+- No table created in Phase 1.
+- Existing community_activities remains raw evidence and is not reused as a social feed.

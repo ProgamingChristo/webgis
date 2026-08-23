@@ -1,0 +1,193 @@
+TRACK:
+UMKM INTELLIGENCE & ADVERTISING
+
+PHASE:
+05
+
+TITLE:
+Spatial Targeting & Campaign Area Engine
+
+DATE:
+2026-08-23
+
+BASE COMMIT:
+dfc61f0d9293fa47d3c8c892c77ef0edfe8c8038
+
+BRANCH:
+finalmerge
+
+FRONTEND FEATURE ROOT:
+frontend/src/features/umkm-advertising/targeting/
+
+BACKEND FEATURE ROOT:
+backend/src/features/umkm-advertising/targeting/
+
+FILES CREATED:
+backend/supabase/migrations/20260823150000_umkm_advertising_spatial_targeting.sql
+backend/src/features/umkm-advertising/targeting/types/targeting.types.ts
+backend/src/features/umkm-advertising/targeting/constants/targeting.constants.ts
+backend/src/features/umkm-advertising/targeting/schemas/targeting.schema.ts
+backend/src/features/umkm-advertising/targeting/dto/targeting.dto.ts
+backend/src/features/umkm-advertising/targeting/mappers/targeting.mapper.ts
+backend/src/features/umkm-advertising/targeting/errors/targeting.errors.ts
+backend/src/features/umkm-advertising/targeting/repositories/targeting.repository.ts
+backend/src/features/umkm-advertising/targeting/services/targeting-spatial.service.ts
+backend/src/features/umkm-advertising/targeting/services/targeting.service.ts
+backend/src/features/umkm-advertising/targeting/index.ts
+backend/app/api/umkm/advertising/campaigns/[id]/targeting/route.ts
+frontend/src/features/umkm-advertising/targeting/types/targeting.types.ts
+frontend/src/features/umkm-advertising/targeting/schemas/targeting.schema.ts
+frontend/src/features/umkm-advertising/targeting/services/targeting.service.ts
+frontend/src/features/umkm-advertising/targeting/hooks/use-study-areas.ts
+frontend/src/features/umkm-advertising/targeting/hooks/use-campaign-targeting.ts
+frontend/src/features/umkm-advertising/targeting/components/targeting-type-selector.tsx
+frontend/src/features/umkm-advertising/targeting/components/radius-targeting-form.tsx
+frontend/src/features/umkm-advertising/targeting/components/study-area-selector.tsx
+frontend/src/features/umkm-advertising/targeting/components/targeting-map.tsx
+frontend/src/features/umkm-advertising/targeting/components/targeting-status.tsx
+frontend/src/features/umkm-advertising/targeting/components/targeting-preview.tsx
+frontend/src/features/umkm-advertising/targeting/components/targeting-editor.tsx
+frontend/src/features/umkm-advertising/targeting/components/campaign-targeting-manager.tsx
+frontend/src/features/umkm-advertising/targeting/index.ts
+docs/features/umkm-advertising/phase-05/TARGETING_DOMAIN_MODEL.txt
+docs/features/umkm-advertising/phase-05/TARGETING_DATABASE_MODEL.txt
+docs/features/umkm-advertising/phase-05/TARGETING_SPATIAL_METHOD.txt
+docs/features/umkm-advertising/phase-05/TARGETING_API.txt
+docs/features/umkm-advertising/phase-05/TARGETING_AUTHORIZATION.txt
+docs/features/umkm-advertising/phase-05/TARGETING_FRONTEND_FLOW.txt
+docs/features/umkm-advertising/phase-05/TARGETING_MAPLIBRE_IMPLEMENTATION.txt
+docs/features/umkm-advertising/phase-05/FRONTEND_TEST_DATA.txt
+docs/features/umkm-advertising/phase-05/FRONTEND_MANUAL_TEST_GUIDE.txt
+docs/features/umkm-advertising/phase-05/TARGETING_SECURITY_VERIFICATION.txt
+docs/features/umkm-advertising/phase-05/TARGETING_TEST_REPORT.txt
+docs/features/umkm-advertising/phase-05/PHASE_05_IMPLEMENTATION_SUMMARY.txt
+
+FILES MODIFIED:
+backend/src/features/umkm-advertising/index.ts
+backend/src/lib/api-security/endpoint-policy.ts
+frontend/src/lib/api-client.ts
+frontend/src/features/umkm-advertising/index.ts
+frontend/src/features/umkm-advertising/components/campaign/campaign-card.tsx
+docs/features/umkm-advertising/README.txt
+docs/features/umkm-advertising/FINAL_DOCUMENTATION_PLAN.txt
+
+FILES MOVED:
+None
+
+FILES DELETED:
+None
+
+DATABASE CHANGES:
+Created table `public.ad_campaign_targets` with RLS and PostGIS RPC `public.generate_radius_buffer_geojson`.
+
+MIGRATION:
+20260823150000_umkm_advertising_spatial_targeting.sql
+
+DRY RUN:
+PASS
+
+REMOTE PUSH:
+PASS
+
+REMOTE VERIFY:
+PASS
+
+GENERATED TYPES:
+SYNCED (`src/types/database.types.ts`)
+
+TARGETING TABLE:
+`public.ad_campaign_targets`
+
+TARGET TYPES:
+`RADIUS`, `STUDY_AREA`
+
+RADIUS MIN:
+250
+
+RADIUS MAX:
+10000
+
+RADIUS CENTER SOURCE:
+`public.merchants.location`
+
+STUDY AREA SOURCE:
+`public.study_areas`
+
+POSTGIS METHODS:
+`ST_Buffer(geography, radius)`, `ST_AsGeoJSON`
+
+SRID:
+4326
+
+GEOMETRY TYPE:
+`geometry(Point, 4326)` for center; MultiPolygon for study areas
+
+SPATIAL INDEX:
+GiST on `center_geometry`
+
+RLS:
+`ad_campaign_targets` owner access policy verified
+
+TARGETING SERVICE:
+`backend/src/features/umkm-advertising/targeting/services/targeting.service.ts`
+
+TARGETING REPOSITORY:
+`backend/src/features/umkm-advertising/targeting/repositories/targeting.repository.ts`
+
+TARGETING API:
+`GET /api/umkm/advertising/campaigns/[id]/targeting`
+`PUT /api/umkm/advertising/campaigns/[id]/targeting`
+
+MAPLIBRE TARGET EDITOR:
+`frontend/src/features/umkm-advertising/targeting/components/targeting-editor.tsx`
+
+EXISTING DB DATA USED:
+`public.study_areas`, `public.merchants`
+
+DUMMY DATA CREATED:
+NO (Existing DB data and standard test fixtures used)
+
+DUMMY DATA IDS:
+N/A
+
+FRONTEND TEST ACCOUNT REQUIREMENT:
+`getra.umkm.test@example.com` (USER + UMKM mode + merchant ownership)
+
+FRONTEND TEST CAMPAIGN:
+Any DRAFT campaign in `/umkm/advertising`
+
+FRONTEND TEST STUDY AREA:
+Canonical study areas from `/api/v1/study-areas`
+
+FRONTEND MANUAL TEST:
+PASS
+
+TYPECHECK:
+PASS
+
+LINT:
+PASS
+
+TEST:
+PASS
+
+BUILD:
+PASS
+
+HTTP SMOKE:
+PASS
+
+BROWSER SMOKE:
+PASS
+
+SECURITY:
+Ownership required. Arbitrary center injection denied. PostGIS parameterized.
+
+KNOWN LIMITATIONS:
+Single target area per campaign (multi-radius union or custom drawing deferred to later roadmap).
+
+ROLLBACK:
+Drop table `public.ad_campaign_targets` and RPC `public.generate_radius_buffer_geojson`.
+
+FINAL STATUS:
+COMPLETE

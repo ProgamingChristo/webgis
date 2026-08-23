@@ -1,0 +1,28 @@
+# TARGETING DOMAIN MODEL (PHASE 5)
+
+## Overview
+Spatial targeting determines the geographic boundary where an advertisement campaign is eligible to be displayed. In Phase 5, two core targeting methods are established:
+1. RADIUS (Proximity to Merchant Outlet)
+2. STUDY_AREA (Canonical GETRA Study Area Boundaries)
+
+## Campaign vs Target
+- An Ad Campaign represents the commercial container (status, merchant owner, budget).
+- A Campaign Target defines the spatial configuration (target type, geometry, radius, study area).
+- Relationship: Exactly 1 target configuration per campaign (enforced via UNIQUE constraint on `campaign_id` in `ad_campaign_targets`). Switching methods atomically replaces the target configuration.
+
+## Target Types
+### 1. RADIUS
+- Concept: A circular area of influence centered on the merchant's physical location.
+- Center Source: Canonical merchant location from `public.merchants.location`.
+- Client Input: `radius_meters` (between 250m and 10,000m). Client cannot supply arbitrary coordinates.
+- GIS Semantics: Computed via PostGIS `ST_Buffer(location::geography, radius_meters)::geometry`.
+
+### 2. STUDY_AREA
+- Concept: A predefined operational or transit pilot area defined in the GETRA spatial engine.
+- Boundary Source: Canonical `public.study_areas.geometry` (MultiPolygon/Polygon, EPSG:4326).
+- Client Input: `study_area_id` (UUID).
+
+## Readiness State
+- `NOT_CONFIGURED`: Campaign has no target row saved.
+- `CONFIGURED`: Campaign has a valid RADIUS or STUDY_AREA target saved.
+- `INVALID`: Campaign target references an invalid or missing location/study area.

@@ -1,0 +1,61 @@
+GETRA COMMUNITY PHASE 01 IMPLEMENTATION
+Date: 2026-08-23
+
+Frontend:
+- Added /community as a real Next.js App Router route.
+- Route page stays thin and imports CommunityPage from the feature folder.
+- Added loading and error states.
+- Added Community shell with GETRA WebGIS visual language.
+- Added navigation scaffold:
+  - Beranda active
+  - Temuan Komuter disabled
+  - Cultural Map disabled
+  - Permintaan disabled
+  - Percakapan disabled
+  - Aktivitas Saya disabled
+- Added empty state with no dummy feed.
+- No camera, gallery, geolocation, emoji picker, reply, reaction, realtime, AI, or upload UI was added.
+
+Backend:
+- Added backend/src/features/community as the canonical Community backend feature folder.
+- Added read-only /api/community/feed.
+- Route is thin and handles request_id, auth handoff, rate limit, service invocation, response envelope, and OPTIONS.
+- Added CommunityService and CommunityReadRepository contract.
+- Added EmptyCommunityRepository because no canonical persistent feed table exists yet.
+- Registered /api/community/feed in backend/src/lib/api-security/endpoint-policy.ts.
+
+Unicode/Emoji:
+- communityPostContentSchema accepts Unicode strings and preserves emoji.
+- Test coverage includes: Warung ini enak 🍜🔥
+
+Database:
+- No schema change.
+- No migration.
+- No RLS change because no new table was created.
+
+Feature Folder Compliance:
+- Community implementation added in frontend/src/features/community and backend/src/features/community.
+- Allowed route exceptions added in frontend/app/community and backend/app/api/community.
+- Allowed tests/docs added under frontend/tests, backend/tests, and docs.
+
+Deferred:
+- post composer
+- emoji picker
+- location sharing
+- coordinate picker
+- map pin
+- camera
+- gallery
+- photo/media upload
+- replies
+- reactions
+- Cultural Map implementation
+- commuter requests
+- demand signal
+- UMKM responses
+- conversation/messages
+- realtime
+- notifications
+- moderation dashboard
+- analytics
+- AI

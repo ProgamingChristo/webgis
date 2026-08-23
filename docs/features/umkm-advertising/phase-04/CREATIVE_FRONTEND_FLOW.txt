@@ -1,0 +1,13 @@
+# CREATIVE FRONTEND FLOW (PHASE 4)
+
+1. **Accessing the Manager**: UMKM logs in and accesses `/umkm/advertising`.
+2. **Eligibility**: Gate checks verify merchant ownership.
+3. **Campaign List**: `CampaignList` displays DRAFT and CANCELLED campaigns.
+4. **Kelola Creative**: User clicks "Kelola Creative" on a DRAFT campaign.
+5. **Creative Manager**: `CampaignCreativeManager` expands below the campaign details.
+6. **Editor**: The user fills out the `CreativeEditor` (Type: Sponsored Pin, Headline, Description, CTA).
+7. **Drafting**: The user clicks "Simpan Draft" which POSTs or PATCHes the creative to the backend API.
+8. **Preview**: The right side shows a `CreativePreview` with the "Sponsored" label and canonical merchant name.
+9. **Media**: If the creative is saved as DRAFT, an image upload field appears. Uploading updates the image immediately.
+10. **Mark Ready**: The user clicks "Mark as Ready". The backend validates the headline and changes the status.
+11. **Ready State**: The form becomes locked. The Campaign itself remains in DRAFT.

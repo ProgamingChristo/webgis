@@ -1,0 +1,15 @@
+EVENT FOUNDATION:
+Existing `audit_events` and general event tracking exist for security and system logs (`action`, `actor_id`, `entity_type`, `metadata`).
+Dedicated advertising analytics is missing.
+
+IMPRESSION:
+FUTURE. No impression tracking implemented.
+
+SPONSORED PIN CLICK:
+FUTURE. No sponsored pins exist yet.
+
+PROFILE OPEN:
+Can be integrated into the frontend `getra-dashboard` or `umkm-context` component when viewing a merchant.
+
+ROUTE REQUEST:
+Integration point available via `backend/src/modules/pedestrian-network/routing.service.ts` or the `api/routing` / `api/internal/routing/walking` routes. Currently not tracked specifically for advertising.

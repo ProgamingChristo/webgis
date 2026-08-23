@@ -6,6 +6,7 @@ describe("profile update schema", () => {
   it.each([
     ["id", "00000000-0000-0000-0000-000000000001"],
     ["role", "ADMIN"],
+    ["account_role", "ADMIN"],
   ])("rejects immutable field %s", (field, value) => {
     const parsed = patchProfileSchema.safeParse({
       display_name: "TEST USER",
@@ -23,5 +24,25 @@ describe("profile update schema", () => {
         ]),
       );
     }
+  });
+
+  it("accepts the mutable profile fields", () => {
+    const parsed = patchProfileSchema.safeParse({
+      display_name: "Chris GETRA",
+      username: "chris_getra",
+      avatar_url: "https://example.invalid/avatar.png",
+      phone_number: "+628123456789",
+      bio: "Spatial intelligence builder.",
+    });
+
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rejects invalid usernames", () => {
+    const parsed = patchProfileSchema.safeParse({
+      username: "Chris GETRA!",
+    });
+
+    expect(parsed.success).toBe(false);
   });
 });

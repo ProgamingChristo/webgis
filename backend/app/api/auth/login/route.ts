@@ -147,8 +147,7 @@ export async function POST(
           )
         ) {
           throw new ApplicationError(
-            "UNAUTHORIZED",
-            "Email belum dikonfirmasi.",
+            "AUTH_EMAIL_CONFIRMATION_REQUIRED",
           );
         }
 

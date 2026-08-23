@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import {
+  LngLatBounds,
   Map as MapLibreMap,
   Marker,
   NavigationControl,
@@ -17,11 +18,7 @@ import {
 
 import type { Merchant, UserLocation } from "@/types/getra";
 
-import {
-  COFFEE_SHOP_BOUNDS,
-  COFFEE_SHOP_ORIGIN,
-} from "@/data/coffee-shops-jakarta-barat";
-
+import { JAKARTA_ADMIN_BOUNDARIES } from "@/data/jakarta-admin-boundaries";
 import {
   BASEMAP_OPTIONS,
   type BasemapId,
@@ -39,6 +36,33 @@ type GetraMapProps = {
   selectedId: string | null;
   userLocation: UserLocation | null;
   onSelect: (merchant: Merchant) => void;
+  onClearSelection: () => void;
+  datasetBounds: DatasetBounds;
+  datasetOrigin: DatasetOrigin;
+  routeOriginPoint?: RoutePoint | null;
+  routeDestinationPoint?: RoutePoint | null;
+  routeGeometry?: GeoJSON.LineString | null;
+  routeIsFallback?: boolean;
+  importBoundaries?: GeoJSON.FeatureCollection<GeoJSON.MultiPolygon> | null;
+};
+
+type DatasetBounds = {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+};
+
+type DatasetOrigin = {
+  name: string;
+  longitude: number;
+  latitude: number;
+};
+
+type RoutePoint = {
+  label: string;
+  latitude: number;
+  longitude: number;
 };
 
 function createMerchantMarker(
@@ -46,46 +70,34 @@ function createMerchantMarker(
   merchant: Merchant,
 ) {
   const element =
+    document.createElement("div");
+
+  element.className =
+    "map-marker-anchor";
+
+  const button =
     document.createElement("button");
 
-  element.type = "button";
+  button.type = "button";
 
-  element.className = selected
+  button.className = selected
     ? "map-marker map-marker--selected"
     : "map-marker";
 
-  element.setAttribute(
+  button.setAttribute(
     "aria-label",
     `Pilih ${merchant.name}`,
   );
 
-  element.dataset.brand =
+  button.dataset.brand =
     merchant.brand;
 
-  const halo =
-    document.createElement("span");
+  element.append(button);
 
-  halo.className =
-    "map-marker__halo";
-
-  const glyph =
-    document.createElement("span");
-
-  glyph.className =
-    "map-marker__glyph";
-
-  glyph.textContent =
-    merchant.brand
-      .trim()
-      .slice(0, 1)
-      .toUpperCase() || "C";
-
-  element.append(
-    halo,
-    glyph,
-  );
-
-  return element;
+  return {
+    element,
+    button,
+  };
 }
 
 function createPopupContent(
@@ -110,81 +122,413 @@ function createPopupContent(
   return content;
 }
 
-function addDatasetExtent(map: MapLibreMap) {
+function createRouteEndpointMarker(
+  kind: "start" | "destination",
+  label: string,
+) {
+  const element =
+    document.createElement("div");
+
+  element.className =
+    `route-endpoint route-endpoint--${kind}`;
+
+  const dot =
+    document.createElement("span");
+
+  dot.className =
+    "route-endpoint__dot";
+
+  const badge =
+    document.createElement("span");
+
+  badge.className =
+    "route-endpoint__badge";
+
+  badge.textContent =
+    kind === "start"
+      ? "START"
+      : "TUJUAN";
+
+  element.title =
+    label;
+
+  element.append(
+    dot,
+    badge,
+  );
+
+  return element;
+}
+
+function addDatasetExtent(
+  map: MapLibreMap,
+  _bounds: DatasetBounds,
+) {
+  void _bounds;
+
   if (
-    !map.isStyleLoaded() ||
-    map.getSource(
-      "coffee-shop-extent",
-    )
+    !map.isStyleLoaded()
   ) {
     return;
   }
 
+  /*
+   * Dataset extent used to be rendered as a large bounding rectangle.
+   * Keep the cleanup here so old hot-reload map instances lose the box,
+   * but do not add it back to the visual map.
+   */
+  for (const layerId of [
+    "coffee-shop-extent-line",
+    "coffee-shop-extent-fill",
+  ]) {
+    if (map.getLayer(layerId)) {
+      map.removeLayer(layerId);
+    }
+  }
+
+  if (map.getSource("coffee-shop-extent")) {
+    map.removeSource("coffee-shop-extent");
+  }
+}
+
+function addJakartaAdminBoundaries(
+  map: MapLibreMap,
+  importBoundaries: GeoJSON.FeatureCollection<GeoJSON.MultiPolygon> | null,
+) {
+  void importBoundaries;
+
+  if (!map.isStyleLoaded()) {
+    return;
+  }
+
+  const boundaryData: GeoJSON.FeatureCollection<
+    GeoJSON.Polygon | GeoJSON.MultiPolygon
+  > = {
+    type: "FeatureCollection",
+    features: [
+      ...JAKARTA_ADMIN_BOUNDARIES.features,
+    ],
+  };
+
+  const existingSource =
+    map.getSource(
+      "jakarta-admin-boundaries",
+    );
+
+  if (existingSource) {
+    (
+      existingSource as unknown as {
+        setData: (
+          data: GeoJSON.FeatureCollection<
+            GeoJSON.Polygon | GeoJSON.MultiPolygon
+          >,
+        ) => void;
+      }
+    ).setData(
+      boundaryData,
+    );
+    return;
+  }
+
   map.addSource(
-    "coffee-shop-extent",
+    "jakarta-admin-boundaries",
     {
       type: "geojson",
-      data: {
-        type: "Feature",
-        properties: {
-          status:
-            "geojson_extent",
-        },
-        geometry: {
-          type: "Polygon",
-          coordinates: [
-            [
-              [
-                COFFEE_SHOP_BOUNDS.west,
-                COFFEE_SHOP_BOUNDS.south,
-              ],
-              [
-                COFFEE_SHOP_BOUNDS.east,
-                COFFEE_SHOP_BOUNDS.south,
-              ],
-              [
-                COFFEE_SHOP_BOUNDS.east,
-                COFFEE_SHOP_BOUNDS.north,
-              ],
-              [
-                COFFEE_SHOP_BOUNDS.west,
-                COFFEE_SHOP_BOUNDS.north,
-              ],
-              [
-                COFFEE_SHOP_BOUNDS.west,
-                COFFEE_SHOP_BOUNDS.south,
-              ],
-            ],
-          ],
-        },
-      },
+      data:
+        boundaryData,
     },
   );
 
   map.addLayer({
-    id: "coffee-shop-extent-fill",
+    id: "jakarta-admin-boundary-fill",
     type: "fill",
-    source: "coffee-shop-extent",
+    source: "jakarta-admin-boundaries",
     paint: {
-      "fill-color": "#22d3ee",
-      "fill-opacity": 0.045,
+      "fill-color": [
+        "match",
+        [
+          "get",
+          "id",
+        ],
+        "jakarta-barat",
+        "#22d3ee",
+        "jakarta-pusat",
+        "#9af24a",
+        "#22d3ee",
+      ],
+      "fill-opacity": [
+        "case",
+        [
+          "has",
+          "boundary_method",
+        ],
+        0.025,
+        0.05,
+      ],
     },
   });
 
   map.addLayer({
-    id: "coffee-shop-extent-line",
+    id: "jakarta-admin-boundary-casing",
     type: "line",
-    source: "coffee-shop-extent",
+    source: "jakarta-admin-boundaries",
     paint: {
-      "line-color": "#22d3ee",
-      "line-width": 1.5,
-      "line-opacity": 0.75,
-      "line-dasharray": [
-        2,
-        2,
+      "line-color": "#041018",
+      "line-width": [
+        "interpolate",
+        [
+          "linear",
+        ],
+        [
+          "zoom",
+        ],
+        10,
+        6,
+        14,
+        8,
+      ],
+      "line-opacity": 0.58,
+    },
+  });
+
+  map.addLayer({
+    id: "jakarta-admin-boundary-line",
+    type: "line",
+    source: "jakarta-admin-boundaries",
+    paint: {
+      "line-color": [
+        "match",
+        [
+          "get",
+          "id",
+        ],
+        "jakarta-barat",
+        "#22d3ee",
+        "jakarta-pusat",
+        "#9af24a",
+        "#22d3ee",
+      ],
+      "line-width": [
+        "interpolate",
+        [
+          "linear",
+        ],
+        [
+          "zoom",
+        ],
+        10,
+        3.8,
+        14,
+        5.5,
+      ],
+      "line-opacity": [
+        "case",
+        [
+          "has",
+          "boundary_method",
+        ],
+        0.72,
+        0.95,
       ],
     },
   });
+
+  map.addLayer({
+    id: "jakarta-admin-boundary-label",
+    type: "symbol",
+    source: "jakarta-admin-boundaries",
+    minzoom: 10,
+    layout: {
+      "text-field": [
+        "get",
+        "name",
+      ],
+      "text-font": [
+        "Noto Sans Bold",
+      ],
+      "text-size": [
+        "interpolate",
+        [
+          "linear",
+        ],
+        [
+          "zoom",
+        ],
+        10,
+        11,
+        14,
+        15,
+      ],
+      "text-transform": "uppercase",
+      "text-letter-spacing": 0.08,
+      "text-allow-overlap": false,
+      "symbol-placement": "point",
+    },
+    paint: {
+      "text-color": "#eef8fa",
+      "text-halo-color": "#041018",
+      "text-halo-width": 2.5,
+      "text-opacity": 0.88,
+    },
+  });
+}
+
+function toRouteFeatureCollection(
+  routeGeometry?: GeoJSON.LineString | null,
+) {
+  return {
+    type: "FeatureCollection",
+    features: routeGeometry
+      ? [
+          {
+            type: "Feature",
+            properties: {},
+            geometry:
+              routeGeometry,
+          },
+        ]
+      : [],
+  } satisfies GeoJSON.FeatureCollection;
+}
+
+function syncWalkingRoute(
+  map: MapLibreMap,
+  routeGeometry?: GeoJSON.LineString | null,
+  routeIsFallback = false,
+) {
+  if (!map.isStyleLoaded()) {
+    return;
+  }
+
+  const routeData =
+    toRouteFeatureCollection(
+      routeGeometry,
+    );
+
+  const source =
+    map.getSource(
+      "walking-route",
+    );
+
+  if (
+    map.getLayer(
+      "walking-route-line",
+    )
+  ) {
+    map.moveLayer(
+      "walking-route-line",
+    );
+  }
+
+  if (
+    map.getLayer(
+      "walking-route-casing",
+    )
+  ) {
+    map.moveLayer(
+      "walking-route-casing",
+      "walking-route-line",
+    );
+  }
+
+  if (source) {
+    (
+      source as unknown as {
+        setData: (
+          data: GeoJSON.FeatureCollection,
+        ) => void;
+      }
+    ).setData(
+      routeData,
+    );
+  } else {
+    map.addSource(
+      "walking-route",
+      {
+        type: "geojson",
+        data: routeData,
+      },
+    );
+
+    map.addLayer({
+      id: "walking-route-casing",
+      type: "line",
+      source: "walking-route",
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+      },
+      paint: {
+        "line-color": "#041018",
+        "line-width": 8,
+        "line-opacity": 0.8,
+      },
+    });
+
+    map.addLayer({
+      id: "walking-route-line",
+      type: "line",
+      source: "walking-route",
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+      },
+      paint: {
+        "line-color": routeIsFallback
+          ? "#f7c948"
+          : "#22d3ee",
+        "line-width": routeIsFallback
+          ? 4
+          : 5,
+        "line-opacity": 0.92,
+        "line-dasharray": routeIsFallback
+          ? [
+              1.2,
+              1.4,
+            ]
+          : [
+              1,
+              0,
+            ],
+      },
+    });
+  }
+
+  if (
+    map.getLayer(
+      "walking-route-line",
+    )
+  ) {
+    map.setPaintProperty(
+      "walking-route-line",
+      "line-color",
+      routeIsFallback
+        ? "#f7c948"
+        : "#22d3ee",
+    );
+
+    map.setPaintProperty(
+      "walking-route-line",
+      "line-width",
+      routeIsFallback
+        ? 4
+        : 5,
+    );
+
+    map.setPaintProperty(
+      "walking-route-line",
+      "line-dasharray",
+      routeIsFallback
+        ? [
+            1.2,
+            1.4,
+          ]
+        : [
+            1,
+            0,
+          ],
+    );
+  }
 }
 
 export function GetraMap({
@@ -192,6 +536,14 @@ export function GetraMap({
   selectedId,
   userLocation,
   onSelect,
+  onClearSelection,
+  datasetBounds,
+  datasetOrigin,
+  routeOriginPoint,
+  routeDestinationPoint,
+  routeGeometry,
+  routeIsFallback,
+  importBoundaries,
 }: GetraMapProps) {
   const [
     activeBasemapId,
@@ -217,6 +569,71 @@ export function GetraMap({
       null,
     );
 
+  const datasetOriginMarkerRef =
+    useRef<Marker | null>(
+      null,
+    );
+
+  const routeOriginMarkerRef =
+    useRef<Marker | null>(
+      null,
+    );
+
+  const routeDestinationMarkerRef =
+    useRef<Marker | null>(
+      null,
+    );
+
+  const routeGeometryRef =
+    useRef<GeoJSON.LineString | null>(
+      null,
+    );
+
+  const routeIsFallbackRef =
+    useRef(false);
+
+  const datasetBoundsRef =
+    useRef<DatasetBounds>(
+      datasetBounds,
+    );
+
+  const importBoundariesRef =
+    useRef<GeoJSON.FeatureCollection<GeoJSON.MultiPolygon> | null>(
+      importBoundaries ?? null,
+    );
+
+  useEffect(() => {
+    routeGeometryRef.current =
+      routeGeometry ?? null;
+
+    routeIsFallbackRef.current =
+      routeIsFallback ?? false;
+  }, [
+    routeGeometry,
+    routeIsFallback,
+  ]);
+
+  useEffect(() => {
+    datasetBoundsRef.current =
+      datasetBounds;
+  }, [
+    datasetBounds,
+  ]);
+
+  useEffect(() => {
+    importBoundariesRef.current =
+      importBoundaries ?? null;
+
+    const map = mapRef.current;
+
+    if (map?.isStyleLoaded()) {
+      addJakartaAdminBoundaries(
+        map,
+        importBoundariesRef.current,
+      );
+    }
+  }, [importBoundaries]);
+
   useEffect(() => {
     if (
       !containerRef.current ||
@@ -237,13 +654,13 @@ export function GetraMap({
           FALLBACK_MAP_STYLE,
 
         center: [
-          COFFEE_SHOP_ORIGIN.longitude,
-          COFFEE_SHOP_ORIGIN.latitude,
+          datasetOrigin.longitude,
+          datasetOrigin.latitude,
         ],
 
         zoom: 12,
 
-        minZoom: 4,
+        minZoom: 10.5,
 
         maxZoom: 20,
       });
@@ -273,52 +690,26 @@ export function GetraMap({
       "bottom-right",
     );
 
-    /*
-     * Marker titik asal
-     */
-    const originElement =
-      document.createElement("div");
-
-    originElement.className =
-      "transit-marker";
-
-    originElement.title =
-      COFFEE_SHOP_ORIGIN.name;
-
-    new Marker({
-      element: originElement,
-      anchor: "center",
-    })
-      .setLngLat([
-        COFFEE_SHOP_ORIGIN.longitude,
-        COFFEE_SHOP_ORIGIN.latitude,
-      ])
-      .setPopup(
-        new Popup({
-          offset: 18,
-        }).setDOMContent(
-          createPopupContent(
-            COFFEE_SHOP_ORIGIN.name,
-            "Pusat extent dataset GeoJSON",
-          ),
-        ),
-      )
-      .addTo(map);
-
     map.on("load", () => {
+      addJakartaAdminBoundaries(
+        map,
+        importBoundariesRef.current,
+      );
+
       addDatasetExtent(
         map,
+        datasetBounds,
       );
 
       map.fitBounds(
         [
           [
-            COFFEE_SHOP_BOUNDS.west,
-            COFFEE_SHOP_BOUNDS.south,
+            datasetBounds.west,
+            datasetBounds.south,
           ],
           [
-            COFFEE_SHOP_BOUNDS.east,
-            COFFEE_SHOP_BOUNDS.north,
+            datasetBounds.east,
+            datasetBounds.north,
           ],
         ],
         {
@@ -348,11 +739,23 @@ export function GetraMap({
       userLocationMarkerRef.current?.remove();
       userLocationMarkerRef.current = null;
 
+      datasetOriginMarkerRef.current?.remove();
+      datasetOriginMarkerRef.current = null;
+
+      routeOriginMarkerRef.current?.remove();
+      routeOriginMarkerRef.current = null;
+
+      routeDestinationMarkerRef.current?.remove();
+      routeDestinationMarkerRef.current = null;
+
       map.remove();
 
       mapRef.current = null;
     };
-  }, []);
+  }, [
+    datasetBounds,
+    datasetOrigin,
+  ]);
 
   /*
    * Basemap switcher
@@ -385,13 +788,117 @@ export function GetraMap({
     map.once(
       "style.load",
       () => {
+        addJakartaAdminBoundaries(
+          map,
+          importBoundariesRef.current,
+        );
+
         addDatasetExtent(
           map,
+          datasetBoundsRef.current,
+        );
+        syncWalkingRoute(
+          map,
+          routeGeometryRef.current,
+          routeIsFallbackRef.current,
         );
       },
     );
   }, [
     activeBasemapId,
+  ]);
+
+  /*
+   * Active dataset extent and center marker
+   */
+  useEffect(() => {
+    const map =
+      mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    const syncDataset = () => {
+      addJakartaAdminBoundaries(
+        map,
+        importBoundariesRef.current,
+      );
+
+      addDatasetExtent(
+        map,
+        datasetBounds,
+      );
+
+      datasetOriginMarkerRef.current?.remove();
+
+      const originElement =
+        document.createElement("div");
+
+      originElement.className =
+        "transit-marker";
+
+      originElement.title =
+        datasetOrigin.name;
+
+      datasetOriginMarkerRef.current =
+        new Marker({
+          element:
+            originElement,
+          anchor: "center",
+        })
+          .setLngLat([
+            datasetOrigin.longitude,
+            datasetOrigin.latitude,
+          ])
+          .setPopup(
+            new Popup({
+              offset: 18,
+            }).setDOMContent(
+              createPopupContent(
+                datasetOrigin.name,
+                "Pusat extent dataset aktif",
+              ),
+            ),
+          )
+          .addTo(map);
+    };
+
+    if (map.isStyleLoaded()) {
+      syncDataset();
+    } else {
+      map.once(
+        "load",
+        syncDataset,
+      );
+    }
+
+    if (
+      !selectedId &&
+      !routeGeometry
+    ) {
+      map.fitBounds(
+        [
+          [
+            datasetBounds.west,
+            datasetBounds.south,
+          ],
+          [
+            datasetBounds.east,
+            datasetBounds.north,
+          ],
+        ],
+        {
+          padding: 52,
+          duration: 500,
+        },
+      );
+    }
+  }, [
+    datasetBounds,
+    datasetOrigin,
+    routeGeometry,
+    selectedId,
   ]);
 
   /*
@@ -412,18 +919,32 @@ export function GetraMap({
 
     merchantMarkersRef.current.clear();
 
+    const selectedMerchant =
+      selectedId
+        ? merchants.find(
+            (merchant) =>
+              merchant.id ===
+              selectedId,
+          )
+        : undefined;
+
+    const visibleMerchants =
+      selectedMerchant
+        ? [selectedMerchant]
+        : merchants;
+
     for (
       const merchant
-      of merchants
+      of visibleMerchants
     ) {
-      const element =
+      const markerElements =
         createMerchantMarker(
           merchant.id ===
             selectedId,
           merchant,
         );
 
-      element.onclick = () => {
+      markerElements.button.onclick = () => {
         onSelect(
           merchant,
         );
@@ -431,7 +952,8 @@ export function GetraMap({
 
       const marker =
         new Marker({
-          element,
+          element:
+            markerElements.element,
           anchor: "center",
         })
           .setLngLat([
@@ -483,10 +1005,30 @@ export function GetraMap({
       document.createElement("div");
 
     element.className =
-      "user-location-marker";
+      "user-location-anchor";
 
     element.title =
       "Lokasi kamu saat ini";
+
+    const dot =
+      document.createElement("div");
+
+    dot.className =
+      "user-location-marker";
+
+    const label =
+      document.createElement("span");
+
+    label.className =
+      "user-location-label";
+
+    label.textContent =
+      "Lokasi saya";
+
+    element.append(
+      dot,
+      label,
+    );
 
     const marker =
       new Marker({
@@ -525,6 +1067,81 @@ export function GetraMap({
     });
   }, [
     userLocation,
+  ]);
+
+  /*
+   * Route endpoint markers
+   */
+  useEffect(() => {
+    const map =
+      mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    routeOriginMarkerRef.current?.remove();
+    routeOriginMarkerRef.current = null;
+
+    if (routeOriginPoint) {
+      routeOriginMarkerRef.current =
+        new Marker({
+          element:
+            createRouteEndpointMarker(
+              "start",
+              routeOriginPoint.label,
+            ),
+          anchor: "center",
+        })
+          .setLngLat([
+            routeOriginPoint.longitude,
+            routeOriginPoint.latitude,
+          ])
+          .setPopup(
+            new Popup({
+              offset: 18,
+            }).setDOMContent(
+              createPopupContent(
+                "Titik mulai",
+                routeOriginPoint.label,
+              ),
+            ),
+          )
+          .addTo(map);
+    }
+
+    routeDestinationMarkerRef.current?.remove();
+    routeDestinationMarkerRef.current = null;
+
+    if (routeDestinationPoint) {
+      routeDestinationMarkerRef.current =
+        new Marker({
+          element:
+            createRouteEndpointMarker(
+              "destination",
+              routeDestinationPoint.label,
+            ),
+          anchor: "center",
+        })
+          .setLngLat([
+            routeDestinationPoint.longitude,
+            routeDestinationPoint.latitude,
+          ])
+          .setPopup(
+            new Popup({
+              offset: 18,
+            }).setDOMContent(
+              createPopupContent(
+                "Tujuan",
+                routeDestinationPoint.label,
+              ),
+            ),
+          )
+          .addTo(map);
+    }
+  }, [
+    routeDestinationPoint,
+    routeOriginPoint,
   ]);
 
   /*
@@ -570,6 +1187,65 @@ export function GetraMap({
     selectedId,
   ]);
 
+  /*
+   * Draw Route Line
+   */
+  useEffect(() => {
+    const map =
+      mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    const updateRoute = () => {
+      syncWalkingRoute(
+        map,
+        routeGeometry,
+        routeIsFallback,
+      );
+    };
+
+    if (map.isStyleLoaded()) {
+      updateRoute();
+    } else {
+      map.once(
+        "load",
+        updateRoute,
+      );
+    }
+
+    if (routeGeometry) {
+      const bounds =
+        new LngLatBounds();
+
+      routeGeometry.coordinates.forEach(
+        (
+          coordinate,
+        ) => {
+          bounds.extend([
+            coordinate[0],
+            coordinate[1],
+          ]);
+        },
+      );
+
+      if (!bounds.isEmpty()) {
+        map.fitBounds(
+          bounds,
+          {
+            padding: 72,
+            maxZoom: 16,
+            duration: 650,
+          },
+        );
+      }
+    }
+  }, [
+    routeGeometry,
+    routeIsFallback,
+  ]);
+
   return (
     <div className="map-shell">
 
@@ -599,6 +1275,16 @@ export function GetraMap({
           </span>
         </div>
       </div>
+
+      {selectedId ? (
+        <button
+          className="map-show-all-button"
+          type="button"
+          onClick={onClearSelection}
+        >
+          Tampilkan semua titik
+        </button>
+      ) : null}
 
       <div
         className="basemap-switcher"

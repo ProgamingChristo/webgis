@@ -1,0 +1,9 @@
+# CAMPAIGN FRONTEND FLOW (PHASE 3)
+
+1. **Login**: User logs in with UMKM credentials.
+2. **Advertising Manager**: User accesses `/umkm/advertising`.
+3. **Merchant Selection**: For Phase 3 MVP, the user enters their merchant UUID to proceed, mimicking a future global merchant selector context.
+4. **Eligibility Gate**: `AdvertisingEligibilityGate` wraps the page content. If the merchant ownership is not verified or the profile is incomplete, the UI halts and explains the reason.
+5. **Campaign List**: The `CampaignList` component renders via `useCampaigns` hook. It shows all campaigns owned by the selected merchant.
+6. **Create Draft**: A minimal `CampaignCreateForm` at the top of the list takes the Campaign Name. Clicking "Simpan Draft" calls the POST API and refetches the list.
+7. **Action**: The user can view detail (mock stub), edit draft, or cancel the campaign from the `CampaignCard` actions.

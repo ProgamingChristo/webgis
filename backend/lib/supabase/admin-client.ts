@@ -10,6 +10,20 @@ function requireEnv(name: string): string {
   return value;
 }
 
+function requireSupabaseServiceRoleKey(): string {
+  const value =
+    process.env.SUPABASE_SECRET_KEY?.trim() ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+
+  if (!value) {
+    throw new Error(
+      "[GETRA] Missing environment variable: SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY",
+    );
+  }
+
+  return value;
+}
+
 /**
  * Backend-only Supabase client.
  *
@@ -19,7 +33,7 @@ function requireEnv(name: string): string {
 export function createAdminSupabaseClient() {
   return createClient(
     requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    requireEnv("SUPABASE_SECRET_KEY"),
+    requireSupabaseServiceRoleKey(),
     {
       auth: {
         persistSession: false,

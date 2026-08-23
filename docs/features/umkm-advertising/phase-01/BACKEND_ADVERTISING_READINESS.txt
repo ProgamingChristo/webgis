@@ -1,0 +1,13 @@
+BACKEND FEATURE FOLDER:
+Backend utilizes `backend/src/modules/` architecture (e.g., `modules/umkm/`, `modules/search/`, `modules/pedestrian-network/`).
+It lacks `features/` folders natively but follows a modular domain separation.
+
+EXISTING UMKM DOMAIN:
+Present in `modules/umkm/` with `umkm.service.ts` and `schemas/data-model.schema.ts`.
+Merchant and Profile repositories are in `repositories/`.
+
+FUTURE ADVERTISING ROOT:
+`backend/src/features/umkm-advertising/` (To be created in future phases, migrating away from `modules` for new features).
+
+STATUS:
+PostGIS spatial foundations, Supabase SDK integration, and base data structures (merchants, validation states) are ready. Advertising requires schema extensions (campaigns, creatives) and logic integration into existing search APIs.

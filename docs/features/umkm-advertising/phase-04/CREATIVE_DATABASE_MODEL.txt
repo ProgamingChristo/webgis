@@ -1,0 +1,24 @@
+# CREATIVE DATABASE MODEL (PHASE 4)
+
+## TABLE: `public.ad_creatives`
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | uuid | PK, DEFAULT gen_random_uuid() | Unique identifier for the creative |
+| `campaign_id` | uuid | FK to `ad_campaigns(id)`, ON DELETE CASCADE | The parent campaign |
+| `creative_type` | text | NOT NULL | Type of creative (e.g., 'SPONSORED_PIN') |
+| `headline` | text | NOT NULL | Primary ad text |
+| `description` | text | NULL | Secondary ad text (optional) |
+| `image_path` | text | NULL | Storage path in Supabase bucket |
+| `cta_type` | text | NOT NULL, CHECK IN ('VIEW_PROFILE', 'REQUEST_ROUTE') | Allowed call to action |
+| `status` | text | NOT NULL, CHECK IN ('DRAFT', 'READY') | Lifecycle of the creative content |
+| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Timestamp of creation |
+| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Timestamp of last update (auto trigger) |
+
+## CONSTRAINTS
+- `UNIQUE (campaign_id, creative_type)`: Ensures only one creative of a specific type exists per campaign for MVP.
+
+## INDEXES
+- `idx_ad_creatives_campaign_id`: Speeds up campaign fetching.
+- `idx_ad_creatives_creative_type`: Speeds up placement resolution.
+- `idx_ad_creatives_status`: Speeds up ready-checks.

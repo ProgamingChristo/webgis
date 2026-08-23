@@ -3,7 +3,6 @@ import { ImportJobRepository } from "@/src/modules/ingestion/repositories/import
 import { DataSourceRepository } from "@/src/modules/ingestion/repositories/data-source.repository";
 import { MapidIngestionAdapter } from "@/src/modules/ingestion/adapters/mapid.ingestion-adapter";
 import { MapidClient } from "@/src/integrations/mapid/mapid.client";
-import { loadMapidProviderConfig } from "@/src/integrations/mapid/mapid.config";
 import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
 
 async function run() {

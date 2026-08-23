@@ -1,0 +1,75 @@
+# CAMPAIGN API (PHASE 3)
+
+## LIST CAMPAIGNS
+**METHOD**: GET
+**PATH**: `/api/umkm/advertising/campaigns`
+**FULL URL**: `http://localhost:8080/api/umkm/advertising/campaigns?merchantId={merchantId}`
+**AUTH**: Bearer Token
+**ROLE/ACCESS**: Authenticated Merchant Owner
+**QUERY PARAMS**:
+- `merchantId` (uuid)
+**SUCCESS RESPONSE**:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Campaign Name",
+      "status": "DRAFT",
+      "merchantId": "uuid",
+      "createdBy": "uuid",
+      "createdAt": "date",
+      "updatedAt": "date"
+    }
+  ]
+}
+```
+
+## CREATE DRAFT CAMPAIGN
+**METHOD**: POST
+**PATH**: `/api/umkm/advertising/campaigns`
+**FULL URL**: `http://localhost:8080/api/umkm/advertising/campaigns`
+**AUTH**: Bearer Token
+**ROLE/ACCESS**: Authenticated Merchant Owner
+**JSON BODY**:
+```json
+{
+  "merchantId": "uuid",
+  "name": "Campaign Name"
+}
+```
+**SUCCESS RESPONSE**:
+```json
+{
+  "success": true,
+  "data": { ...campaignObject }
+}
+```
+
+## GET CAMPAIGN DETAIL
+**METHOD**: GET
+**PATH**: `/api/umkm/advertising/campaigns/[id]`
+**FULL URL**: `http://localhost:8080/api/umkm/advertising/campaigns/[id]`
+**AUTH**: Bearer Token
+**ROLE/ACCESS**: Authenticated Merchant Owner
+
+## UPDATE CAMPAIGN (DRAFT ONLY)
+**METHOD**: PATCH
+**PATH**: `/api/umkm/advertising/campaigns/[id]`
+**FULL URL**: `http://localhost:8080/api/umkm/advertising/campaigns/[id]`
+**AUTH**: Bearer Token
+**ROLE/ACCESS**: Authenticated Merchant Owner
+**JSON BODY**:
+```json
+{
+  "name": "Updated Name"
+}
+```
+
+## CANCEL CAMPAIGN
+**METHOD**: POST
+**PATH**: `/api/umkm/advertising/campaigns/[id]/cancel`
+**FULL URL**: `http://localhost:8080/api/umkm/advertising/campaigns/[id]/cancel`
+**AUTH**: Bearer Token
+**ROLE/ACCESS**: Authenticated Merchant Owner

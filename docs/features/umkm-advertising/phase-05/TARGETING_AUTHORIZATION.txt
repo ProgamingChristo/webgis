@@ -1,0 +1,15 @@
+# TARGETING AUTHORIZATION & SECURITY (PHASE 5)
+
+## 1. Multi-Layer Guard
+1. **API Middleware**: `requireAuthenticatedUser` verifies active session.
+2. **Merchant Ownership Check**: Verified via `MerchantOwnershipService` and `ad_campaigns.merchant_id`.
+3. **Advertising Eligibility**: Verified via `AdvertisingEligibilityService`.
+4. **Campaign Status Check**: Campaign must be in `DRAFT` status to configure/update targeting. CANCELLED or other statuses reject mutation with 400 `CAMPAIGN_NOT_EDITABLE`.
+5. **Database RLS**: `ad_campaign_targets` policies enforce owner access on select/insert/update/delete.
+
+## 2. Anti-Spoofing Protections
+- **Center Point Spoofing**: Denied. The client cannot send arbitrary `longitude`/`latitude` coordinates in the PUT body. The center point is strictly read from `public.merchants.location` on the backend.
+- **Cross-Merchant Spoofing**: Denied. User cannot configure targeting for a campaign they do not own.
+- **Cross-Campaign Spoofing**: Denied. The campaign ID is taken directly from the route param `/campaigns/[id]/targeting`.
+- **Radius Abuse**: Denied. Input validated against `MIN_RADIUS_METERS (250)` and `MAX_RADIUS_METERS (10000)` via Zod and DB check constraint.
+- **Study Area Injection**: Denied. UUID format validated and existence checked against `public.study_areas`.

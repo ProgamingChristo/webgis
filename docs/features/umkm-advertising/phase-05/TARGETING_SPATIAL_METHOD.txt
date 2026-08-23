@@ -1,0 +1,36 @@
+# TARGETING SPATIAL METHOD & GIS PRINCIPLES (PHASE 5)
+
+## Spatial Authority
+"GIS calculates. Frontend visualizes."
+The backend database and PostGIS are authoritative for all coordinate, bounding box, buffer, and intersection calculations. The frontend only displays polygons and markers received from the backend API.
+
+## Coordinate Standard
+- Coordinate System: EPSG:4326 (WGS 84).
+- GeoJSON Coordinate Order: `[longitude, latitude]`.
+
+## Units of Measurement
+- Distance Unit: METERS (m).
+- Calculations on Earth surface use `geography` type in PostGIS (meter-accurate spherical/spheroidal geodesics) rather than degree-based geometry operations.
+
+## PostGIS Functions & RPC
+1. **Radius Buffer Computation**:
+   ```sql
+   ST_Buffer(
+     ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography,
+     radius_m
+   )::geometry
+   ```
+2. **GeoJSON Export**:
+   `ST_AsGeoJSON(...)` converted to RFC 7946 GeoJSON.
+3. **RPC Function**:
+   `public.generate_radius_buffer_geojson(lng, lat, radius_m)` returns a GeoJSON Polygon for preview.
+
+## Radius Bounds & Limits
+- `MIN_RADIUS_METERS`: 250 meters. (Rationale: Pedestrian neighborhood radius, ~3-4 minute walk).
+- `MAX_RADIUS_METERS`: 10,000 meters / 10 km. (Rationale: Urban catchment area, transit-connected commuter scale).
+- `DEFAULT_RADIUS_METERS`: 1,000 meters / 1 km.
+
+## Study Area Semantics
+- Uses `public.study_areas.geometry` (MultiPolygon, 4326).
+- Validated via `is_valid_wgs84_geometry(geometry, ARRAY['MULTIPOLYGON']::text[])`.
+- Later ad serving spatial matching will use `ST_Covers(study_area.geometry, user_location)`.

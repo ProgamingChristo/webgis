@@ -1,0 +1,19 @@
+# CREATIVE CONTENT RULES (PHASE 4)
+
+## Headline
+- **Max Length**: 50 characters
+- **Rule**: Must be a plain string, no HTML allowed. Must be non-empty before marking as READY.
+
+## Description
+- **Max Length**: 100 characters
+- **Rule**: Plain text, optional.
+
+## CTA
+- Allowed values: `VIEW_PROFILE`, `REQUEST_ROUTE`.
+- External URLs are strictly **DENIED** for MVP.
+
+## Merchant Identity Spoofing
+- **DENIED**. The creative only stores promotional text (headline, description). The merchant name, logo, and location are rendered in the preview (and eventually live placements) using the canonical merchant data from the `merchants` table to prevent spoofing.
+
+## Raw HTML
+- **DENIED**. Prevented via Zod schemas and Next.js/React standard escaping during rendering.

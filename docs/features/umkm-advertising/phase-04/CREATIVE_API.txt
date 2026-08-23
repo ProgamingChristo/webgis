@@ -1,0 +1,30 @@
+# CREATIVE API (PHASE 4)
+
+## `GET /api/umkm/advertising/campaigns/[id]/creatives`
+- **Description**: Returns all creatives for a specific campaign.
+- **Headers**: `x-getra-merchant-id`
+- **Auth**: Required
+- **Response**: `CreativeDTO[]`
+
+## `POST /api/umkm/advertising/campaigns/[id]/creatives`
+- **Description**: Creates a new creative in `DRAFT` state.
+- **Body**: `CreateCreativeInput`
+- **Response**: `CreativeDTO`
+- **Validation**: Enforces max length, valid CTA, valid Creative Type.
+
+## `GET /api/umkm/advertising/campaigns/[id]/creatives/[creativeId]`
+- **Description**: Gets a specific creative.
+- **Response**: `CreativeDTO`
+
+## `PATCH /api/umkm/advertising/campaigns/[id]/creatives/[creativeId]`
+- **Description**: Updates creative content. Only allowed if status is `DRAFT`.
+- **Body**: `UpdateCreativeInput`
+
+## `POST /api/umkm/advertising/campaigns/[id]/creatives/[creativeId]/ready`
+- **Description**: Marks a creative as `READY` (meaning it passes all readiness validation).
+- **Validation**: Re-checks that headline is present. Image validation is skipped for SPONSORED_PIN (since image is optional).
+
+## `POST /api/umkm/advertising/campaigns/[id]/creatives/[creativeId]/media`
+- **Description**: Uploads a media asset directly via backend integration to Supabase Storage.
+- **Body**: `FormData` containing `file`
+- **Response**: `{ url: string }`

@@ -1,0 +1,21 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 PREPARATION — FAIR DISCOVERY & SPONSORED INTEGRATION
+================================================================================
+
+1. HANDOFF TO PHASE 08
+--------------------------------------------------------------------------------
+Phase 07 has established the pure, technical Ad Serving Engine (`AdServingService` and `SponsoredPinDTO`).
+
+In Phase 08 (Fair Discovery & Sponsored Placement Integration), the responsibilities are:
+1. Composition Engine:
+   - Harmonize 3 distinct discovery streams:
+     * Stream A: Organic Discovery / Transit POIs
+     * Stream B: Hidden Gems (Algorithmic Community curation)
+     * Stream C: Sponsored Candidates (from Phase 07 Ad Serving Engine)
+2. Fair Discovery Rules:
+   - Strict spacing & density caps for Sponsored pins (e.g. at most 1 sponsored per N organic items, or maximum pin density per viewport).
+   - Preserving organic discovery relevance (commuter transit priority).
+3. Commuter Map Discovery Integration:
+   - Injecting sponsored pins seamlessly into main discovery feeds without degrading recommendation quality.

@@ -1,0 +1,13 @@
+# PHASE 2 TEST REPORT
+
+## BUILD TESTS
+- **Frontend**: `npm run build` executed and passed successfully. No typecheck or linting errors block deployment.
+- **Backend**: `npm run build` executed. Types were aligned with the canonical `database.types.ts` schemas (e.g., resolving Next.js 16 dynamic route Promise parameters and schema adjustments for Zod validations).
+
+## SECURITY & RLS
+- Static analysis ensures backend endpoint handlers pass the `Authorization` header directly to the Supabase client creation factory. This guarantees that all queries against `merchants` and `merchant_claims` happen securely under the scope of the authenticated user's RLS policies.
+- No `SUPABASE_SERVICE_ROLE_KEY` was leaked into the feature domains.
+
+## INTEGRATION SMOKE
+- The Advertising Eligibility Service correctly orchestrates between `profiles`, `merchants`, and `merchant-ownership` services without circular dependencies.
+- Frontend React Gate handles the state transitions correctly based on the resulting payload.

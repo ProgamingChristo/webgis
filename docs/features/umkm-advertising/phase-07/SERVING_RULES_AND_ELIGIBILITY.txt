@@ -1,0 +1,49 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 07 — SPONSORED PIN & AD SERVING ENGINE
+SERVING RULES AND ELIGIBILITY MATRIX
+================================================================================
+
+1. FOUR PILLARS OF SERVING ELIGIBILITY
+--------------------------------------------------------------------------------
+For a campaign to be served as a Sponsored Pin, it MUST satisfy all four pillars:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 1. CAMPAIGN LIFECYCLE PILLAR                                                │
+│    - Status evaluation: CampaignLifecycleService.getEffectiveCampaignStatus  │
+│    - Must be strictly 'ACTIVE' (effective status)                           │
+│    - Condition: now >= start_at AND now < end_at AND readiness === READY    │
+│    - Terminal states (ENDED, CANCELLED) and paused states (PAUSED, DRAFT)   │
+│      are strictly rejected.                                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 2. MERCHANT ELIGIBILITY PILLAR                                              │
+│    - Merchant record exists and is published (publish_status !== 'ARCHIVED') │
+│    - User has verified merchant ownership (MerchantOwnershipService)        │
+│    - User is in UMKM mode                                                   │
+│    - Store has valid physical coordinates [lng, lat]                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 3. CREATIVE ASSET PILLAR                                                    │
+│    - Creative asset exists for campaign                                      │
+│    - creative_type === 'SPONSORED_PIN'                                      │
+│    - status === 'READY'                                                     │
+│    - headline is non-empty                                                  │
+│    - cta_type is 'VIEW_PROFILE' or 'REQUEST_ROUTE'                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 4. SPATIAL TARGETING PILLAR                                                 │
+│    - Target configuration exists (ad_campaign_targets)                      │
+│    - If RADIUS: Geodesic distance (Context <-> Center) <= radius_meters      │
+│    - If STUDY_AREA: Context coordinate is within study area polygon         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+2. BLOCKER CODES (OWNER PREVIEW DIAGNOSTIC)
+--------------------------------------------------------------------------------
+- CAMPAIGN_NOT_ACTIVE      : Campaign is Draft, Scheduled, Paused, or Ended
+- MERCHANT_NOT_ELIGIBLE    : Merchant profile or claim is incomplete
+- MERCHANT_GEOMETRY_INVALID: Merchant store missing valid coordinates
+- CREATIVE_NOT_FOUND       : No creative configured for campaign
+- WRONG_CREATIVE_TYPE      : Creative is not SPONSORED_PIN
+- CREATIVE_NOT_READY       : Creative status is DRAFT or headline is empty
+- TARGET_NOT_CONFIGURED    : Target area is missing
+- TARGET_INVALID           : Radius is <= 0 or study area is missing
+- OUTSIDE_TARGET           : Context point is outside target area

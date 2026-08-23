@@ -1,0 +1,11 @@
+# FEATURE DEPENDENCIES (UPDATED PHASE 2)
+
+## ADVERTISING ELIGIBILITY DEPENDENCIES
+- **Merchant Ownership**: Advertising relies heavily on the public interface of the `merchant-ownership` service to ascertain if a user is legally verified to run campaigns for the target merchant.
+- **Supabase Auth**: Relies on Auth to determine the identity of the current user.
+- **Profiles**: Relies on the `profiles` table to read user roles/modes.
+- **Merchants**: Relies on the canonical `merchants` table to evaluate the core entity state (Active/Inactive, Geometry).
+
+## OWNERSHIP DEPENDENCIES
+- **Merchants**: Points to the canonical merchant source.
+- **Merchant Claims**: Manages the request/approval workflow state.

@@ -1,0 +1,55 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 07 — SPONSORED PIN & AD SERVING ENGINE
+MANUAL TESTING & VERIFICATION GUIDE
+================================================================================
+
+1. PREREQUISITES
+--------------------------------------------------------------------------------
+- Start frontend: http://localhost:3000
+- Start backend: http://localhost:3001
+- Log in as UMKM Merchant (e.g. christo@getra.id / password).
+- Navigate to: http://localhost:3000/umkm/advertising
+
+2. TEST SCENARIO 1: Owner Serving Preview (Inside Target Area)
+--------------------------------------------------------------------------------
+1. In the Campaign list, locate an ACTIVE campaign that has SPONSORED_PIN creative READY and Radius 1000m.
+2. Click the tab "Uji Penayangan (Preview)".
+3. Click "Gunakan Titik Toko" to set coordinates to merchant's location.
+4. Click button "Uji Penayangan".
+5. EXPECTED OUTCOME:
+   - Green banner: "✨ Campaign Eligible untuk Ditayangkan (Servable)!"
+   - All 4 checklist pills show green (Status: Active, Toko: Eligible, Materi: Pin Ready, Targeting: Didalam Area).
+   - Map displays the merchant pin, radius circle, test pin, and bouncing Sponsored Pin.
+   - Sponsored Pin Card appears on the right with "Sponsored" pill, store name, headline, and CTA button.
+
+3. TEST SCENARIO 2: Owner Serving Preview (Outside Target Area)
+--------------------------------------------------------------------------------
+1. In the same campaign preview tab, change Longitude/Latitude to a coordinate far away (e.g. +0.05 deg away, ~5.5km).
+2. Click button "Uji Penayangan".
+3. EXPECTED OUTCOME:
+   - Amber banner: "Campaign Tidak Ditayangkan pada Lokasi Ini".
+   - Blocker reason: "Titik lokasi uji berada di luar jangkauan target wilayah campaign ini."
+   - Targeting check displays red "✕ Diluar Area".
+   - Sponsored Pin Card is hidden with empty placeholder state.
+
+4. TEST SCENARIO 3: Non-Active Campaign (Paused or Draft)
+--------------------------------------------------------------------------------
+1. Locate a PAUSED or DRAFT campaign.
+2. Click "Uji Penayangan (Preview)".
+3. Click "Uji Penayangan".
+4. EXPECTED OUTCOME:
+   - Blocker reason: "Status campaign bukan ACTIVE (sedang Draft, Terjadwal, Dijeda, atau Selesai)."
+   - Status check displays "✕ PAUSED" or "✕ DRAFT".
+
+5. TEST SCENARIO 4: Public Candidate API Endpoint
+--------------------------------------------------------------------------------
+1. Send GET request:
+   `GET /api/advertising/placements/sponsored-pins?longitude=107.609&latitude=-6.9175&limit=5`
+2. EXPECTED OUTCOME:
+   - HTTP 200 OK
+   - Returns JSON array of SponsoredPinDTO items.
+   - Header `Cache-Control: no-store`.
+   - Each item includes `placement_type: "SPONSORED_PIN"`, `label: "Sponsored"`, `geometry: { type: "Point", coordinates: [...] }`.
+   - At most 1 pin per merchant.

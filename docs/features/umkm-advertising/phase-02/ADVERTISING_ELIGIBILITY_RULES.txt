@@ -1,0 +1,15 @@
+# ADVERTISING ELIGIBILITY RULES
+
+The eligibility service operates on deterministic rules, evaluated in explicit order to minimize unnecessary complex checks on unauthenticated or disallowed users.
+
+## EVALUATION ORDER
+1. **UNAUTHENTICATED**: The user identity must be verified via Supabase Auth session token.
+2. **UMKM_MODE_REQUIRED**: The user's `stakeholder_mode` in their profile must be set to `UMKM` (or contain `UMKM`).
+3. **MERCHANT_NOT_FOUND**: The specified `merchantId` must exist in the canonical `merchants` table.
+4. **OWNERSHIP_REQUIRED**: `merchants.owner_id` must match `userId`.
+5. **OWNERSHIP_PENDING**: If not owned, the system checks if a pending `merchant_claims` record exists for the user. If so, it returns `OWNERSHIP_PENDING`.
+6. **MERCHANT_INACTIVE**: The merchant's `publish_status` must not be `HIDDEN` or `ARCHIVED` and `verification_status` must not be `REJECTED`.
+7. **GEOMETRY_INVALID**: The merchant must have a valid `location` (geometry) coordinate to allow for future spatial targeting.
+8. **ELIGIBLE**: If all above pass, the user is authorized to build an advertising campaign for this merchant.
+
+There are no arbitrary "readiness scores" determining eligibility. The evaluation is binary based on the conditions above.

@@ -160,8 +160,17 @@ export async function GET(
                   display_name:
                     profile.display_name,
 
+                  username:
+                    profile.username,
+
                   avatar_url:
                     profile.avatar_url,
+
+                  phone_number:
+                    profile.phone_number,
+
+                  bio:
+                    profile.bio,
 
                   account_role:
                     profile.account_role,

@@ -1,0 +1,39 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 07 — SPONSORED PIN & AD SERVING ENGINE
+IMPLEMENTATION SUMMARY
+================================================================================
+
+1. WHAT WAS BUILT IN PHASE 07
+--------------------------------------------------------------------------------
+1. Sponsored Pin Domain & Public DTO Contract:
+   - Canonical `SponsoredPinDTO` with server-enforced `label: "Sponsored"`, physical store geometry, headline, description, and valid CTA.
+   - Zero sensitive information leakage (budgets, user IDs, internal states stripped).
+
+2. Ad Serving Engine (`AdServingService`):
+   - Spatial candidate selection at [longitude, latitude].
+   - 4-Pillar eligibility validation (Effective Active Lifecycle, Verified Merchant, Ready Pin Creative, Spatial Radius/Study Area containment).
+   - Single Sponsored Pin per Merchant deduplication (tie-break: newest updated).
+   - Technical deterministic ordering (`updated_at DESC`) and limit clamping [1..20].
+
+3. Owner Serving Preview Engine (`SponsoredPinServingService`):
+   - Single campaign evaluation with 4-pillar step-by-step checklist.
+   - Diagnostic blocker codes (CAMPAIGN_NOT_ACTIVE, MERCHANT_NOT_ELIGIBLE, CREATIVE_NOT_READY, OUTSIDE_TARGET, etc.).
+   - Zero event generation (No impression or click side effects).
+
+4. API Endpoints & Security Policy:
+   - `GET /api/advertising/placements/sponsored-pins`: Authenticated candidate endpoint with `Cache-Control: no-store`.
+   - `POST /api/umkm/advertising/campaigns/[id]/serving-preview`: Authenticated owner preview endpoint.
+   - Registered in `endpoint-policy.ts` and CORS preflight options.
+
+5. Frontend Ad-Serving Subdomain & UI:
+   - Reusable `SponsoredPinMarker` with gold/amber glow and "Sponsored" pill.
+   - Reusable `SponsoredPinCard` with merchant name, category, headline, and CTA button.
+   - `SponsoredPinPreviewMap` with MapLibre interactive map, target buffer rendering, test context marker dragging, and bouncing pin.
+   - `ServingPreviewPanel` integrated into `CampaignCard` as tab "Uji Penayangan (Preview)".
+
+6. Quality Assurance & Testing:
+   - Automated unit tests in `ad-serving.service.test.ts`.
+   - 65 backend test files (458 tests) passing 100%.
+   - Full Next.js production builds on both frontend and backend passing with 0 errors.

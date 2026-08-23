@@ -1,0 +1,50 @@
+# FRONTEND MANUAL TEST GUIDE (PHASE 5)
+
+## 1. START BACKEND
+In terminal 1:
+```bash
+cd backend
+npm run dev
+```
+- **Backend URL**: `http://localhost:8080` (or `http://localhost:3001` depending on dev runner)
+
+## 2. START FRONTEND
+In terminal 2:
+```bash
+cd frontend
+npm run dev
+```
+- **Frontend URL**: `http://localhost:3000`
+
+## 3. LOGIN & ONBOARDING
+- URL: `http://localhost:3000/login`
+- Login as UMKM test user (`getra.umkm.test@example.com`).
+
+## 4. OPEN ADVERTISING WORKSPACE
+- Navigate to: `http://localhost:3000/umkm/advertising`
+- Verify Advertising Eligibility Gate passes.
+
+## 5. SELECT CAMPAIGN
+- In the "Campaign Saya" list, find a campaign in `DRAFT` status (or click "Buat Campaign Draft" if empty).
+
+## 6. TEST RADIUS TARGETING
+1. Click **"🎯 Kelola Targeting"** on the campaign card.
+2. Ensure **"Radius Merchant"** is selected.
+3. Click preset **"1 km"** (1000m) or adjust the slider.
+4. Observe the **MapLibre Map Preview**:
+   - Outlet marker is visible.
+   - Green semi-transparent circular buffer is drawn with a dashed border.
+   - Map automatically fits the circle bounds.
+5. Click **"Simpan Target Area"**.
+6. Verify feedback message: `"Target kampanye berhasil disimpan."`
+7. Refresh browser page (`F5`) -> Click **"🎯 Kelola Targeting"** -> Verify 1000m and circle buffer persist.
+
+## 7. TEST STUDY AREA TARGETING
+1. Click **"Study Area GETRA"** in the method selector.
+2. Choose a Study Area from the dropdown (e.g. Pilot Area).
+3. Observe MapLibre Map updating to render the study area polygon boundary.
+4. Click **"Simpan Target Area"**.
+5. Refresh browser page (`F5`) -> Click **"🎯 Kelola Targeting"** -> Verify the chosen Study Area persists.
+
+## 8. VERIFY CAMPAIGN STATUS
+- Ensure Campaign status remains `DRAFT` (Targeting configuration does NOT trigger campaign activation).

@@ -1,0 +1,18 @@
+SEARCH FEATURE:
+Currently present as a shared/module approach: `backend/src/modules/search`, `backend/lib/ai/search-orchestrator.ts`.
+Frontend routing exists in `frontend/src/services/mapid-layer.service.ts` or `frontend/components/getra-map.tsx`.
+
+FAIR DISCOVERY FEATURE:
+No explicit `fair-discovery` feature folder found. Discoverability likely merged into general search orchestration and `geo/ranking.ts`.
+
+ORIGINAL:
+Canonical `merchants` are the primary original entities.
+
+HIDDEN GEM:
+No specific hidden gem tagging found in schema, might be inferred from high `data_quality_score` combined with user-generated community activities.
+
+SPONSORED EXISTING:
+PLACEHOLDER / NOT_IMPLEMENTED. No existing schema explicitly models campaigns, sponsored pins, or ads.
+
+STATUS:
+NOT_IMPLEMENTED (Advertising specific). Search logic is modular but not yet split into `features/fair-discovery/` and `features/umkm-advertising/`.

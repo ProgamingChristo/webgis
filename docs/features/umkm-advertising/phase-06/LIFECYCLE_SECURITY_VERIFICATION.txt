@@ -1,0 +1,48 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK — PHASE 06
+LIFECYCLE SECURITY & AUTHORIZATION VERIFICATION
+================================================================================
+
+1. SECURITY ARCHITECTURE PRINCIPLES
+--------------------------------------------------------------------------------
+Phase 6 adheres strictly to GETRA's Defense-in-Depth security model:
+
+  Layer 1: Network & CORS Policy Layer (`endpoint-policy.ts`)
+  Layer 2: Authentication & Token Verification (`requireAuthenticatedUser`)
+  Layer 3: Merchant Ownership & Multi-Tenancy Isolation (`getMerchantIdFromRequest` + RLS)
+  Layer 4: Business Logic & State Machine Transition Guards (`CampaignLifecycleService`)
+  Layer 5: Database Constraints (Check constraints & PostgreSQL RLS)
+
+
+2. SECURITY AUDIT CHECKLIST
+--------------------------------------------------------------------------------
+
+[✓] Authentication Enforcement
+- Every lifecycle route (`lifecycle/route.ts`, `schedule/route.ts`, `pause/route.ts`,
+  `resume/route.ts`) calls `await requireAuthenticatedUser(req)`.
+- Requests without a valid Bearer JWT return `401 Unauthorized`.
+
+[✓] Merchant Ownership & Multi-Tenancy Isolation
+- Merchant ID is extracted from the `x-getra-merchant-id` header.
+- `CampaignLifecycleService` and `CampaignScheduleService` verify that
+  `campaign.merchant_id === merchantId` before allowing any read or write.
+- Cross-merchant ID spoofing results in `CampaignNotOwnedError` (403 Forbidden).
+
+[✓] State Machine Boundary Defense
+- Terminal states (`ENDED`, `CANCELLED`) are strictly protected against mutations.
+- Modifying schedule on an `ACTIVE` campaign requires explicit pause first to
+  prevent live serving race conditions.
+- Pausing is only permitted from `SCHEDULED` or `ACTIVE` states.
+- Resuming is only permitted from `PAUSED` state.
+
+[✓] Temporal & Input Validation
+- Zod schema `updateScheduleSchema` rejects malformed timestamps, non-ISO strings,
+  and backwards intervals where `end_at <= start_at`.
+- Service layer rejects schedules ending in the past (`end_at <= now`).
+
+[✓] Database Consistency Constraints
+- PostgreSQL CHECK constraint `ad_campaigns_status_check` prevents invalid
+  string insertion.
+- PostgreSQL CHECK constraint `ad_campaigns_schedule_check` guarantees
+  `end_at > start_at` at the database engine level.

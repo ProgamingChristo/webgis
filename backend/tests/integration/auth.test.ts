@@ -56,6 +56,17 @@ describe(
               vi.fn()
                 .mockResolvedValue({
                   data: {
+                    session: {
+                      access_token:
+                        "register-token",
+
+                      refresh_token:
+                        "register-refresh-token",
+
+                      expires_at:
+                        1787420000,
+                    },
+
                     user: {
                       id: "123",
                       email:
@@ -128,6 +139,19 @@ describe(
 
               email:
                 "test@example.com",
+            });
+
+            expect(
+              json.data.session,
+            ).toEqual({
+              access_token:
+                "register-token",
+
+              refresh_token:
+                "register-refresh-token",
+
+              expires_at:
+                1787420000,
             });
 
             expect(

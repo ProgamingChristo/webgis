@@ -9,7 +9,10 @@ export function mapProfileRow(
   return {
     id: row.id,
     display_name: row.display_name,
+    username: row.username,
     avatar_url: row.avatar_url,
+    phone_number: row.phone_number,
+    bio: row.bio,
     account_role: row.account_role,
     trust_score: row.trust_score,
     onboarding_complete:

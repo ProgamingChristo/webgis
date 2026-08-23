@@ -1,0 +1,26 @@
+# FRONTEND TEST DATA (PHASE 5)
+
+## 1. Test User Requirement
+- **Email**: `getra.umkm.test@example.com`
+- **Role**: `USER`
+- **Stakeholder Mode**: `UMKM`
+- **Merchant Ownership**: Verified owner of test merchant outlet.
+
+## 2. Test Merchant
+- **Name**: Warung Kopi GETRA Test (or existing owned merchant in development)
+- **Coordinates**: Jakarta Pilot Corridor (~106.827153, -6.175392)
+- **Status**: PUBLISHED & VERIFIED
+
+## 3. Test Campaign
+- **Campaign Name**: DUMMY Promo Mahasiswa Phase 5
+- **Status**: `DRAFT` (Targeting configuration is fully editable in DRAFT status)
+
+## 4. Test Study Areas
+- Canonical study areas fetched from `/api/v1/study-areas` (e.g. Kalideres Pilot Corridor, Sudirman-Thamrin Transit Zone).
+
+## 5. Allowed Test Radius Values
+- Preset 1: 500 meter
+- Preset 2: 1,000 meter (1 km)
+- Preset 3: 2,000 meter (2 km)
+- Preset 4: 5,000 meter (5 km)
+- Custom Slider: 250m to 10,000m

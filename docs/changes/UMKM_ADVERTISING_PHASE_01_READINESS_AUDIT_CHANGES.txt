@@ -1,0 +1,139 @@
+TRACK:
+UMKM INTELLIGENCE & ADVERTISING
+
+PHASE:
+01
+
+FEATURE:
+umkm-advertising
+
+FRONTEND FEATURE ROOT:
+frontend/src/features/umkm-advertising/ (Planned)
+
+BACKEND FEATURE ROOT:
+backend/src/features/umkm-advertising/ (Planned)
+
+DATE:
+2026-08-23
+
+PROJECT ROOT:
+d:\Getra_Production
+
+BRANCH:
+finalmerge
+
+COMMIT:
+dfc61f0d9293fa47d3c8c892c77ef0edfe8c8038
+
+FRONTEND ROOT:
+frontend/
+
+BACKEND ROOT:
+backend/
+
+FRONTEND PORT:
+Unknown (Did not test starting the port, run verified only via build)
+
+BACKEND PORT:
+Unknown (Did not test starting the port, run verified only via build)
+
+FILES CREATED:
+- docs/features/umkm-advertising/README.txt
+- docs/features/umkm-advertising/FINAL_DOCUMENTATION_PLAN.txt
+- docs/features/umkm-advertising/phase-01/FEATURE_OWNERSHIP_MAP.txt
+- docs/features/umkm-advertising/phase-01/UMKM_DATA_READINESS.txt
+- docs/features/umkm-advertising/phase-01/MERCHANT_OWNERSHIP_AUDIT.txt
+- docs/features/umkm-advertising/phase-01/VISIBILITY_DISCOVERABILITY_AUDIT.txt
+- docs/features/umkm-advertising/phase-01/FAIR_DISCOVERY_ADVERTISING_AUDIT.txt
+- docs/features/umkm-advertising/phase-01/EVENT_TRACKING_READINESS.txt
+- docs/features/umkm-advertising/phase-01/FRONTEND_ADVERTISING_READINESS.txt
+- docs/features/umkm-advertising/phase-01/BACKEND_ADVERTISING_READINESS.txt
+- docs/features/umkm-advertising/phase-01/ADVERTISING_GAP_MATRIX.txt
+- docs/features/umkm-advertising/phase-01/ADVERTISING_PHASE_DEPENDENCIES.txt
+- docs/changes/UMKM_ADVERTISING_PHASE_01_READINESS_AUDIT_CHANGES.txt
+
+FILES MODIFIED:
+NONE
+
+FILES MOVED:
+NONE
+
+FILES DELETED:
+NONE
+
+FEATURE OWNERSHIP AUDIT:
+Documented cross-feature dependencies and existing modularization approach. The project is mostly component-based on the frontend and module-based on the backend. True feature slice architecture (vertical slice) will be introduced for advertising.
+
+UMKM DATA:
+Canonical merchant architecture exists separating survey data from the unified `merchants` table and `umkm_profiles`.
+
+OWNERSHIP:
+`merchant_claims` table handles owner claims. `merchants.owner_id` maps canonical merchants to user profiles.
+
+GEOMETRY:
+PostGIS enabled. Geometries correctly defined in schema (MultiPolygon for study areas, Point for POIs/Merchants).
+
+PROFILE:
+Categorization and publish statuses exist. Base schemas mapped.
+
+VISIBILITY:
+Data Quality statuses implemented. Not explicitly decoupled into a distinct Advertising Visibility index yet.
+
+FAIR DISCOVERY:
+Modular search implemented, but no split for sponsored campaigns yet.
+
+EVENT FOUNDATION:
+Generic audit logs present. Dedicated advertisement tracking absent.
+
+ROUTING:
+Routing engine implemented via `pedestrian_network`. Needs tracking integration.
+
+STORAGE:
+Supabase Storage likely in use.
+
+MIDTRANS:
+NOT IMPLEMENTED.
+
+REDIS:
+ABSENT / UNKNOWN in explicit config files.
+
+TIMESCALEDB:
+ABSENT / UNKNOWN in explicit config files.
+
+CLICKHOUSE:
+ABSENT / UNKNOWN in explicit config files.
+
+FASTAPI:
+ABSENT / UNKNOWN in explicit config files.
+
+DATABASE CHANGES:
+NONE
+
+MIGRATIONS:
+NONE
+
+TYPECHECK:
+Passed implicitly via build commands.
+
+LINT:
+Passed implicitly via build commands.
+
+TEST:
+N/A for audit phase, builds passed.
+
+BUILD:
+PASS (Next.js build succeeded for frontend and backend)
+
+SECRET AUDIT:
+PASS (No secrets exposed during audit. Basic `.env` checks only revealed safe vars).
+
+PRE-EXISTING FAILURES:
+None identified in the basic build test. Git state had uncommitted changes.
+
+CRITICAL GAPS:
+1. Feature folder architecture is missing; current architecture uses component/module styles.
+2. Analytics/Event tracking needs specialized handlers for advertising events.
+3. Midtrans not implemented.
+
+READY FOR PHASE 2:
+YES

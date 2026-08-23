@@ -1,0 +1,28 @@
+# CAMPAIGN RLS SECURITY (PHASE 3)
+
+## RLS POLICIES ENABLED
+`public.ad_campaigns` is secured by Row Level Security (RLS).
+
+## SELECT POLICY
+**"Merchant owners can view their campaigns"**
+```sql
+USING (
+  EXISTS (
+    SELECT 1 FROM public.merchants 
+    WHERE merchants.id = ad_campaigns.merchant_id 
+    AND merchants.owner_id = auth.uid()
+  )
+)
+```
+
+## INSERT POLICY
+**"Merchant owners can create campaigns"**
+Ensures `merchant_id` belongs to the user and `created_by` cannot be spoofed.
+Note: Insert is primarily protected by our highly-structured Next.js API route (`CampaignService`), which additionally guarantees eligibility checks beyond just standard ownership.
+
+## UPDATE POLICY
+**"Merchant owners can update their campaigns"**
+Validates ownership via `merchants.owner_id` for both `USING` (fetch existing) and `WITH CHECK` (save new) conditions.
+
+## DELETE POLICY
+No policy created. Hard deletes are intentionally unsupported in Phase 3.

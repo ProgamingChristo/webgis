@@ -1,0 +1,38 @@
+# CAMPAIGN DATABASE MODEL (PHASE 3)
+
+## TABLE
+`public.ad_campaigns`
+
+## COLUMNS
+- `id` (uuid, default gen_random_uuid())
+- `merchant_id` (uuid, NOT NULL)
+- `created_by` (uuid, NOT NULL)
+- `name` (text, NOT NULL)
+- `description` (text, nullable)
+- `status` (text, NOT NULL)
+- `created_at` (timestamptz, NOT NULL)
+- `updated_at` (timestamptz, NOT NULL)
+
+## PRIMARY KEY
+`id`
+
+## FOREIGN KEYS
+- `merchant_id` -> `public.merchants(id)` ON DELETE CASCADE
+- `created_by` -> `public.profiles(id)` ON DELETE RESTRICT
+
+## CONSTRAINTS
+- `status` CHECK (status IN ('DRAFT', 'CANCELLED'))
+
+## STATUS
+- Default: `DRAFT` (Enforced via application logic)
+
+## INDEXES
+- `idx_ad_campaigns_merchant_id`
+- `idx_ad_campaigns_created_by`
+- `idx_ad_campaigns_status`
+
+## ROW LEVEL SECURITY (RLS)
+Enabled. Protected by standard authenticated matching `merchants.owner_id`.
+
+## MIGRATION
+`20260823094310_umkm_advertising_campaign_foundation.sql`

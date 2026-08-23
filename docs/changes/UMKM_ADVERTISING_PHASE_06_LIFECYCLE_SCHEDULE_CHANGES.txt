@@ -1,0 +1,55 @@
+================================================================================
+GETRA CHANGELOG — UMKM ADVERTISING PHASE 06
+CAMPAIGN SCHEDULE, LIFECYCLE & ACTIVATION RULES
+================================================================================
+Date: 2026-08-23
+Author: Principal Full-Stack & Systems Architect
+Status: COMPLETED & VERIFIED
+
+1. DATABASE & MIGRATIONS
+--------------------------------------------------------------------------------
+- Created and pushed migration `20260823180000_umkm_advertising_campaign_schedule_lifecycle.sql`.
+- Added `start_at` and `end_at` timestamptz columns to `public.ad_campaigns`.
+- Extended `status` enum check constraint to support 7 lifecycle states:
+  'DRAFT', 'READY', 'SCHEDULED', 'ACTIVE', 'PAUSED', 'ENDED', 'CANCELLED'.
+- Added check constraint `ad_campaigns_schedule_check` guaranteeing `end_at > start_at`.
+- Added index `idx_ad_campaigns_schedule` on `(start_at, end_at)` and `idx_ad_campaigns_lifecycle_status` on `status`.
+- Updated `backend/src/types/database.types.ts`.
+
+2. BACKEND LIFECYCLE FEATURE FOLDER (`backend/src/features/umkm-advertising/lifecycle/`)
+--------------------------------------------------------------------------------
+- Created domain types in `types/lifecycle.types.ts`.
+- Created Zod validation schema in `schemas/lifecycle.schema.ts`.
+- Created error hierarchy in `errors/lifecycle.errors.ts`.
+- Created constants in `constants/lifecycle.constants.ts`.
+- Created `CampaignReadinessService` evaluating merchant eligibility, creative ready state, targeting configuration, and schedule validity.
+- Created `CampaignLifecycleService` implementing time-injected effective status calculation, state transitions (pause, resume, cancel), and allowed actions matrix.
+- Created `CampaignScheduleService` validating and updating timestamps with temporal rules.
+- Created barrel exports in `lifecycle/index.ts` and `backend/src/features/umkm-advertising/index.ts`.
+
+3. BACKEND API ENDPOINTS & SECURITY POLICIES
+--------------------------------------------------------------------------------
+- Created `GET /api/umkm/advertising/campaigns/[id]/lifecycle`.
+- Created `PUT /api/umkm/advertising/campaigns/[id]/schedule`.
+- Created `POST /api/umkm/advertising/campaigns/[id]/pause`.
+- Created `POST /api/umkm/advertising/campaigns/[id]/resume`.
+- Registered all routes in `backend/src/lib/api-security/endpoint-policy.ts`.
+
+4. FRONTEND LIFECYCLE FEATURE FOLDER (`frontend/src/features/umkm-advertising/lifecycle/`)
+--------------------------------------------------------------------------------
+- Created domain types in `types/lifecycle.types.ts`.
+- Created API service client in `services/lifecycle.service.ts`.
+- Created React hook `useCampaignLifecycle` in `hooks/use-campaign-lifecycle.ts`.
+- Created UI component `CampaignStatusBadge` for rendering 7 distinct status badges with icons and Indonesian labels.
+- Created UI component `CampaignReadinessPanel` providing a 4-pillar readiness checklist with live completion percentage.
+- Created UI component `CampaignScheduleEditor` with local datetime conversion, presets, duration calculation, and validation.
+- Created UI component `CampaignLifecycleActions` for Pause, Resume, and Cancel (with confirmation dialog).
+- Upgraded `CampaignCard` in `frontend/src/features/umkm-advertising/components/campaign/campaign-card.tsx` to embed all lifecycle components.
+- Exported lifecycle module in `frontend/src/features/umkm-advertising/index.ts`.
+
+5. TESTING & QUALITY ASSURANCE
+--------------------------------------------------------------------------------
+- Created unit tests in `backend/tests/unit/umkm-advertising/campaign-lifecycle.service.test.ts` (16 test cases covering temporal intervals and action permissions).
+- Created unit tests in `backend/tests/unit/umkm-advertising/campaign-schedule.service.test.ts` (5 test cases covering boundary and input rules).
+- All 62 backend test suites and 445 tests passed.
+- Both frontend and backend Next.js builds compiled with 0 errors.

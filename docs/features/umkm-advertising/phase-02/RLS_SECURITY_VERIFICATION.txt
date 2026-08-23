@@ -1,0 +1,15 @@
+# RLS & SECURITY VERIFICATION
+
+## OWNERSHIP & CLAIM RLS
+The `merchants` and `merchant_claims` tables are guarded by Row Level Security policies. 
+- **Ownership (merchants)**: Authenticated users can read their owned merchants and potentially public details depending on `publish_status`. Modifications to the `owner_id` column are restricted to authorized server-side functions or Admins.
+- **Claims (merchant_claims)**: Users can insert claims where `user_id = auth.uid()`. They can select claims they own. They cannot modify `status`, `reviewed_by`, or `reviewed_at`. Those fields must be modified by an Admin role.
+
+## ADMIN REVIEW
+Admin review operations must be executed either via a Supabase Service Role key running behind an authenticated admin-gated Next.js route, or using a signed-in admin session with RBAC checking `account_role = 'ADMIN'`.
+
+## SERVICE ROLE LEAKS
+A security audit was performed on the `umkm-advertising` and `merchant-ownership` service files. No Supabase service role keys are exposed to the client. Route handlers dynamically instantiate Supabase clients using the authorization header of the requester, meaning all Supabase queries strictly adhere to the requester's RLS privileges.
+
+## ENDPOINT POLICY
+All new endpoints (`/api/merchants/[id]/ownership` and `/api/umkm/advertising/eligibility`) strictly enforce authorization by rejecting requests without a valid `Authorization` header and a valid authenticated session identity.

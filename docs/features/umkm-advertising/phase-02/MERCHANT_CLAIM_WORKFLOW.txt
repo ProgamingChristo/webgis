@@ -1,0 +1,15 @@
+# MERCHANT CLAIM WORKFLOW
+
+## FLOW
+1. **User Request**: A user operating in UMKM mode discovers a canonical merchant that lacks an owner and requests to claim it.
+2. **Claim Creation**: A record is inserted into `merchant_claims` with `status = PENDING`.
+3. **Admin/Trusted Review**: An internal GETRA admin reviews the evidence provided in the claim payload.
+4. **Decision**:
+   - **APPROVED**: Admin updates claim status to `APPROVED`, setting `reviewed_at`, `reviewed_by`. An atomic transaction should then update `merchants.owner_id = user_id`.
+   - **REJECTED**: Admin updates claim status to `REJECTED` with an optional `note`. The merchant remains unowned.
+
+## EVIDENCE SUPPORT
+The system natively stores `evidence` as a JSON object within `merchant_claims`. Currently, evidence supports metadata but no explicit rigid document schema is forced yet. Deep document storage (e.g., KTP/Business License) would rely on the shared Supabase Storage architecture, storing reference URLs in this JSON field.
+
+## AUTOMATIC APPROVAL
+Strictly prohibited. No claim immediately grants ownership. Users cannot self-approve.

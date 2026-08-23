@@ -1,0 +1,18 @@
+FRONTEND FEATURE FOLDER:
+Currently, the frontend uses generic folders like `components/`, `hooks/`, `services/`, and `types/` directly under `src/`.
+Feature folders do not exist natively yet (e.g., `src/features/umkm-advertising/`).
+
+UMKM WORKSPACE:
+Context exists via `frontend/src/components/stakeholder/umkm-context.tsx`.
+Dashboard map is at `frontend/components/getra-dashboard.tsx`.
+
+INTEGRATION POINTS:
+- Map Layers: `getra-map.tsx` and `mapid-layer.service.ts` for rendering UMKM.
+- Profile Open: Likely within dashboard components.
+- Routing: Interaction originating from dashboard/map.
+
+FUTURE ADVERTISING ROOT:
+`frontend/src/features/umkm-advertising/` (To be created in future phases).
+
+STATUS:
+Architecture needs to support feature-based modularity for advertising to be properly isolated.

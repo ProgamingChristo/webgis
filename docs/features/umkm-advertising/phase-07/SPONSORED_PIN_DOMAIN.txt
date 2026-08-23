@@ -1,0 +1,25 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 07 — SPONSORED PIN & AD SERVING ENGINE
+SPONSORED PIN DOMAIN
+================================================================================
+
+1. DOMAIN CONCEPT
+--------------------------------------------------------------------------------
+A "Sponsored Pin" represents a verified UMKM store highlighted prominently on
+the GETRA transit & commuter map.
+
+Key Principles:
+1. Canonical Merchant Anchor:
+   The pin's geographic location is ALWAYS anchored to the physical store's coordinates
+   [longitude, latitude], never arbitrary spoofed coordinates.
+2. Server-Enforced Transparency:
+   Every pin served includes `sponsored: true` and `label: "Sponsored"`.
+   Frontend clients cannot hide or alter this label.
+3. Allowed Actions (CTA):
+   - `VIEW_PROFILE`: Opens the UMKM store profile drawer.
+   - `REQUEST_ROUTE`: Initiates pedestrian / transit route navigation to the store.
+4. Non-Intrusive Commuter UX:
+   Designed to appear cleanly alongside transit stops, pedestrian walkways, and
+   discovery POIs with amber/gold visual hierarchy.

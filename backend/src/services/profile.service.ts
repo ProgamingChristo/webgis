@@ -12,6 +12,7 @@ import {
 import type {
   AccountRole,
   ProfileDTO,
+  PublicProfileDTO,
   ProfileUpdateData,
 } from "@/src/types/profile";
 
@@ -66,6 +67,46 @@ export class ProfileService {
           userId,
           updateData,
         );
+    } catch (error) {
+      throw mapRepositoryError(
+        error,
+      );
+    }
+  }
+
+  async getPublicProfile(
+    userId: string,
+  ): Promise<PublicProfileDTO> {
+    try {
+      const profile =
+        await this
+          .profileRepository
+          .findPublicById(userId);
+
+      if (!profile) {
+        throw new ServiceError(
+          "NOT_FOUND",
+        );
+      }
+
+      return profile;
+    } catch (error) {
+      throw mapRepositoryError(
+        error,
+      );
+    }
+  }
+
+  async listPublicProfiles(
+    filters: {
+      search?: string;
+      limit: number;
+    },
+  ): Promise<PublicProfileDTO[]> {
+    try {
+      return await this
+        .profileRepository
+        .findPublicProfiles(filters);
     } catch (error) {
       throw mapRepositoryError(
         error,

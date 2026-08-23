@@ -1,0 +1,23 @@
+USER
+ ↓
+OWNERSHIP / CLAIM
+ ↓
+MERCHANT
+
+MODEL:
+The canonical merchant data is in the `merchants` table, which has an `owner_id` linking to `profiles`.
+Claim system is managed via `merchant_claims` table, supporting claims by `user_id` on `merchant_id` with `status`, `evidence`, and review details.
+
+CLAIM:
+`merchant_claims` table exists.
+Status enum: PENDING, APPROVED, REJECTED, etc.
+Requires explicit link to user.
+
+RLS:
+Live database analysis indicates RLS is active on legacy tables and `auth` roles are strictly separated from `app_role` and `stakeholder_mode`. Exact policy implementation details would require inspecting RLS directly, but the foundation is there.
+
+SERVER GUARD:
+Roles are separated into `app_role` (USER, CONTRIBUTOR, UMKM_OWNER, MODERATOR, ADMIN) and `stakeholder_mode` (COMMUTER, UMKM, INVESTOR, GOVERNMENT).
+
+STATUS:
+IMPLEMENTED (at the database schema level). API routes for managing the claim process need to be verified in future phases.

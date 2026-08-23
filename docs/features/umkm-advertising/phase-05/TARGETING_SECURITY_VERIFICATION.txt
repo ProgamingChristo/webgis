@@ -1,0 +1,11 @@
+# TARGETING SECURITY VERIFICATION (PHASE 5)
+
+- [x] **Service Role Leak**: Prevented. All backend requests verify the user's bearer token using `requireAuthenticatedUser` and `getRequestSupabaseClient`.
+- [x] **Arbitrary Center Injection**: Prevented. Client cannot inject arbitrary coordinate pairs; backend looks up merchant location in database.
+- [x] **Radius Abuse / Boundary Bypass**: Prevented. Minimum 250m and Maximum 10,000m constraints enforced via Zod schema and database check constraint.
+- [x] **SQL Injection in Spatial Queries**: Prevented. All PostGIS calls are parameterized via Supabase RPC and query builders.
+- [x] **Study Area Injection / Cross-Tenant**: Prevented. Validated by UUID format and verified against `public.study_areas`.
+- [x] **Campaign Ownership Bypass**: Prevented. Verified at API service layer and enforced by RLS policies on `ad_campaign_targets`.
+- [x] **Cancelled Campaign Mutation**: Prevented. Attempting to mutate targeting for non-DRAFT campaigns returns 400 `CAMPAIGN_NOT_EDITABLE`.
+- [x] **Invalid GeoJSON**: Prevented. Standard GeoJSON validation and RFC 7946 coordinates order `[lng, lat]`.
+- [x] **Secret Scan**: PASS. No private keys or secret tokens hardcoded.

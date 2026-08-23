@@ -1,0 +1,122 @@
+GETRA COMMUNITY PHASE 01 FOUNDATION CHANGELOG
+Date: 2026-08-23
+
+Objective:
+Build Phase 1 foundation for GETRA Community with dedicated frontend and backend feature folders, thin routes, minimal read API foundation, security registration, tests, and documentation.
+
+Git:
+- Branch: finalmerge
+- HEAD: dfc61f0d9293fa47d3c8c892c77ef0edfe8c8038
+- Initial working tree: dirty with many unrelated modified and untracked files.
+- Final working tree: still dirty; Community files were added without reverting unrelated user changes.
+
+Audit Findings:
+- Repo uses frontend/ and backend/ workspaces.
+- Existing backend/src/modules/community was only a placeholder.
+- Existing community_activities is raw MAPID/source evidence, not canonical social feed storage.
+- Legacy docs/migrations mention COMMUNITY role, but current handoff says authorization is USER/ADMIN and Community is a general feature.
+- No canonical community_posts table found.
+
+Frontend Community Feature Folder:
+- frontend/src/features/community/
+
+Backend Community Feature Folder:
+- backend/src/features/community/
+
+Files Created:
+- frontend/app/community/page.tsx
+- frontend/app/community/loading.tsx
+- frontend/app/community/error.tsx
+- frontend/src/features/community/components/community-empty-state.tsx
+- frontend/src/features/community/components/community-navigation.tsx
+- frontend/src/features/community/components/community-page.tsx
+- frontend/src/features/community/components/community-shell.tsx
+- frontend/src/features/community/components/community.module.css
+- frontend/src/features/community/types/community.types.ts
+- frontend/src/features/community/index.ts
+- backend/app/api/community/feed/route.ts
+- backend/src/features/community/repositories/community.repository.ts
+- backend/src/features/community/schemas/community.schema.ts
+- backend/src/features/community/services/community.service.ts
+- backend/src/features/community/types/community.types.ts
+- backend/src/features/community/index.ts
+- backend/tests/integration/community-feed-route.test.ts
+- backend/tests/unit/community/community.schema.test.ts
+- backend/tests/unit/community/community.service.test.ts
+- frontend/tests/community-page.test.ts
+- docs/community/phase-01/COMMUNITY_PHASE_01_AUDIT.txt
+- docs/community/phase-01/COMMUNITY_PHASE_01_ARCHITECTURE.txt
+- docs/community/phase-01/COMMUNITY_PHASE_01_IMPLEMENTATION.txt
+- docs/community/phase-01/COMMUNITY_PHASE_01_TEST_EVIDENCE.txt
+- docs/changes/COMMUNITY_PHASE_01_FOUNDATION.txt
+
+Files Modified:
+- backend/src/lib/api-security/endpoint-policy.ts
+
+Files Deleted:
+- none
+
+API Changes:
+- Added authenticated GET /api/community/feed.
+- Returns standard list envelope with empty data during Phase 1.
+- Registered endpoint in API endpoint policy.
+
+Database Changes:
+- Status: none.
+- Migration: none.
+- Dry-run: N/A.
+- Push: N/A.
+- Remote verification: N/A.
+
+RLS/Security:
+- No new table, so no new RLS policy.
+- API requires authenticated bearer handoff.
+- API uses existing rate limiter and request_id envelope.
+- No sensitive logging was added.
+
+Unicode/Emoji Readiness:
+- Schema accepts and preserves "Warung ini enak 🍜🔥".
+
+Commands:
+- Frontend TypeScript: PASS.
+- Frontend test: PASS.
+- Frontend lint: PASS.
+- Frontend build: PASS.
+- Backend focused Community tests: PASS.
+- Backend lint: PASS.
+- Backend TypeScript: FAIL due unrelated merchant-ownership and UMKM-advertising errors.
+- Backend build: FAIL due same unrelated type errors.
+- Backend full test: FAIL due unrelated endpoint-policy drift from other untracked routes.
+- Supabase migration list: BLOCKED because local Postgres was not running.
+
+Limitations:
+- /api/community/feed is intentionally empty until a canonical persistent community_posts table is introduced in a later phase.
+- No manual authenticated browser smoke test was completed.
+- Full backend quality gate is blocked by unrelated worktree drift.
+
+Deferred Features:
+- post composer
+- emoji picker
+- location
+- coordinate
+- map pin
+- camera
+- gallery
+- media
+- replies
+- reactions
+- Cultural Map
+- requests
+- realtime
+
+Rollback:
+- Remove frontend/app/community.
+- Remove frontend/src/features/community.
+- Remove backend/app/api/community.
+- Remove backend/src/features/community.
+- Remove Community test files.
+- Remove the /api/community/feed entry from backend/src/lib/api-security/endpoint-policy.ts.
+- Remove docs/community/phase-01 and docs/changes/COMMUNITY_PHASE_01_FOUNDATION.txt.
+
+Final Status:
+PARTIAL PASS: Community Phase 1 implementation and focused checks pass; full backend quality gate is blocked by unrelated existing worktree/type-policy drift.

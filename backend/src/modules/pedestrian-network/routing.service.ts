@@ -44,4 +44,45 @@ export class RoutingService {
       environment,
     };
   }
+
+  /**
+   * Calculates a walking route from arbitrary coordinates.
+   * Snaps origin and destination to the nearest pedestrian nodes first.
+   */
+  async getRoute(
+    originLat: number,
+    originLng: number,
+    destLat: number,
+    destLng: number,
+    radiusMeters: number = 1000,
+    environment: string = "DUMMY"
+  ): Promise<WalkingRouteResult> {
+    // Snap origin
+    const { data: originData, error: originErr } = await this.client.rpc("find_nearest_pedestrian_node", {
+      p_lat: originLat,
+      p_lng: originLng,
+      p_radius_meters: radiusMeters,
+      p_environment: environment
+    });
+
+    if (originErr || !originData || originData.length === 0) {
+      throw new Error("NO_NEARBY_NETWORK: Origin is too far from the pedestrian network.");
+    }
+    const originNode = originData[0];
+
+    // Snap destination
+    const { data: destData, error: destErr } = await this.client.rpc("find_nearest_pedestrian_node", {
+      p_lat: destLat,
+      p_lng: destLng,
+      p_radius_meters: radiusMeters,
+      p_environment: environment
+    });
+
+    if (destErr || !destData || destData.length === 0) {
+      throw new Error("NO_NEARBY_NETWORK: Destination is too far from the pedestrian network.");
+    }
+    const destNode = destData[0];
+
+    return this.getShortestPath(originNode.routing_id, destNode.routing_id, environment);
+  }
 }

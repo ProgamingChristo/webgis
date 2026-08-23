@@ -8,7 +8,7 @@ import {
   getAllowedMethodsForPath,
 } from "../../../src/lib/api-security/endpoint-policy";
 
-type RouteMethod = "GET" | "PATCH" | "POST";
+type RouteMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 
 interface DiscoveredRoute {
   method: RouteMethod;
@@ -19,6 +19,8 @@ const ROUTE_METHODS: readonly RouteMethod[] = [
   "GET",
   "PATCH",
   "POST",
+  "PUT",
+  "DELETE",
 ];
 
 function findRouteFiles(directory: string): string[] {
@@ -202,8 +204,12 @@ describe("API endpoint policy matrix", () => {
       ).sort(),
     ).toEqual(
       [
+        "DELETE /api/admin/map-import/layers/[id]",
+        "PATCH /api/admin/map-import/layers/[id]",
         "POST /api/admin/ingestion/jobs",
         "POST /api/admin/ingestion/run",
+        "POST /api/admin/map-import/commit",
+        "POST /api/admin/map-import/preview",
       ].sort(),
     );
 

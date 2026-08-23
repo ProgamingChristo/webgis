@@ -1,0 +1,26 @@
+# MERCHANT OWNERSHIP IMPLEMENTATION
+
+## ACTUAL DB MODEL
+The canonical ownership model centers around the `merchants` table which contains an `owner_id` column referring to the `profiles` table. The claim workflow operates out of the `merchant_claims` table, which holds claims submitted by users.
+- **Table**: `merchant_claims`
+- **PK**: `id` (UUID)
+- **FKs**: `merchant_id` (refs `merchants.id`), `user_id` (refs `profiles.id`), `reviewed_by` (refs `profiles.id`).
+
+## STATUS
+Statuses implemented on `merchant_claims`: `PENDING`, `APPROVED`, `REJECTED`, etc. (based on `merchant_claim_status` enum).
+
+## INDEXES
+The system inherently indexes foreign keys such as `merchant_id` and `user_id`, making query lookups on claims performant.
+
+## OWNERSHIP RULE
+A user owns a merchant if `merchants.owner_id === userId`.
+If not owned, the system checks the `merchant_claims` table for any claims originating from this user. Only one verified owner is represented directly on the canonical merchant table at a time unless a join structure is created.
+
+## MULTI-OWNER BEHAVIOR
+The schema inherently supports one primary `owner_id` in `merchants`. If multiple users attempt to claim, the admin resolves it. For true multi-owner scenarios, a relational table would be necessary. Current implementation implies single primary owner logic.
+
+## REVOCATION BEHAVIOR
+If an ownership is revoked, the `owner_id` in `merchants` can be set to NULL, and the corresponding approved claim could be marked as REVOKED (or left as a historical APPROVED record with the live state disconnected).
+
+## ENVIRONMENT BEHAVIOR
+Cross-environment ownership is prevented by ensuring `merchants` inherently exist in a specific data environment and user claims only interact with merchants within their visible environment scope.

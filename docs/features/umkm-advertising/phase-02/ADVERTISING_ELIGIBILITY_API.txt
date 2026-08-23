@@ -1,0 +1,74 @@
+# ADVERTISING ELIGIBILITY API MANUAL
+
+## ENDPOINT: Get Eligibility
+Evaluates whether a user can create an ad campaign for a specific merchant.
+
+**METHOD:** GET
+**PATH:** `/api/umkm/advertising/eligibility`
+**FULL LOCALHOST URL:** `http://localhost:3001/api/umkm/advertising/eligibility` (Assuming backend runs on 3001, refer to actual `.env`)
+**AUTH:** Required (Supabase JWT)
+**ROLE:** Any User (Role restrictions evaluated internally)
+
+### QUERY PARAMS
+- `merchantId` (UUID, required): The ID of the merchant to check.
+
+### HEADERS
+- `Authorization`: `Bearer <token>`
+
+### SUCCESS RESPONSE (200 OK)
+```json
+{
+  "success": true,
+  "data": {
+    "eligible": true,
+    "merchantId": "uuid..."
+  }
+}
+```
+Or if ineligible:
+```json
+{
+  "success": true,
+  "data": {
+    "eligible": false,
+    "reason": "OWNERSHIP_REQUIRED"
+  }
+}
+```
+
+### ERROR RESPONSE (400 / 401 / 500)
+```json
+{
+  "success": false,
+  "error": "Unauthorized"
+}
+```
+
+---
+
+## ENDPOINT: Get Ownership State
+Fetches the current user's ownership state and claim status for a merchant.
+
+**METHOD:** GET
+**PATH:** `/api/merchants/:id/ownership`
+**FULL LOCALHOST URL:** `http://localhost:3001/api/merchants/:id/ownership`
+**AUTH:** Required (Supabase JWT)
+
+### PATH PARAMS
+- `id` (UUID): The merchant ID.
+
+### HEADERS
+- `Authorization`: `Bearer <token>`
+
+### SUCCESS RESPONSE (200 OK)
+```json
+{
+  "success": true,
+  "data": {
+    "merchantId": "uuid...",
+    "isOwned": false,
+    "ownerId": null,
+    "claimStatus": "PENDING"
+  }
+}
+```

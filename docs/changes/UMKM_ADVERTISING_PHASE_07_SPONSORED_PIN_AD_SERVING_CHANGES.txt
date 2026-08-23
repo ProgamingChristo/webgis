@@ -1,0 +1,40 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 07 CHANGELOG — SPONSORED PIN & AD SERVING ENGINE
+================================================================================
+
+DATE: 2026-08-23
+PHASE: Phase 07 (Sponsored Pin & Ad Serving Engine)
+STATUS: COMPLETED & VERIFIED
+
+SUMMARY OF CHANGES:
+1. Sponsored Pin Domain & Safe Public DTO:
+   - Defined `SponsoredPinDTO` with canonical `placement_type: "SPONSORED_PIN"`, `sponsored: true`, `label: "Sponsored"`, physical merchant geometry, headline, description, and allowed CTA (`VIEW_PROFILE` | `REQUEST_ROUTE`).
+   - Server-enforced data sanitization preventing financial or internal identifier leaks.
+
+2. Ad Serving Engine:
+   - Implemented `AdServingService` with authoritative candidate selection pipeline:
+     * Validates [longitude, latitude] bounds (-180..180, -90..90).
+     * Filters candidate campaigns by 4 pillars (Active Effective Lifecycle, Verified Merchant, Ready Pin Creative, Spatial Radius/Study Area containment).
+     * Enforces Single Pin per Merchant deduplication (tie-break: latest updated_at).
+     * Technical deterministic ordering and limit clamping [1..20].
+
+3. Owner Serving Preview Engine:
+   - Implemented `SponsoredPinServingService` for campaign owners to test serving eligibility across test coordinates.
+   - Outputs step-by-step 4-pillar checklist results and specific diagnostic blocker codes.
+   - ZERO event tracking side effects (no impression or click recording).
+
+4. API Endpoints & Security Policy:
+   - Added `GET /api/advertising/placements/sponsored-pins` (authenticated query for candidates with `Cache-Control: no-store`).
+   - Added `POST /api/umkm/advertising/campaigns/[id]/serving-preview` (authenticated owner preview).
+   - Registered endpoints with rate limits and CORS policies in `endpoint-policy.ts`.
+
+5. Frontend Ad-Serving Subdomain & UI:
+   - Created `frontend/src/features/umkm-advertising/ad-serving/` with types, API services, hooks (`useServingPreview`, `useSponsoredPinCandidates`), and visual components (`SponsoredPinMarker`, `SponsoredPinCard`, `SponsoredPinPreviewMap`, `ServingPreviewPanel`).
+   - Integrated "Uji Penayangan (Preview)" tab directly into `CampaignCard`.
+
+6. Testing & Quality Assurance:
+   - Unit tests in `ad-serving.service.test.ts`.
+   - 65 test files (458 unit & integration tests) passing 100%.
+   - Full Next.js production builds on frontend (11 pages) and backend (36 routes) passing cleanly.

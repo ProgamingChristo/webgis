@@ -1,0 +1,72 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK — PHASE 06
+FRONTEND TEST DATA & SCENARIOS
+================================================================================
+
+1. DEMO MERCHANTS FOR TESTING
+--------------------------------------------------------------------------------
+The following real/demo merchants in the GETRA database are pre-configured
+for testing:
+
+Merchant 1:
+- Name: Kopi Toko Djawa - Braga
+- ID: `a1111111-1111-4111-8111-111111111111`
+- Category: CAFE / F&B
+- Location: Braga, Kota Bandung (-6.9175, 107.6090)
+- Readiness Profile: Complete & Verified
+
+Merchant 2:
+- Name: Cuanki Serayu
+- ID: `b2222222-2222-4222-8222-222222222222`
+- Category: RESTAURANT / F&B
+- Location: Cihapit, Kota Bandung (-6.9080, 107.6250)
+- Readiness Profile: Complete & Verified
+
+
+2. TEST SCENARIOS
+--------------------------------------------------------------------------------
+
+Scenario A: Future / Scheduled Campaign
+---------------------------------------
+- Name: "Promo Hari Kemerdekaan September"
+- Start Time: 2026-09-01T00:00:00Z
+- End Time: 2026-09-15T23:59:59Z
+- Creative: 1 SPONSORED_PIN creative with status READY
+- Targeting: 750m Radius
+- Expected Status: `SCHEDULED`
+- Expected Allowed Actions: `canEditSchedule: true`, `canPause: true`, `canCancel: true`, `canResume: false`
+
+Scenario B: Active Campaign Window
+----------------------------------
+- Name: "Flash Sale Weekend Braga"
+- Start Time: Now minus 2 hours
+- End Time: Now plus 48 hours
+- Creative: 1 SPONSORED_PIN creative with status READY
+- Targeting: 500m Radius
+- Expected Status: `ACTIVE` (pulsing green badge)
+- Expected Allowed Actions: `canPause: true`, `canCancel: true`, `canEditSchedule: false` (must pause first)
+
+Scenario C: Paused Campaign
+---------------------------
+- Name: "Promo Ditunda"
+- Action: Click "Jeda Campaign (Pause)" on Scenario B
+- Expected Status: `PAUSED` (amber badge)
+- Expected Allowed Actions: `canResume: true`, `canEditSchedule: true`, `canCancel: true`, `canPause: false`
+
+Scenario D: Lapsed / Ended Campaign
+-----------------------------------
+- Name: "Promo Imlek Lalu"
+- Start Time: 2026-01-01T00:00:00Z
+- End Time: 2026-01-15T00:00:00Z
+- Expected Status: `ENDED` (zinc badge)
+- Expected Allowed Actions: All false (terminal state)
+
+Scenario E: Incomplete / Draft Campaign
+---------------------------------------
+- Name: "Draft Campaign Baru"
+- Creative: Missing or status DRAFT
+- Targeting: Missing
+- Schedule: Unset
+- Expected Status: `DRAFT`
+- Readiness Panel: 25% (Only Merchant passed)

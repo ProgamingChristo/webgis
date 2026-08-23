@@ -1,0 +1,381 @@
+import { createHash, randomUUID } from "node:crypto";
+
+import type { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+import { withApiLogger } from "@/src/lib/api-logger";
+import { createOptionsHandler } from "@/src/lib/api-security";
+import { createSuccessResponse } from "@/src/lib/api-response";
+import { requireRole } from "@/src/lib/auth";
+import { ApplicationError } from "@/src/lib/errors";
+import { rateLimiter } from "@/src/lib/rate-limit";
+import { getRequestId } from "@/src/lib/request-id";
+import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
+import { validateBody } from "@/src/lib/validation";
+import { logger } from "@/src/lib/logger";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+const MAX_COMMIT_BODY_BYTES = 8_388_608;
+const MAX_IMPORT_FEATURES = 2_000;
+
+const merchantSchema = z.object({
+  id: z.string().min(1).max(240),
+  name: z.string().trim().min(1).max(240),
+  category: z.string().trim().min(1).max(120),
+  brand: z.string().trim().min(1).max(120),
+  longitude: z.number().min(-180).max(180),
+  latitude: z.number().min(-90).max(90),
+  walkingMinutes: z.number().nonnegative().max(100_000),
+  distanceMeters: z.number().nonnegative().max(100_000_000),
+  accessibilityScore: z.number().min(0).max(100),
+  priceLabel: z.enum(["Hemat", "Sedang", "Premium"]),
+  openNow: z.boolean(),
+  source: z.string().trim().min(1).max(240),
+  status: z.literal("verified"),
+  updatedAt: z.string().max(80),
+  limitation: z.string().max(1_000),
+  address: z.string().max(1_000).optional(),
+  phone: z.string().max(120).optional(),
+  district: z.string().max(160).optional(),
+  village: z.string().max(160).optional(),
+  city: z.string().max(160).optional(),
+  province: z.string().max(160).optional(),
+  collectedAt: z.string().max(120).optional(),
+});
+
+const commitSchema = z.object({
+  layer_name: z.string().trim().min(1).max(120),
+  source_type: z.enum(["PUBLIC_API_URL", "JSON_PAYLOAD"]),
+  merchants: z.array(merchantSchema).min(1).max(MAX_IMPORT_FEATURES),
+});
+
+type ImportMerchant = z.infer<typeof merchantSchema>;
+
+type RegionSummary = {
+  id: string;
+  name: string;
+  count: number;
+  bounds: {
+    west: number;
+    south: number;
+    east: number;
+    north: number;
+  };
+  geometry: GeoJSON.MultiPolygon;
+};
+
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse> {
+  const requestId = getRequestId(request);
+
+  return withApiLogger(request, requestId, async () => {
+    const admin = await requireRole(request, "ADMIN");
+
+    await rateLimiter.checkLimit(
+      request,
+      `${admin.userId}:admin:map-import-commit`,
+    );
+
+    const payload = await validateBody(
+      request,
+      commitSchema,
+      MAX_COMMIT_BODY_BYTES,
+    );
+
+    const batchId = randomUUID();
+    const importedAt = new Date().toISOString();
+    const regions = summarizeRegions(payload.merchants, batchId);
+    const supabase = getServiceRoleSupabaseClient();
+
+    const sourceCode = `admin_import_${createHash("sha256")
+      .update(`${payload.source_type}|${payload.layer_name}`)
+      .digest("hex")
+      .slice(0, 24)}`;
+
+    const existingSourceResult = await supabase
+      .from("spatial_sources")
+      .select("id")
+      .eq("source_code", sourceCode)
+      .maybeSingle();
+
+    const sourceResult = existingSourceResult.data
+      ? existingSourceResult
+      : await supabase
+          .from("spatial_sources")
+          .insert({
+            source_name: payload.layer_name,
+            source_type: "imported",
+            source_code: sourceCode,
+            provider: "GETRA Admin Import",
+            is_active: true,
+            is_public: true,
+            redistribution_allowed: false,
+            terms_confirmed: false,
+            metadata: {
+              admin_map_import: true,
+              source_type: payload.source_type,
+            },
+          })
+      .select("id")
+      .single();
+
+    if (existingSourceResult.error || sourceResult.error || !sourceResult.data) {
+      const sourceError = existingSourceResult.error ?? sourceResult.error;
+      logger.error("Admin map import source upsert failed", {
+        requestId,
+        errorCode: sourceError?.code ?? "UNKNOWN",
+        errorMessage: sourceError?.message ?? "Unknown source error",
+      });
+      throw new ApplicationError(
+        "DATABASE_UNAVAILABLE",
+        "Gagal menyimpan sumber data import.",
+        true,
+      );
+    }
+
+    const sourceData = sourceResult.data;
+    const studyAreaRows = regions.map((region) => ({
+      source_id: sourceData.id,
+      name: `${payload.layer_name} — ${region.name}`,
+      description: `Batas cakupan otomatis untuk batch import ${batchId}.`,
+      geometry: toMultiPolygonWkt(region.geometry),
+      environment: "PRODUCTION",
+      is_public: true,
+      data_version: importedAt,
+      validation_status: "PENDING" as const,
+      source_record_id: `admin-import:${batchId}:${region.id}`,
+      metadata: {
+        admin_map_import: true,
+        import_batch_id: batchId,
+        region_id: region.id,
+        region_name: region.name,
+        feature_count: region.count,
+        boundary_method: "import_extent_with_safety_padding",
+      },
+    }));
+
+    const studyAreaResult = await supabase
+      .from("study_areas")
+      .insert(studyAreaRows)
+      .select("id,source_record_id");
+
+    if (studyAreaResult.error) {
+      logger.error("Admin map import study area insert failed", {
+        requestId,
+        errorCode: studyAreaResult.error.code,
+        errorMessage: studyAreaResult.error.message,
+      });
+      throw new ApplicationError(
+        "DATABASE_UNAVAILABLE",
+        "Gagal menyimpan batas wilayah import.",
+        true,
+      );
+    }
+
+    const studyAreaByRegion = new Map(
+      (studyAreaResult.data ?? []).map((row) => [
+        String(row.source_record_id).split(":").at(-1) ?? "",
+        row.id,
+      ]),
+    );
+
+    const merchantRows = payload.merchants.map((merchant) => {
+      const regionName = getMerchantRegionName(merchant);
+      const regionId = slugify(regionName);
+
+      return {
+        name: merchant.name,
+        slug: createMerchantSlug(batchId, payload.layer_name, merchant),
+        description: `${merchant.category} · ${merchant.brand}`,
+        location: `SRID=4326;POINT(${merchant.longitude} ${merchant.latitude})`,
+        address: merchant.address ?? null,
+        price_level: merchant.priceLabel.toLowerCase(),
+        opening_hours: {
+          open_now: merchant.openNow,
+        },
+        is_mobile: false,
+        verification_status: "SURVEYED" as const,
+        publish_status: "PUBLISHED" as const,
+        data_quality_score: merchant.accessibilityScore,
+        created_by: admin.userId,
+        metadata: {
+          admin_map_import: true,
+          import_batch_id: batchId,
+          layer_name: payload.layer_name,
+          source_type: payload.source_type,
+          source_record_id: merchant.id,
+          category: merchant.category,
+          brand: merchant.brand,
+          phone: merchant.phone ?? null,
+          district: merchant.district ?? null,
+          village: merchant.village ?? null,
+          city: merchant.city ?? null,
+          province: merchant.province ?? null,
+          collected_at: merchant.collectedAt ?? null,
+          source_updated_at: merchant.updatedAt,
+          region_id: regionId,
+          region_name: regionName,
+          study_area_id: studyAreaByRegion.get(regionId) ?? null,
+          imported_at: importedAt,
+        },
+      };
+    });
+
+    const merchantResult = await supabase
+      .from("merchants")
+      .insert(merchantRows)
+      .select("id,slug");
+
+    if (merchantResult.error) {
+      logger.error("Admin map import merchant upsert failed", {
+        requestId,
+        errorCode: merchantResult.error.code,
+        errorMessage: merchantResult.error.message,
+      });
+      const studyAreaIds = (studyAreaResult.data ?? []).map((row) => row.id);
+
+      if (studyAreaIds.length > 0) {
+        await supabase.from("study_areas").delete().in("id", studyAreaIds);
+      }
+
+      throw new ApplicationError(
+        "DATABASE_UNAVAILABLE",
+        "Gagal menyimpan titik import ke database.",
+        true,
+      );
+    }
+
+    const databaseIdBySlug = new Map(
+      (merchantResult.data ?? []).map((row) => [row.slug, row.id]),
+    );
+
+    return createSuccessResponse(
+      requestId,
+      {
+        layer_id: batchId,
+        layer_name: payload.layer_name,
+        source_type: payload.source_type,
+        total_features: merchantRows.length,
+        merchants: payload.merchants.map((merchant) => ({
+          ...merchant,
+          id:
+            databaseIdBySlug.get(
+              createMerchantSlug(batchId, payload.layer_name, merchant),
+            ) ?? merchant.id,
+          status: "verified" as const,
+          limitation:
+            "Data tersimpan di database sebagai SURVEYED dan tetap memerlukan verifikasi lapangan sebelum menjadi VERIFIED.",
+        })),
+        regions,
+        persisted: true,
+        imported_at: importedAt,
+        limitation:
+          "Import tersimpan di database. Batas otomatis menunjukkan cakupan titik per wilayah dan bukan pengganti batas administrasi resmi.",
+      },
+      { status: 201 },
+    );
+  });
+}
+
+export const OPTIONS = createOptionsHandler(
+  "/api/admin/map-import/commit",
+);
+
+function getMerchantRegionName(merchant: ImportMerchant) {
+  return (
+    merchant.city?.trim() ||
+    merchant.district?.trim() ||
+    merchant.province?.trim() ||
+    "Wilayah import"
+  );
+}
+
+function summarizeRegions(
+  merchants: ImportMerchant[],
+  batchId: string,
+): RegionSummary[] {
+  const groups = new Map<string, ImportMerchant[]>();
+
+  for (const merchant of merchants) {
+    const name = getMerchantRegionName(merchant);
+    groups.set(name, [...(groups.get(name) ?? []), merchant]);
+  }
+
+  return Array.from(groups.entries()).map(([name, members]) => {
+    const west = Math.min(...members.map((item) => item.longitude));
+    const east = Math.max(...members.map((item) => item.longitude));
+    const south = Math.min(...members.map((item) => item.latitude));
+    const north = Math.max(...members.map((item) => item.latitude));
+    const longitudePadding = Math.max((east - west) * 0.08, 0.002);
+    const latitudePadding = Math.max((north - south) * 0.08, 0.002);
+    const bounds = {
+      west: west - longitudePadding,
+      south: south - latitudePadding,
+      east: east + longitudePadding,
+      north: north + latitudePadding,
+    };
+
+    return {
+      id: slugify(name),
+      name,
+      count: members.length,
+      bounds,
+      geometry: {
+        type: "MultiPolygon",
+        coordinates: [[[
+          [bounds.west, bounds.south],
+          [bounds.east, bounds.south],
+          [bounds.east, bounds.north],
+          [bounds.west, bounds.north],
+          [bounds.west, bounds.south],
+        ]]],
+      },
+      batch_id: batchId,
+    } as RegionSummary & { batch_id: string };
+  });
+}
+
+function createMerchantSlug(
+  batchId: string,
+  layerName: string,
+  merchant: ImportMerchant,
+) {
+  const digest = createHash("sha256")
+    .update(
+      `${batchId}|${layerName}|${merchant.id}|${merchant.longitude}|${merchant.latitude}`,
+    )
+    .digest("hex")
+    .slice(0, 24);
+
+  return `admin-import-${digest}`;
+}
+
+function slugify(value: string) {
+  return (
+    value
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "wilayah-import"
+  );
+}
+
+function toMultiPolygonWkt(geometry: GeoJSON.MultiPolygon) {
+  const polygons = geometry.coordinates
+    .map(
+      (polygon) =>
+        `(${polygon
+          .map(
+            (ring) =>
+              `(${ring.map(([longitude, latitude]) => `${longitude} ${latitude}`).join(", ")})`,
+          )
+          .join(", ")})`,
+    )
+    .join(", ");
+
+  return `SRID=4326;MULTIPOLYGON(${polygons})`;
+}

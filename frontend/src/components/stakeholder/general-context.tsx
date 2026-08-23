@@ -1,23 +1,30 @@
 "use client";
 
 import React from "react";
+import {
+  Compass,
+} from "lucide-react";
 
 interface GeneralContextProps {
   children: React.ReactNode;
 }
 
-/**
- * The baseline GETRA product experience.
- * This should transparently pass through the children (Map, Main Dashboard components)
- * so that users get the unmodified original data exploration capabilities.
- */
-export function GeneralContext({ children }: GeneralContextProps) {
+export function GeneralContext({
+  children,
+}: GeneralContextProps) {
   return (
-    <div className="experience-context experience-context--general" data-testid="general-context">
-      {/* 
-        In Phase 9, this simply wraps the children.
-        We do not hide any data layer here. Community, Transit, UMKM are fully explorable.
-      */}
+    <div
+      className="experience-context experience-context--general"
+      data-testid="general-context"
+    >
+      <div className="stakeholder-notice stakeholder-notice--general">
+        <Compass size={16} />
+        <span>
+          <strong>Mode General / Commuter:</strong> akses default untuk peta,
+          pencarian, rute, community, dan eksplorasi area. Mode ini tidak
+          disimpan sebagai stakeholder database.
+        </span>
+      </div>
       {children}
     </div>
   );

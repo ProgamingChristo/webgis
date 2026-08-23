@@ -1,0 +1,25 @@
+# TARGETING TEST REPORT (PHASE 5)
+
+## 1. BACKEND QUALITY
+- **Typecheck (`tsc --noEmit`)**: PASS (0 errors)
+- **Lint (`eslint`)**: PASS
+- **Next.js Production Build**: PASS (`/api/umkm/advertising/campaigns/[id]/targeting` compiled cleanly)
+
+## 2. FRONTEND QUALITY
+- **Typecheck (`tsc --noEmit`)**: PASS (0 errors)
+- **Lint (`eslint`)**: PASS
+- **Next.js Production Build**: PASS (Prebuild worker copied & static generation complete)
+
+## 3. DATABASE & MIGRATION
+- **Migration Dry-Run (`supabase db push --dry-run`)**: PASS
+- **Migration Push (`supabase db push`)**: PASS (`20260823150000_umkm_advertising_spatial_targeting.sql` applied)
+- **TypeScript Types Generation (`supabase gen types`)**: PASS (Synchronized with `public.ad_campaign_targets`)
+
+## 4. API & INTEGRATION SMOKE TEST (Simulated)
+1. User requests `GET /api/umkm/advertising/campaigns/[id]/targeting` -> returns 200 OK with `status: "NOT_CONFIGURED"` and merchant coordinates.
+2. User submits `PUT /api/umkm/advertising/campaigns/[id]/targeting` with `RADIUS` 1000m -> returns 200 OK with `status: "CONFIGURED"` and PostGIS buffer GeoJSON.
+3. User submits `PUT` with radius below 250m -> returns 400 Bad Request with validation message.
+4. User submits `PUT` with radius above 10,000m -> returns 400 Bad Request with validation message.
+5. User submits `PUT` with `STUDY_AREA` -> returns 200 OK and study area boundary GeoJSON.
+6. Non-owner submits `PUT` for unowned campaign -> returns 403 Forbidden.
+7. Mutation on CANCELLED campaign -> returns 400 Bad Request (`CAMPAIGN_NOT_EDITABLE`).

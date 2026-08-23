@@ -1,0 +1,27 @@
+# TARGETING FRONTEND FLOW (PHASE 5)
+
+## User Experience Journey
+1. **Access Advertising Manager**:
+   - User navigates to `/umkm/advertising`.
+   - Eligibility gate checks merchant ownership.
+2. **Select Campaign**:
+   - In "Campaign Saya", user finds a campaign in `DRAFT` status.
+3. **Open Targeting Manager**:
+   - User clicks the **"🎯 Kelola Targeting"** button on the campaign card.
+   - The card smoothly expands the `CampaignTargetingManager`.
+4. **Choose Targeting Method**:
+   - Option A: **Radius Merchant** (Default).
+     - User sees verified merchant outlet coordinates.
+     - User clicks preset distance buttons (500m, 1 km, 2 km, 5 km) or drags the fine-tuning slider (250m - 10 km).
+     - MapLibre map updates the circular radius polygon buffer in real time.
+   - Option B: **Study Area GETRA**.
+     - User selects an available study area from the dropdown.
+     - MapLibre map displays the multi-polygon boundary of the selected study area.
+5. **Save Target Area**:
+   - User clicks **"Simpan Target Area"**.
+   - API issues `PUT /api/umkm/advertising/campaigns/[id]/targeting`.
+   - Backend persists the target in `ad_campaign_targets`, generates PostGIS buffer GeoJSON, and returns updated DTO.
+   - Success badge appears: `"Target kampanye berhasil disimpan."`
+6. **Persistence Check**:
+   - User refreshes the page or re-opens the targeting tab.
+   - The saved configuration, radius, study area, and map polygon persist accurately.

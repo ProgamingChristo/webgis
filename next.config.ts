@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { API_STATIC_SECURITY_HEADERS } from "./src/lib/api-security/security-headers";
+import { API_STATIC_SECURITY_HEADERS } from "./backend/src/lib/api-security/security-headers";
 
 const nextConfig: NextConfig = {
   // Dibutuhkan untuk Docker image Christo

@@ -141,7 +141,10 @@ export interface UserContext {
   };
   profile: {
     display_name: string | null;
+    username: string | null;
     avatar_url: string | null;
+    phone_number: string | null;
+    bio: string | null;
     account_role: "USER" | "ADMIN";
     onboarding_complete: boolean;
     trust_score: number;
@@ -161,4 +164,16 @@ export async function getUserContext(): Promise<UserContext | null> {
   } catch {
     return null;
   }
+}
+
+export interface PublicProfile {
+  id: string;
+  display_name: string | null;
+  username: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  account_role: "USER" | "ADMIN";
+  stakeholder_modes: ("UMKM" | "INVESTOR" | "GOVERNMENT")[];
+  trust_score: number;
+  created_at: string;
 }

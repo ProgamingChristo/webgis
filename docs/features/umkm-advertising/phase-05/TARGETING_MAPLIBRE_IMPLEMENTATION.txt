@@ -1,0 +1,23 @@
+# TARGETING MAPLIBRE IMPLEMENTATION (PHASE 5)
+
+## 1. Architecture
+- Uses `maplibre-gl` dynamically imported on the client side with custom worker path `/maplibre/maplibre-gl-worker.mjs`.
+- Reuses MAPID basemap configurations from `frontend/lib/mapid.ts` (`getBasemapOption(getDefaultBasemapId()).style`).
+
+## 2. Visual Layers & Elements
+1. **Merchant Outlet Marker**:
+   - `maplibre.Marker` (Emerald Green `#059669`) anchored at `[merchant.longitude, merchant.latitude]`.
+2. **Target Area Fill Layer (`targeting-preview-fill`)**:
+   - GeoJSON Polygon fill with `#10b981` at `0.25` opacity.
+3. **Target Area Stroke Layer (`targeting-preview-stroke`)**:
+   - GeoJSON Polygon outline with dashed line `#059669`, `2.5px` width.
+4. **Interactive Legend**:
+   - Bottom-left HUD showing symbols for Outlet Marker and Target Area Polygon.
+
+## 3. Dynamic FitBounds
+- When geometry updates (e.g. radius changes or study area chosen), coordinates are extracted to compute `[minLng, minLat], [maxLng, maxLat]`.
+- Map animates with `fitBounds` (padding 40px, maxZoom 16, duration 600ms) to ensure the full target geometry is in view.
+
+## 4. Fallback & Empty State Handling
+- If merchant location is not yet set, default center is provided gracefully without map crash.
+- If preview GeoJSON is null, source is cleared gracefully.

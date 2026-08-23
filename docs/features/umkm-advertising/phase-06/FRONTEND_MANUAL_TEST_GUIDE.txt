@@ -1,0 +1,82 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK — PHASE 06
+FRONTEND MANUAL TESTING & VERIFICATION GUIDE
+================================================================================
+
+1. PREREQUISITES
+--------------------------------------------------------------------------------
+1. Start backend server:
+   `cd backend && npm run dev` (running on http://localhost:3001)
+2. Start frontend server:
+   `cd frontend && npm run dev` (running on http://localhost:3000)
+3. Log in as an authenticated user, or navigate directly to:
+   `http://localhost:3000/umkm/advertising`
+
+
+2. STEP-BY-STEP MANUAL TEST WALKTHROUGH
+--------------------------------------------------------------------------------
+
+Step 1: Select or Claim a Demo Merchant
+---------------------------------------
+1. In the UMKM Advertising Dashboard (`/umkm/advertising`), locate the
+   "Pilih Toko yang Sudah Dimiliki" or "Rekomendasi Toko Siap Iklan" card.
+2. Select or click "Klaim & Kelola Toko Ini" for "Kopi Toko Djawa - Braga".
+3. Verify that the merchant card displays "Eligible untuk Advertising" with
+   green checkmarks.
+
+Step 2: Create a New Campaign
+-----------------------------
+1. Under "Buat Campaign Baru", enter:
+   - Nama Campaign: "Promo Kopi Pagi Braga"
+   - Deskripsi: "Diskon 20% bagi commuter transit stasiun Braga"
+2. Click "Buat Campaign".
+3. Verify the new campaign appears in the list with a "Draft" slate badge.
+
+Step 3: Test Readiness Checklist
+--------------------------------
+1. Click "Jadwal & Kesiapan" on the new campaign card.
+2. Observe `CampaignReadinessPanel`:
+   - Kelayakan Toko: [✓] (Passed)
+   - Materi Iklan: [!] (Incomplete)
+   - Target Wilayah: [!] (Incomplete)
+   - Jadwal Waktu: [!] (Incomplete)
+   - Progress bar: 25%.
+
+Step 4: Configure Creative
+--------------------------
+1. Click "Kelola Materi".
+2. Add a new creative headline: "Ngopi Pagi Diskon 20%".
+3. Click "Tandai Siap Tayang (Ready)".
+4. Return to "Jadwal & Kesiapan" tab -> verify Creative check is now [✓] (50%).
+
+Step 5: Configure Spatial Targeting
+-----------------------------------
+1. Click "Targeting Wilayah".
+2. Adjust radius slider to "750 meter".
+3. Click "Simpan Pengaturan Targeting".
+4. Return to "Jadwal & Kesiapan" tab -> verify Targeting check is now [✓] (75%).
+
+Step 6: Set Campaign Schedule & Presets
+---------------------------------------
+1. In the "Jadwal & Kesiapan" tab, look at `CampaignScheduleEditor`.
+2. Click the preset button "+7 Hari (1 Minggu)".
+3. Verify the start and end dates are populated and the duration calculation
+   shows "7 hari (168 jam)".
+4. Click "Simpan Jadwal".
+5. Verify:
+   - Green success alert appears: "Jadwal campaign berhasil disimpan!".
+   - Readiness progress reaches 100% [✓ Siap Tayang].
+   - Status badge in the campaign header dynamically updates to "Terjadwal"
+     (or "Aktif Berjalan" if start date is current).
+
+Step 7: Test Pause, Resume, and Cancel Actions
+----------------------------------------------
+1. In the campaign header, click "Jeda Campaign (Pause)".
+2. Verify status badge updates to amber "Dijeda (Paused)".
+3. Click "Lanjutkan Tayang (Resume)".
+4. Verify status badge returns to "Terjadwal" or "Aktif Berjalan".
+5. Click "Batalkan Campaign".
+6. Verify confirmation modal appears.
+7. Click "Ya, Batalkan Campaign".
+8. Verify status updates to red "Dibatalkan" and action buttons disappear.

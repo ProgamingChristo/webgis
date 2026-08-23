@@ -1,0 +1,32 @@
+# CAMPAIGN TEST REPORT (PHASE 3)
+
+## FRONTEND
+- Typecheck: PASS
+- Lint: PASS
+- Build: PASS
+
+## BACKEND
+- Typecheck: PASS
+- Lint: PASS
+- Build: PASS
+
+## DATABASE
+- Migration Dry-Run: PASS
+- Migration Push: PASS
+- Types generation: PASS
+
+## API & INTEGRATION SMOKE TEST
+1. Attempt to load campaigns for unowned merchant -> 403 Forbidden
+2. Load campaigns for owned merchant -> 200 OK (Empty array)
+3. Create DRAFT campaign -> 200 OK, valid DRAFT state returned
+4. Check database directly -> Row created with correct merchant_id, created_by, status = DRAFT
+5. Update DRAFT name -> 200 OK
+6. Cancel DRAFT -> 200 OK, status = CANCELLED
+7. Attempt to update CANCELLED -> 400 Bad Request / 403 Forbidden
+8. Creator spoof test -> Denied at API routing level, auth.user.id is enforced.
+9. Status spoof test -> `status` key in POST is stripped/ignored by Zod schema.
+
+## SECURITY
+- Service role leak: NONE. Backend uses RLS and restricted token context when calling Supabase.
+- Ownership bypass: NONE. All campaign mutations are guarded by `AdvertisingEligibilityService`.
+- Mass Assignment: NONE. `CreateCampaignInput` and `UpdateCampaignInput` schemas are strict.

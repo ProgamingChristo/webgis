@@ -1,0 +1,11 @@
+# CREATIVE SECURITY VERIFICATION (PHASE 4)
+
+- [x] **Service Role Leak**: Prevented. The backend uses the user's `Authorization` header to create the Supabase client via `getRequestSupabaseClient()`. Storage upload is proxied through the API which validates first.
+- [x] **Storage Credentials Leak**: Prevented. No private bucket keys are exposed.
+- [x] **Hardcoded URL with Secret**: None. Only `publicUrl` is returned.
+- [x] **Arbitrary External CTA**: Prevented. `cta_type` is restricted by Zod enum `["VIEW_PROFILE", "REQUEST_ROUTE"]`.
+- [x] **Raw HTML (XSS)**: Prevented. Zod schemas trim and validate as strings. React safely escapes.
+- [x] **Authorization Bypass**: Prevented. `requireAuthenticatedUser` and `verifyCampaignOwnershipAndStatus` guard all mutations.
+- [x] **Path Traversal**: Prevented. Upload filename is sanitized `filename.replace(/[^a-zA-Z0-9.\-_]/g, '')`.
+- [x] **Unsafe MIME**: Prevented. Only JPG, PNG, WEBP allowed in the media endpoint. Max size 5MB.
+- [x] **Mass Assignment**: Prevented. Zod schema strips arbitrary fields from POST/PATCH body.

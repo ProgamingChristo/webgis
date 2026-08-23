@@ -1,0 +1,19 @@
+# CAMPAIGN AUTHORIZATION (PHASE 3)
+
+## UMKM MODE
+Required. Handled seamlessly by the `AdvertisingEligibilityService`.
+
+## VERIFIED OWNERSHIP
+Required. The backend service will always query `AdvertisingEligibilityService` passing the `auth.user.id` and the requested `merchant_id` before mutating or returning campaign data.
+
+## ADVERTISING ELIGIBILITY
+Pass required. An inactive merchant or incomplete profile will reject campaign creation.
+
+## CROSS-MERCHANT ACCESS
+Denied. If User A attempts to edit a campaign belonging to Merchant B, the eligibility service will reject the action (403 Unauthorized).
+
+## CREATOR SPOOF
+Denied. `created_by` is derived exclusively from the server-side `auth.getUser()` context. User payload cannot override it.
+
+## STATUS SPOOF
+Denied. Create API forcefully sets status to `DRAFT`. Update API only accepts `name` and `description` modifications. Status transition is restricted to the `/cancel` endpoint.

@@ -165,26 +165,41 @@ export async function POST(
         );
       }
 
+      if (!data.session) {
+        logger.error(
+          "Auth registration returned no session",
+          {
+            requestId:
+              reqId,
+
+            reason:
+              "Supabase email confirmation is likely still enabled",
+          },
+        );
+
+        throw new ApplicationError(
+          "AUTH_EMAIL_CONFIRMATION_REQUIRED",
+        );
+      }
+
       return createSuccessResponse(
         reqId,
         {
           session:
-            data.session
-              ? {
-                  access_token:
-                    data.session
-                      .access_token,
+            {
+              access_token:
+                data.session
+                  .access_token,
 
-                  refresh_token:
-                    data.session
-                      .refresh_token,
+              refresh_token:
+                data.session
+                  .refresh_token,
 
-                  expires_at:
-                    data.session
-                      .expires_at ??
-                    null,
-                }
-              : null,
+              expires_at:
+                data.session
+                  .expires_at ??
+                null,
+            },
 
           user: {
             id:

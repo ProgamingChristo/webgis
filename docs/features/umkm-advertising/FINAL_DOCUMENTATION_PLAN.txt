@@ -1,0 +1,18 @@
+# FINAL DOCUMENTATION PLAN (UMKM ADVERTISING)
+
+Phase 12 will assemble the official guides. Ensure the following is covered:
+
+1. **How to verify Ownership**: Covered by Phase 2 documentation.
+2. **How to create a Campaign Draft**: Covered by Phase 3. The UMKM user clicks "Buat Campaign Draft" in the Advertising Manager.
+3. **Campaign Route**: `/umkm/advertising` with a valid `merchantId`.
+4. **Campaign API**: Documented in `CAMPAIGN_API.txt`.
+5. **Campaign Lifecycle**: Currently only DRAFT and CANCELLED. Future phases will expand this.
+6. **How to create a Creative**: Documented in Phase 4. Use the "Kelola Creative" button on a DRAFT campaign.
+7. **Creative Types**: MVP supports `SPONSORED_PIN`.
+8. **Image Requirements**: Optional for SPONSORED_PIN. Max 5MB, JPG/PNG/WEBP.
+9. **Creative READY vs Campaign ACTIVE**: Creative `READY` means the content passes validation. Campaign `ACTIVE` means the ad is currently being served on the map (Not implemented yet).
+10. **How to select Campaign Area**: Documented in Phase 5. Use the "🎯 Kelola Targeting" button on a DRAFT campaign.
+11. **Radius Targeting Explanation**: Proximity around merchant outlet (250m - 10 km). Center location is authoritative from merchant data.
+12. **Study Area Targeting Explanation**: Target full predefined GETRA transit/operational zones.
+13. **Map Preview**: MapLibre rendering with dynamic circle buffer and study area polygons.
+14. **Common Targeting Errors**: Missing merchant location coordinates, radius out of range, attempting to edit non-DRAFT campaign.

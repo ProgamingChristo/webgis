@@ -1,0 +1,46 @@
+MERCHANT IDENTITY:
+The canonical entity is `merchants`.
+Owner profiles are linked via `umkm_profiles`.
+
+MERCHANT NAME:
+`name` (in `merchants`)
+
+CATEGORY:
+`primary_category_id` (in `merchants`) and linked in `merchant_categories`.
+
+DESCRIPTION:
+`description` (in `merchants`)
+
+LOCATION:
+`address` (in `merchants`)
+
+GEOMETRY:
+`location` (PostGIS point in `merchants`)
+
+STATUS:
+`publish_status` (DRAFT, PUBLISHED, HIDDEN, ARCHIVED)
+`verification_status` (UNVERIFIED, SURVEYED, VERIFIED, STALE, REJECTED, SYNTHETIC)
+
+OPENING HOURS:
+`opening_hours` (JSON in `merchants`)
+
+MENU:
+Not explicitly defined in canonical `merchants` table schema yet, or handled via external integration.
+
+PRICE:
+`price_level` (in `merchants`)
+
+IMAGE:
+Not explicitly defined in canonical `merchants` table schema yet, might be in `metadata`.
+
+SOURCE:
+Via `merchant_source_links` tying to `spatial_sources`.
+
+ENVIRONMENT:
+Handled globally or via source lineage.
+
+VERIFICATION:
+`verification_status` and `data_quality_score`.
+
+TIMESTAMPS:
+`created_at`, `updated_at`.

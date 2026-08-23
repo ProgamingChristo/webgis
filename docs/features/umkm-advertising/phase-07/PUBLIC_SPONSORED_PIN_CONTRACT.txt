@@ -1,0 +1,41 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 07 — SPONSORED PIN & AD SERVING ENGINE
+PUBLIC SPONSORED PIN CONTRACT (DTO)
+================================================================================
+
+1. CONTRACT DEFINITION
+--------------------------------------------------------------------------------
+The public SponsoredPinDTO is strictly sanitized before transmission to client maps.
+It contains NO internal budget, owner IDs, lifecycle internal states, or raw tokens.
+
+TypeScript Definition:
+```ts
+export interface SponsoredPinDTO {
+  placement_type: "SPONSORED_PIN";
+  sponsored: true;
+  label: "Sponsored";
+  campaign_id: string;
+  creative_id: string;
+  merchant_id: string;
+  merchant_name: string;
+  merchant_category: string;
+  geometry: {
+    type: "Point";
+    coordinates: [number, number]; // [longitude, latitude]
+  };
+  headline: string;
+  description: string | null;
+  cta_type: "VIEW_PROFILE" | "REQUEST_ROUTE";
+  image_url?: string | null;
+}
+```
+
+2. SANITIZATION RULES
+--------------------------------------------------------------------------------
+- placement_type: Enforced server-side as literal "SPONSORED_PIN"
+- sponsored: Enforced server-side as true
+- label: Enforced server-side as "Sponsored"
+- geometry: Physical store coordinates
+- STRIPPED: created_by, owner_id, budget, spend, internal status, payment tokens

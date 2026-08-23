@@ -1,0 +1,90 @@
+Merchant profile
+CURRENT STATUS: IMPLEMENTED (Canonical `merchants` table and `umkm_profiles`)
+DEPENDENCY: Core
+GAP: None
+FUTURE FEATURE FOLDER: `features/umkm-profile/`
+TARGET PHASE: Phase 2
+
+Merchant ownership
+CURRENT STATUS: IMPLEMENTED (schema level via `merchant_claims` and `owner_id`)
+DEPENDENCY: Auth, Core
+GAP: Claim APIs/UI may not be fully connected
+FUTURE FEATURE FOLDER: `features/umkm-profile/`
+TARGET PHASE: Phase 2
+
+Eligibility
+CURRENT STATUS: NOT_IMPLEMENTED
+DEPENDENCY: Merchant Ownership, Profile
+GAP: Needs logic to determine if a merchant can run ads
+FUTURE FEATURE FOLDER: `features/umkm-advertising/`
+TARGET PHASE: Phase 2
+
+Campaign
+CURRENT STATUS: NOT_IMPLEMENTED
+DEPENDENCY: Eligibility
+GAP: Missing DB schema and domain logic
+FUTURE FEATURE FOLDER: `features/umkm-advertising/`
+TARGET PHASE: Phase 3
+
+Creative
+CURRENT STATUS: NOT_IMPLEMENTED
+DEPENDENCY: Campaign, Storage
+GAP: Missing DB schema, asset uploads
+FUTURE FEATURE FOLDER: `features/umkm-advertising/`
+TARGET PHASE: Phase 4
+
+Geo targeting
+CURRENT STATUS: NOT_IMPLEMENTED
+DEPENDENCY: PostGIS, Campaign
+GAP: Missing logic to bound campaigns to study areas or radius
+FUTURE FEATURE FOLDER: `features/umkm-advertising/`
+TARGET PHASE: Phase 5
+
+Schedule
+CURRENT STATUS: NOT_IMPLEMENTED
+DEPENDENCY: Campaign
+GAP: Missing activation rules and lifecycle hooks
+FUTURE FEATURE FOLDER: `features/umkm-advertising/`
+TARGET PHASE: Phase 6
+
+Sponsored Pin
+CURRENT STATUS: NOT_IMPLEMENTED
+DEPENDENCY: Geo targeting, Map
+GAP: Missing ad serving logic and UI overlay
+FUTURE FEATURE FOLDER: `features/umkm-advertising/`
+TARGET PHASE: Phase 7
+
+Fair Discovery
+CURRENT STATUS: PARTIAL
+DEPENDENCY: Search, Sponsored Pin
+GAP: Needs rules to mix sponsored and organic results fairly
+FUTURE FEATURE FOLDER: `features/fair-discovery/`
+TARGET PHASE: Phase 8
+
+Banner / Profile Poster
+CURRENT STATUS: NOT_IMPLEMENTED
+DEPENDENCY: Creative, Profile UI
+GAP: Missing UI placements and serving API
+FUTURE FEATURE FOLDER: `features/umkm-advertising/`
+TARGET PHASE: Phase 9
+
+Events
+CURRENT STATUS: PARTIAL (Basic audit logs exist)
+DEPENDENCY: All Advertising UI
+GAP: Needs explicit impression and click tracking
+FUTURE FEATURE FOLDER: `features/umkm-advertising/`
+TARGET PHASE: Phase 10
+
+Analytics
+CURRENT STATUS: NOT_IMPLEMENTED
+DEPENDENCY: Events
+GAP: Missing aggregation logic and dashboard
+FUTURE FEATURE FOLDER: `features/umkm-advertising/`
+TARGET PHASE: Phase 11
+
+Midtrans
+CURRENT STATUS: NOT_IMPLEMENTED
+DEPENDENCY: Campaign, Billing
+GAP: Missing sandbox integration for payments
+FUTURE FEATURE FOLDER: `features/umkm-advertising/`
+TARGET PHASE: Phase 11

@@ -12,6 +12,7 @@ import {
 } from "next/navigation";
 
 import {
+  getUserContext,
   persistAuthSession,
   type BrowserAuthSession,
 } from "@/src/lib/auth-client";
@@ -149,12 +150,27 @@ export default function SignupPage() {
         session?.access_token &&
         session.refresh_token
       ) {
+        setSuccessMessage(
+          "Akun berhasil dibuat. Menyiapkan onboarding GETRA...",
+        );
+
         await persistAuthSession(
           session,
         );
 
+        const userContext =
+          await getUserContext();
+
+        if (!userContext?.profile) {
+          throw new Error(
+            "Akun dibuat, tetapi konteks GETRA belum tersedia. Coba masuk ulang.",
+          );
+        }
+
         router.replace(
-          "/onboarding",
+          userContext.profile.onboarding_complete
+            ? "/"
+            : "/onboarding",
         );
 
         router.refresh();
@@ -162,8 +178,8 @@ export default function SignupPage() {
         return;
       }
 
-      setSuccessMessage(
-        "Akun berhasil dibuat. Periksa email kamu untuk konfirmasi akun, lalu masuk melalui halaman login.",
+      throw new Error(
+        "Registrasi belum mengembalikan session. Pastikan email verification Supabase sedang OFF untuk development.",
       );
     } catch (
       error: unknown
