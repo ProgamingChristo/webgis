@@ -1,7 +1,10 @@
 import { CampaignLifecycleStatus } from "../../lifecycle/types/lifecycle.types";
 import { CtaType } from "../../creative/types/creative.types";
 
-export type PlacementType = "SPONSORED_PIN";
+export type PlacementType =
+  | "SPONSORED_PIN"
+  | "CONTEXTUAL_BANNER"
+  | "PROFILE_POSTER";
 
 export interface SponsoredPinServingContext {
   longitude: number;

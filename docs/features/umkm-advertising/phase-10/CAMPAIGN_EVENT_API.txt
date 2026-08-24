@@ -1,0 +1,75 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: CAMPAIGN EVENT API SPECIFICATION
+=====================================================
+
+1. ENDPOINT SPECIFICATION: POST /api/advertising/events
+- Method: POST
+- URL: http://localhost:3001/api/advertising/events
+- Auth: Authenticated (Bearer Token)
+- Rate Limit Policy: `mutation` (Strict IP and user-based throttling)
+- CORS: Allowlist (Exact frontend origin)
+
+2. REQUEST PAYLOAD (JSON)
+```json
+{
+  "event_type": "IMPRESSION",
+  "campaign_id": "99999999-9999-4999-9999-999999999999",
+  "creative_id": "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa",
+  "placement": "SPONSORED_PIN",
+  "session_key": "session-abc-123",
+  "dedup_key": "optional-custom-dedup-key",
+  "context": {
+    "surface": "MAPLIBRE_COMMUTER_MAP",
+    "request_id": "optional-request-id"
+  }
+}
+```
+
+3. RESPONSE PAYLOADS
+
+A. Fresh Event Recorded (200 OK):
+```json
+{
+  "success": true,
+  "request_id": "84849a6f-bc07-4cfd-84b0-b00f201abe5c",
+  "data": {
+    "accepted": true,
+    "deduplicated": false,
+    "event_id": "e71c703d-10f2-43a3-bb58-405b6b5d24ee"
+  }
+}
+```
+
+B. Deduplicated / Idempotent Retry (200 OK):
+```json
+{
+  "success": true,
+  "request_id": "84849a6f-bc07-4cfd-84b0-b00f201abe5c",
+  "data": {
+    "accepted": true,
+    "deduplicated": true
+  }
+}
+```
+
+C. Validation Error (400 Bad Request):
+```json
+{
+  "success": false,
+  "error": {
+    "message": "Tipe event 'PURCHASE' tidak kompatibel dengan placement 'SPONSORED_PIN'.",
+    "code": "VALIDATION_ERROR"
+  }
+}
+```
+
+D. Not Found Error (404 Not Found):
+```json
+{
+  "success": false,
+  "error": {
+    "message": "Campaign yang direferensikan tidak ditemukan.",
+    "code": "NOT_FOUND"
+  }
+}
+```

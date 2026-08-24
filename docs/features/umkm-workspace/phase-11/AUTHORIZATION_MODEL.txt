@@ -1,0 +1,38 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM WORKSPACE — AUTHORIZATION MODEL SPECIFICATION
+================================================================================
+
+1. CANONICAL ROLES VS STAKEHOLDER MODES
+--------------------------------------------------------------------------------
+GETRA enforces a strict two-tier authorization architecture:
+1. Canonical Account Role (profiles.account_role):
+   - 'USER'
+   - 'ADMIN'
+   * Note: 'UMKM' or 'UMKM_OWNER' are NEVER valid account_role values.
+
+2. Stakeholder Modes (user_stakeholder_modes table):
+   - (user_id, 'UMKM')
+   - (user_id, 'INVESTOR')
+   - (user_id, 'GOVERNMENT')
+
+A "USER UMKM" is formally defined as:
+`account_role = 'USER' AND stakeholder_modes CONTAINS 'UMKM'`
+
+2. WORKSPACE ACCESS MATRIX
+--------------------------------------------------------------------------------
+Actor Type                         | Workspace Access (/umkm) | Can Submit Merchant | Can Manage Campaigns
+-----------------------------------|--------------------------|---------------------|----------------------
+Unauthenticated Guest              | 401 Unauthorized         | 401 Unauthorized    | 401 Unauthorized
+USER (no UMKM mode, 0 merchants)   | 403 Forbidden            | 403 Forbidden       | 403 Forbidden
+USER (with UMKM mode, 0 merchants) | 200 OK (Empty state)     | 200 OK              | 403 (Requires Merchant)
+USER (with UMKM mode + Merchants)  | 200 OK (Full cockpit)    | 200 OK              | 200 OK (Owned only)
+ADMIN                              | 200 OK (Global view)     | 200 OK              | 200 OK
+
+3. MERCHANT OWNERSHIP INTEGRITY
+--------------------------------------------------------------------------------
+- Stakeholder Mode != Merchant Ownership.
+- Having UMKM mode grants permission to submit new merchants and access workspace.
+- Creating advertising campaigns or viewing analytics strictly requires verified
+  ownership relation in `merchants.owner_id = user.id`.
+================================================================================

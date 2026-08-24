@@ -1,0 +1,35 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: CAMPAIGN EVENT DATABASE MODEL
+=====================================================
+
+1. TABLE DEFINITION
+Table Name: `public.campaign_events`
+Migration: `20260823220000_umkm_advertising_campaign_events.sql`
+
+Columns:
+- `id` (uuid, PK, default gen_random_uuid())
+- `campaign_id` (uuid, NOT NULL, FK -> public.ad_campaigns(id) ON DELETE CASCADE)
+- `merchant_id` (uuid, NOT NULL, FK -> public.merchants(id) ON DELETE CASCADE)
+- `creative_id` (uuid, NULLABLE, FK -> public.ad_creatives(id) ON DELETE SET NULL)
+- `event_type` (text, NOT NULL, CHECK IN ('IMPRESSION', 'SPONSORED_PIN_CLICK', 'PROFILE_OPEN', 'ROUTE_REQUEST'))
+- `placement` (text, NOT NULL, CHECK IN ('SPONSORED_PIN', 'CONTEXTUAL_BANNER', 'PROFILE_POSTER'))
+- `session_key` (text, NOT NULL)
+- `dedup_key` (text, NOT NULL, UNIQUE)
+- `context` (jsonb, default '{}'::jsonb)
+- `occurred_at` (timestamptz, default now())
+- `created_at` (timestamptz, default now())
+
+2. CONSTRAINTS & INDEXES
+- Unique Constraint: `CONSTRAINT uq_campaign_events_dedup_key UNIQUE (dedup_key)`
+- Performance & Phase 11 Analytics Indexes:
+  - `idx_campaign_events_campaign_occurred` ON `public.campaign_events(campaign_id, occurred_at)`
+  - `idx_campaign_events_campaign_type_occurred` ON `public.campaign_events(campaign_id, event_type, occurred_at)`
+  - `idx_campaign_events_merchant` ON `public.campaign_events(merchant_id)`
+  - `idx_campaign_events_placement` ON `public.campaign_events(placement, occurred_at)`
+
+3. ROW LEVEL SECURITY (RLS) & APPEND-ONLY GUARANTEE
+- `ALTER TABLE public.campaign_events ENABLE ROW LEVEL SECURITY;`
+- Insert Policy: Authenticated users can insert validated event logs.
+- Select Policy: `service_role` and backend can query event records. Raw logs are not exposed to normal users.
+- Update Policy: NONE (Updates forbidden).
+- Delete Policy: NONE (Deletes forbidden).

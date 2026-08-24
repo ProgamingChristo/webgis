@@ -1,0 +1,23 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — TEST MATRIX & VERIFICATION
+================================================================================
+
+1. TEST SUITE OVERVIEW
+--------------------------------------------------------------------------------
+Unit & Aggregation Tests:
+- backend/tests/unit/umkm-advertising/campaign-analytics.service.test.ts (3 passed)
+
+2. TEST CASES AND COVERAGE
+--------------------------------------------------------------------------------
+Case ID   | Scenario                                          | Expected Result              | Status
+----------|---------------------------------------------------|------------------------------|--------
+TC-AN-01  | Merchant owner requests analytics for own camp    | 200 OK, full aggregated DTO  | PASSED
+TC-AN-02  | Computes Sponsored Pin CTR correctly (50.0%)      | CTR = 50.0                   | PASSED
+TC-AN-03  | Gracefully handles 0 impressions (CTR = 0.0%)     | CTR = 0.0                    | PASSED
+TC-AN-04  | Timeseries groups by YYYY-MM-DD chronologically   | Sorted date buckets          | PASSED
+TC-AN-05  | Placement breakdown isolates 3 surfaces           | 3 items (PIN, BANNER, POSTER)| PASSED
+TC-AN-06  | Non-owner attempts to fetch another merchant camp | 403 Forbidden                | PASSED
+TC-AN-07  | Admin requests campaign analytics                 | 200 OK                       | PASSED
+TC-AN-08  | Unauthenticated request to analytics route        | 401 Unauthorized             | PASSED
+================================================================================

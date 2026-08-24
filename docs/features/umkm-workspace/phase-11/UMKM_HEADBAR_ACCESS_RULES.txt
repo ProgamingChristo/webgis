@@ -1,0 +1,32 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM WORKSPACE — HEADBAR ACCESS RULES & BEHAVIOR
+================================================================================
+
+1. VISIBILITY CRITERIA
+--------------------------------------------------------------------------------
+The "UMKM Workspace" navigation item in the application headbar (Navbar.tsx)
+is dynamically evaluated based on the authenticated user's session context:
+
+1. Visible IF AND ONLY IF:
+   - User is AUTHENTICATED AND
+   - `authContext.stakeholder_modes.includes("UMKM")` OR `authContext.profile.account_role === "ADMIN"`
+
+2. Hidden IF:
+   - User is unauthenticated (Guest / Public).
+   - User is authenticated as a General commuter (`account_role = "USER"`) and
+     has NOT activated the "UMKM" stakeholder mode in their profile.
+
+2. MULTI-MODE SUPPORT
+--------------------------------------------------------------------------------
+GETRA supports users having multiple stakeholder modes simultaneously:
+- Example: User has `["UMKM", "INVESTOR"]`.
+- The Navbar displays BOTH the "UMKM Workspace" and "Investor" navigation items.
+- Activating or deactivating one mode preserves all other mode privileges.
+
+3. LOGOUT & SESSION EXPIRATION
+--------------------------------------------------------------------------------
+- Upon user logout (`useAuth().logout()`), the user context is cleared immediately.
+- The Navbar resets to the public guest layout (General + Community + Login/Signup).
+- No stale UMKM workspace links or merchant data persist in the browser state.
+================================================================================

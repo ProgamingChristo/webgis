@@ -1,0 +1,23 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — SECURITY & RLS POLICIES
+================================================================================
+
+1. ROW LEVEL SECURITY (RLS) POLICIES ON public.merchant_submissions
+--------------------------------------------------------------------------------
+Policy Name                     | Operation | Permitted Actor
+--------------------------------|-----------|---------------------------------------------------------
+merchant_submissions_select_own | SELECT    | auth.uid() = submitted_by OR auth.uid() IS ADMIN
+merchant_submissions_insert_own | INSERT    | auth.uid() = submitted_by AND has 'UMKM' stakeholder mode
+merchant_submissions_update_own | UPDATE    | auth.uid() = submitted_by (only when status = 'DRAFT')
+merchant_submissions_admin_all  | ALL       | User has 'ADMIN' account_role in public.profiles
+
+2. INPUT SANITIZATION & FIELD LOCKING
+--------------------------------------------------------------------------------
+- Zod Strict Validation:
+  - Disallows injecting `status = 'APPROVED'` or arbitrary `submitted_by` via client payload.
+  - Validates coordinate bounding box (-180 <= Lng <= 180, -90 <= Lat <= 90).
+- State Machine Enforcements:
+  - Transition from `DRAFT` to `PENDING_REVIEW` requires non-empty name, category, and spatial point.
+  - Updates are forbidden once a submission enters `PENDING_REVIEW` or terminal state.
+================================================================================

@@ -1,0 +1,22 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — RLS & SECURITY SPECIFICATION
+================================================================================
+
+1. ROW-LEVEL SECURITY POLICIES
+--------------------------------------------------------------------------------
+1. SELECT Policy (`merchant_submissions_select_policy`):
+   - `auth.uid() = submitted_by` OR user has `account_role = 'ADMIN'` in public.profiles.
+   - Prevents cross-user submission inspection.
+
+2. INSERT Policy (`merchant_submissions_insert_policy`):
+   - `auth.uid() = submitted_by` AND user has 'UMKM' in user_stakeholder_modes.
+   - Prevents unapproved actors from inserting submissions on behalf of others.
+
+3. UPDATE Policy (`merchant_submissions_update_policy`):
+   - `auth.uid() = submitted_by` AND `status = 'DRAFT'`.
+   - Prevents submitters from altering submissions once submitted for review.
+
+4. ALL Policy for Admin (`merchant_submissions_admin_policy`):
+   - User has `account_role = 'ADMIN'` in public.profiles.
+================================================================================

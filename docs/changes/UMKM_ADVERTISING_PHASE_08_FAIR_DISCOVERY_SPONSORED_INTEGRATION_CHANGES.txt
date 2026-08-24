@@ -1,0 +1,44 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 CHANGELOG — FAIR DISCOVERY & SPONSORED INTEGRATION
+================================================================================
+
+Date: 2026-08-23
+Author: Principal Search & Ranking Engineer + Full-Stack TypeScript Engineer
+Status: COMPLETED & VERIFIED
+
+SUMMARY OF CHANGES
+--------------------------------------------------------------------------------
+1. Backend Fair Discovery Subdomain (`backend/src/features/fair-discovery/`):
+   - `types/fair-discovery.types.ts`: Defined `DiscoveryQuery`, `OriginalMerchantDTO`, `HiddenGemDTO`, `FairDiscoveryResult`, `FairDiscoveryMetadata`.
+   - `schemas/fair-discovery.schema.ts`: Zod schema for search parameters and filters with strict coordinate bounds.
+   - `constants/fair-discovery.constants.ts`: Defined `MAX_SPONSORED_RESULTS_PER_DISCOVERY = 1`, `DEFAULT_DISCOVERY_RADIUS_METERS = 2000`, `HIDDEN_GEM_MIN_DATA_QUALITY_SCORE = 80`.
+   - `integrations/sponsored-placement.adapter.ts`: Consumes public Phase 07 `AdServingService` contract, applies category/query/walking filter parity, and enforces failure isolation.
+   - `services/fair-discovery-composition.service.ts`: Composes Original, Hidden Gem, and Sponsored buckets; enforces single-merchant deduplication; preserves organic ranking immutability.
+   - `index.ts`: Barrel export.
+
+2. Backend API Endpoint & Security:
+   - `backend/app/api/discovery/route.ts`: Implemented `GET` and `POST` handlers returning `FairDiscoveryResult` with no-store cache headers.
+   - `backend/src/lib/api-security/endpoint-policy.ts`: Registered `GET /api/discovery` and `POST /api/discovery` with `AUTHENTICATED` policy and `api` rate limiter.
+
+3. Frontend Fair Discovery Subdomain (`frontend/src/features/fair-discovery/`):
+   - `types/fair-discovery.types.ts`: TypeScript contracts for discovery queries and results.
+   - `services/fair-discovery.service.ts`: Client service for `/api/discovery`.
+   - `hooks/use-fair-discovery.ts`: Hook for managing discovery lifecycle and filters.
+   - `components/discovery-disclosure.tsx`: Expandable transparency component explaining Original vs Hidden Gem vs Sponsored.
+   - `components/original-results-section.tsx`: Renders organic distance-ranked results.
+   - `components/hidden-gem-section.tsx`: Renders curated gems with glowing badge.
+   - `components/sponsored-section.tsx`: Renders sponsored placement using `SponsoredPinCard`.
+   - `components/fair-discovery-results.tsx`: Master results container.
+   - `index.ts`: Barrel export.
+
+4. Commuter Dashboard & MapLibre Integration:
+   - `frontend/components/getra-dashboard.tsx`: Added view mode switcher between "✨ Penelusuran Adil" and "📁 Katalog Dataset", integrated `useFairDiscovery` and `FairDiscoveryResults`.
+   - `frontend/components/getra-map.tsx`: Rendered distinct `SponsoredPinMarker` layer with amber badge and interactive popup.
+
+5. Test Suite & Validation:
+   - `backend/tests/unit/fair-discovery/fair-discovery-composition.service.test.ts`: 5 unit tests verifying bucket separation, organic immutability, category constraints, deduplication, and failure isolation.
+   - Passed all 66 test suites in `backend` (463 tests).
+   - Passed `npm run build` in both `frontend` (11 pages) and `backend` (38 routes).
+   - 13 documentation files generated in `docs/features/umkm-advertising/phase-08/`.

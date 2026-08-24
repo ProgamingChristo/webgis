@@ -118,11 +118,12 @@ export default function UserProfilePage() {
     context?.user.id === userId;
 
   return (
-    <main className="min-h-screen bg-[#050a10] text-slate-100">
-      <section className="mx-auto grid min-h-screen w-full max-w-6xl grid-cols-1 gap-8 px-5 py-8 lg:grid-cols-[360px_1fr]">
-        <aside className="border border-cyan-300/15 bg-slate-950/72 p-6">
+    <main className="min-h-screen overflow-hidden bg-[#050a10] text-slate-100">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(34,211,238,0.15),transparent_30%),radial-gradient(circle_at_82%_14%,rgba(154,242,74,0.1),transparent_28%),linear-gradient(120deg,rgba(255,255,255,0.025),transparent_32%)]" />
+      <section className="relative mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[360px_1fr] lg:px-8">
+        <aside className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-5 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-6">
           <button
-            className="inline-flex h-10 items-center gap-2 border border-cyan-300/20 px-3 text-xs font-black uppercase tracking-[0.16em] text-cyan-200 transition hover:border-cyan-300/70"
+            className="inline-flex h-11 items-center gap-2 rounded-2xl border border-cyan-300/20 px-4 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-300/65 hover:bg-cyan-300/8"
             type="button"
             onClick={() => router.back()}
           >
@@ -130,8 +131,9 @@ export default function UserProfilePage() {
             Kembali
           </button>
 
-          <div className="mt-10 grid place-items-start">
-            <div className="grid h-28 w-28 place-items-center overflow-hidden border border-cyan-300/55 bg-cyan-300/10 text-3xl font-black text-cyan-200">
+          <div className="mt-8 rounded-[1.75rem] border border-cyan-300/15 bg-cyan-300/[0.045] p-5">
+            <div className="relative mx-auto size-36">
+              <div className="grid size-36 place-items-center overflow-hidden rounded-full border border-cyan-200/55 bg-slate-900 text-4xl font-black text-cyan-100 shadow-[0_0_60px_rgba(34,211,238,0.14)]">
               {profile?.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -142,23 +144,27 @@ export default function UserProfilePage() {
               ) : (
                 avatarInitials
               )}
+              </div>
+              <span className="absolute bottom-2 right-2 grid size-10 place-items-center rounded-full border border-slate-950 bg-gradient-to-br from-lime-300 to-cyan-300 text-slate-950">
+                <UserRound size={18} />
+              </span>
             </div>
 
-            <p className="mt-6 text-xs font-black uppercase tracking-[0.22em] text-cyan-200">
+            <p className="mt-6 text-center text-xs font-black uppercase tracking-[0.22em] text-cyan-200">
               Public profile
             </p>
-            <h1 className="mt-3 text-3xl font-semibold">
+            <h1 className="mt-2 text-center text-3xl font-semibold tracking-tight">
               {loading
                 ? "Memuat..."
                 : displayName}
             </h1>
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-center text-sm text-slate-400">
               {profile?.username
                 ? `@${profile.username}`
                 : "Belum ada username"}
             </p>
             {profile ? (
-              <div className="mt-5 flex flex-wrap gap-2">
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
                 {getExperienceBadges(profile).map((badge) => (
                   <span
                     className={`user-type-badge user-type-badge--${badge.tone}`}
@@ -173,7 +179,7 @@ export default function UserProfilePage() {
 
           {isOwnProfile ? (
             <button
-              className="mt-8 inline-flex h-11 w-full items-center justify-center gap-2 bg-gradient-to-r from-lime-300 to-cyan-300 px-4 text-sm font-black text-slate-950"
+              className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-white/25 bg-gradient-to-r from-lime-300 via-emerald-200 to-cyan-300 px-4 text-sm font-black uppercase tracking-[0.04em] text-slate-950 shadow-[0_14px_35px_rgba(34,211,238,0.22)] ring-1 ring-slate-950/10 transition hover:-translate-y-0.5 hover:brightness-110"
               type="button"
               onClick={() =>
                 router.push(
@@ -187,9 +193,9 @@ export default function UserProfilePage() {
           ) : null}
         </aside>
 
-        <section className="border border-cyan-300/15 bg-slate-950/64 p-6">
+        <section className="rounded-[2rem] border border-white/10 bg-slate-950/72 p-5 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-7">
           {error ? (
-            <p className="border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
+            <p className="rounded-2xl border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
               {error}
             </p>
           ) : null}
@@ -197,7 +203,7 @@ export default function UserProfilePage() {
           {!error && profile ? (
             <div className="grid gap-5">
               <div className="grid gap-4 md:grid-cols-3">
-                <div className="border border-cyan-300/12 bg-cyan-300/5 p-4">
+                <div className="rounded-[1.5rem] border border-cyan-300/12 bg-cyan-300/5 p-5">
                   <ShieldCheck
                     className="text-cyan-200"
                     size={18}
@@ -213,7 +219,7 @@ export default function UserProfilePage() {
                   </span>
                 </div>
 
-                <div className="border border-cyan-300/12 bg-cyan-300/5 p-4">
+                <div className="rounded-[1.5rem] border border-cyan-300/12 bg-cyan-300/5 p-5">
                   <UserRound
                     className="text-cyan-200"
                     size={18}
@@ -229,7 +235,7 @@ export default function UserProfilePage() {
                   </span>
                 </div>
 
-                <div className="border border-cyan-300/12 bg-cyan-300/5 p-4">
+                <div className="rounded-[1.5rem] border border-cyan-300/12 bg-cyan-300/5 p-5">
                   <CalendarDays
                     className="text-cyan-200"
                     size={18}
@@ -245,7 +251,7 @@ export default function UserProfilePage() {
                 </div>
               </div>
 
-              <article className="border border-cyan-300/12 bg-slate-950/70 p-6">
+              <article className="rounded-[1.75rem] border border-white/8 bg-white/[0.035] p-6">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
                   Halaman pengalaman
                 </p>
@@ -272,7 +278,7 @@ export default function UserProfilePage() {
                 </div>
               </article>
 
-              <article className="border border-cyan-300/12 bg-slate-950/70 p-6">
+              <article className="rounded-[1.75rem] border border-white/8 bg-white/[0.035] p-6">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
                   Bio
                 </p>

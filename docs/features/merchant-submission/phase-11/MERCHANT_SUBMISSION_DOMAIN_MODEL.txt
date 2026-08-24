@@ -1,0 +1,28 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — DOMAIN MODEL SPECIFICATION
+================================================================================
+
+1. CORE DOMAIN PRINCIPLES
+--------------------------------------------------------------------------------
+1. Submissions Are Not Canonical Merchants:
+   - A business registration in `merchant_submissions` is a candidate staging record.
+   - It is NOT visible to commuters in General Transit Search or Fair Discovery
+     until it receives explicit admin approval.
+
+2. No Self-Approval:
+   - Regular users cannot approve their own submissions or self-verify ownership.
+   - Approval requires trusted administrative review.
+
+3. Geographic Authority:
+   - Every submission must have a precise PostGIS spatial coordinate `geometry(Point, 4326)`.
+   - Coordinates are selected interactively by the user via MapLibre and verified on the server.
+
+2. SUBMISSION LIFECYCLE STATES
+--------------------------------------------------------------------------------
+- DRAFT: Editable staging state owned by submitter.
+- PENDING_REVIEW: Locked state under review by GETRA curation team.
+- APPROVED: Terminal approved state; canonical merchant created and ownership linked.
+- REJECTED: Terminal rejected state; feedback notes provided to submitter.
+- CANCELLED: Terminal retracted state initiated by submitter.
+================================================================================

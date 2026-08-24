@@ -1,0 +1,32 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: CAMPAIGN EVENT TYPES & SEMANTICS
+=====================================================
+
+1. CANONICAL EVENT TYPES (MVP WAJIB)
+
+1. IMPRESSION:
+   - Meaning: A verified advertising placement entered the user's viewport (>= 50% visibility for DOM banners/posters, or within visible map bounds for Sponsored Pins).
+   - Valid Placements: `SPONSORED_PIN`, `CONTEXTUAL_BANNER`, `PROFILE_POSTER`.
+   - Frequency: Exactly once per placement exposure context per session.
+
+2. SPONSORED_PIN_CLICK:
+   - Meaning: Commuter clicked a sponsored map pin marker on the MapLibre canvas to inspect details or open popup.
+   - Valid Placements: `SPONSORED_PIN` ONLY.
+   - Frequency: Once per physical click interaction.
+
+3. PROFILE_OPEN:
+   - Meaning: Commuter clicked an ad placement CTA ("Lihat Profil") that navigated to or opened the merchant profile drawer.
+   - Valid Placements: `SPONSORED_PIN`, `CONTEXTUAL_BANNER`.
+   - Preserves placement origin. Organic profile views do NOT trigger this event.
+
+4. ROUTE_REQUEST:
+   - Meaning: Commuter clicked an ad placement CTA ("Petunjuk Rute") that initiated a walking navigation request to the merchant outlet.
+   - Valid Placements: `SPONSORED_PIN`, `CONTEXTUAL_BANNER`, `PROFILE_POSTER`.
+   - Preserves placement origin. Organic route requests do NOT trigger this event.
+
+2. FORBIDDEN & REJECTED EVENT TYPES
+The following event types are strictly forbidden in Phase 10:
+- `BANNER_CLICK` (Use `PROFILE_OPEN` or `ROUTE_REQUEST` depending on CTA)
+- `POSTER_CLICK` (Use `ROUTE_REQUEST` depending on CTA)
+- `PURCHASE`, `ORDER`, `CHECKOUT`, `TRANSACTION`
+- `CONVERSION`, `REVENUE`, `ROI`, `ROAS`

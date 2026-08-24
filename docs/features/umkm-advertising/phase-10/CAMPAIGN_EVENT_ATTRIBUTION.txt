@@ -1,0 +1,23 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: CAMPAIGN EVENT ATTRIBUTION
+=====================================================
+
+1. ATTRIBUTION FLOW
+When an ad placement is served:
+1. The backend provides canonical IDs: `campaign_id`, `creative_id`, and `placement_type`.
+2. Frontend placement components (`SponsoredPinMarker`, `ContextualBanner`, `ProfilePoster`) retain this attribution context in component state.
+3. When the user interacts with the placement (viewing, clicking pin, opening profile, or requesting route), the frontend passes the attribution context to `CampaignEventService`.
+4. The backend verifies that:
+   - Campaign exists and is active.
+   - Merchant is authoritative for the campaign (`merchant_id` derived server-side).
+   - Creative belongs to the campaign.
+   - Creative type matches placement.
+   - Event type is compatible with placement.
+
+2. NEGATIVE ATTRIBUTION & ORGANIC SEPARATION
+- Organic Profile Open: When a commuter navigates to a merchant directly via catalog or search without clicking an ad placement, zero campaign events are submitted.
+- Organic Route Request: When a commuter requests directions to any organic merchant, zero campaign events are submitted.
+
+3. CROSS-MERCHANT ISOLATION
+- Profile Posters are strictly verified against the merchant profile being inspected.
+- Attribution cannot be spoofed or transferred to other merchants.

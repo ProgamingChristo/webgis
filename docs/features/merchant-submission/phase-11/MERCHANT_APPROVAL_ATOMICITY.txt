@@ -1,0 +1,40 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — APPROVAL ATOMICITY & TRANSACTION INTEGRITY
+================================================================================
+
+1. ATOMICITY OBJECTIVE
+--------------------------------------------------------------------------------
+The admin approval action (`POST /api/admin/merchant-submissions/:id/approve`)
+must ensure that a merchant cannot be created without verified ownership, nor can
+a submission be marked APPROVED without linking a valid canonical merchant ID.
+
+2. TRANSACTION LOGIC
+--------------------------------------------------------------------------------
+Executed sequentially and atomically within `MerchantSubmissionRepository.approveSubmission`:
+
+```text
+[ Lock Submission (WHERE id = submissionId AND status = 'PENDING_REVIEW') ]
+                           │
+                           ▼
+     [ Create Record in public.merchants ]
+       (name, category, description, address, location,
+        owner_id = submitted_by, verification_status = 'VERIFIED',
+        publish_status = 'PUBLISHED')
+                           │
+                           ▼
+     [ Update public.merchant_submissions ]
+       (status = 'APPROVED', canonical_merchant_id = merchant.id,
+        reviewed_by = adminId, reviewed_at = now(), review_note = note)
+                           │
+                           ▼
+     [ Return { submission, merchant_id } ]
+```
+
+3. IDEMPOTENCY & FAULT ISOLATION
+--------------------------------------------------------------------------------
+- Attempting to approve an already approved, rejected, or draft submission fails
+  immediately with `VALIDATION_ERROR` or `NOT_FOUND`.
+- If database insertion of the merchant fails, the submission status remains
+  unchanged at `PENDING_REVIEW` and no orphan records are created.
+================================================================================

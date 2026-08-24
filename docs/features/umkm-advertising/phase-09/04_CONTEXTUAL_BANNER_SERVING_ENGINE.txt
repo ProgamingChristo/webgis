@@ -1,0 +1,27 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: CONTEXTUAL BANNER SERVING ENGINE
+=====================================================
+
+1. SERVING ENGINE RESPONSIBILITY
+`ContextualBannerServingService` evaluates candidate campaigns for display as promotional banner cards in commuter discovery contexts.
+
+2. EVALUATION PIPELINE
+When a commuter searches or browses discovery with context `(longitude, latitude, category, query, maxWalkingMinutes)`:
+1. Candidate Campaigns:
+   Queries `ad_campaigns` where status is `ACTIVE` or `APPROVED`.
+2. Schedule Boundary Check:
+   Enforces start_at <= now < end_at. If outside schedule, campaign is excluded.
+3. Merchant Verification & State Check:
+   Merchants with status `ARCHIVED`, `HIDDEN`, or `REJECTED` are excluded.
+4. Creative Readiness Check:
+   Fetches creative with `creative_type = 'CONTEXTUAL_BANNER'`. Must be `status = 'READY'` with non-empty `headline`.
+5. Spatial Targeting:
+   Calculates distance between commuter context and campaign target center (or merchant location). Must be <= `radius_meters`.
+6. Hard-Constraint Relevance Matching:
+   - Category matching: Matches category text, category synonyms (e.g. food/resto/warung/cafe), or headline/description text.
+   - Text query matching: Matches merchant name, headline, description, or category.
+   - Walking limit: If `maxWalkingMinutes` is specified, checks estimated walking time at 80m/min.
+7. Capping:
+   Strictly capped to maximum 1 contextual banner per context (`MAX_CONTEXTUAL_BANNERS_PER_CONTEXT = 1`).
+8. Deterministic DTO Construction:
+   Returns safe public `ContextualBannerDTO` with `label: "Sponsored"`.

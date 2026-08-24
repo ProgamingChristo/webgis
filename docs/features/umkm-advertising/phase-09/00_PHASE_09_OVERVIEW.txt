@@ -1,0 +1,31 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: CONTEXTUAL PROMO BANNER & PROFILE POSTER
+=====================================================
+
+1. EXECUTIVE SUMMARY
+Phase 09 expands GETRA's advertising placement ecosystem by introducing two dedicated, high-impact promotional surfaces:
+- Contextual Promo Banner: Displays a single paid promotional card in the commuter Fair Discovery feed when the query context and spatial proximity match an active campaign's CONTEXTUAL_BANNER creative.
+- Profile Poster: Displays a rich promotional banner strictly inside a merchant's own profile view when an active campaign's PROFILE_POSTER creative is ready.
+
+2. CORE PILLARS & ARCHITECTURAL REUSE
+Phase 09 adheres strictly to the canonical GETRA advertising foundation established across Phases 4 through 8:
+- Zero Table Duplication: Reuses canonical `ad_campaigns`, `ad_creatives`, `ad_campaign_targets`, and `ad_campaign_schedules`. No duplicate banner or poster tables were introduced.
+- Strict Placement Isolation: Contextual banners are capped to 1 per discovery context. Profile posters are strictly bound to the same merchant (`merchant_id` matching).
+- Zero Analytics Side Effects: In accordance with Phase 09 specification, rendering or interacting with banners and posters produces zero database writes and zero analytics side effects. Impression and click tracking are deferred to Phase 10.
+- Failure Isolation: If placement evaluation throws or times out, organic discovery and canonical merchant profile drawers load completely unaffected.
+
+3. DELIVERABLES SUMMARY
+- Backend Subdomains:
+  - `backend/src/features/umkm-advertising/contextual-banner/`
+  - `backend/src/features/umkm-advertising/profile-poster/`
+- Backend API Endpoints:
+  - `GET /api/advertising/placements/contextual-banner`
+  - `GET /api/merchants/[id]/advertising/profile-poster`
+  - Additive `contextual_banner` in `GET /api/discovery`
+- Frontend Subdomains:
+  - `frontend/src/features/umkm-advertising/contextual-banner/`
+  - `frontend/src/features/umkm-advertising/profile-poster/`
+- Frontend Integrations:
+  - `ContextualBanner` inside `FairDiscoveryResults`
+  - `ProfilePoster` inside `GetraDashboard` location detail panel
+- Automated Test Suite: 11 unit tests across placement services, 70 vitest test suites passing (479 tests).

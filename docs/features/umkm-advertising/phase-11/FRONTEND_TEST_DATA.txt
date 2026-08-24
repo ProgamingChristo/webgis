@@ -1,0 +1,21 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — FRONTEND TEST DATA SPECIFICATION
+================================================================================
+
+1. TEST CAMPAIGN & EVENTS
+--------------------------------------------------------------------------------
+- Test Merchant: "Warung Kopi Selamat"
+- Test Campaign ID: Phase 10 DUMMY campaign
+- Test Events Injected:
+  * 10 x IMPRESSION (SPONSORED_PIN, CONTEXTUAL_BANNER, PROFILE_POSTER)
+  * 3 x SPONSORED_PIN_CLICK
+  * 2 x PROFILE_OPEN
+  * 1 x ROUTE_REQUEST
+- Expected Summary Aggregates:
+  * Impressions: 10
+  * Sponsored Pin Clicks: 3
+  * Profile Opens: 2
+  * Route Requests: 1
+  * Sponsored Pin CTR: Computed dynamically via `(clicks / pin_impressions) * 100%`.
+================================================================================

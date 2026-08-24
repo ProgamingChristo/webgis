@@ -1,0 +1,70 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK — PHASE 11
+WORKSTREAM 11D: MIDTRANS PAYMENT GATEWAY DECISION
+================================================================================
+
+DATE: 2026-08-23
+STATUS: DEFERRED (ARCHITECTURALLY ISOLATED)
+DECISION OWNER: Principal Advertising Platform Architect & Lead Security Engineer
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY & FORMAL DECISION
+--------------------------------------------------------------------------------
+Payment Gateway integration via Midtrans Sandbox for UMKM Advertising campaign
+top-ups is formally designated as **DEFERRED** for Phase 11.
+
+All core Phase 11 capabilities:
+- Workstream 11A: UMKM Headbar + UMKM Workspace (/umkm)
+- Workstream 11B: Add UMKM to GETRA / Merchant Submission Workflow
+- Workstream 11C: Campaign Analytics Dashboard (Impressions, Clicks, CTR, Timelines)
+are 100% COMPLETE, operational, and non-blocking.
+
+--------------------------------------------------------------------------------
+2. JUSTIFICATION & PREREQUISITES NOT MET
+--------------------------------------------------------------------------------
+The conditional gate for Workstream 11D requires strict technical, commercial,
+and security criteria before live sandbox code execution:
+
+1. Undefined Commercial & Pricing Models:
+   - Campaign credit pricing, impression unit rates (CPM), and minimum budget
+     thresholds have not yet been approved by business stakeholders.
+   - Introducing arbitrary or premature mock pricing into core ad serving would
+     distort database schemas and campaign budget tracking.
+
+2. Unconfigured Sandbox Credentials:
+   - The environment currently does not have active `MIDTRANS_SERVER_KEY`,
+     `MIDTRANS_CLIENT_KEY`, or `MIDTRANS_MERCHANT_ID` secret configurations.
+   - Hardcoding dummy or insecure payment secrets violates GETRA API security
+     and credential protection policies.
+
+3. Zero Functional Degradation:
+   - UMKM advertising campaigns operate seamlessly under platform readiness
+     rules (creative completeness, targeting validation, merchant ownership).
+   - Simulating payments via client-side mock bypasses backend settlement
+     integrity and introduces security vulnerabilities.
+
+--------------------------------------------------------------------------------
+3. FUTURE ACTIVATION ROADMAP (PHASE 12+)
+--------------------------------------------------------------------------------
+When commercial parameters are finalized and sandbox credentials are provided,
+Midtrans integration will be integrated via the following modular pipeline:
+
+1. Backend Payment Service:
+   - `backend/src/features/umkm-advertising/billing/services/midtrans.service.ts`
+   - Midtrans Snap API integration (creating Snap payment tokens).
+
+2. Webhook & Ledger Settlement:
+   - `backend/app/api/webhooks/midtrans/route.ts`
+   - Cryptographic SHA-512 signature verification (`order_id + status_code + gross_amount + ServerKey`).
+   - Idempotent transaction ledger (`public.advertising_transactions` table).
+
+3. Client Payment Modal:
+   - Midtrans Snap JS popup trigger on Campaign Budget Top-up UI.
+
+--------------------------------------------------------------------------------
+4. CONCLUSION
+--------------------------------------------------------------------------------
+Phase 11 concludes with 100% architectural integrity, zero security compromises,
+and clean separation of concerns.
+================================================================================

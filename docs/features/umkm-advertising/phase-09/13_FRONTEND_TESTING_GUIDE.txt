@@ -1,0 +1,32 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: FRONTEND TESTING GUIDE
+=====================================================
+
+1. TEST ENVIRONMENT SETUP
+- Frontend URL: http://localhost:3000
+- Backend URL: http://localhost:3001
+- Test Merchant: "Warung Kopi Selamat GETRA" (ID: 88888888-8888-4888-8888-888888888888)
+- Test Campaign: "Campaign Promo All Placements Phase 9" (ID: 99999999-9999-4999-9999-999999999999, status: ACTIVE)
+
+2. MANUAL TEST CASE 1: CONTEXTUAL PROMO BANNER DISPLAY
+1. Navigate to commuter dashboard at http://localhost:3000
+2. Switch mode to "Penelusuran Adil" (Fair Discovery).
+3. Set search category to "CAFE" or query "kopi".
+4. Verify that the Contextual Promo Banner appears directly under the disclosure banner with:
+   - Amber gradient border
+   - Badge "PROMOSI BERSPONSOR"
+   - Headline "DUMMY Promo Kopi Susu Diskon 40%"
+   - Button "Lihat Profil" / "Petunjuk Rute"
+5. Change category to "FASHION". Verify that the banner is immediately cleared due to hard-constraint category mismatch.
+
+3. MANUAL TEST CASE 2: MERCHANT PROFILE POSTER DISPLAY
+1. On the map or list, click "Warung Kopi Selamat GETRA".
+2. The right drawer opens with "Detail lokasi".
+3. Verify that above the metric grid, the Profile Poster is rendered:
+   - Badge "Promosi Spesial"
+   - Headline "DUMMY Paket Spesial Transit Mahasiswa Rp15.000"
+   - Description "Nikmati paket nasi + kopi susu spesial khusus pelanggan transit GETRA."
+   - Expiration date "Hingga [date]"
+   - Action button "Petunjuk Rute"
+4. Click another merchant (e.g. "Kedai Kopi Alpha").
+5. Verify that NO poster appears (or only their own poster if they have one), confirming strict cross-merchant isolation.

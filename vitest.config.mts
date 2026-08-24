@@ -6,6 +6,15 @@ const projectRoot = fileURLToPath(new URL(".", import.meta.url));
 export default defineConfig({
   resolve: {
     alias: {
+      "@/src/components": fileURLToPath(
+        new URL("./frontend/src/components", import.meta.url),
+      ),
+      "@/src/features": fileURLToPath(
+        new URL("./frontend/src/features", import.meta.url),
+      ),
+      "@/src/lib": fileURLToPath(
+        new URL("./frontend/src/lib", import.meta.url),
+      ),
       "@": projectRoot,
       "server-only": fileURLToPath(new URL("./tests/empty.ts", import.meta.url)),
     },

@@ -1,0 +1,32 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — DATA DICTIONARY
+================================================================================
+
+TABLE: public.merchant_submissions
+
+Column Name           | Data Type                         | Nullable | Default | Description
+----------------------|-----------------------------------|----------|---------|---------------------------------------------------------
+id                    | uuid                              | NO       | gen...  | Unique submission identifier (Primary Key)
+submitted_by          | uuid                              | NO       | -       | Foreign key referencing auth.users(id) / profiles(id)
+name                  | text                              | NO       | -       | Trade/business name of the merchant
+category              | text                              | NO       | -       | Industry category (e.g. Makanan & Minuman)
+description           | text                              | YES      | NULL    | Descriptive text detailing offerings/transit suitability
+address               | text                              | YES      | NULL    | Human-readable postal or landmark address
+location              | extensions.geometry(Point, 4326)  | NO       | -       | Spatial Point representing longitude and latitude
+opening_hours         | jsonb                             | NO       | '{}'    | Structured JSON for operational schedule
+image_url             | text                              | YES      | NULL    | Direct URL to exterior/interior business imagery
+status                | text                              | NO       | 'DRAFT' | State check: DRAFT, PENDING_REVIEW, APPROVED, REJECTED, CANCELLED
+canonical_merchant_id | uuid                              | YES      | NULL    | FK to public.merchants(id) upon approval
+reviewed_by           | uuid                              | YES      | NULL    | Admin user ID who executed the review
+reviewed_at           | timestamp with time zone          | YES      | NULL    | Timestamp when review decision was recorded
+review_note           | text                              | YES      | NULL    | Reviewer justification or rejection feedback
+created_at            | timestamp with time zone          | NO       | now()   | Record creation timestamp
+updated_at            | timestamp with time zone          | NO       | now()   | Last modification timestamp
+
+INDEXES:
+1. idx_merchant_submissions_submitted_by ON merchant_submissions(submitted_by)
+2. idx_merchant_submissions_status ON merchant_submissions(status)
+3. idx_merchant_submissions_location ON merchant_submissions USING GIST(location)
+4. idx_merchant_submissions_canonical_id ON merchant_submissions(canonical_merchant_id)
+================================================================================

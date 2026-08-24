@@ -29,3 +29,7 @@ export {
 } from "./lifecycle/errors/lifecycle.errors";
 
 export * from "./ad-serving";
+export * from "./contextual-banner";
+export * from "./profile-poster";
+export * from "./events";
+export * from "./analytics";

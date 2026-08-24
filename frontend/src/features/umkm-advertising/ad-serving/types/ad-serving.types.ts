@@ -1,6 +1,9 @@
 import { CampaignLifecycleStatus } from "../../lifecycle/types/lifecycle.types";
 
-export type PlacementType = "SPONSORED_PIN";
+export type PlacementType =
+  | "SPONSORED_PIN"
+  | "CONTEXTUAL_BANNER"
+  | "PROFILE_POSTER";
 
 export type AdServingCtaType = "VIEW_PROFILE" | "REQUEST_ROUTE";
 

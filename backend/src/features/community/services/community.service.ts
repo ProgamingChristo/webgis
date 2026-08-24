@@ -1,14 +1,28 @@
 import {
   communityCommentQuerySchema,
   communityCulturalMapQuerySchema,
+  communityDemandSignalIdSchema,
+  communityDemandSignalQuerySchema,
+  communityNotificationIdSchema,
+  communityNotificationQuerySchema,
+  communityFriendshipIdSchema,
+  communityFriendshipListQuerySchema,
+  communityReportIdSchema,
+  communityUserIdSchema,
   commuterRequestIdSchema,
   commuterRequestQuerySchema,
+  adminCommunityReportQuerySchema,
   communityFeedQuerySchema,
   communityPostIdSchema,
   communityReactionTypeSchema,
+  createCommunityReportSchema,
+  createCommunityFriendRequestSchema,
   createCommuterRequestSchema,
   createCommunityCommentSchema,
   createCommunityPostSchema,
+  createCommunityUmkmResponseSchema,
+  moderateCommunityReportSchema,
+  actOnCommunityFriendshipSchema,
 } from "../schemas/community.schema";
 import { ApplicationError } from "@/src/lib/errors";
 import type { RepositoryError } from "@/src/repositories/errors";
@@ -17,11 +31,22 @@ import type {
   CommunityComment,
   CommunityCommentPage,
   CommunityCulturalMapItem,
+  CommunityDemandSignal,
+  CommunityDemandSignalPage,
   CommunityFeedItem,
   CommunityFeedPage,
+  AdminCommunityReportPage,
+  CommunityAnalytics,
+  CommunityNotificationPage,
+  CommunityFriendListPage,
   CommunityPhotoUpload,
   CommunityPostRepository,
   CommunityReactionSummary,
+  CommunityReport,
+  CommunityReputation,
+  CommunityUserProfile,
+  CommunityResponseMerchant,
+  CommunityUmkmResponse,
   CommuterRequestItem,
   CommuterRequestPage,
 } from "../types/community.types";
@@ -170,6 +195,83 @@ export class CommunityService {
     }
   }
 
+  async listDemandSignals(input: unknown): Promise<CommunityDemandSignalPage> {
+    const parsed = communityDemandSignalQuerySchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      return await this.repository.listDemandSignals(parsed.data);
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async getDemandSignal(signalId: unknown): Promise<CommunityDemandSignal> {
+    const parsedSignalId = communityDemandSignalIdSchema.safeParse(signalId);
+
+    if (!parsedSignalId.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      return await this.repository.getDemandSignal(parsedSignalId.data);
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async listDemandSignalResponses(
+    signalId: unknown,
+  ): Promise<CommunityUmkmResponse[]> {
+    const parsedSignalId = communityDemandSignalIdSchema.safeParse(signalId);
+
+    if (!parsedSignalId.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      return await this.repository.listDemandSignalResponses(
+        parsedSignalId.data,
+      );
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async listResponseMerchants(): Promise<CommunityResponseMerchant[]> {
+    try {
+      return await this.repository.listResponseMerchants();
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async upsertDemandSignalResponse(
+    signalId: unknown,
+    input: unknown,
+  ): Promise<CommunityUmkmResponse> {
+    const parsedSignalId = communityDemandSignalIdSchema.safeParse(signalId);
+    const parsedInput = createCommunityUmkmResponseSchema.safeParse(input);
+
+    if (!parsedSignalId.success || !parsedInput.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      return await this.repository.upsertDemandSignalResponse({
+        signalId: parsedSignalId.data,
+        merchantId: parsedInput.data.merchant_id,
+        status: parsedInput.data.status,
+        message: parsedInput.data.message,
+      });
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
   async getPost(postId: unknown): Promise<CommunityFeedItem> {
     const parsedPostId = communityPostIdSchema.safeParse(postId);
 
@@ -268,6 +370,175 @@ export class CommunityService {
         parsedPostId.data,
         parsedReactionType.data,
       );
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async listNotifications(input: unknown): Promise<CommunityNotificationPage> {
+    const parsed = communityNotificationQuerySchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      return await this.repository.listNotifications(parsed.data);
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async markNotificationRead(notificationId: unknown): Promise<void> {
+    const parsed = communityNotificationIdSchema.safeParse(notificationId);
+
+    if (!parsed.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      await this.repository.markNotificationRead(parsed.data);
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async markAllNotificationsRead(): Promise<void> {
+    try {
+      await this.repository.markAllNotificationsRead();
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async createReport(input: unknown): Promise<CommunityReport> {
+    const parsed = createCommunityReportSchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      return await this.repository.createReport({
+        targetType: parsed.data.target_type,
+        targetId: parsed.data.target_id,
+        reason: parsed.data.reason,
+        details: parsed.data.details,
+      });
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async listAdminReports(input: unknown): Promise<AdminCommunityReportPage> {
+    const parsed = adminCommunityReportQuerySchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      return await this.repository.listAdminReports(parsed.data);
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async moderateReport(reportId: unknown, input: unknown): Promise<void> {
+    const parsedReportId = communityReportIdSchema.safeParse(reportId);
+    const parsedInput = moderateCommunityReportSchema.safeParse(input);
+
+    if (!parsedReportId.success || !parsedInput.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      await this.repository.moderateReport(
+        parsedReportId.data,
+        parsedInput.data.action,
+      );
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async getReputation(userId: unknown): Promise<CommunityReputation> {
+    const parsed = communityUserIdSchema.safeParse(userId);
+
+    if (!parsed.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      return await this.repository.getReputation(parsed.data);
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async getAnalytics(): Promise<CommunityAnalytics> {
+    try {
+      return await this.repository.getAnalytics();
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async getCommunityUserProfile(userId: unknown): Promise<CommunityUserProfile> {
+    const parsed = communityUserIdSchema.safeParse(userId);
+
+    if (!parsed.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      return await this.repository.getCommunityUserProfile(parsed.data);
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async createFriendRequest(input: unknown): Promise<CommunityUserProfile> {
+    const parsed = createCommunityFriendRequestSchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      return await this.repository.createFriendRequest(parsed.data.user_id);
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async actOnFriendship(friendshipId: unknown, input: unknown): Promise<void> {
+    const parsedFriendshipId = communityFriendshipIdSchema.safeParse(friendshipId);
+    const parsedInput = actOnCommunityFriendshipSchema.safeParse(input);
+
+    if (!parsedFriendshipId.success || !parsedInput.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      await this.repository.actOnFriendship(
+        parsedFriendshipId.data,
+        parsedInput.data.action,
+      );
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
+  async listFriendships(input: unknown): Promise<CommunityFriendListPage> {
+    const parsed = communityFriendshipListQuerySchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ApplicationError("VALIDATION_ERROR");
+    }
+
+    try {
+      return await this.repository.listFriendships(parsed.data);
     } catch (error) {
       throw mapCommunityRepositoryError(error);
     }

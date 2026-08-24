@@ -1,0 +1,21 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — FAILURE ISOLATION STRATEGY
+================================================================================
+
+1. ISOLATION OBJECTIVE
+--------------------------------------------------------------------------------
+The advertising ad-serving subsystem is a commercial enhancement, NOT a critical
+path for transit operations. If the ad engine crashes, encounters database timeouts,
+or fails targeting lookups, commuter discovery MUST proceed smoothly without errors.
+
+2. IMPLEMENTATION MECHANISM
+--------------------------------------------------------------------------------
+1. `SponsoredPlacementAdapter` wraps ad-serving invocations in a guarded `try / catch`.
+2. In case of errors:
+   - Error is logged to backend monitoring with `console.warn`.
+   - Returns empty array `[]`.
+   - Organic & Hidden Gem retrieval completes normally.
+   - HTTP response status remains 200 OK with `sponsored: []` and `sponsored_available: false`.
+3. Verified via automated unit tests (`should isolate failure`).

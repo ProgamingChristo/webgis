@@ -5,14 +5,28 @@ import type {
   CommunityComment,
   CommunityCommentResponse,
   CommunityCulturalMapItem,
+  CommunityDemandSignal,
+  CommunityDemandSignalResponse,
+  CommunityDemandSignalResponsesPayload,
   CommuterRequestItem,
   CommuterRequestResponse,
   CommunityFindingCategory,
   CommunityFeedItem,
   CommunityFeedResponse,
   CommunityFeedMeta,
+  CommunityAnalytics,
+  CommunityFriendListResponse,
+  CommunityFriendshipAction,
+  CommunityFriendshipView,
+  CommunityNotificationResponse,
   CommunityReactionSummary,
   CommunityReactionType,
+  CommunityReport,
+  CommunityReputation,
+  CommunityUserProfile,
+  CommunityUmkmResponse,
+  CreateCommunityReportInput,
+  CreateCommunityUmkmResponseInput,
   CreateCommuterRequestInput,
   CreateCommunityCommentInput,
   CreateCommunityPostInput,
@@ -291,6 +305,127 @@ export async function getCommuterRequest(
   return json.data;
 }
 
+export async function getCommunityDemandSignals(
+  page = 1,
+  limit = 20,
+  filters: {
+    category?: string | null;
+  } = {},
+): Promise<CommunityDemandSignalResponse> {
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+
+  if (filters.category) {
+    params.set("category", filters.category);
+  }
+
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/requests/signals?${params.toString()}`,
+    {
+      method: "GET",
+    },
+  );
+  const json =
+    (await response.json()) as
+      | ApiListEnvelope<CommunityDemandSignal>
+      | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Sinyal Community gagal dimuat."
+        : readFailureMessage(json),
+    );
+  }
+
+  return {
+    items: json.data,
+    meta: json.meta,
+  };
+}
+
+export async function getCommunityDemandSignal(
+  signalId: string,
+): Promise<CommunityDemandSignal> {
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/requests/signals/${signalId}`,
+    {
+      method: "GET",
+    },
+  );
+  const json =
+    (await response.json()) as
+      | ApiSuccessEnvelope<CommunityDemandSignal>
+      | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Detail Sinyal Community gagal dimuat."
+        : readFailureMessage(json),
+    );
+  }
+
+  return json.data;
+}
+
+export async function getCommunityDemandSignalResponses(
+  signalId: string,
+): Promise<CommunityDemandSignalResponsesPayload> {
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/requests/signals/${signalId}/responses`,
+    {
+      method: "GET",
+    },
+  );
+  const json =
+    (await response.json()) as
+      | ApiSuccessEnvelope<CommunityDemandSignalResponsesPayload>
+      | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Respons UMKM gagal dimuat."
+        : readFailureMessage(json),
+    );
+  }
+
+  return json.data;
+}
+
+export async function upsertCommunityDemandSignalResponse(
+  signalId: string,
+  input: CreateCommunityUmkmResponseInput,
+): Promise<CommunityUmkmResponse> {
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/requests/signals/${signalId}/responses`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    },
+  );
+  const json =
+    (await response.json()) as
+      | ApiSuccessEnvelope<CommunityUmkmResponse>
+      | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Respons UMKM gagal dikirim."
+        : readFailureMessage(json),
+    );
+  }
+
+  return json.data;
+}
+
 export async function getCommunityPost(
   postId: string,
 ): Promise<CommunityFeedItem> {
@@ -408,6 +543,275 @@ export async function setCommunityReaction(
     throw new Error(
       json.success
         ? "Reaction Community gagal diperbarui."
+        : readFailureMessage(json),
+    );
+  }
+
+  return json.data;
+}
+
+export async function getCommunityNotifications(
+  page = 1,
+  limit = 20,
+): Promise<CommunityNotificationResponse> {
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/notifications?page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+    },
+  );
+
+  const json =
+    (await response.json()) as
+      | ApiSuccessEnvelope<CommunityNotificationResponse>
+      | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Notifikasi Community gagal dimuat."
+        : readFailureMessage(json),
+    );
+  }
+
+  return json.data;
+}
+
+export async function markCommunityNotificationRead(
+  notificationId: string,
+): Promise<void> {
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/notifications/${notificationId}/read`,
+    {
+      method: "PATCH",
+    },
+  );
+
+  const json =
+    (await response.json()) as ApiSuccessEnvelope<{ ok: true }> | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Notifikasi Community gagal diperbarui."
+        : readFailureMessage(json),
+    );
+  }
+}
+
+export async function markAllCommunityNotificationsRead(): Promise<void> {
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/notifications/read-all`,
+    {
+      method: "PATCH",
+    },
+  );
+
+  const json =
+    (await response.json()) as ApiSuccessEnvelope<{ ok: true }> | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Notifikasi Community gagal diperbarui."
+        : readFailureMessage(json),
+    );
+  }
+}
+
+export async function createCommunityReport(
+  input: CreateCommunityReportInput,
+): Promise<CommunityReport> {
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/reports`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    },
+  );
+
+  const json =
+    (await response.json()) as
+      | ApiSuccessEnvelope<CommunityReport>
+      | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Laporan Community gagal dikirim."
+        : readFailureMessage(json),
+    );
+  }
+
+  return json.data;
+}
+
+export async function getCommunityReputation(
+  userId: string,
+): Promise<CommunityReputation> {
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/reputation/${userId}`,
+    {
+      method: "GET",
+    },
+  );
+
+  const json =
+    (await response.json()) as
+      | ApiSuccessEnvelope<CommunityReputation>
+      | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Reputasi Community gagal dimuat."
+        : readFailureMessage(json),
+    );
+  }
+
+  return json.data;
+}
+
+export async function getCommunityAnalytics(): Promise<CommunityAnalytics> {
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/admin/community/analytics`,
+    {
+      method: "GET",
+    },
+  );
+
+  const json =
+    (await response.json()) as
+      | ApiSuccessEnvelope<CommunityAnalytics>
+      | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Analytics Community gagal dimuat."
+        : readFailureMessage(json),
+    );
+  }
+
+  return json.data;
+}
+
+export async function getCommunityUserProfile(
+  userId: string,
+): Promise<CommunityUserProfile> {
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/users/${userId}`,
+    {
+      method: "GET",
+    },
+  );
+
+  const json =
+    (await response.json()) as
+      | ApiSuccessEnvelope<CommunityUserProfile>
+      | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Profil Community gagal dimuat."
+        : readFailureMessage(json),
+    );
+  }
+
+  return json.data;
+}
+
+export async function sendCommunityFriendRequest(
+  userId: string,
+): Promise<CommunityUserProfile> {
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/friends/requests`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: userId,
+      }),
+    },
+  );
+
+  const json =
+    (await response.json()) as
+      | ApiSuccessEnvelope<CommunityUserProfile>
+      | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Permintaan teman gagal dikirim."
+        : readFailureMessage(json),
+    );
+  }
+
+  return json.data;
+}
+
+export async function actOnCommunityFriendship(
+  friendshipId: string,
+  action: CommunityFriendshipAction,
+): Promise<void> {
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/friends/${friendshipId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action,
+      }),
+    },
+  );
+
+  const json =
+    (await response.json()) as ApiSuccessEnvelope<{ ok: true }> | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Status pertemanan gagal diperbarui."
+        : readFailureMessage(json),
+    );
+  }
+}
+
+export async function getCommunityFriends(
+  view: CommunityFriendshipView,
+  page = 1,
+  limit = 20,
+): Promise<CommunityFriendListResponse> {
+  const params = new URLSearchParams({
+    view,
+    page: String(page),
+    limit: String(limit),
+  });
+  const response = await authenticatedFetch(
+    `${getApiBaseUrl()}/api/community/friends?${params.toString()}`,
+    {
+      method: "GET",
+    },
+  );
+
+  const json =
+    (await response.json()) as
+      | ApiSuccessEnvelope<CommunityFriendListResponse>
+      | ApiFailureEnvelope;
+
+  if (!response.ok || !json.success) {
+    throw new Error(
+      json.success
+        ? "Daftar teman gagal dimuat."
         : readFailureMessage(json),
     );
   }

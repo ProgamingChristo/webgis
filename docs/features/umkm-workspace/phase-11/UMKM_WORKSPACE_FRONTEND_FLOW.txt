@@ -1,0 +1,35 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM WORKSPACE — FRONTEND USER FLOW
+================================================================================
+
+1. ROUTE & LAYOUT
+--------------------------------------------------------------------------------
+Primary Route: `/umkm`
+Component Hierarchy:
+├── UmkmWorkspace (App Container & Data Fetcher)
+│   ├── UmkmWorkspaceSummary (Metric overview bar)
+│   ├── OwnedMerchantList (Verified businesses owned by user)
+│   ├── SubmissionSummary (Pending/draft merchant registrations)
+│   └── UmkmQuickActions (Navigation shortcuts)
+
+2. USER INTERACTION PROGRESSION
+--------------------------------------------------------------------------------
+Step 1: User Login & Header Handoff
+- User logs in with UMKM stakeholder mode.
+- Headbar displays "UMKM Workspace" badge/link.
+- User clicks "UMKM Workspace" -> routes to `/umkm`.
+
+Step 2: Workspace Dashboard Render
+- Calls `GET /api/umkm/workspace`.
+- If user has 0 owned merchants and 0 submissions:
+  - Displays friendly onboarding view encouraging registration: "Tambahkan UMKM ke GETRA".
+- If user has owned merchants:
+  - Displays merchant card with status, address, active campaigns count, and direct action: "Pasang Iklan" (`/umkm/advertising?merchantId=...`).
+- Displays recent submissions with color-coded status badges.
+
+Step 3: Quick Action Navigation
+- "Tambahkan UMKM Baru" -> navigates to `/umkm/merchants/new`.
+- "Kelola Advertising" -> navigates to `/umkm/advertising`.
+- "Lihat Analytics" -> navigates to `/umkm/advertising/analytics`.
+================================================================================

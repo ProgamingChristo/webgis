@@ -1,0 +1,30 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — WORKFLOW & LIFECYCLE PROGRESSION
+================================================================================
+
+1. SUBMISSION CREATION & EDITING
+--------------------------------------------------------------------------------
+1. User enters business details and selects coordinates on MapLibre.
+2. User clicks "Simpan Draft" -> `POST /api/umkm/merchant-submissions` creates `DRAFT`.
+3. User can modify name, category, location, address, or image while in `DRAFT`.
+
+2. REVIEW SUBMISSION
+--------------------------------------------------------------------------------
+1. User clicks "Ajukan untuk Review" -> `POST /api/umkm/merchant-submissions/:id/submit`.
+2. Validates mandatory attributes (name >= 2 chars, valid category, finite coordinates).
+3. Transitions status from `DRAFT` to `PENDING_REVIEW`.
+4. Submission is now locked against user modification.
+5. User may voluntarily withdraw via `POST /api/umkm/merchant-submissions/:id/cancel` -> `CANCELLED`.
+
+3. ADMINISTRATIVE CURATION
+--------------------------------------------------------------------------------
+1. Admin inspects pending queue via `GET /api/admin/merchant-submissions`.
+2. Decision Paths:
+   - APPROVE: `POST /api/admin/merchant-submissions/:id/approve`
+     -> Creates canonical merchant in `public.merchants`.
+     -> Sets `owner_id = submission.submitted_by`, `verification_status = 'VERIFIED'`.
+     -> Updates submission `status = 'APPROVED'`, `canonical_merchant_id = merchant.id`.
+   - REJECT: `POST /api/admin/merchant-submissions/:id/reject`
+     -> Updates submission `status = 'REJECTED'`, stores feedback in `review_note`.
+================================================================================

@@ -1,5 +1,7 @@
 export { CommunityPage } from "./components/community-page";
 export { CommunityPostDetail } from "./components/post/community-post-detail";
+export { CommunityFriendsPage } from "./components/friends/community-friends-page";
+export { CommunityUserProfilePage } from "./components/profile/community-user-profile-page";
 export { COMMUNITY_POST_MAX_LENGTH } from "./constants/community.constants";
 export type {
   CommunityFeedItem,

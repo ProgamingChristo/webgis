@@ -15,3 +15,17 @@ export * from "./creative";
 export * from "./targeting";
 export * from "./lifecycle";
 export * from "./ad-serving";
+export * from "./contextual-banner";
+export * from "./profile-poster";
+export type {
+  CampaignEventType,
+  PlacementType as CampaignEventPlacementType,
+  RecordCampaignEventInput,
+  RecordEventResult,
+} from "./events/types/campaign-event.types";
+export * from "./events/services/campaign-event.service";
+export * from "./events/utils/event-dedup";
+export * from "./events/hooks/use-ad-impression";
+export * from "./events/hooks/use-map-ad-impression";
+export * from "./events/hooks/use-campaign-event";
+export * from "./analytics";

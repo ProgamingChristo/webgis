@@ -1,0 +1,26 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: CAMPAIGN EVENT DOMAIN MODEL
+=====================================================
+
+1. EVENT AS AN IMMUTABLE FACT
+In GETRA Advertising, a campaign event is an immutable factual record of a commuter's interaction with a verified advertising placement.
+- Events are write-once, append-only logs.
+- They are NEVER updated or mutated by normal client operations.
+- Mutable counters on campaign rows (e.g. `campaign.impressions += 1`) are explicitly rejected as anti-patterns; aggregations are performed downstream in Phase 11.
+
+2. CORE ATTRIBUTION ENTITIES
+- Campaign (`campaign_id`): Authoritative ad campaign financing and scheduling the placement.
+- Merchant (`merchant_id`): Authoritative UMKM business being promoted. Derived server-side from the campaign entity.
+- Creative (`creative_id`): The specific creative asset rendered to the user (`SPONSORED_PIN`, `CONTEXTUAL_BANNER`, or `PROFILE_POSTER`).
+- Placement (`placement`): The spatial surface where the ad was exposed.
+- Session (`session_key`): Ephemeral, anonymous identifier isolating exposure contexts.
+- Dedup Key (`dedup_key`): Unique composite string enforcing idempotent event recording at database level.
+
+3. INTERACTION ANALYTICS VS SALES/CONVERSION
+Phase 10 strictly measures commuter attention and engagement across 4 canonical touchpoints:
+- `IMPRESSION`: Ad placement was actually visible on the screen or map viewport.
+- `SPONSORED_PIN_CLICK`: Commuter clicked a sponsored map pin marker.
+- `PROFILE_OPEN`: Commuter opened the merchant profile drawer from an ad CTA.
+- `ROUTE_REQUEST`: Commuter initiated a walking navigation request from an ad CTA.
+
+Events do NOT imply transactions, GMV, store purchases, or business revenue. ROI/ROAS claims are explicitly excluded.

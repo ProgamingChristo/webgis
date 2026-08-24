@@ -1,0 +1,24 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: SECURITY & AUTHORIZATION POLICIES
+=====================================================
+
+1. ENDPOINT SECURITY REGISTRATION
+All Phase 09 placement routes are registered in `backend/src/lib/api-security/endpoint-policy.ts`:
+- `GET /api/advertising/placements/contextual-banner`:
+  - Classification: `AUTHENTICATED`
+  - Rate limit: `api` (standard read limiter)
+  - CORS: `allowlist`
+  - Allowed headers: `AUTH_HEADERS`
+- `GET /api/merchants/[id]/advertising/profile-poster`:
+  - Classification: `AUTHENTICATED`
+  - Rate limit: `api`
+  - CORS: `allowlist`
+  - Allowed headers: `AUTH_HEADERS`
+
+2. DATA EXPOSURE & PRIVACY CONSTRAINTS
+- Public Placement DTOs expose ONLY public merchant metadata and approved creative content.
+- Campaign financial details (e.g. `budget_tier`, total spent, internal identifiers) are NEVER leaked to commuter DTOs.
+- Cross-merchant profile isolation is strictly enforced at the database query level.
+
+3. INPUT VALIDATION
+- Coordinates are validated via Zod schemas (`contextualBannerQuerySchema` and `profilePosterQuerySchema`) to enforce strict numeric boundaries and UUID formats, preventing SQL/PostGIS injection.

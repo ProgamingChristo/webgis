@@ -1,0 +1,25 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — PRIVACY PROTECTION & DATA HYGIENE
+================================================================================
+
+1. ZERO PII & AGGREGATE ONLY EXPOSURE
+--------------------------------------------------------------------------------
+- The analytics API (/api/umkm/advertising/campaigns/{id}/analytics) NEVER
+  exposes individual event rows, commuter user IDs, IP addresses, or device IDs.
+- Only aggregated count numbers (timeseries buckets and placement breakdown)
+  are returned to the merchant owner.
+
+2. ZERO COMMUTER GPS MOVEMENT DISCLOSURE
+--------------------------------------------------------------------------------
+- Route request metrics indicate only that a walking route calculation was
+  requested towards the merchant's coordinate.
+- The commuter's origin location, trajectory, speed, and ongoing transit history
+  are strictly private and NEVER recorded in campaign_events or analytics aggregates.
+
+3. CROSS-MERCHANT ISOLATION
+--------------------------------------------------------------------------------
+- A merchant owner cannot view analytics for campaigns belonging to any other
+  merchant.
+- Campaign ownership verification enforces `merchants.owner_id = user.id`.
+================================================================================

@@ -21,6 +21,7 @@ import { LocationPreview } from "../location/location-preview";
 import { LocationPrivacyControl } from "../location/location-privacy-control";
 import { PhotoActions } from "../media/photo-actions";
 import { PhotoPreview } from "../media/photo-preview";
+import { CommunityAvatar } from "../common/community-avatar";
 import styles from "../community.module.css";
 import { EmojiPicker } from "./emoji-picker";
 
@@ -32,15 +33,15 @@ const CLIENT_ALLOWED_PHOTO_TYPES = new Set([
 
 type PostComposerProps = {
   authorName: string;
-  authorInitials: string;
+  authorAvatarUrl?: string | null;
   error: string | null;
   submitting: boolean;
   onSubmit(input: CreateCommunityPostInput): Promise<boolean>;
 };
 
 export function PostComposer({
+  authorAvatarUrl = null,
   authorName,
-  authorInitials,
   error,
   submitting,
   onSubmit,
@@ -171,9 +172,10 @@ export function PostComposer({
 
   return (
     <section className={styles.composer} aria-labelledby="community-composer">
-      <div className={styles.avatar} aria-hidden="true">
-        {authorInitials}
-      </div>
+      <CommunityAvatar
+        avatarUrl={authorAvatarUrl}
+        displayName={authorName}
+      />
       <div className={styles.composerBody}>
         <div className={styles.composerHeader}>
           <div>

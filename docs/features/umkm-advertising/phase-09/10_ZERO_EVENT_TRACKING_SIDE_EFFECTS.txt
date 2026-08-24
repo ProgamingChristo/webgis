@@ -1,0 +1,20 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: ZERO EVENT TRACKING SIDE EFFECTS
+=====================================================
+
+1. STRICT ZERO SIDE EFFECT DIRECTIVE
+Phase 09 explicitly prohibits database mutations during ad serving and rendering:
+- NO impression logs are written to database tables
+- NO click events are tracked or persisted
+- NO budget or balance is deducted upon banner or poster display
+- NO analytics event pipelines are invoked
+
+2. AUDIT COMPLIANCE
+- `ContextualBannerServingService.getEligibleBanner()` performs ONLY read queries (`SELECT`) on `ad_campaigns`, `merchants`, `ad_creatives`, and `ad_campaign_targets`.
+- `ProfilePosterServingService.getProfilePosterForMerchant()` performs ONLY read queries (`SELECT`).
+- `GET /api/advertising/placements/contextual-banner` is an idempotent read endpoint.
+- `GET /api/merchants/[id]/advertising/profile-poster` is an idempotent read endpoint.
+- Frontend components `<ContextualBanner />` and `<ProfilePoster />` trigger UI callbacks (such as routing and profile inspection) with zero event-logging HTTP requests.
+
+3. FUTURE TRACKING
+All impression logging, click tracking, CTR calculation, and real-time interaction metrics are strictly isolated to Phase 10.

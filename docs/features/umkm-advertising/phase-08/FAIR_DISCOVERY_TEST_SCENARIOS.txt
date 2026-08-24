@@ -1,0 +1,17 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — FAIR DISCOVERY TEST SCENARIOS
+================================================================================
+
+1. TEST SCENARIOS MATRIX
+--------------------------------------------------------------------------------
+
+| Scenario | Input Query | Expected Result |
+|---|---|---|
+| 1. Unfiltered Discovery | Origin: Jakarta Barat, Radius: 3km | Returns Original, Hidden Gems, and Sponsored pin (if eligible). |
+| 2. Matching Category | Category: "CAFE" | Returns only Cafe merchants in Original, Hidden Gems, and Sponsored. |
+| 3. Non-Matching Category | Category: "AUTOMOTIVE" | Coffee sponsored pin is excluded; only automotive merchants returned. |
+| 4. Deduplication | Merchant X is Sponsored and Organic | Merchant X appears in Sponsored only; not duplicated in Original. |
+| 5. Organic Invariance | Discovery with Ads vs without Ads | Exact relative sequence of organic merchants remains 100% identical. |
+| 6. Failure Isolation | Ad Serving Engine throws error | HTTP 200 OK returned with `sponsored: []`; organic results intact. |

@@ -1,0 +1,21 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — ORIGINAL VS HIDDEN GEM VS SPONSORED
+================================================================================
+
+1. STREAM DEFINITIONS
+--------------------------------------------------------------------------------
+
+| Stream | Type | Selection Criteria | Visual Disclosure |
+|---|---|---|---|
+| ORIGINAL | Organic | Pure spatial distance ascending + search filters | Blue Store Icon · Standard Card |
+| HIDDEN GEM | Algorithmic / Community | High data quality score (>= 80) + transit community engagement | Emerald Gem Badge · Glowing Card |
+| SPONSORED | Commercial Promotion | Active campaign, creative ready, spatial eligibility, search filter match | Amber "SPONSORED" Badge · Gold Accent Card |
+
+2. IMMUTABILITY RULES
+--------------------------------------------------------------------------------
+- Original ranking order is 100% deterministic based on distance and filters.
+- Hidden Gem ranking is independent of commercial campaigns.
+- Sponsored placements are quarantined into their own data array (`sponsored: [...]`)
+  and rendered in a designated section with clear legal disclosure.

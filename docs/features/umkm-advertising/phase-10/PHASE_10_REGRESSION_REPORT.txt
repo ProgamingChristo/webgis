@@ -1,0 +1,19 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: REGRESSION REPORT
+=====================================================
+
+1. FAIR DISCOVERY & ORGANIC RANKING
+- Organic Result Integrity: Verified that event tracking hooks have ZERO impact on organic merchant distance calculations or sort order.
+- Hidden Gem Stream: Unchanged and isolated.
+- Fair Discovery Capping: Max 1 Contextual Banner and Max 2 Sponsored Pins are preserved.
+
+2. AD SERVING & PLACEMENT RENDERING
+- Sponsored Pin: Continues to render with gold pill and megaphone icon on MapLibre.
+- Contextual Banner: Continues to render with amber gradient and disclosure badge.
+- Profile Poster: Continues to render in merchant drawer with same-merchant integrity.
+
+3. OWNER SERVING PREVIEW ISOLATION
+- Advertising Manager preview (`/umkm/advertising`) does NOT invoke event recording hooks, ensuring merchant testing does not inflate campaign analytics.
+
+4. GIS & ROUTING INTEGRATION
+- Routing calculations and pedestrian network RPCs operate completely unaffected.

@@ -205,7 +205,10 @@ describe("API endpoint policy matrix", () => {
     ).toEqual(
       [
         "DELETE /api/admin/map-import/layers/[id]",
+        "GET /api/admin/community/analytics",
+        "GET /api/admin/community/reports",
         "PATCH /api/admin/map-import/layers/[id]",
+        "PATCH /api/admin/community/reports/[reportId]",
         "POST /api/admin/ingestion/jobs",
         "POST /api/admin/ingestion/run",
         "POST /api/admin/map-import/commit",

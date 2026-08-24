@@ -1,0 +1,38 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — PHASE 11 ARCHITECTURE
+================================================================================
+
+1. SYSTEM PURPOSE & CONTEXT
+--------------------------------------------------------------------------------
+The Merchant Submission engine allows authenticated UMKM owners to submit their
+physical businesses for curation and inclusion into the GETRA canonical merchant
+database. It features:
+- Interactive MapLibre point picker for precise coordinate assignment
+- Draft staging & editing lifecycle
+- Atomic admin approval converting staging submissions into canonical verified merchants
+- PostGIS spatial validation and duplicate candidate detection
+
+2. COMPONENT ARCHITECTURE
+--------------------------------------------------------------------------------
+Frontend (src/features/merchant-submission/):
+├── MerchantMapPicker (MapLibre coordinate selector with draggable pin & browser geolocation)
+├── MerchantSubmissionForm (/umkm/merchants/new - Draft creation & submission form)
+├── MerchantSubmissionDetail (/umkm/submissions/[id] - Lifecycle status viewer & actions)
+├── MerchantSubmissionStatusBadge (DRAFT, PENDING_REVIEW, APPROVED, REJECTED, CANCELLED)
+└── MerchantSubmissionService (Typed API client wrapper)
+
+Backend (src/features/merchant-submission/):
+├── API Routes:
+│   ├── /api/umkm/merchant-submissions (GET user submissions, POST create draft)
+│   ├── /api/umkm/merchant-submissions/[id] (GET detail, PATCH update draft)
+│   ├── /api/umkm/merchant-submissions/[id]/submit (POST transition to PENDING_REVIEW)
+│   ├── /api/umkm/merchant-submissions/[id]/cancel (POST cancel submission)
+│   ├── /api/admin/merchant-submissions (GET list pending submissions for review)
+│   ├── /api/admin/merchant-submissions/[id]/approve (POST atomic approval)
+│   └── /api/admin/merchant-submissions/[id]/reject (POST reject with note)
+├── Service: MerchantSubmissionService
+├── Repository: MerchantSubmissionRepository
+├── Schemas: createMerchantSubmissionSchema, updateMerchantSubmissionSchema
+└── Database Table: public.merchant_submissions with PostGIS geometry(Point, 4326)
+================================================================================

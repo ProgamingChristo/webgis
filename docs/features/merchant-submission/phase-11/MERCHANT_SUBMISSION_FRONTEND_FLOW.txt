@@ -1,0 +1,21 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — FRONTEND WORKFLOW SPECIFICATION
+================================================================================
+
+1. ROUTES & VIEWS
+--------------------------------------------------------------------------------
+1. Creation Form: `/umkm/merchants/new`
+   - Component: `MerchantSubmissionForm`
+   - Interactive fields: Nama Usaha, Kategori, Deskripsi, Alamat, MapLibre Picker, Foto URL.
+   - Action buttons: "Simpan Draft", "Ajukan untuk Review".
+
+2. Detail & Lifecycle View: `/umkm/submissions/[id]`
+   - Component: `MerchantSubmissionDetail`
+   - Displays real-time status banner, coordinates, category, and review notes.
+   - Status actions:
+     - `DRAFT`: Link "Lanjutkan Edit" (`/umkm/merchants/new?edit=[id]`).
+     - `PENDING_REVIEW`: Button "Batalkan Pengajuan".
+     - `APPROVED`: Button "Pasang Iklan Merchant" (`/umkm/advertising?merchantId=[canonicalId]`).
+     - `REJECTED`: Renders reviewer note banner explaining why submission was not accepted.
+================================================================================

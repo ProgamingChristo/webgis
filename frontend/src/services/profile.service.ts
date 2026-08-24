@@ -5,9 +5,6 @@ import {
   type PublicProfile,
   type UserContext,
 } from "@/src/lib/auth-client";
-import {
-  getBrowserSupabaseClient,
-} from "@/src/lib/supabase/browser";
 
 export interface ProfileUpdatePayload {
   display_name?: string;
@@ -34,7 +31,6 @@ async function readJson<T>(
 
 export const profileService = {
   async uploadAvatar(
-    userId: string,
     file: File,
   ) {
     if (!file.type.startsWith("image/")) {
@@ -52,43 +48,32 @@ export const profileService = {
       );
     }
 
-    const extension =
-      file.name
-        .split(".")
-        .pop()
-        ?.toLowerCase()
-        ?.replace(/[^a-z0-9]/g, "") ||
-      "jpg";
+    const formData =
+      new FormData();
 
-    const path =
-      `${userId}/avatar-${Date.now()}.${extension}`;
+    formData.append(
+      "avatar",
+      file,
+    );
 
-    const supabase =
-      getBrowserSupabaseClient();
-
-    const {
-      error,
-    } = await supabase.storage
-      .from("avatars")
-      .upload(path, file, {
-        cacheControl: "3600",
-        contentType: file.type,
-        upsert: true,
-      });
-
-    if (error) {
-      throw new Error(
-        `Upload foto gagal: ${error.message}`,
+    const response =
+      await authenticatedFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/profile/avatar`,
+        {
+          method: "POST",
+          body: formData,
+        },
       );
-    }
 
-    const {
-      data,
-    } = supabase.storage
-      .from("avatars")
-      .getPublicUrl(path);
+    const result =
+      await readJson<{
+        avatar_url: string;
+      }>(
+        response,
+        "Upload foto profil gagal.",
+      );
 
-    return data.publicUrl;
+    return result.avatar_url;
   },
 
   async getOwnProfile() {

@@ -1,0 +1,27 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — TEST MATRIX & VERIFICATION
+================================================================================
+
+1. TEST SUITE OVERVIEW
+--------------------------------------------------------------------------------
+Unit & Schema Tests:
+- backend/tests/unit/merchant-submission/merchant-submission.service.test.ts (4 passed)
+- backend/tests/unit/merchant-submission/merchant-submission-schema.test.ts (4 passed)
+
+2. TEST CASES AND COVERAGE
+--------------------------------------------------------------------------------
+Case ID   | Scenario                                          | Expected Result                     | Status
+----------|---------------------------------------------------|-------------------------------------|--------
+TC-SUB-01 | Create draft with valid data (UMKM mode active)   | 201 Created, status = DRAFT         | PASSED
+TC-SUB-02 | Create draft without UMKM mode                    | 403 Forbidden                       | PASSED
+TC-SUB-03 | Update draft data while status = DRAFT            | 200 OK, updated fields              | PASSED
+TC-SUB-04 | Submit draft for review (DRAFT -> PENDING_REVIEW) | 200 OK, status = PENDING_REVIEW     | PASSED
+TC-SUB-05 | Cancel submission while PENDING_REVIEW            | 200 OK, status = CANCELLED          | PASSED
+TC-SUB-06 | Admin lists pending submissions                   | 200 OK, array of pending records    | PASSED
+TC-SUB-07 | Non-admin attempts admin list/approve/reject      | 403 Forbidden                       | PASSED
+TC-SUB-08 | Admin approves submission (Atomic creation)       | 200 OK, status = APPROVED, merch_id | PASSED
+TC-SUB-09 | Admin rejects submission with note                | 200 OK, status = REJECTED           | PASSED
+TC-SUB-10 | Reject invalid coordinates / out of bounds       | 400 Bad Request                     | PASSED
+TC-SUB-11 | Reject spoofed submitted_by in payload           | 400 Bad Request                     | PASSED
+================================================================================

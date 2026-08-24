@@ -1,0 +1,30 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — SECURITY & VULNERABILITY VERIFICATION
+================================================================================
+
+DATE: 2026-08-23
+STATUS: PASSED (ALL ATTACK VECTORS MITIGATED)
+
+1. SECURITY VECTORS AUDITED
+--------------------------------------------------------------------------------
+Vector 1: User Self-Approval & Status Injection
+- Payload: `{ "status": "APPROVED", "canonical_merchant_id": "fake-id" }`
+- Result: Rejected by strict Zod schema; status defaults to 'DRAFT' on backend.
+
+Vector 2: Submitter Identity Spoofing
+- Payload: `{ "submitted_by": "other-user-uuid" }`
+- Result: Rejected; `submitted_by` is strictly resolved from verified JWT session (`requireAuthenticatedUser`).
+
+Vector 3: Cross-User Submission Manipulation
+- Attempt: User A attempts `PATCH /api/umkm/merchant-submissions/:id` on User B's draft.
+- Result: Rejected with 403 Forbidden / Not Found via RLS and service ownership checks.
+
+Vector 4: Spatial Injection / Out-of-Bounds Coordinates
+- Payload: `{ "location": { "type": "Point", "coordinates": [999, -999] } }`
+- Result: Rejected with 400 Validation Error (-180 <= Lng <= 180, -90 <= Lat <= 90).
+
+Vector 5: Unauthenticated Admin Approval Bypass
+- Attempt: Regular user calls `POST /api/admin/merchant-submissions/:id/approve`.
+- Result: Rejected with 403 Forbidden (`account_role != 'ADMIN'`).
+================================================================================

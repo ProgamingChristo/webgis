@@ -1,0 +1,33 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — FRONTEND MANUAL TEST GUIDE
+================================================================================
+
+1. STARTING SERVERS
+--------------------------------------------------------------------------------
+- Backend: `cd backend && npm run dev` (http://localhost:3001)
+- Frontend: `cd frontend && npm run dev` (http://localhost:3000)
+
+2. MANUAL ANALYTICS TEST STEP-BY-STEP
+--------------------------------------------------------------------------------
+Step 1: Open Analytics Dashboard
+1. Sign in as USER with UMKM mode.
+2. Navigate to http://localhost:3000/umkm/advertising/analytics.
+3. Observe initial render:
+   - Campaign dropdown pre-selects user's active campaign.
+   - Date range selector defaults to "30 Hari".
+   - 5 KPI summary cards (Impressions, Pin Clicks, Profile Opens, Route Requests, CTR).
+   - "Tren Interaksi Harian" timeseries chart.
+   - "Rincian Berdasarkan Placement Iklan" breakdown cards.
+   - Disclaimer banner: "Analytics GETRA mengukur interaksi campaign, bukan penjualan atau ROI."
+
+Step 2: Test Filters
+1. Click "7 Hari" -> chart and KPI values update immediately.
+2. Click "Semua" -> full historical period is shown.
+3. Select "Sponsored Pin" from the Placement dropdown -> data filters strictly to pin metrics.
+
+Step 3: Direct Link from Campaign Card
+1. Navigate to http://localhost:3000/umkm/advertising.
+2. On any campaign card, click "Lihat Analitik".
+3. Verify navigation directly to `/umkm/advertising/analytics?campaignId=[id]` with that campaign selected.
+================================================================================

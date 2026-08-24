@@ -1,0 +1,170 @@
+TRACK:
+UMKM INTELLIGENCE & ADVERTISING
+
+PHASE:
+10
+
+TITLE:
+Campaign Interaction Event Tracking
+
+DATE:
+2026-08-23
+
+FRONTEND EVENT FEATURE ROOT:
+frontend/src/features/umkm-advertising/events/
+
+BACKEND EVENT FEATURE ROOT:
+backend/src/features/umkm-advertising/events/
+
+FILES CREATED:
+- backend/supabase/migrations/20260823220000_umkm_advertising_campaign_events.sql
+- backend/src/features/umkm-advertising/events/types/campaign-event.types.ts
+- backend/src/features/umkm-advertising/events/schemas/campaign-event.schema.ts
+- backend/src/features/umkm-advertising/events/constants/campaign-event.constants.ts
+- backend/src/features/umkm-advertising/events/repositories/campaign-event.repository.ts
+- backend/src/features/umkm-advertising/events/services/campaign-event.service.ts
+- backend/src/features/umkm-advertising/events/services/campaign-attribution.service.ts
+- backend/src/features/umkm-advertising/events/index.ts
+- backend/app/api/advertising/events/route.ts
+- frontend/src/features/umkm-advertising/events/types/campaign-event.types.ts
+- frontend/src/features/umkm-advertising/events/services/campaign-event.service.ts
+- frontend/src/features/umkm-advertising/events/utils/event-dedup.ts
+- frontend/src/features/umkm-advertising/events/hooks/use-ad-impression.ts
+- frontend/src/features/umkm-advertising/events/hooks/use-map-ad-impression.ts
+- frontend/src/features/umkm-advertising/events/hooks/use-campaign-event.ts
+- frontend/src/features/umkm-advertising/events/index.ts
+- backend/src/features/umkm-advertising/scripts/provision-phase10-event-test-data.ts
+- backend/src/features/umkm-advertising/scripts/verify-phase10-campaign-events.ts
+- backend/tests/unit/umkm-advertising/campaign-event.service.test.ts
+- backend/tests/unit/umkm-advertising/campaign-event-schema.test.ts
+
+FILES MODIFIED:
+- backend/src/features/umkm-advertising/index.ts
+- backend/src/features/umkm-advertising/ad-serving/types/ad-serving.types.ts
+- backend/src/lib/api-security/endpoint-policy.ts
+- frontend/src/features/umkm-advertising/index.ts
+- frontend/src/features/umkm-advertising/ad-serving/types/ad-serving.types.ts
+- frontend/components/getra-map.tsx
+- frontend/src/features/umkm-advertising/contextual-banner/components/contextual-banner.tsx
+- frontend/src/features/umkm-advertising/profile-poster/components/profile-poster.tsx
+- frontend/src/features/fair-discovery/components/fair-discovery-results.tsx
+
+DATABASE CHANGES:
+YES (Created public.campaign_events table)
+
+MIGRATION:
+20260823220000_umkm_advertising_campaign_events.sql
+
+DRY RUN:
+PASS
+
+REMOTE PUSH:
+PASS
+
+REMOTE VERIFY:
+PASS
+
+EVENT TABLE:
+public.campaign_events
+
+EVENT TYPES:
+IMPRESSION, SPONSORED_PIN_CLICK, PROFILE_OPEN, ROUTE_REQUEST
+
+PLACEMENT TYPES:
+SPONSORED_PIN, CONTEXTUAL_BANNER, PROFILE_POSTER
+
+ATTRIBUTION MODEL:
+Placement-retained attribution with server-side campaign & creative verification.
+
+IMPRESSION RULE:
+Actual screen/viewport entry (IntersectionObserver >= 50% or MapLibre visible bounds).
+
+MAP IMPRESSION RULE:
+Marker coordinate within current MapLibre viewport bounds.
+
+DEDUP RULE:
+Client in-memory guard + database-level unique constraint on composite dedup_key.
+
+SESSION POLICY:
+Ephemeral cryptographically-random UUID stored in sessionStorage.
+
+USER ID STORED:
+NO
+
+EXACT LOCATION STORED:
+NO
+
+IP STORED:
+NO
+
+EVENT API:
+POST /api/advertising/events
+
+RLS:
+ACTIVE (Insert authenticated, Select service_role)
+
+RATE LIMIT:
+mutation (active)
+
+SPONSORED PIN INSTRUMENTATION:
+PASS (Viewport impression & marker click)
+
+BANNER INSTRUMENTATION:
+PASS (IntersectionObserver impression, Profile open, Route request)
+
+PROFILE POSTER INSTRUMENTATION:
+PASS (IntersectionObserver impression, Route request)
+
+PROFILE OPEN ATTRIBUTION:
+PASS
+
+ROUTE REQUEST ATTRIBUTION:
+PASS
+
+OWNER PREVIEW TRACKED:
+NO
+
+EXISTING DB DATA USED:
+YES (Merchants & Campaigns)
+
+DUMMY DATA CREATED:
+YES (Test campaign 99999999-9999-4999-9999-999999999999)
+
+TEST EVENTS:
+PASS
+
+FRONTEND MANUAL TEST:
+DOCUMENTED
+
+TYPECHECK:
+PASS (0 errors)
+
+LINT:
+PASS
+
+TEST:
+PASS (71 suites, 495 tests)
+
+BUILD:
+PASS (frontend & backend Next.js builds clean)
+
+HTTP SMOKE:
+PASS
+
+BROWSER SMOKE:
+PASS
+
+DEDUP TEST:
+PASS (Unique key collision returned deduplicated: true)
+
+SECURITY:
+PASS (Strict Zod, No user_id/revenue injection, Parameterized queries)
+
+PRIVACY:
+PASS (Data minimized, no personal identifiers)
+
+REGRESSION:
+PASS (Organic ordering immutable, Fair discovery preserved, Routing unaffected)
+
+FINAL STATUS:
+COMPLETE

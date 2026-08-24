@@ -1,0 +1,48 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — WORKFLOW STATE MACHINE
+================================================================================
+
+1. STATE TRANSITION GRAPH
+--------------------------------------------------------------------------------
+
+         [ User Action: Save Draft ]
+                      │
+                      ▼
+                   +-------+
+                   | DRAFT | <----------------+ (Edit Draft)
+                   +-------+                  │
+                      │                       │
+         [ User Action: Submit for Review ]   │
+                      │                       │
+                      ▼                       │
+             +----------------+               │
+             | PENDING_REVIEW |               │
+             +----------------+               │
+              /       │        \              │
+             /        │         \             │
+[Admin: Approve] [Admin: Reject] [User: Cancel]
+           /          │            \
+          ▼           ▼             ▼
+    +----------+ +----------+ +-----------+
+    | APPROVED | | REJECTED | | CANCELLED |
+    +----------+ +----------+ +-----------+
+         │
+         ▼
+[Creates Row in public.merchants]
+(owner_id = submitted_by, verification_status = 'VERIFIED', publish_status = 'PUBLISHED')
+
+2. TRANSITION CONSTRAINTS & INVARIANTS
+--------------------------------------------------------------------------------
+From State     | Allowed To State | Triggered By | Invariants / Side Effects
+---------------|------------------|--------------|------------------------------------------
+(None)         | DRAFT            | User         | Record created in merchant_submissions.
+DRAFT          | DRAFT            | User         | Payload updated in place.
+DRAFT          | PENDING_REVIEW   | User         | Validates mandatory fields before lock.
+PENDING_REVIEW | CANCELLED        | User         | Submission retracted by submitter.
+PENDING_REVIEW | APPROVED         | Admin        | ATOMIC: Insert into public.merchants & set canonical_merchant_id.
+PENDING_REVIEW | REJECTED         | Admin        | Sets reviewed_by, reviewed_at, review_note.
+APPROVED       | (Terminal)       | -            | Read-only canonical link established.
+REJECTED       | (Terminal)       | -            | Read-only feedback recorded.
+CANCELLED      | (Terminal)       | -            | Read-only.
+================================================================================

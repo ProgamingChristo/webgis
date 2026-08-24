@@ -1,0 +1,138 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+PHASE 11 CHANGELOG: UMKM WORKSPACE, MERCHANT SUBMISSION, CAMPAIGN ANALYTICS
+================================================================================
+
+DATE: 2026-08-23
+TRACK: UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE: PHASE 11 (WORKSTREAMS 11A, 11B, 11C, 11D)
+STATUS: COMPLETED & VERIFIED
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+Phase 11 introduces a comprehensive suite of merchant lifecycle and analytics
+cockpit features to GETRA:
+1. Workstream 11A (UMKM Headbar & Workspace): Dynamic headbar link and centralized
+   overview cockpit (/umkm) displaying verified merchants, active campaigns, and
+   submission statuses.
+2. Workstream 11B (Merchant Submission Workflow): Full draft staging, MapLibre
+   interactive point picker, duplicate candidate warning, and atomic admin approval
+   workflow converting staging submissions into canonical verified merchants.
+3. Workstream 11C (Campaign Analytics Dashboard): Real-time aggregation of Phase 10
+   events into canonical metrics (Impressions, Pin Clicks, Profile Opens, Route
+   Requests, Sponsored Pin CTR), daily timeseries trend charts, and placement breakdown.
+4. Workstream 11D (Midtrans Sandbox Gate): Formally designated as DEFERRED with full
+   architectural justification and criteria roadmap in MIDTRANS_DECISION.txt.
+
+--------------------------------------------------------------------------------
+2. DATABASE MIGRATIONS
+--------------------------------------------------------------------------------
+- Created: `backend/supabase/migrations/20260824010000_merchant_submission_foundation.sql`
+  - Created `public.merchant_submissions` table with PostGIS `extensions.geometry(Point, 4326)`.
+  - Added RLS policies for user submitters and administrators.
+  - Added performance indexes for `submitted_by`, `status`, and spatial `GIST(location)`.
+  - Added `set_merchant_submissions_updated_at` trigger.
+  - Applied to remote Supabase database (`supabase db push --include-all`).
+
+--------------------------------------------------------------------------------
+3. BACKEND IMPLEMENTATIONS
+--------------------------------------------------------------------------------
+- `backend/src/features/umkm-workspace/`
+  - `types/umkm-workspace.types.ts`
+  - `services/umkm-workspace.service.ts`
+  - `index.ts`
+  - `app/api/umkm/workspace/route.ts`
+- `backend/src/features/merchant-submission/`
+  - `types/merchant-submission.types.ts`
+  - `schemas/merchant-submission.schema.ts`
+  - `repositories/merchant-submission.repository.ts`
+  - `services/merchant-submission.service.ts`
+  - `index.ts`
+  - `app/api/umkm/merchant-submissions/route.ts`
+  - `app/api/umkm/merchant-submissions/[id]/route.ts`
+  - `app/api/umkm/merchant-submissions/[id]/submit/route.ts`
+  - `app/api/umkm/merchant-submissions/[id]/cancel/route.ts`
+  - `app/api/admin/merchant-submissions/route.ts`
+  - `app/api/admin/merchant-submissions/[id]/approve/route.ts`
+  - `app/api/admin/merchant-submissions/[id]/reject/route.ts`
+- `backend/src/features/umkm-advertising/analytics/`
+  - `types/campaign-analytics.types.ts`
+  - `schemas/campaign-analytics.schema.ts`
+  - `repositories/campaign-analytics.repository.ts`
+  - `services/campaign-analytics.service.ts`
+  - `index.ts`
+  - `app/api/umkm/advertising/campaigns/[id]/analytics/route.ts`
+- `backend/src/lib/api-security/endpoint-policy.ts`: Registered all new API endpoint policies.
+
+--------------------------------------------------------------------------------
+4. FRONTEND IMPLEMENTATIONS
+--------------------------------------------------------------------------------
+- Headbar Navigation:
+  - `frontend/src/components/layout/Navbar.tsx`: Added dynamic UMKM Workspace link for users with UMKM mode.
+- `frontend/src/features/umkm-workspace/`
+  - `types/umkm-workspace.types.ts`
+  - `services/umkm-workspace.service.ts`
+  - `components/umkm-workspace-summary.tsx`
+  - `components/owned-merchant-list.tsx`
+  - `components/submission-summary.tsx`
+  - `components/umkm-quick-actions.tsx`
+  - `components/umkm-workspace.tsx`
+  - `index.ts`
+  - `app/umkm/page.tsx`
+- `frontend/src/features/merchant-submission/`
+  - `types/merchant-submission.types.ts`
+  - `services/merchant-submission.service.ts`
+  - `components/merchant-submission-map-picker.tsx`
+  - `components/merchant-submission-status-badge.tsx`
+  - `components/merchant-submission-form.tsx`
+  - `components/merchant-submission-detail.tsx`
+  - `index.ts`
+  - `app/umkm/merchants/new/page.tsx`
+  - `app/umkm/submissions/[id]/page.tsx`
+- `frontend/src/features/umkm-advertising/analytics/`
+  - `types/campaign-analytics.types.ts`
+  - `services/campaign-analytics.service.ts`
+  - `components/analytics-summary-cards.tsx`
+  - `components/analytics-timeseries-chart.tsx`
+  - `components/analytics-placement-chart.tsx`
+  - `components/analytics-filters.tsx`
+  - `components/analytics-disclaimer.tsx`
+  - `components/analytics-empty-state.tsx`
+  - `components/analytics-dashboard.tsx`
+  - `index.ts`
+  - `app/umkm/advertising/analytics/page.tsx`
+- Campaign Card CTA:
+  - `frontend/src/features/umkm-advertising/components/campaign/campaign-card.tsx`: Added "Lihat Analitik" direct link.
+
+--------------------------------------------------------------------------------
+5. DOCUMENTATION SUITE
+--------------------------------------------------------------------------------
+- `docs/features/umkm-workspace/phase-11/`:
+  - `ARCHITECTURE.txt`
+  - `DATA_FLOW.txt`
+  - `AUTHORIZATION_MODEL.txt`
+  - `INTEGRATION_POINTS.txt`
+  - `TEST_MATRIX.txt`
+- `docs/features/merchant-submission/phase-11/`:
+  - `ARCHITECTURE.txt`
+  - `WORKFLOW_STATE_MACHINE.txt`
+  - `DATA_DICTIONARY.txt`
+  - `ADMIN_CURATION_GUIDE.txt`
+  - `SECURITY_AND_RLS.txt`
+  - `TEST_MATRIX.txt`
+- `docs/features/umkm-advertising/phase-11/`:
+  - `ANALYTICS_ARCHITECTURE.txt`
+  - `METRICS_DICTIONARY.txt`
+  - `PRIVACY_PROTECTION.txt`
+  - `MIDTRANS_DECISION.txt`
+  - `TEST_MATRIX.txt`
+
+--------------------------------------------------------------------------------
+6. VERIFICATION RESULTS
+--------------------------------------------------------------------------------
+- Test Suite: 76 test files (511 passing tests, 1 skipped).
+- TypeScript & Build:
+  - Backend: 51 Next.js API routes compiled cleanly.
+  - Frontend: 20 Next.js pages compiled cleanly.
+================================================================================

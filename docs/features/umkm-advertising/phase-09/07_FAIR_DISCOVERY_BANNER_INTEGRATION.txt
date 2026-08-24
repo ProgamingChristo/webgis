@@ -1,0 +1,29 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: FAIR DISCOVERY BANNER INTEGRATION
+=====================================================
+
+1. COMPOSITION INTEGRATION
+`FairDiscoveryCompositionService.discover(...)` requests an eligible contextual promo banner via `ContextualBannerServingService.getEligibleBanner(...)`.
+
+2. ADDITIVE CONTRACT
+`FairDiscoveryResult` includes:
+```typescript
+export interface FairDiscoveryResult {
+  original: OriginalMerchantDTO[];
+  hidden_gems: HiddenGemDTO[];
+  sponsored: SponsoredPinDTO[];
+  contextual_banner?: ContextualBannerDTO | null;
+  metadata: FairDiscoveryMetadata;
+}
+```
+
+3. UI RENDERING HIERARCHY
+In `FairDiscoveryResults` (`fair-discovery-results.tsx`):
+1. `<DiscoveryDisclosure />` (Always visible to establish transparency)
+2. `<ContextualBanner />` (Rendered when `contextual_banner` is present)
+3. `<SponsoredSection />` (Sponsored pin cards, capped to 2)
+4. `<HiddenGemSection />` (Organic hidden gems with badge)
+5. `<OriginalResultsSection />` (Organic merchant catalog ordered strictly by distance)
+
+4. FAILURE ISOLATION
+If `ContextualBannerServingService` fails or times out, `discover(...)` catches the error, sets `contextual_banner = null`, and delivers organic and hidden gem streams without interruption.

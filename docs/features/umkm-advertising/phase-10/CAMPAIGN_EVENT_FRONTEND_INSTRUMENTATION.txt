@@ -1,0 +1,30 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: FRONTEND INSTRUMENTATION MAP
+=====================================================
+
+1. FEATURE FILES CREATED
+`frontend/src/features/umkm-advertising/events/`:
+- `types/campaign-event.types.ts`: TypeScript contracts.
+- `services/campaign-event.service.ts`: Safe event recorder communicating with `/api/advertising/events`.
+- `utils/event-dedup.ts`: Ephemeral session key and in-memory dedup cache.
+- `hooks/use-ad-impression.ts`: Reusable `IntersectionObserver` hook for DOM placements.
+- `hooks/use-map-ad-impression.ts`: MapLibre viewport bounds observer hook.
+- `hooks/use-campaign-event.ts`: Action dispatchers for click, profile open, and route request.
+
+2. INSTRUMENTED COMPONENTS
+1. `GetraMap` (`frontend/components/getra-map.tsx`):
+   - Sponsored pin visibility in map viewport -> `IMPRESSION` (`placement: "SPONSORED_PIN"`).
+   - Marker element click -> `SPONSORED_PIN_CLICK` (`placement: "SPONSORED_PIN"`).
+2. `ContextualBanner` (`frontend/src/features/umkm-advertising/contextual-banner/components/contextual-banner.tsx`):
+   - Attached `useAdImpression` -> `IMPRESSION` (`placement: "CONTEXTUAL_BANNER"`).
+   - CTA "Lihat Profil" click -> `PROFILE_OPEN` (`placement: "CONTEXTUAL_BANNER"`).
+   - CTA "Petunjuk Rute" click -> `ROUTE_REQUEST` (`placement: "CONTEXTUAL_BANNER"`).
+3. `ProfilePoster` (`frontend/src/features/umkm-advertising/profile-poster/components/profile-poster.tsx`):
+   - Attached `useAdImpression` -> `IMPRESSION` (`placement: "PROFILE_POSTER"`).
+   - CTA "Petunjuk Rute" click -> `ROUTE_REQUEST` (`placement: "PROFILE_POSTER"`).
+4. `FairDiscoveryResults` (`frontend/src/features/fair-discovery/components/fair-discovery-results.tsx`):
+   - Sponsored list card click -> `PROFILE_OPEN` (`placement: "SPONSORED_PIN"`).
+   - Sponsored list route CTA -> `ROUTE_REQUEST` (`placement: "SPONSORED_PIN"`).
+
+3. NON-BLOCKING ERROR RESILIENCE
+All analytics calls are wrapped in non-blocking try-catch handlers. If the event endpoint encounters a network error, timeout, or rate-limit throttle, the error is caught silently, allowing the commuter's profile navigation and route calculations to proceed without friction.

@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import type { CommuterRequestItem } from "../../types/community.types";
+import { CommunityAvatar } from "../common/community-avatar";
 import {
   formatCommuterRequestCategory,
   formatCommunityTime,
@@ -20,6 +21,18 @@ type RequestCardProps = {
 export function RequestCard({ request }: RequestCardProps) {
   return (
     <article className={styles.requestCard}>
+      <div className={styles.requestAuthorRow}>
+        <CommunityAvatar
+          avatarUrl={request.author.avatarUrl}
+          displayName={request.author.displayName}
+        />
+        <Link
+          className={styles.authorProfileLink}
+          href={`/community/users/${request.author.id}`}
+        >
+          {request.author.displayName}
+        </Link>
+      </div>
       <header className={styles.requestCardHeader}>
         <div>
           <span className={styles.categoryBadge}>

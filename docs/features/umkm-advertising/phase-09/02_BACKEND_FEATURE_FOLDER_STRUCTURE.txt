@@ -1,0 +1,36 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: BACKEND FEATURE FOLDER STRUCTURE
+=====================================================
+
+1. FEATURE-FOLDER DIRECTORY LAYOUT
+Backend advertising architecture organizes placement subdomains cleanly under `backend/src/features/umkm-advertising/`:
+
+backend/src/features/umkm-advertising/
+├── contextual-banner/
+│   ├── constants/
+│   │   └── contextual-banner.constants.ts
+│   ├── schemas/
+│   │   └── contextual-banner.schema.ts
+│   ├── services/
+│   │   └── contextual-banner-serving.service.ts
+│   ├── types/
+│   │   └── contextual-banner.types.ts
+│   └── index.ts
+│
+├── profile-poster/
+│   ├── constants/
+│   │   └── profile-poster.constants.ts
+│   ├── schemas/
+│   │   └── profile-poster.schema.ts
+│   ├── services/
+│   │   └── profile-poster-serving.service.ts
+│   ├── types/
+│   │   └── profile-poster.types.ts
+│   └── index.ts
+│
+├── index.ts (Public barrel export)
+
+2. API ROUTE LOCATIONS
+- `backend/app/api/advertising/placements/contextual-banner/route.ts`
+- `backend/app/api/merchants/[id]/advertising/profile-poster/route.ts`
+- `backend/app/api/discovery/route.ts` (Integrated Fair Discovery route with additive contextual banner)

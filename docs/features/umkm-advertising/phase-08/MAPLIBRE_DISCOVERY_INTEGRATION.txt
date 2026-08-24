@@ -1,0 +1,17 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — MAPLIBRE DISCOVERY INTEGRATION
+================================================================================
+
+1. MAPLIBRE SPONSORED PIN RENDERING
+--------------------------------------------------------------------------------
+- Component: `frontend/components/getra-map.tsx`
+- Prop: `sponsoredPlacements?: SponsoredPinDTO[]`
+- Pin Styling:
+  * Top pill: `✨ SPONSORED` in bold amber with gold border.
+  * Marker icon: Megaphone emoji `📣` in gradient amber circle with white outline and drop shadow.
+  * Anchor: Bottom-aligned to exact physical merchant coordinates.
+- Popup Interaction:
+  * Clicking the pin opens an interactive popup showing the campaign headline, merchant name, category, and "✨ Sponsored" label.
+  * Clicking invokes `onSelectSponsored` callback to focus the merchant in the commuter UI.

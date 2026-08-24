@@ -1,0 +1,58 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM WORKSPACE — API SPECIFICATION
+================================================================================
+
+1. GET /api/umkm/workspace
+--------------------------------------------------------------------------------
+Summary:
+Retrieves the aggregated dashboard overview for the authenticated UMKM user.
+
+Authentication:
+- Required (Bearer JWT in Authorization header)
+- Stakeholder Mode: UMKM (or ADMIN account role)
+
+Response Status:
+- 200 OK (Successful overview aggregation)
+- 401 Unauthorized (Missing or invalid auth token)
+- 403 Forbidden (Authenticated user lacks UMKM stakeholder mode)
+
+Response Body Envelope (JSON):
+```json
+{
+  "success": true,
+  "data": {
+    "verified_merchants_count": 1,
+    "active_campaigns_count": 2,
+    "pending_submissions_count": 1,
+    "owned_merchants": [
+      {
+        "id": "merch-123",
+        "name": "Warung Kopi Selamat",
+        "category": "Makanan & Minuman",
+        "address": "Jl. Kebon Jeruk No. 12",
+        "campaigns_count": 2,
+        "active_campaigns_count": 2,
+        "is_verified": true
+      }
+    ],
+    "recent_submissions": [
+      {
+        "id": "sub-456",
+        "name": "Cabang Baru Sudirman",
+        "category": "Makanan & Minuman",
+        "status": "PENDING_REVIEW",
+        "address": "Jl. Sudirman No. 45",
+        "created_at": "2026-08-23T10:00:00.000Z",
+        "updated_at": "2026-08-23T10:00:00.000Z"
+      }
+    ]
+  },
+  "request_id": "4b68e984-7e88-4c6e-8260-ca37bf7c569f"
+}
+```
+
+2. OPTIONS /api/umkm/workspace
+--------------------------------------------------------------------------------
+Returns preflight CORS and security headers according to system endpoint policy.
+================================================================================

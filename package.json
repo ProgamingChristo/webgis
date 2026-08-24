@@ -13,7 +13,9 @@
     "ts-api-utils": "2.4.0"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/dev-getra.mjs",
+    "dev:frontend": "npm run dev -w frontend",
+    "dev:backend": "npm run dev -w backend",
     "build": "next build",
     "start": "next start",
 

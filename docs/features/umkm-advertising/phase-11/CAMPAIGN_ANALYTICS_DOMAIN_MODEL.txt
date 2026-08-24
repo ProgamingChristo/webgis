@@ -1,0 +1,30 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — DOMAIN MODEL SPECIFICATION
+================================================================================
+
+1. DOMAIN SCOPE & BOUNDARIES
+--------------------------------------------------------------------------------
+The Campaign Analytics domain consumes append-only interaction events recorded in
+`public.campaign_events` and aggregates them into high-level performance insights
+for verified merchant owners.
+
+2. CANONICAL INTERACTION ENTITIES
+--------------------------------------------------------------------------------
+- IMPRESSION: Ad visual rendered in client viewport or map extent.
+- SPONSORED_PIN_CLICK: Commuter clicked a sponsored pin on the map.
+- PROFILE_OPEN: Commuter opened merchant profile drawer from an ad CTA.
+- ROUTE_REQUEST: Commuter requested walking navigation directions from an ad.
+
+3. DERIVED METRICS
+--------------------------------------------------------------------------------
+- Sponsored Pin Click-Through Rate (CTR):
+  `CTR = (Sponsored Pin Clicks / Sponsored Pin Impressions) * 100%`
+  * Expressed as a percentage (e.g. 25.0 for 25.0%).
+  * Yields 0% when denominator is 0.
+
+4. EXCLUDED CONCEPTS (STRICT ENFORCEMENT)
+--------------------------------------------------------------------------------
+- Zero Financial/Revenue metrics (No sales, omzet, profit, ROI, ROAS).
+- Zero Offline Footfall proofs (A route request does not guarantee store visit).
+================================================================================

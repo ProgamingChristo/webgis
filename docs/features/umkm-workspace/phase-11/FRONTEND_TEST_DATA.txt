@@ -1,0 +1,31 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM WORKSPACE — FRONTEND TEST DATA SPECIFICATION
+================================================================================
+
+1. TEST USERS
+--------------------------------------------------------------------------------
+1. General Commuter User (No UMKM mode):
+   - Role: USER
+   - Stakeholder Modes: []
+   - Expected Headbar: General | Community | Profile
+   - Expected /umkm: 403 Forbidden / Access Denied banner
+
+2. UMKM Merchant Owner User:
+   - Role: USER
+   - Stakeholder Modes: ["UMKM"]
+   - Owned Merchant: "Warung Kopi Selamat" (or DUMMY merchant)
+   - Expected Headbar: General | Community | UMKM Workspace | Profile
+   - Expected /umkm: Full cockpit with owned merchant & campaign counts
+
+3. Admin User:
+   - Role: ADMIN
+   - Stakeholder Modes: ["UMKM", "INVESTOR", "GOVERNMENT"]
+   - Expected Headbar: Full admin navigation + UMKM Workspace
+
+2. FIXTURE VALUES
+--------------------------------------------------------------------------------
+- Test Merchant Name: "DUMMY GETRA UMKM PHASE 11"
+- Test Coordinates: [106.827153, -6.175392] (Monas / Central Jakarta pilot zone)
+- Category: "Makanan & Minuman"
+================================================================================

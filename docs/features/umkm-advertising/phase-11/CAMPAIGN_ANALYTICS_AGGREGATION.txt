@@ -1,0 +1,27 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — AGGREGATION ENGINE SPECIFICATION
+================================================================================
+
+1. SERVER-SIDE AGGREGATION PRINCIPLE
+--------------------------------------------------------------------------------
+All event aggregation is executed on PostgreSQL / Supabase server-side within
+`CampaignAnalyticsRepository`. Raw event rows are NEVER transmitted to the client.
+
+2. AGGREGATION DIMENSIONS
+--------------------------------------------------------------------------------
+1. Summary Totals:
+   - Sum of `IMPRESSION`, `SPONSORED_PIN_CLICK`, `PROFILE_OPEN`, `ROUTE_REQUEST`
+   - Filtered by `campaign_id`, `from <= occurred_at <= to`, and optional `placement`.
+
+2. Daily Timeseries Buckets:
+   - Grouped by `YYYY-MM-DD` (UTC/ISO date string).
+   - Counts individual event types per date bucket.
+   - Sorted in ascending chronological order.
+
+3. Placement Surface Breakdown:
+   - Aggregates metrics across the 3 canonical surfaces:
+     * `SPONSORED_PIN`
+     * `CONTEXTUAL_BANNER`
+     * `PROFILE_POSTER`
+================================================================================

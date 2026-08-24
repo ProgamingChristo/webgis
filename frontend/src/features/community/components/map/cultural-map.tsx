@@ -27,6 +27,7 @@ import {
   formatLocationCoordinate,
 } from "../../utils/community-format";
 import { getBasemapOption, getDefaultBasemapId } from "../../../../../lib/mapid";
+import { CommunityAvatar } from "../common/community-avatar";
 import styles from "../community.module.css";
 
 type CulturalMapBounds = {
@@ -289,9 +290,16 @@ export function CulturalMap() {
               type="button"
             >
               <span>{formatCommunityFindingCategory(item.category)}</span>
+              <span className={styles.mapFindingAuthor}>
+                <CommunityAvatar
+                  avatarUrl={item.author.avatarUrl}
+                  displayName={item.author.displayName}
+                />
+                <span>{item.author.displayName}</span>
+              </span>
               <strong>{item.content}</strong>
               <small>
-                {item.author.displayName} - {formatCommunityTime(item.createdAt)}
+                {formatCommunityTime(item.createdAt)}
               </small>
               <small>
                 {formatLocationCoordinate(

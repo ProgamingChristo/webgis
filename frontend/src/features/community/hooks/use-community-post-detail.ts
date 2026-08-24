@@ -8,6 +8,7 @@ import {
   getCommunityPost,
   setCommunityReaction,
 } from "../api/community.api";
+import { subscribeToCommunityRealtimeEvents } from "../services/community-realtime.service";
 import type {
   CommunityComment,
   CommunityFeedItem,
@@ -64,6 +65,33 @@ export function useCommunityPostDetail(postId: string) {
 
     return () => window.clearTimeout(timeoutId);
   }, [loadDetail]);
+
+  useEffect(() => {
+    let mounted = true;
+    let subscription: { unsubscribe(): void } | null = null;
+
+    void subscribeToCommunityRealtimeEvents(
+      {
+        postId,
+      },
+      () => {
+        if (mounted) {
+          void loadDetail();
+        }
+      },
+    ).then((nextSubscription) => {
+      if (mounted) {
+        subscription = nextSubscription;
+      } else {
+        nextSubscription.unsubscribe();
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription?.unsubscribe();
+    };
+  }, [loadDetail, postId]);
 
   const submitComment = useCallback(
     async (content: string, parentCommentId?: string): Promise<boolean> => {

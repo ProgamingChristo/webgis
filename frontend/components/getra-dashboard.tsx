@@ -24,8 +24,11 @@ import { useAuth } from "@/src/components/providers/AuthProvider";
 import { AccountMenu } from "@/src/components/profile/account-menu";
 import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
 import { AiPanel } from "@/components/ai/ai-panel";
+import { CommunityNotificationsMenu } from "@/src/features/community/components/notifications/community-notifications-menu";
 
 import { GetraMap } from "@/components/getra-map";
+import { useFairDiscovery, FairDiscoveryResults } from "@/src/features/fair-discovery";
+import { useProfilePoster, ProfilePoster } from "@/src/features/umkm-advertising";
 import { useRouting } from "@/src/hooks/use-routing";
 import {
   mapidLayerService,
@@ -581,6 +584,31 @@ export function GetraDashboard() {
       ],
     );
 
+  const [viewMode, setViewMode] = useState<"fair-discovery" | "dataset">("fair-discovery");
+
+  const discoveryQuery = useMemo(() => {
+    const origin = userLocation
+      ? { longitude: userLocation.longitude, latitude: userLocation.latitude }
+      : { longitude: datasetOrigin.longitude, latitude: datasetOrigin.latitude };
+
+    return {
+      origin,
+      radiusMeters: 3000,
+      category: brand !== "Semua" ? brand : undefined,
+      query: query || undefined,
+      openNow: openOnly,
+    };
+  }, [userLocation, datasetOrigin, brand, query, openOnly]);
+
+  const {
+    result: fairDiscoveryResult,
+    isLoading: fairDiscoveryLoading,
+    error: fairDiscoveryError,
+  } = useFairDiscovery({
+    query: discoveryQuery,
+    enabled: true,
+  });
+
   const datasetBounds =
     useMemo(
       () =>
@@ -733,6 +761,10 @@ export function GetraDashboard() {
         merchant.id ===
         selectedId,
     ) ?? null;
+
+  const { poster: profilePoster } = useProfilePoster({
+    merchantId: selectedMerchant?.id ?? null,
+  });
 
   const originSearchResults =
     useMemo(
@@ -1372,6 +1404,8 @@ export function GetraDashboard() {
             context={authContext}
           />
 
+          <CommunityNotificationsMenu />
+
           <button
             className="logout-button"
             type="button"
@@ -1970,129 +2004,145 @@ export function GetraDashboard() {
 
           <div className="section-divider" />
 
-          <div className="results-header">
-            <div>
-              <span className="eyebrow">
-                {datasetId ===
-                "all-areas"
-                  ? "Hasil semua data"
-                  : datasetId ===
-                      "admin-import"
-                    ? "Hasil admin import"
-                    : datasetId ===
-                      "mapid-food-jakarta-pusat"
-                    ? "Hasil MAPID"
-                    : "Hasil GeoJSON"}
-              </span>
-              <strong>
-                {merchants.length} dari {baseMerchants.length} titik
-              </strong>
-            </div>
-            <div className="results-header__actions">
-              {selectedId ? (
-                <button
-                  className="show-all-results-button"
-                  type="button"
-                  onClick={handleClearSelection}
-                >
-                  Tampilkan semua
-                </button>
-              ) : null}
-              <span className="source-stamp">
-                {datasetId ===
-                "all-areas"
-                  ? "ALL"
-                  : datasetId ===
-                      "admin-import"
-                    ? "ADMIN"
-                    : datasetId ===
-                      "mapid-food-jakarta-pusat"
-                    ? "MAPID"
-                    : "2026"}
-              </span>
-            </div>
+          {/* View Mode Switcher */}
+          <div className="mb-3 flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950/70 p-1">
+            <button
+              type="button"
+              onClick={() => setViewMode("fair-discovery")}
+              className={`flex-1 rounded-md py-1.5 text-xs font-bold transition-all ${
+                viewMode === "fair-discovery"
+                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              ✨ Penelusuran Adil
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("dataset")}
+              className={`flex-1 rounded-md py-1.5 text-xs font-bold transition-all ${
+                viewMode === "dataset"
+                  ? "bg-slate-800 text-white shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              📁 Katalog Dataset
+            </button>
           </div>
 
-          <div className="result-list">
-            {merchants.length === 0 ? (
-              <div className="empty-state">
-                Tidak ada titik yang cocok. Ubah brand, kata kunci, atau status buka.
+          {viewMode === "fair-discovery" ? (
+            <div className="mb-4">
+              <FairDiscoveryResults
+                result={fairDiscoveryResult}
+                isLoading={fairDiscoveryLoading}
+                error={fairDiscoveryError}
+                selectedId={selectedId}
+                onSelectMerchant={(m) => {
+                  const match = baseMerchants.find((bm) => bm.id === m.id || bm.name.toLowerCase() === m.name.toLowerCase());
+                  if (match) handleSelect(match);
+                }}
+                onSelectSponsored={(p) => {
+                  const match = baseMerchants.find((bm) => bm.id === p.merchant_id || bm.name.toLowerCase() === p.merchant_name.toLowerCase());
+                  if (match) handleSelect(match);
+                }}
+                onRequestRoute={(item) => {
+                  const coords = (item as any).geometry?.coordinates || [(item as any).longitude, (item as any).latitude];
+                  if (coords && coords.length >= 2) {
+                    setRouteDestinationId((item as any).id || (item as any).merchant_id);
+                  }
+                }}
+              />
+            </div>
+          ) : (
+            <>
+              <div className="results-header">
+                <div>
+                  <span className="eyebrow">
+                    {datasetId === "all-areas"
+                      ? "Hasil semua data"
+                      : datasetId === "admin-import"
+                        ? "Hasil admin import"
+                        : datasetId === "mapid-food-jakarta-pusat"
+                        ? "Hasil MAPID"
+                        : "Hasil GeoJSON"}
+                  </span>
+                  <strong>
+                    {merchants.length} dari {baseMerchants.length} titik
+                  </strong>
+                </div>
+                <div className="results-header__actions">
+                  {selectedId ? (
+                    <button
+                      className="show-all-results-button"
+                      type="button"
+                      onClick={handleClearSelection}
+                    >
+                      Tampilkan semua
+                    </button>
+                  ) : null}
+                  <span className="source-stamp">
+                    {datasetId === "all-areas"
+                      ? "ALL"
+                      : datasetId === "admin-import"
+                        ? "ADMIN"
+                        : datasetId === "mapid-food-jakarta-pusat"
+                        ? "MAPID"
+                        : "2026"}
+                  </span>
+                </div>
               </div>
-            ) : (
-              merchants.map(
-                (
-                  merchant,
-                  index,
-                ) => (
-                  <button
-                    key={merchant.id}
-                    className={
-                      merchant.id ===
-                      selectedMerchant?.id
-                        ? "result-row result-row--selected"
-                        : "result-row"
-                    }
-                    onClick={() =>
-                      handleSelect(
-                        merchant,
-                      )
-                    }
-                  >
-                    <span className="result-rank">
-                      {index + 1}
-                    </span>
-                    <span className="result-main">
-                      <strong>
-                        {merchant.name}
-                      </strong>
-                      <span>
-                        {merchant.brand}
-                        {" · "}
-                        {merchant.district}
+
+              <div className="result-list">
+                {merchants.length === 0 ? (
+                  <div className="empty-state">
+                    Tidak ada titik yang cocok. Ubah brand, kata kunci, atau status buka.
+                  </div>
+                ) : (
+                  merchants.map((merchant, index) => (
+                    <button
+                      key={merchant.id}
+                      className={
+                        merchant.id === selectedMerchant?.id
+                          ? "result-row result-row--selected"
+                          : "result-row"
+                      }
+                      onClick={() => handleSelect(merchant)}
+                    >
+                      <span className="result-rank">{index + 1}</span>
+                      <span className="result-main">
+                        <strong>{merchant.name}</strong>
+                        <span>
+                          {merchant.brand}
+                          {" · "}
+                          {merchant.district}
+                        </span>
+                        <span className="result-meta">
+                          {merchant.userDistanceMeters !== undefined ? (
+                            <>
+                              <LocateFixed size={13} />
+                              {formatDistance(merchant.userDistanceMeters)}
+                              <span>·</span>
+                              {merchant.userWalkingMinutes} menit
+                            </>
+                          ) : (
+                            <>
+                              <MapPinned size={13} />
+                              {merchant.latitude.toFixed(6)},{" "}
+                              {merchant.longitude.toFixed(6)}
+                            </>
+                          )}
+                        </span>
                       </span>
-                      <span className="result-meta">
-                        {merchant.userDistanceMeters !==
-                        undefined ? (
-                          <>
-                            <LocateFixed size={13} />
-                            {formatDistance(
-                              merchant.userDistanceMeters,
-                            )}
-                            <span>
-                              ·
-                            </span>
-                            {merchant.userWalkingMinutes} menit
-                          </>
-                        ) : (
-                          <>
-                            <MapPinned size={13} />
-                            {merchant.latitude.toFixed(
-                              6,
-                            )}
-                            ,
-                            {" "}
-                            {merchant.longitude.toFixed(
-                              6,
-                            )}
-                          </>
-                        )}
+                      <span className="score-box">
+                        <strong>{merchant.openNow ? "BUKA" : "TUTUP"}</strong>
+                        <span>status</span>
                       </span>
-                    </span>
-                    <span className="score-box">
-                      <strong>
-                        {merchant.openNow
-                          ? "BUKA"
-                          : "TUTUP"}
-                      </strong>
-                      <span>
-                        status
-                      </span>
-                    </span>
-                  </button>
-                ),
-              )
-            )}
-          </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </>
+          )}
 
           <div className="ai-teaser">
             <Bot size={17} />
@@ -2145,6 +2195,10 @@ export function GetraDashboard() {
               adminImportedLayer
                 ?.boundaries ?? null
             }
+            sponsoredPlacements={fairDiscoveryResult?.sponsored}
+            onSelectSponsored={() => {
+              // Set selection or route point if needed
+            }}
           />
         </section>
 
@@ -2184,6 +2238,20 @@ export function GetraDashboard() {
                   {selectedMerchant.category}
                 </p>
               </div>
+
+              {/* Profile Poster Promotional Placement (Additive Phase 9) */}
+              {profilePoster && (
+                <div className="mb-3">
+                  <ProfilePoster
+                    poster={profilePoster}
+                    onRequestRoute={() => {
+                      if (selectedMerchant) {
+                        setRouteDestinationId(selectedMerchant.id);
+                      }
+                    }}
+                  />
+                </div>
+              )}
 
               <div className="metric-grid">
                 <div className="metric">

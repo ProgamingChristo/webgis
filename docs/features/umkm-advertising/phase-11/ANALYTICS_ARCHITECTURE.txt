@@ -1,0 +1,36 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — PHASE 11 ARCHITECTURE
+================================================================================
+
+1. OVERVIEW & SCOPE
+--------------------------------------------------------------------------------
+The Campaign Analytics Dashboard (/umkm/advertising/analytics) provides verified
+UMKM merchant owners with clear, real-time reporting on how commuter transit audiences
+interact with their advertising campaigns.
+
+2. PIPELINE & TOPOLOGY
+--------------------------------------------------------------------------------
+Phase 10 Append-Only Events:
+[Map / Banner / Drawer UI]
+       │
+       ▼ (Fire-and-forget beacon with session-safe dedup)
+[POST /api/advertising/events]
+       │
+       ▼ (Append-only insert)
+[public.campaign_events] (IMPRESSION, SPONSORED_PIN_CLICK, PROFILE_OPEN, ROUTE_REQUEST)
+
+Phase 11 Analytics Consumption:
+[Client: AnalyticsDashboard (/umkm/advertising/analytics)]
+       │
+       ▼ GET /api/umkm/advertising/campaigns/{id}/analytics?from=...&to=...&placement=...
+[Backend: CampaignAnalyticsService]
+       │ (1. Verified Merchant Ownership Check)
+       ▼ (2. Aggregation Repository)
+[SQL Aggregation Engine]
+       │ ├── Summary Totals & Derived CTR
+       │ ├── Timeseries Grouping by YYYY-MM-DD
+       │ └── Placement Breakdown (SPONSORED_PIN, CONTEXTUAL_BANNER, PROFILE_POSTER)
+       ▼
+[JSON Analytics Response Payload] -> [Visual Dashboard Render]
+================================================================================

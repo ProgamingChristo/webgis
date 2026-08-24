@@ -1,0 +1,26 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+PHASE 11 REGRESSION VERIFICATION REPORT
+================================================================================
+
+DATE: 2026-08-23
+STATUS: PASSED (ZERO REGRESSIONS DETECTED)
+
+1. REGRESSION AREAS VERIFIED
+--------------------------------------------------------------------------------
+1. Authentication & Roles:
+   - Canonical `profiles.account_role` remains strictly `USER` | `ADMIN`.
+   - Stakeholder modes (`UMKM`, `INVESTOR`, `GOVERNMENT`) operate cleanly.
+   - Login, logout, and session refresh maintain correct navigation state.
+
+2. Community Platform:
+   - Community feeds, cultural map, and request responses continue to pass all tests.
+
+3. Advertising Track (Phases 1-10):
+   - Campaign CRUD, Creatives, Proximity/Study Area Targeting, Lifecycle, Sponsored Pin serving,
+     Fair Discovery integration, Contextual Banner, Profile Poster, and Append-Only Event Tracking
+     remain 100% operational with green test suites.
+
+4. Spatial & MapLibre Infrastructure:
+   - Location picker integration uses standard MAPID GL styles without colliding with commuter map.
+================================================================================

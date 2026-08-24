@@ -1,0 +1,76 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — API SPECIFICATION
+================================================================================
+
+1. GET /api/umkm/advertising/campaigns/:id/analytics
+--------------------------------------------------------------------------------
+Query Parameters:
+- `from` (optional): ISO 8601 timestamp string (defaults to 30 days ago)
+- `to` (optional): ISO 8601 timestamp string (defaults to current time)
+- `placement` (optional): "SPONSORED_PIN" | "CONTEXTUAL_BANNER" | "PROFILE_POSTER"
+
+Authorization:
+- Requires authenticated user possessing verified ownership of the merchant owning the campaign.
+- Cross-merchant requests return 403 Forbidden.
+
+Sample Response Envelope (JSON):
+```json
+{
+  "success": true,
+  "data": {
+    "campaign": {
+      "id": "camp-123",
+      "name": "Promo Kopi Transit 2026",
+      "status": "ACTIVE",
+      "merchant_id": "merch-456",
+      "merchant_name": "Warung Kopi Selamat"
+    },
+    "period": {
+      "from": "2026-07-24T00:00:00.000Z",
+      "to": "2026-08-23T23:59:59.000Z"
+    },
+    "summary": {
+      "impressions": 1250,
+      "sponsored_pin_clicks": 140,
+      "profile_opens": 65,
+      "route_requests": 28,
+      "sponsored_pin_ctr": 11.20
+    },
+    "timeseries": [
+      {
+        "date": "2026-08-23",
+        "impressions": 120,
+        "sponsored_pin_clicks": 15,
+        "profile_opens": 8,
+        "route_requests": 4
+      }
+    ],
+    "placement_breakdown": [
+      {
+        "placement": "SPONSORED_PIN",
+        "impressions": 850,
+        "clicks": 140,
+        "profile_opens": 40,
+        "route_requests": 20
+      },
+      {
+        "placement": "CONTEXTUAL_BANNER",
+        "impressions": 300,
+        "clicks": 0,
+        "profile_opens": 20,
+        "route_requests": 5
+      },
+      {
+        "placement": "PROFILE_POSTER",
+        "impressions": 100,
+        "clicks": 0,
+        "profile_opens": 5,
+        "route_requests": 3
+      }
+    ]
+  },
+  "request_id": "84a7e4b2-29bf-450a-867c-9b5cfbc1829e"
+}
+```
+================================================================================

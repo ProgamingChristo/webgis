@@ -1,0 +1,23 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — SECURITY & PERFORMANCE AUDIT
+================================================================================
+
+1. SECURITY AUDIT
+--------------------------------------------------------------------------------
+- Authentication & Authorization:
+  * Public discovery endpoints are authenticated via JWT / session header.
+  * Rate limiting registered in `endpoint-policy.ts` under standard `api` rate limiter.
+  * Input parameters validated strictly via Zod schema `discoveryQuerySchema` with finite coordinate checks.
+- Zero Event Side Effects:
+  * Discovery lookups do NOT record impressions or clicks (reserved for Phase 10).
+  * No external financial or campaign status leakage to unauthorized callers.
+
+2. PERFORMANCE AUDIT
+--------------------------------------------------------------------------------
+- Response Cache Policy: `Cache-Control: no-store, no-cache, must-revalidate`
+- Query Timing: Sub-30ms execution for candidate retrieval and composition in tests.
+- Scalability:
+  * PostGIS spatial indexing for merchant locations.
+  * Sponsored candidate selection capped to top 5 prior to hard-constraint filter.

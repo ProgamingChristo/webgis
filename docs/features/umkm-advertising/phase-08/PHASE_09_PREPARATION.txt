@@ -1,0 +1,22 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — PHASE 09 PREPARATION
+================================================================================
+
+1. HANDOFF TO PHASE 09
+--------------------------------------------------------------------------------
+With Phase 08 complete, GETRA has:
+1. Pure, decoupled Ad Serving Engine (`AdServingService` and `SponsoredPinDTO`).
+2. Fair Discovery Composition Engine (`FairDiscoveryCompositionService`).
+3. Clean separation of `ORIGINAL`, `HIDDEN GEM`, and `SPONSORED` streams.
+4. Seamless integration in MapLibre map and commuter dashboard.
+
+2. PHASE 09 SCOPE
+--------------------------------------------------------------------------------
+Phase 09 will introduce additional high-impact ad placements:
+1. Contextual Banner Placement:
+   - Banner placements at key transit corridor screens or search result headers.
+2. Profile Poster Placement:
+   - Rich promotional poster placement on UMKM profile drawers / pages.
+3. Enhanced creative templates and CTA conversions.

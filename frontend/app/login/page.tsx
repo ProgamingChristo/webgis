@@ -175,12 +175,18 @@ export default function LoginPage() {
           ? error.message
           : "Login gagal.";
 
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_URL ??
+        "backend GETRA";
+
       setErrorMessage(
         email.trim().endsWith(
           "@example.co",
         )
           ? "Email fixture kurang huruf m: gunakan @example.com, bukan @example.co."
-          : rawMessage,
+          : rawMessage === "Failed to fetch"
+            ? `Backend GETRA belum bisa dijangkau di ${apiBaseUrl}. Pastikan backend berjalan di port 8080, lalu coba login lagi.`
+            : rawMessage,
       );
     } finally {
       setLoading(

@@ -1,0 +1,28 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: IMPRESSION TRACKING RULES
+=====================================================
+
+1. CORE DEFINITION
+An impression is NOT:
+- An API search response returned from the server.
+- An ad candidate retrieved in memory.
+
+An impression IS:
+- A sponsored placement that has been rendered on the client screen and entered the visible viewport of the commuter.
+
+2. VISIBILITY THRESHOLDS & DETECTION
+- Contextual Promo Banner:
+  - Detected via `IntersectionObserver` on the banner root DOM element.
+  - Threshold: >= 50% element visibility (`threshold = 0.5`).
+- Profile Poster:
+  - Detected via `IntersectionObserver` on the poster root DOM element in the merchant detail drawer.
+  - Threshold: >= 50% element visibility. If below fold and un-scrolled, no impression is recorded.
+- Sponsored Pin:
+  - Detected via MapLibre viewport bounds.
+  - Evaluated when markers are mounted and on map view updates (`moveend`).
+  - If marker `(lng, lat)` is inside `[south, north, west, east]` bounds of the active map view, an impression is emitted.
+
+3. EXCLUSIONS
+- Owner Serving Preview: The preview tool in the Advertising Manager (`/umkm/advertising`) does NOT generate impressions.
+- React Re-render Dedup: Rapid state updates and React StrictMode double executions are guarded by an in-memory dedup set and database unique constraint.
+- Map Pan/Zoom Dedup: Repeated panning over the same visible marker within the same session does not create duplicate impressions.

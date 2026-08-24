@@ -1,0 +1,23 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — FRONTEND WORKFLOW SPECIFICATION
+================================================================================
+
+1. ROUTES & NAVIGATION
+--------------------------------------------------------------------------------
+- Primary Analytics Route: `/umkm/advertising/analytics`
+- Deep-linked Route: `/umkm/advertising/analytics?campaignId=[id]`
+- Direct Shortcuts:
+  * Campaign Card in Advertising Manager -> "Lihat Analitik" button.
+  * UMKM Workspace Quick Actions -> "Buka Analytics" card.
+
+2. COMPONENT TOPOLOGY
+--------------------------------------------------------------------------------
+`AnalyticsDashboard`
+├── `AnalyticsFilters` (Campaign dropdown, 7d/30d/All date tabs, Placement filter)
+├── `AnalyticsDisclaimer` (Clear scope boundary notice)
+├── `AnalyticsSummaryCards` (5 KPI cards: Impressions, Clicks, Profile Opens, Route Requests, CTR)
+├── `AnalyticsTimeseriesChart` (Interactive SVG/ECharts trend visualization)
+├── `AnalyticsPlacementChart` (Surface comparison breakdown)
+└── `AnalyticsEmptyState` (Controlled empty state when no events exist)
+================================================================================

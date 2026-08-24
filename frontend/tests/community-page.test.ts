@@ -55,7 +55,7 @@ describe("Community feature UI", () => {
         },
         createElement(PostComposer, {
           key: "composer",
-          authorInitials: "RA",
+          authorAvatarUrl: null,
           authorName: "Revan",
           error: null,
           submitting: false,

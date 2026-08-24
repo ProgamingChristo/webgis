@@ -1,0 +1,43 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM WORKSPACE — FRONTEND MANUAL TEST GUIDE
+================================================================================
+
+1. RUNNING LOCAL DEVELOPMENT SERVERS
+--------------------------------------------------------------------------------
+Terminal 1 (Backend API):
+  cd backend
+  npm run dev
+  URL: http://localhost:3001
+
+Terminal 2 (Frontend Web App):
+  cd frontend
+  npm run dev
+  URL: http://localhost:3000
+
+2. MANUAL TEST PROCEDURE
+--------------------------------------------------------------------------------
+Step 1: Verify General User Headbar (Negative Test)
+1. Open http://localhost:3000/login
+2. Sign in as a regular USER without UMKM mode.
+3. Observe headbar navigation:
+   - "General", "Community", and "Profile" are present.
+   - "UMKM Workspace" MUST NOT be visible.
+4. Attempt direct navigation to http://localhost:3000/umkm
+5. Verify access is blocked with a clear "Akses Ditolak" error message.
+
+Step 2: Verify UMKM User Headbar & Workspace (Positive Test)
+1. Log out, then log in with an account having "UMKM" stakeholder mode.
+2. Observe headbar: "UMKM Workspace" is clearly visible in the top navigation bar.
+3. Click "UMKM Workspace" -> browser routes to http://localhost:3000/umkm.
+4. Verify Workspace layout:
+   - Header summary counters (Verified Merchants, Pending Submissions, Active Campaigns).
+   - "Merchant Saya" listing verified owned merchants.
+   - "Pengajuan UMKM" displaying recent submissions.
+   - "Aksi Cepat" navigation buttons.
+
+Step 3: Test Direct Navigation Pathways
+1. Click "Tambah UMKM" -> routes to http://localhost:3000/umkm/merchants/new.
+2. Click "Pasang Iklan" on an owned merchant -> routes to `/umkm/advertising?merchantId=...`.
+3. Click "Lihat Analytics" -> routes to http://localhost:3000/umkm/advertising/analytics.
+================================================================================

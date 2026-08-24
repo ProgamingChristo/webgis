@@ -1,0 +1,39 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+CHANGELOG: PHASE 09 - CONTEXTUAL PROMO BANNER & PROFILE POSTER
+===============================================================
+
+Date: 2026-08-23
+Version: 0.9.0
+
+1. NEW BACKEND MODULES
+- `backend/src/features/umkm-advertising/contextual-banner/`
+  - `types/contextual-banner.types.ts`: `ContextualBannerDTO`, `ContextualBannerServingContext`.
+  - `schemas/contextual-banner.schema.ts`: Zod schema `contextualBannerQuerySchema`.
+  - `constants/contextual-banner.constants.ts`: `MAX_CONTEXTUAL_BANNERS_PER_CONTEXT = 1`.
+  - `services/contextual-banner-serving.service.ts`: Contextual promo banner serving engine with category, query, radius, and walking distance hard constraints.
+  - `index.ts`: Subdomain barrel export.
+- `backend/src/features/umkm-advertising/profile-poster/`
+  - `types/profile-poster.types.ts`: `ProfilePosterDTO`.
+  - `schemas/profile-poster.schema.ts`: Zod schema `profilePosterQuerySchema`.
+  - `constants/profile-poster.constants.ts`: `PROFILE_POSTER_TARGET_POLICY = "MERCHANT_PROFILE_ONLY"`.
+  - `services/profile-poster-serving.service.ts`: Merchant profile poster serving engine with strict same-merchant validation.
+  - `index.ts`: Subdomain barrel export.
+
+2. NEW API ROUTES & POLICIES
+- `backend/app/api/advertising/placements/contextual-banner/route.ts`: `GET /api/advertising/placements/contextual-banner`.
+- `backend/app/api/merchants/[id]/advertising/profile-poster/route.ts`: `GET /api/merchants/[id]/advertising/profile-poster`.
+- `backend/src/lib/api-security/endpoint-policy.ts`: Registered endpoints with AUTHENTICATED policies.
+- `backend/src/features/fair-discovery/services/fair-discovery-composition.service.ts`: Integrated additive contextual banner retrieval.
+
+3. NEW FRONTEND MODULES & INTEGRATIONS
+- `frontend/src/features/umkm-advertising/contextual-banner/`
+  - `types/`, `services/`, `hooks/use-contextual-banner.ts`, `components/contextual-banner.tsx`, `index.ts`.
+- `frontend/src/features/umkm-advertising/profile-poster/`
+  - `types/`, `services/`, `hooks/use-profile-poster.ts`, `components/profile-poster.tsx`, `index.ts`.
+- `frontend/src/features/fair-discovery/components/fair-discovery-results.tsx`: Rendered `<ContextualBanner />`.
+- `frontend/components/getra-dashboard.tsx`: Rendered `<ProfilePoster />` in merchant detail drawer.
+
+4. SCRIPTS & TESTS
+- `backend/src/features/umkm-advertising/scripts/provision-phase09-placement-test-data.ts`.
+- `backend/tests/unit/umkm-advertising/contextual-banner-serving.service.test.ts` (6 tests).
+- `backend/tests/unit/umkm-advertising/profile-poster-serving.service.test.ts` (5 tests).

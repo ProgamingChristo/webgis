@@ -1,0 +1,23 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: REUSE OF CAMPAIGN, CREATIVE, LIFECYCLE & TARGETING
+============================================================
+
+1. CANONICAL CAMPAIGN REUSE
+- Single campaign entity in `ad_campaigns` manages budget, status, start/end dates for all surfaces.
+- A single merchant campaign can host:
+  - `SPONSORED_PIN` creative (for map pin ad serving)
+  - `CONTEXTUAL_BANNER` creative (for search/discovery feeds)
+  - `PROFILE_POSTER` creative (for merchant profile view)
+
+2. CREATIVE REUSE & CONSTRAINTS
+- Reuses `ad_creatives` table.
+- Enforces `UNIQUE(campaign_id, creative_type)`.
+- Status transitions (`DRAFT` -> `READY`) apply uniformly across creative types.
+
+3. LIFECYCLE & SCHEDULE REUSE
+- Pausing a campaign (`POST /api/umkm/advertising/campaigns/[id]/pause`) automatically halts all 3 placement types simultaneously.
+- Resuming a campaign resumes all ready placements.
+- Reaching `end_at` automatically expires all placements in lockstep.
+
+4. SPATIAL TARGETING REUSE
+- `ad_campaign_targets` radius and study area boundaries apply to both Sponsored Pins and Contextual Banners.

@@ -1,0 +1,40 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — FRONTEND MANUAL TEST GUIDE
+================================================================================
+
+1. STARTING SERVERS
+--------------------------------------------------------------------------------
+- Backend: `cd backend && npm run dev` (http://localhost:3001)
+- Frontend: `cd frontend && npm run dev` (http://localhost:3000)
+
+2. MANUAL REGISTRATION TEST STEP-BY-STEP
+--------------------------------------------------------------------------------
+Step 1: Open Submission Form
+1. Sign in as USER with UMKM mode.
+2. Navigate to http://localhost:3000/umkm/merchants/new.
+3. Observe form components: Nama Usaha, Kategori, Deskripsi, Alamat, MapLibre Picker, Foto URL.
+
+Step 2: Interact with MapLibre Location Picker
+1. Click on the map canvas to place a pin at desired coordinate.
+2. Drag the pin to fine-tune placement.
+3. Observe live coordinate display: `Lng: 106.827153, Lat: -6.175392`.
+4. Click "Gunakan Lokasi Saya" and confirm map zooms to current location.
+
+Step 3: Save Draft
+1. Fill name: "DUMMY GETRA UMKM PHASE 11".
+2. Select category: "Makanan & Minuman".
+3. Click "Simpan Draft".
+4. Verify redirection to `/umkm/submissions/[id]` showing status badge `Draft`.
+
+Step 4: Submit for Review
+1. On the submission detail page, click "Lanjutkan Edit" or submit directly.
+2. Click "Ajukan untuk Review".
+3. Verify status badge updates to `Menunggu Review` with verification callout banner.
+
+Step 5: Admin Approval Simulation
+1. Use Admin token to call:
+   `POST /api/admin/merchant-submissions/[id]/approve` with `{ "note": "Disetujui" }`.
+2. Refresh submission detail page -> status displays `Disetujui`.
+3. Return to http://localhost:3000/umkm -> "DUMMY GETRA UMKM PHASE 11" appears in "Merchant Saya".
+================================================================================

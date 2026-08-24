@@ -9,9 +9,10 @@ import {
   formatLocationCoordinate,
   formatCommunityTime,
   formatCommunityFindingCategory,
-  getAuthorInitials,
 } from "../../utils/community-format";
+import { CommunityAvatar } from "../common/community-avatar";
 import { PostPhoto } from "../media/post-photo";
+import { ReportButton } from "../moderation/report-button";
 import styles from "../community.module.css";
 import { ReactionBar } from "./reaction-bar";
 
@@ -30,13 +31,19 @@ export function PostCard({
 }: PostCardProps) {
   return (
     <article className={styles.postCard}>
-      <div className={styles.avatar} aria-hidden="true">
-        {getAuthorInitials(post.author.displayName)}
-      </div>
+      <CommunityAvatar
+        avatarUrl={post.author.avatarUrl}
+        displayName={post.author.displayName}
+      />
       <div className={styles.postBody}>
         <header className={styles.postHeader}>
           <div>
-            <strong>{post.author.displayName}</strong>
+            <Link
+              className={styles.authorProfileLink}
+              href={`/community/users/${post.author.id}`}
+            >
+              {post.author.displayName}
+            </Link>
             {post.type === "FINDING" && post.category ? (
               <span className={styles.categoryBadge}>
                 {formatCommunityFindingCategory(post.category)}
@@ -47,6 +54,7 @@ export function PostCard({
             {formatCommunityTime(post.createdAt)}
           </time>
         </header>
+        <ReportButton targetId={post.id} targetType="POST" />
         <Link className={styles.postLink} href={`/community/${post.id}`}>
           <p className={styles.postContent}>{post.content}</p>
         </Link>

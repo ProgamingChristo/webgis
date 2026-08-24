@@ -1,0 +1,22 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — SPONSORED DEDUPLICATION POLICY
+================================================================================
+
+1. DEDUPLICATION GOAL
+--------------------------------------------------------------------------------
+To prevent commuter confusion and interface clutter, a physical merchant
+MUST NOT appear twice in the search results (e.g. appearing in both Sponsored
+and Original lists simultaneously).
+
+2. POLICY SPECIFICATION
+--------------------------------------------------------------------------------
+1. Maximum 1 Sponsored placement per physical merchant ID.
+2. If a merchant ID is selected in the `sponsored` bucket:
+   - The merchant is retained in the `sponsored` list.
+   - The duplicate instance is filtered out from `original` and `hidden_gems`.
+3. Relative Order Preservation:
+   - Removing the sponsored merchant from organic results DOES NOT alter
+     the relative sort order or distance metrics of any other remaining organic merchant.
+   - Remaining merchants maintain their exact organic ranking order.

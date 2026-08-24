@@ -1,0 +1,19 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — COMMUTER DISCOVERY UI INTEGRATION
+================================================================================
+
+1. COMMUTER DASHBOARD LAYOUT
+--------------------------------------------------------------------------------
+- Component: `frontend/components/getra-dashboard.tsx`
+- Tab Switcher:
+  * `✨ Penelusuran Adil` (Active Default): Renders `FairDiscoveryResults`.
+  * `📁 Katalog Dataset`: Renders traditional raw dataset POI list.
+- Fair Discovery Sections:
+  1. `DiscoveryDisclosure`: Expandable explanation of Original vs Hidden Gem vs Sponsored principles.
+  2. `SponsoredSection`: Prominently renders the single eligible sponsored card with clear "Promosi Bersponsor" badge.
+  3. `HiddenGemSection`: Renders curated gems with emerald badge.
+  4. `OriginalResultsSection`: Renders organic distance-ranked results.
+- Action Buttons:
+  * "Rute": Invokes GETRA's pedestrian routing engine to calculate route from user location to the merchant.

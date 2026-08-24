@@ -1,0 +1,33 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — SEARCH CONTEXT INTEGRATION
+================================================================================
+
+1. SEARCH CONTEXT MODEL
+--------------------------------------------------------------------------------
+Every Fair Discovery query operates within a spatial and contextual envelope:
+- `origin`: Coordinates [longitude, latitude] of the commuter or viewport center.
+- `radiusMeters`: Search radius (default 2000m, max 20,000m).
+- `category`: Merchant category filter (e.g., "CAFE", "FOOD_BEVERAGE", "RETAIL").
+- `query`: Free-text search terms for merchant name, description, or menu items.
+- `openNow`: Boolean filter for actively open merchants.
+- `maxWalkingMinutes`: Maximum walking time threshold for pedestrian accessibility.
+
+2. API CONTRACT
+--------------------------------------------------------------------------------
+- Endpoint: `GET /api/discovery` / `POST /api/discovery`
+- Security Classification: `AUTHENTICATED`
+- Cache Policy: `Cache-Control: no-store, no-cache, must-revalidate`
+- Rate Limit Policy: `api` bucket
+- Response Structure:
+  {
+    "success": true,
+    "data": {
+      "original": OriginalMerchantDTO[],
+      "hidden_gems": HiddenGemDTO[],
+      "sponsored": SponsoredPinDTO[],
+      "metadata": FairDiscoveryMetadata
+    },
+    "request_id": "uuid"
+  }

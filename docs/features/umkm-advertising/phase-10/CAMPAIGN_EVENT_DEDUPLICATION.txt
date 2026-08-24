@@ -1,0 +1,23 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: CAMPAIGN EVENT DEDUPLICATION
+=====================================================
+
+1. DEDUPLICATION STRATEGY & LAYERS
+Event deduplication operates at two independent layers:
+- Layer 1 (Client-side memory cache): An in-memory `Set<string>` caches recorded dedup keys during the active browser session. This prevents redundant network requests caused by React StrictMode duplicate lifecycle effects, fast re-renders, or multiple fast clicks.
+- Layer 2 (Database-enforced unique constraint): Table `public.campaign_events` enforces `CONSTRAINT uq_campaign_events_dedup_key UNIQUE (dedup_key)`. When a duplicate key is inserted, PostgreSQL returns code 23505 which the service intercepts to return `{ accepted: true, deduplicated: true }`.
+
+2. COMPOSITE DEDUP KEY FORMULA
+The default deterministic dedup key is computed as:
+`${event_type}:${campaign_id}:${creative_id || "none"}:${placement}:${session_key}:${context_scope}`
+
+3. SCENARIOS AND EXPECTED BEHAVIORS
+
+| Scenario | Result | Stored Rows |
+| :--- | :--- | :--- |
+| Initial Impression on Map View | `accepted: true, deduplicated: false` | 1 |
+| Immediate React Re-render | `accepted: true, deduplicated: true` (Cached) | 1 |
+| Network Retry with same payload | `accepted: true, deduplicated: true` (DB 23505) | 1 |
+| Map Pan out and return in same session | `accepted: true, deduplicated: true` | 1 |
+| Separate user click on Sponsored Pin | `accepted: true, deduplicated: false` (Unique event) | 2 |
+| Separate profile open action | `accepted: true, deduplicated: false` (Unique event) | 3 |

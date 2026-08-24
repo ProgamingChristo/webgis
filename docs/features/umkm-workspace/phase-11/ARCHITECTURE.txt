@@ -1,0 +1,41 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM WORKSPACE — PHASE 11 ARCHITECTURE
+================================================================================
+
+1. SYSTEM OVERVIEW
+--------------------------------------------------------------------------------
+UMKM Workspace (/umkm) serves as the centralized management cockpit for users
+operating under the UMKM stakeholder mode in GETRA. It unifies:
+- Owned verified merchant monitoring
+- Merchant registration & curation lifecycle tracking
+- Advertising campaign shortcuts & analytics access
+- System-wide transit intelligence metrics
+
+2. COMPONENT TOPOLOGY
+--------------------------------------------------------------------------------
+Frontend (/umkm):
+├── Headbar Navigation Link (Conditional on stakeholder_modes contains 'UMKM' or ADMIN)
+├── Workspace Overview (/umkm/page.tsx)
+│   ├── UmkmWorkspace (Container & Data orchestrator)
+│   ├── UmkmWorkspaceSummary (Metric counters: Verified Merchants, Active Campaigns, Submissions)
+│   ├── OwnedMerchantList (Canonical merchants owned by user with campaign links)
+│   ├── SubmissionSummary (Recent submissions with live status badges)
+│   └── UmkmQuickActions (Fast pathways: Tambah UMKM, Buat Campaign, Buka Peta)
+
+Backend (/api/umkm/workspace):
+├── API Layer: Route handler with auth verification and endpoint security
+├── Service Layer: UmkmWorkspaceService
+│   ├── Resolves user stakeholder modes from user_stakeholder_modes
+│   ├── Queries canonical merchants where owner_id = userId
+│   ├── Queries active ad campaigns linked to owned merchants
+│   └── Queries merchant submissions where submitted_by = userId
+└── Database Layer: PostGIS Supabase tables (profiles, merchants, ad_campaigns, merchant_submissions)
+
+3. SECURITY BOUNDARIES
+--------------------------------------------------------------------------------
+- Headbar visibility is a client UX convenience.
+- Backend /api/umkm/workspace strictly validates that the requesting authenticated
+  user possesses 'UMKM' stakeholder mode or 'ADMIN' account role.
+- All database queries strictly scope data to owner_id = userId or submitted_by = userId.
+================================================================================

@@ -1,0 +1,21 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — SPONSORED CAP & SPACING POLICY
+================================================================================
+
+1. DENSITY RESTRICTIONS
+--------------------------------------------------------------------------------
+To protect commuter trust and ensure organic discoverability remains dominant:
+- `MAX_SPONSORED_RESULTS_PER_DISCOVERY = 1` (strict MVP limit).
+- At most 1 sponsored card is rendered per search query response.
+- On the MapLibre map viewport, sponsored pins are capped to avoid crowding out
+  transit nodes and organic POIs.
+
+2. FAIR DISCOVERY METRICS
+--------------------------------------------------------------------------------
+The API response returns `metadata`:
+- `total_original`: count of regular organic merchants
+- `total_hidden_gems`: count of curated hidden gems
+- `total_sponsored`: count of active sponsored placements (0 or 1)
+- `sponsored_available`: boolean indicator for quick frontend rendering checks

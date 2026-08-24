@@ -1,0 +1,18 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: PROFILE POSTER NAVIGATION POLICY AUDIT
+=====================================================
+
+1. NAVIGATION CONTEXT AUDIT
+Commuters can navigate to a merchant profile via multiple entry points:
+- Clicking a map marker on the main MapLibre canvas
+- Clicking an organic merchant card in the catalog
+- Clicking a Hidden Gem card in Fair Discovery
+- Clicking a Sponsored Pin card in Fair Discovery
+- Directly searching and selecting an origin or destination in the route planner
+
+2. POLICY DECISION: MERCHANT_PROFILE_ONLY (WITH OPTIONAL CONTEXT SUPPORT)
+Audit Decision:
+- `PROFILE_POSTER_TARGET_POLICY = "MERCHANT_PROFILE_ONLY"`
+- Rationale: A merchant profile is a dedicated identity space. Serving a poster requires ONLY the authoritative `merchant_id` of the profile currently being inspected.
+- The poster serving engine does not mandate device coordinates to serve the merchant's official promotional poster, guaranteeing seamless rendering even if the commuter has geolocation disabled.
+- Optional context support allows future query enhancements (e.g. passing referrer) without breaking backward compatibility.

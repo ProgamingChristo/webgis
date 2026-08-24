@@ -294,4 +294,108 @@ describe("CommunityService", () => {
       code: "VALIDATION_ERROR",
     });
   });
+
+  it("delegates validated Phase 9 report payloads to the repository", async () => {
+    const repository = {
+      createReport: vi.fn().mockResolvedValue({
+        id: "report-1",
+        targetType: "POST",
+        targetId: "11111111-1111-4111-8111-111111111111",
+        reason: "SPAM",
+        details: null,
+        status: "OPEN",
+        createdAt: "2026-08-23T00:00:00.000Z",
+      }),
+    };
+    const service = new CommunityService(asRepository(repository));
+
+    await expect(
+      service.createReport({
+        target_type: "POST",
+        target_id: "11111111-1111-4111-8111-111111111111",
+        reason: "SPAM",
+      }),
+    ).resolves.toMatchObject({
+      id: "report-1",
+    });
+    expect(repository.createReport).toHaveBeenCalledWith({
+      targetType: "POST",
+      targetId: "11111111-1111-4111-8111-111111111111",
+      reason: "SPAM",
+      details: undefined,
+    });
+  });
+
+  it("rejects invalid Phase 9 moderation action before repository call", async () => {
+    const repository = {
+      moderateReport: vi.fn(),
+    };
+    const service = new CommunityService(asRepository(repository));
+
+    await expect(
+      service.moderateReport(
+        "11111111-1111-4111-8111-111111111111",
+        { action: "NUKE" },
+      ),
+    ).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+    });
+    expect(repository.moderateReport).not.toHaveBeenCalled();
+  });
+
+  it("delegates validated Phase 10 friend request target only", async () => {
+    const repository = {
+      createFriendRequest: vi.fn().mockResolvedValue({
+        userId: "22222222-2222-4222-8222-222222222222",
+        displayName: "Sari",
+        avatarUrl: null,
+        reputationLabel: "Kontributor Baru",
+        confirmedContributions: 0,
+        helpfulReceived: 0,
+        findingsCount: 0,
+        friendCount: 0,
+        relationshipState: "PENDING_OUTGOING",
+        friendshipId: "33333333-3333-4333-8333-333333333333",
+      }),
+    };
+    const service = new CommunityService(asRepository(repository));
+
+    await expect(
+      service.createFriendRequest({
+        user_id: "22222222-2222-4222-8222-222222222222",
+      }),
+    ).resolves.toMatchObject({
+      relationshipState: "PENDING_OUTGOING",
+    });
+    expect(repository.createFriendRequest).toHaveBeenCalledWith(
+      "22222222-2222-4222-8222-222222222222",
+    );
+  });
+
+  it("rejects trusted Phase 10 friendship fields before repository call", async () => {
+    const repository = {
+      createFriendRequest: vi.fn(),
+      actOnFriendship: vi.fn(),
+    };
+    const service = new CommunityService(asRepository(repository));
+
+    await expect(
+      service.createFriendRequest({
+        user_id: "22222222-2222-4222-8222-222222222222",
+        requester_id: "11111111-1111-4111-8111-111111111111",
+      }),
+    ).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+    });
+    await expect(
+      service.actOnFriendship(
+        "33333333-3333-4333-8333-333333333333",
+        { action: "FOLLOW" },
+      ),
+    ).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+    });
+    expect(repository.createFriendRequest).not.toHaveBeenCalled();
+    expect(repository.actOnFriendship).not.toHaveBeenCalled();
+  });
 });

@@ -380,6 +380,135 @@ describe("SupabaseCommunityRepository", () => {
     });
   });
 
+  it("lists demand signals and upserts verified merchant responses through RPCs", async () => {
+    const signalRow = {
+      id: "signal-1",
+      category: "FOOD",
+      request_count: 3,
+      budget_min: 15000,
+      budget_max: 25000,
+      budget_median: 20000,
+      center_longitude: 106.827,
+      center_latitude: -6.175,
+      cluster_radius_meters: 1000,
+      window_start: "2026-08-16T00:00:00.000Z",
+      window_end: "2026-08-23T00:00:00.000Z",
+      latest_activity_at: "2026-08-23T00:00:00.000Z",
+      status: "ACTIVE",
+      total_count: 1,
+    };
+    const responseRow = {
+      id: "response-1",
+      signal_id: "signal-1",
+      merchant_id: "merchant-1",
+      merchant_display_name: "Warung ABC",
+      status: "PREPARING",
+      message: "Kami sedang menyiapkan paket Rp18.000.",
+      created_at: "2026-08-23T00:00:00.000Z",
+      updated_at: "2026-08-23T00:00:00.000Z",
+    };
+    const signalSingle = vi.fn().mockResolvedValue({
+      data: signalRow,
+      error: null,
+    });
+    const responseSingle = vi.fn().mockResolvedValue({
+      data: responseRow,
+      error: null,
+    });
+    const rpc = vi.fn((name: string) => {
+      if (name === "get_community_demand_signal_detail_v1") {
+        return { single: signalSingle };
+      }
+
+      if (name === "upsert_community_demand_signal_response_v1") {
+        return { single: responseSingle };
+      }
+
+      if (name === "list_community_response_merchants_v1") {
+        return Promise.resolve({
+          data: [{ id: "merchant-1", display_name: "Warung ABC" }],
+          error: null,
+        });
+      }
+
+      if (name === "list_community_demand_signal_responses_v1") {
+        return Promise.resolve({
+          data: [responseRow],
+          error: null,
+        });
+      }
+
+      return Promise.resolve({
+        data: [signalRow],
+        error: null,
+      });
+    });
+    const repository = new SupabaseCommunityRepository({ rpc } as any);
+
+    await expect(
+      repository.listDemandSignals({ page: 1, limit: 20, category: "FOOD" }),
+    ).resolves.toMatchObject({
+      total: 1,
+      items: [
+        {
+          id: "signal-1",
+          requestCount: 3,
+          budgetMedian: 20000,
+          center: {
+            visibility: "APPROXIMATE",
+          },
+        },
+      ],
+    });
+    await expect(repository.getDemandSignal("signal-1")).resolves.toMatchObject({
+      id: "signal-1",
+      category: "FOOD",
+    });
+    await expect(repository.listResponseMerchants()).resolves.toEqual([
+      {
+        id: "merchant-1",
+        displayName: "Warung ABC",
+      },
+    ]);
+    await expect(
+      repository.listDemandSignalResponses("signal-1"),
+    ).resolves.toMatchObject([
+      {
+        id: "response-1",
+        merchant: {
+          displayName: "Warung ABC",
+        },
+        status: "PREPARING",
+      },
+    ]);
+    await expect(
+      repository.upsertDemandSignalResponse({
+        signalId: "signal-1",
+        merchantId: "merchant-1",
+        status: "PREPARING",
+        message: "Kami sedang menyiapkan paket Rp18.000.",
+      }),
+    ).resolves.toMatchObject({
+      id: "response-1",
+      status: "PREPARING",
+    });
+
+    expect(rpc).toHaveBeenCalledWith("list_community_demand_signals_v1", {
+      p_limit: 20,
+      p_offset: 0,
+      p_category: "FOOD",
+    });
+    expect(rpc).toHaveBeenCalledWith(
+      "upsert_community_demand_signal_response_v1",
+      {
+        p_signal_id: "signal-1",
+        p_merchant_id: "merchant-1",
+        p_status: "PREPARING",
+        p_message: "Kami sedang menyiapkan paket Rp18.000.",
+      },
+    );
+  });
+
   it("lists and creates comments through bounded thread RPCs", async () => {
     const rpc = vi.fn((name: string) => {
       if (name === "list_community_comments_v1") {

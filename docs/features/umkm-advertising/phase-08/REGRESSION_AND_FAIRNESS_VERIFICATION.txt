@@ -1,0 +1,24 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — REGRESSION & FAIRNESS VERIFICATION
+================================================================================
+
+1. FAIRNESS VERIFICATION PROOF
+--------------------------------------------------------------------------------
+- Test Suite: `backend/tests/unit/fair-discovery/fair-discovery-composition.service.test.ts`
+- Proof of Organic Immutability:
+  * Test `should preserve organic ordering immutability` executes discovery with ads and without ads.
+  * Verified that the resulting merchant ID array `idsWithAds` matches `idsWithoutAds` with exact equality.
+- Proof of Equal Constraint Filtering:
+  * Test `should enforce category filter hard constraint` verifies ads outside search category are purged.
+- Proof of Deduplication:
+  * Test `should deduplicate: remove sponsored merchant from duplicate organic appearance` confirms merchant appears strictly once.
+- Proof of Failure Isolation:
+  * Test `should isolate failure` confirms that when ad serving throws, organic results return with 200 OK.
+
+2. SYSTEM TEST SUITE RUN RESULTS
+--------------------------------------------------------------------------------
+- Test Files: 66 passed (67 total, 1 skipped)
+- Total Tests: 463 passed (464 total, 1 skipped)
+- Regressions: 0 detected

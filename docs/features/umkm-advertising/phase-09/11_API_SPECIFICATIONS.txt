@@ -1,0 +1,78 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: API SPECIFICATIONS
+=====================================================
+
+1. ENDPOINT 1: GET /api/advertising/placements/contextual-banner
+- Method: GET
+- Auth: Authenticated (Commuter or UMKM user)
+- Query Parameters:
+  - `longitude`: number (required, -180 to 180)
+  - `latitude`: number (required, -90 to 90)
+  - `radius_meters`: number (optional, max 20000)
+  - `category`: string (optional)
+  - `query`: string (optional)
+  - `open_now`: boolean (optional)
+  - `max_walking_minutes`: number (optional)
+- Success Response (200 OK):
+```json
+{
+  "success": true,
+  "request_id": "uuid",
+  "data": {
+    "placement_type": "CONTEXTUAL_BANNER",
+    "sponsored": true,
+    "label": "Sponsored",
+    "campaign_id": "99999999-9999-4999-9999-999999999999",
+    "creative_id": "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa",
+    "merchant_id": "88888888-8888-4888-8888-888888888888",
+    "merchant_name": "Warung Kopi Selamat GETRA",
+    "merchant_category": "CAFE",
+    "headline": "Promo Kopi Susu Diskon 40%",
+    "description": "Promo hemat untuk commuter transit!",
+    "image_url": "https://...",
+    "cta_type": "VIEW_PROFILE"
+  }
+}
+```
+If no banner is eligible, `"data": null` is returned with status 200.
+
+2. ENDPOINT 2: GET /api/merchants/[id]/advertising/profile-poster
+- Method: GET
+- Auth: Authenticated
+- URL Parameters: `id` (Merchant UUID)
+- Success Response (200 OK):
+```json
+{
+  "success": true,
+  "request_id": "uuid",
+  "data": {
+    "placement_type": "PROFILE_POSTER",
+    "sponsored": true,
+    "label": "Sponsored",
+    "campaign_id": "99999999-9999-4999-9999-999999999999",
+    "creative_id": "bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb",
+    "merchant_id": "88888888-8888-4888-8888-888888888888",
+    "merchant_name": "Warung Kopi Selamat GETRA",
+    "headline": "Paket Spesial Transit Mahasiswa Rp15.000",
+    "description": "Nikmati paket nasi + kopi susu spesial khusus pelanggan transit GETRA.",
+    "image_url": "https://...",
+    "cta_type": "REQUEST_ROUTE",
+    "campaign_end_at": "2026-09-22T00:00:00.000Z"
+  }
+}
+```
+If merchant has no active profile poster, `"data": null` is returned with status 200.
+
+3. ENDPOINT 3: GET /api/discovery (Additive)
+Returns `FairDiscoveryResult` containing additive `contextual_banner`:
+```json
+{
+  "success": true,
+  "data": {
+    "original": [...],
+    "hidden_gems": [...],
+    "sponsored": [...],
+    "contextual_banner": { ... }
+  }
+}
+```

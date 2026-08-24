@@ -1,0 +1,37 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: FRONTEND FEATURE FOLDER STRUCTURE
+=====================================================
+
+1. FEATURE-FOLDER DIRECTORY LAYOUT
+Frontend advertising features are structured modularly under `frontend/src/features/umkm-advertising/`:
+
+frontend/src/features/umkm-advertising/
+├── contextual-banner/
+│   ├── components/
+│   │   └── contextual-banner.tsx
+│   ├── hooks/
+│   │   └── use-contextual-banner.ts
+│   ├── services/
+│   │   └── contextual-banner.service.ts
+│   ├── types/
+│   │   └── contextual-banner.types.ts
+│   └── index.ts
+│
+├── profile-poster/
+│   ├── components/
+│   │   └── profile-poster.tsx
+│   ├── hooks/
+│   │   └── use-profile-poster.ts
+│   ├── services/
+│   │   └── profile-poster.service.ts
+│   ├── types/
+│   │   └── profile-poster.types.ts
+│   └── index.ts
+│
+├── index.ts (Public barrel export re-exporting all subdomains)
+
+2. CONSUMING SURFACES
+- `frontend/src/features/fair-discovery/components/fair-discovery-results.tsx`:
+  Renders `<ContextualBanner />` below discovery disclosure when `result.contextual_banner` is present.
+- `frontend/components/getra-dashboard.tsx`:
+  Invokes `useProfilePoster({ merchantId })` and renders `<ProfilePoster />` in the right drawer "Detail lokasi".

@@ -1,0 +1,46 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM WORKSPACE — DATA FLOW SPECIFICATION
+================================================================================
+
+1. WORKSPACE SUMMARY RETRIEVAL FLOW
+--------------------------------------------------------------------------------
+[Client Browser: /umkm]
+       │
+       ▼ (1) GET /api/umkm/workspace with Authorization: Bearer <jwt>
+[Backend Route: app/api/umkm/workspace/route.ts]
+       │
+       ▼ (2) requireAuthenticatedUser(req) -> validates JWT & extracts userId
+       │
+       ▼ (3) Verify Stakeholder Mode from user_stakeholder_modes
+       │     - If NOT 'UMKM' and account_role != 'ADMIN' -> Return 403 Forbidden
+       │
+       ▼ (4) UmkmWorkspaceService.getWorkspaceSummary(userId)
+       │     ├── Query public.merchants WHERE owner_id = userId
+       │     ├── Query public.ad_campaigns WHERE merchant_id IN (owned_merchants)
+       │     └── Query public.merchant_submissions WHERE submitted_by = userId ORDER BY created_at DESC LIMIT 5
+       │
+       ▼ (5) Return Json Envelope:
+             {
+               "success": true,
+               "data": {
+                 "verified_merchants_count": N,
+                 "active_campaigns_count": M,
+                 "pending_submissions_count": K,
+                 "owned_merchants": [...],
+                 "recent_submissions": [...]
+               },
+               "request_id": "uuid"
+             }
+       │
+       ▼ (6) Frontend renders summary cards, merchant table, and submission list.
+
+2. EMPTY STATE VS POPULATED STATE FLOW
+--------------------------------------------------------------------------------
+- User with UMKM Mode + 0 Merchants:
+  - Workspace displays 0 counts and a prominent CTA: "Tambahkan Usaha Pertama Anda".
+  - Allows immediate access to /umkm/merchants/new.
+- User with UMKM Mode + N Merchants:
+  - Displays merchant cards with direct links to Advertising cockpit (/umkm/advertising?merchantId=...).
+  - Displays campaign status pills and quick action cards.
+================================================================================

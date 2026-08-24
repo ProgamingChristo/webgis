@@ -1,0 +1,20 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: SECURITY & VERIFICATION REPORT
+=====================================================
+
+1. API SECURITY AUDIT
+- Endpoint: `POST /api/advertising/events`
+- Classification: `AUTHENTICATED` (Commuter and UMKM session access).
+- Rate Limiting: Active with `rateLimit: "mutation"` to mitigate automated event flooding.
+- CORS: Strict origin allowlist. No wildcard origins.
+- Headers: `AUTH_HEADERS` required.
+
+2. SPOOFING & INJECTION MITIGATION
+- Campaign & Creative Spoofing: The backend queries `ad_campaigns` and `ad_creatives` to verify that the campaign exists, belongs to the merchant, and that the creative is explicitly assigned to the campaign and compatible with the placement surface.
+- Mass Assignment Prevention: Payloads are parsed via strict Zod schema with `.strict()`. Any injected fields such as `user_id`, `revenue`, `roi`, `amount`, `sales`, or `conversion` trigger immediate validation rejection (400 Bad Request).
+- SQL / PostGIS Injection: All queries use parameterized Supabase client calls.
+
+3. ROW LEVEL SECURITY (RLS) & APPEND-ONLY ENFORCEMENT
+- RLS is active on `public.campaign_events`.
+- Direct `UPDATE` or `DELETE` operations are completely denied.
+- Raw event reads are restricted to backend services (`service_role`). Commuters cannot inspect raw event history.

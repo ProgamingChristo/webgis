@@ -18,10 +18,21 @@ import {
   COMMUNITY_LOCATION_MAX_ACCURACY_M,
   COMMUNITY_MAP_DEFAULT_LIMIT,
   COMMUNITY_MAP_MAX_LIMIT,
+  COMMUNITY_DEMAND_SIGNAL_DEFAULT_LIMIT,
+  COMMUNITY_DEMAND_SIGNAL_MAX_LIMIT,
+  COMMUNITY_UMKM_RESPONSE_MESSAGE_MAX_LENGTH,
+  COMMUNITY_UMKM_RESPONSE_STATUSES,
+  COMMUNITY_MODERATION_ACTIONS,
+  COMMUNITY_FRIENDSHIP_ACTIONS,
+  COMMUNITY_FRIENDSHIP_VIEWS,
+  COMMUNITY_NOTIFICATION_TYPES,
   COMMUNITY_PHOTO_MAX_OUTPUT_BYTES,
   COMMUNITY_POST_TYPES,
   COMMUNITY_POST_MAX_LENGTH,
   COMMUNITY_REACTION_TYPES,
+  COMMUNITY_REPORT_DETAILS_MAX_LENGTH,
+  COMMUNITY_REPORT_REASONS,
+  COMMUNITY_REPORT_TARGET_TYPES,
 } from "../constants/community.constants";
 
 export const communityPostContentSchema = z
@@ -40,6 +51,25 @@ export const communityReactionTypeSchema = z.enum(COMMUNITY_REACTION_TYPES);
 export const communityPostTypeSchema = z.enum(COMMUNITY_POST_TYPES);
 export const communityFindingCategorySchema = z.enum(COMMUNITY_FINDING_CATEGORIES);
 export const commuterRequestCategorySchema = z.enum(COMMUTER_REQUEST_CATEGORIES);
+export const communityUmkmResponseStatusSchema = z.enum(
+  COMMUNITY_UMKM_RESPONSE_STATUSES,
+);
+export const communityNotificationTypeSchema = z.enum(
+  COMMUNITY_NOTIFICATION_TYPES,
+);
+export const communityReportTargetTypeSchema = z.enum(
+  COMMUNITY_REPORT_TARGET_TYPES,
+);
+export const communityReportReasonSchema = z.enum(COMMUNITY_REPORT_REASONS);
+export const communityModerationActionSchema = z.enum(
+  COMMUNITY_MODERATION_ACTIONS,
+);
+export const communityFriendshipActionSchema = z.enum(
+  COMMUNITY_FRIENDSHIP_ACTIONS,
+);
+export const communityFriendshipViewSchema = z.enum(
+  COMMUNITY_FRIENDSHIP_VIEWS,
+);
 export const commuterRequestExpiryDaysSchema = z.union([
   z.literal(1),
   z.literal(3),
@@ -139,7 +169,13 @@ export const communityCommentQuerySchema = z.object({
 });
 
 export const communityPostIdSchema = z.uuid();
+export const communityUserIdSchema = z.uuid();
+export const communityNotificationIdSchema = z.uuid();
+export const communityReportIdSchema = z.uuid();
+export const communityFriendshipIdSchema = z.uuid();
 export const commuterRequestIdSchema = z.uuid();
+export const communityDemandSignalIdSchema = z.uuid();
+export const communityMerchantIdSchema = z.uuid();
 
 export const createCommunityCommentSchema = z
   .object({
@@ -249,3 +285,84 @@ export const commuterRequestQuerySchema = z
       });
     }
   });
+
+export const communityDemandSignalQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(COMMUNITY_DEMAND_SIGNAL_MAX_LIMIT)
+      .default(COMMUNITY_DEMAND_SIGNAL_DEFAULT_LIMIT),
+    category: commuterRequestCategorySchema.optional(),
+  })
+  .strict();
+
+export const createCommunityUmkmResponseSchema = z
+  .object({
+    merchant_id: communityMerchantIdSchema,
+    status: communityUmkmResponseStatusSchema,
+    message: z
+      .string()
+      .trim()
+      .max(COMMUNITY_UMKM_RESPONSE_MESSAGE_MAX_LENGTH)
+      .optional()
+      .nullable(),
+  })
+  .strict();
+
+export const communityNotificationQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+  })
+  .strict();
+
+export const createCommunityReportSchema = z
+  .object({
+    target_type: communityReportTargetTypeSchema,
+    target_id: z.uuid(),
+    reason: communityReportReasonSchema,
+    details: z
+      .string()
+      .trim()
+      .max(COMMUNITY_REPORT_DETAILS_MAX_LENGTH)
+      .optional()
+      .nullable(),
+  })
+  .strict();
+
+export const adminCommunityReportQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+    status: z.enum(["OPEN", "REVIEWED", "ACTIONED", "DISMISSED"]).optional(),
+  })
+  .strict();
+
+export const moderateCommunityReportSchema = z
+  .object({
+    action: communityModerationActionSchema,
+  })
+  .strict();
+
+export const createCommunityFriendRequestSchema = z
+  .object({
+    user_id: communityUserIdSchema,
+  })
+  .strict();
+
+export const actOnCommunityFriendshipSchema = z
+  .object({
+    action: communityFriendshipActionSchema,
+  })
+  .strict();
+
+export const communityFriendshipListQuerySchema = z
+  .object({
+    view: communityFriendshipViewSchema.default("FRIENDS"),
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+  })
+  .strict();

@@ -13,7 +13,7 @@ import {
   useCampaignLifecycle,
 } from "../../lifecycle";
 import { ServingPreviewPanel } from "../../ad-serving";
-import { Palette, MapPin, Calendar, Clock, Sparkles } from "lucide-react";
+import { Palette, MapPin, Calendar, Clock, Sparkles, BarChart2 } from "lucide-react";
 
 export function CampaignCard({
   campaign,
@@ -168,6 +168,14 @@ export function CampaignCard({
           <Sparkles className="w-3.5 h-3.5" />
           {activeTab === "preview" ? "Tutup Uji Penayangan" : "Uji Penayangan (Preview)"}
         </button>
+
+        <a
+          href={`/umkm/advertising/analytics?campaignId=${campaign.id}`}
+          className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 font-medium rounded-lg border border-blue-500/50 bg-blue-500/10 text-blue-200 hover:bg-blue-500/20 transition-colors ml-auto"
+        >
+          <BarChart2 className="w-3.5 h-3.5 text-blue-400" />
+          Lihat Analitik
+        </a>
       </div>
 
       {/* Tab Panels */}

@@ -1,0 +1,24 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — HARD CONSTRAINT ENFORCEMENT
+================================================================================
+
+1. EQUAL FILTER PARITY PRINCIPLE
+--------------------------------------------------------------------------------
+A fundamental guarantee of GETRA's advertising track is that paid placement
+CANNOT bypass user search filters. If a commuter searches for "Coffee" or "Walking < 10 mins",
+a sponsored merchant that sells car parts or is 5 kilometers away will be strictly excluded.
+
+2. CONSTRAINTS APPLIED ACROSS ALL STREAMS
+--------------------------------------------------------------------------------
+1. Spatial Proximity:
+   - Sponsored pin MUST fall within the commuter's effective radius.
+2. Category Matching:
+   - Candidate merchant category, headline, or description must match user category.
+   - Synonym normalization is supported (e.g. "Kopi" matches "Cafe", "Coffee", "F&B").
+3. Text Query Matching:
+   - Search keywords must match merchant name, creative headline, or creative description.
+4. Walking Threshold:
+   - Walking minutes calculated via geodesic distance / walking speed (80 m/min).
+   - If computed walking time exceeds `maxWalkingMinutes`, the candidate is excluded.

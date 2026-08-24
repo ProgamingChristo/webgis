@@ -198,7 +198,7 @@ function readBoolean(value: unknown, fallback: boolean) {
 function readPoint(value: unknown): [number, number] | null {
   const geometry =
     typeof value === "string"
-      ? safeJsonParse(value)
+      ? safeJsonParse(value) ?? parseWkbGeometry(value)
       : value;
 
   if (
@@ -219,7 +219,10 @@ function readPoint(value: unknown): [number, number] | null {
 }
 
 function readMultiPolygon(value: unknown): GeoJSON.MultiPolygon | null {
-  const geometry = typeof value === "string" ? safeJsonParse(value) : value;
+  const geometry =
+    typeof value === "string"
+      ? safeJsonParse(value) ?? parseWkbGeometry(value)
+      : value;
 
   if (
     typeof geometry !== "object" ||
@@ -233,6 +236,180 @@ function readMultiPolygon(value: unknown): GeoJSON.MultiPolygon | null {
   }
 
   return geometry as GeoJSON.MultiPolygon;
+}
+
+type SupportedWkbGeometry =
+  | GeoJSON.Point
+  | GeoJSON.Polygon
+  | GeoJSON.MultiPolygon;
+
+function parseWkbGeometry(value: string): SupportedWkbGeometry | null {
+  const trimmed = value.trim();
+
+  if (!/^[0-9a-f]+$/i.test(trimmed) || trimmed.length % 2 !== 0) {
+    return null;
+  }
+
+  const bytes = new Uint8Array(trimmed.length / 2);
+
+  for (let index = 0; index < trimmed.length; index += 2) {
+    bytes[index / 2] = Number.parseInt(trimmed.slice(index, index + 2), 16);
+  }
+
+  try {
+    const parser = new WkbParser(bytes);
+    const geometry = parser.readGeometry();
+
+    if (geometry?.type === "Polygon") {
+      return {
+        type: "MultiPolygon",
+        coordinates: [geometry.coordinates],
+      };
+    }
+
+    return geometry;
+  } catch {
+    return null;
+  }
+}
+
+class WkbParser {
+  private offset = 0;
+
+  private readonly view: DataView;
+
+  constructor(bytes: Uint8Array) {
+    this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  }
+
+  readGeometry(): SupportedWkbGeometry | null {
+    const littleEndian = this.readEndian();
+    const rawType = this.readUint32(littleEndian);
+    const hasSrid = (rawType & 0x20000000) !== 0;
+    const hasZ = (rawType & 0x80000000) !== 0;
+    const hasM = (rawType & 0x40000000) !== 0;
+    const geometryType = rawType & 0x000000ff;
+
+    if (hasSrid) {
+      this.readUint32(littleEndian);
+    }
+
+    if (geometryType === 1) {
+      const coordinates = this.readCoordinate(littleEndian, hasZ, hasM);
+
+      return {
+        type: "Point",
+        coordinates,
+      };
+    }
+
+    if (geometryType === 3) {
+      return {
+        type: "Polygon",
+        coordinates: this.readPolygonCoordinates(littleEndian, hasZ, hasM),
+      };
+    }
+
+    if (geometryType === 6) {
+      const polygonCount = this.readUint32(littleEndian);
+      const polygons: GeoJSON.Position[][][] = [];
+
+      for (let index = 0; index < polygonCount; index += 1) {
+        const geometry = this.readGeometry();
+
+        if (!geometry || geometry.type !== "Polygon") {
+          throw new Error("Invalid MultiPolygon member.");
+        }
+
+        polygons.push(geometry.coordinates);
+      }
+
+      return {
+        type: "MultiPolygon",
+        coordinates: polygons,
+      };
+    }
+
+    return null;
+  }
+
+  private readEndian(): boolean {
+    const value = this.readUint8();
+
+    if (value !== 0 && value !== 1) {
+      throw new Error("Invalid WKB byte order.");
+    }
+
+    return value === 1;
+  }
+
+  private readPolygonCoordinates(
+    littleEndian: boolean,
+    hasZ: boolean,
+    hasM: boolean,
+  ): GeoJSON.Position[][] {
+    const ringCount = this.readUint32(littleEndian);
+    const rings: GeoJSON.Position[][] = [];
+
+    for (let ringIndex = 0; ringIndex < ringCount; ringIndex += 1) {
+      const pointCount = this.readUint32(littleEndian);
+      const ring: GeoJSON.Position[] = [];
+
+      for (let pointIndex = 0; pointIndex < pointCount; pointIndex += 1) {
+        ring.push(this.readCoordinate(littleEndian, hasZ, hasM));
+      }
+
+      rings.push(ring);
+    }
+
+    return rings;
+  }
+
+  private readCoordinate(
+    littleEndian: boolean,
+    hasZ: boolean,
+    hasM: boolean,
+  ): GeoJSON.Position {
+    const longitude = this.readFloat64(littleEndian);
+    const latitude = this.readFloat64(littleEndian);
+
+    if (hasZ) {
+      this.readFloat64(littleEndian);
+    }
+
+    if (hasM) {
+      this.readFloat64(littleEndian);
+    }
+
+    return [longitude, latitude];
+  }
+
+  private readUint8(): number {
+    this.ensureAvailable(1);
+    const value = this.view.getUint8(this.offset);
+    this.offset += 1;
+    return value;
+  }
+
+  private readUint32(littleEndian: boolean): number {
+    this.ensureAvailable(4);
+    const value = this.view.getUint32(this.offset, littleEndian);
+    this.offset += 4;
+    return value;
+  }
+
+  private readFloat64(littleEndian: boolean): number {
+    this.ensureAvailable(8);
+    const value = this.view.getFloat64(this.offset, littleEndian);
+    this.offset += 8;
+    return value;
+  }
+
+  private ensureAvailable(bytes: number): void {
+    if (this.offset + bytes > this.view.byteLength) {
+      throw new Error("Unexpected end of WKB.");
+    }
+  }
 }
 
 function safeJsonParse(value: string): unknown {

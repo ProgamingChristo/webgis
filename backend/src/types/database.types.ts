@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -84,7 +84,7 @@ export type Database = {
           merchant_id: string
           name: string
           start_at?: string | null
-          status?: string
+          status: string
           updated_at?: string
         }
         Update: {
@@ -650,6 +650,143 @@ export type Database = {
           {
             foreignKeyName: "community_reactions_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commuter_request_cluster_members: {
+        Row: {
+          cluster_id: string
+          created_at: string
+          request_id: string
+        }
+        Insert: {
+          cluster_id: string
+          created_at?: string
+          request_id: string
+        }
+        Update: {
+          cluster_id?: string
+          created_at?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commuter_request_cluster_members_cluster_id_fkey"
+            columns: ["cluster_id"]
+            isOneToOne: false
+            referencedRelation: "commuter_request_clusters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commuter_request_cluster_members_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: true
+            referencedRelation: "commuter_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commuter_request_clusters: {
+        Row: {
+          aggregation_key: string
+          budget_bucket: number
+          category: string
+          center_location: unknown
+          cluster_radius_meters: number
+          created_at: string
+          grid_latitude: number
+          grid_longitude: number
+          id: string
+          status: string
+          updated_at: string
+          window_days: number
+        }
+        Insert: {
+          aggregation_key: string
+          budget_bucket: number
+          category: string
+          center_location: unknown
+          cluster_radius_meters?: number
+          created_at?: string
+          grid_latitude: number
+          grid_longitude: number
+          id?: string
+          status?: string
+          updated_at?: string
+          window_days?: number
+        }
+        Update: {
+          aggregation_key?: string
+          budget_bucket?: number
+          category?: string
+          center_location?: unknown
+          cluster_radius_meters?: number
+          created_at?: string
+          grid_latitude?: number
+          grid_longitude?: number
+          id?: string
+          status?: string
+          updated_at?: string
+          window_days?: number
+        }
+        Relationships: []
+      }
+      commuter_requests: {
+        Row: {
+          author_id: string
+          category: string
+          created_at: string
+          description: string
+          expires_at: string
+          id: string
+          location: unknown
+          location_accuracy_m: number | null
+          location_visibility: string
+          max_budget: number
+          radius_meters: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          category: string
+          created_at?: string
+          description: string
+          expires_at: string
+          id?: string
+          location: unknown
+          location_accuracy_m?: number | null
+          location_visibility?: string
+          max_budget: number
+          radius_meters: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          created_at?: string
+          description?: string
+          expires_at?: string
+          id?: string
+          location?: unknown
+          location_accuracy_m?: number | null
+          location_visibility?: string
+          max_budget?: number
+          radius_meters?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commuter_requests_author_id_fkey"
+            columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1676,65 +1813,6 @@ export type Database = {
           },
         ]
       }
-      commuter_requests: {
-        Row: {
-          author_id: string
-          category: string
-          created_at: string
-          description: string
-          expires_at: string
-          id: string
-          location: unknown
-          location_accuracy_m: number | null
-          location_visibility: string
-          max_budget: number
-          radius_meters: number
-          status: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          author_id: string
-          category: string
-          created_at?: string
-          description: string
-          expires_at: string
-          id?: string
-          location: unknown
-          location_accuracy_m?: number | null
-          location_visibility?: string
-          max_budget: number
-          radius_meters: number
-          status?: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          author_id?: string
-          category?: string
-          created_at?: string
-          description?: string
-          expires_at?: string
-          id?: string
-          location?: unknown
-          location_accuracy_m?: number | null
-          location_visibility?: string
-          max_budget?: number
-          radius_meters?: number
-          status?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "commuter_requests_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           account_role: Database["public"]["Enums"]["account_role"]
@@ -1746,8 +1824,8 @@ export type Database = {
           onboarding_complete: boolean
           phone_number: string | null
           trust_score: number
-          username: string | null
           updated_at: string
+          username: string | null
         }
         Insert: {
           account_role?: Database["public"]["Enums"]["account_role"]
@@ -1759,8 +1837,8 @@ export type Database = {
           onboarding_complete?: boolean
           phone_number?: string | null
           trust_score?: number
-          username?: string | null
           updated_at?: string
+          username?: string | null
         }
         Update: {
           account_role?: Database["public"]["Enums"]["account_role"]
@@ -1772,8 +1850,8 @@ export type Database = {
           onboarding_complete?: boolean
           phone_number?: string | null
           trust_score?: number
-          username?: string | null
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -2741,6 +2819,61 @@ export type Database = {
           },
         ]
       }
+      umkm_request_responses: {
+        Row: {
+          created_at: string
+          id: string
+          merchant_id: string
+          message: string | null
+          responder_user_id: string
+          signal_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          merchant_id: string
+          message?: string | null
+          responder_user_id: string
+          signal_id: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          merchant_id?: string
+          message?: string | null
+          responder_user_id?: string
+          signal_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "umkm_request_responses_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "umkm_request_responses_responder_user_id_fkey"
+            columns: ["responder_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "umkm_request_responses_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "commuter_request_clusters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_preferences: {
         Row: {
           created_at: string
@@ -3377,6 +3510,15 @@ export type Database = {
         }
         Returns: Record<string, unknown>[]
       }
+      add_community_reaction_v1: {
+        Args: { p_post_id: string; p_reaction_type: string }
+        Returns: {
+          confirmed_count: number
+          helpful_count: number
+          interesting_count: number
+          viewer_reactions: string[]
+        }[]
+      }
       approve_merchant_claim: {
         Args: { claim_id: string; review_note?: string }
         Returns: string
@@ -3389,9 +3531,38 @@ export type Database = {
         }
         Returns: Json
       }
+      community_reaction_summary: {
+        Args: { p_post_id: string }
+        Returns: {
+          confirmed_count: number
+          helpful_count: number
+          interesting_count: number
+          viewer_reactions: string[]
+        }[]
+      }
       complete_onboarding: {
         Args: { selected_modes: string[] }
         Returns: undefined
+      }
+      create_community_comment_v1: {
+        Args: {
+          p_content: string
+          p_parent_comment_id?: string
+          p_post_id: string
+        }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          content: string
+          created_at: string
+          depth: number
+          id: string
+          parent_comment_id: string
+          post_id: string
+          total_root_count: number
+          updated_at: string
+        }[]
       }
       create_community_post: {
         Args: {
@@ -3412,6 +3583,50 @@ export type Database = {
           location_longitude: number
           location_visibility: string
           updated_at: string
+        }[]
+      }
+      create_community_post_v4: {
+        Args: {
+          p_category?: string
+          p_content: string
+          p_latitude?: number
+          p_location_accuracy_m?: number
+          p_location_visibility?: string
+          p_longitude?: number
+          p_media_height?: number
+          p_media_id?: string
+          p_media_mime_type?: string
+          p_media_size_bytes?: number
+          p_media_storage_path?: string
+          p_media_width?: number
+          p_post_id: string
+          p_post_type?: string
+        }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          category: string
+          confirmed_count: number
+          content: string
+          created_at: string
+          helpful_count: number
+          id: string
+          interesting_count: number
+          location_latitude: number
+          location_longitude: number
+          location_visibility: string
+          media_height: number
+          media_id: string
+          media_mime_type: string
+          media_size_bytes: number
+          media_storage_path: string
+          media_width: number
+          post_type: string
+          reply_count: number
+          total_count: number
+          updated_at: string
+          viewer_reactions: string[]
         }[]
       }
       create_community_post_with_media: {
@@ -3445,6 +3660,41 @@ export type Database = {
           media_size_bytes: number
           media_storage_path: string
           media_width: number
+          updated_at: string
+        }[]
+      }
+      create_commuter_request_v1: {
+        Args: {
+          p_category: string
+          p_description: string
+          p_expires_in_days?: number
+          p_latitude: number
+          p_location_accuracy_m?: number
+          p_location_visibility?: string
+          p_longitude: number
+          p_max_budget: number
+          p_radius_meters?: number
+          p_request_id: string
+          p_title: string
+        }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          category: string
+          created_at: string
+          description: string
+          distance_meters: number
+          expires_at: string
+          id: string
+          location_latitude: number
+          location_longitude: number
+          location_visibility: string
+          max_budget: number
+          radius_meters: number
+          status: string
+          title: string
+          total_count: number
           updated_at: string
         }[]
       }
@@ -3773,6 +4023,104 @@ export type Database = {
         Args: { lat: number; lng: number; radius_m: number }
         Returns: Json
       }
+      get_community_demand_signal_detail_v1: {
+        Args: { p_signal_id: string }
+        Returns: {
+          budget_max: number
+          budget_median: number
+          budget_min: number
+          category: string
+          center_latitude: number
+          center_longitude: number
+          cluster_radius_meters: number
+          id: string
+          latest_activity_at: string
+          request_count: number
+          status: string
+          total_count: number
+          window_end: string
+          window_start: string
+        }[]
+      }
+      get_community_post_detail_v1: {
+        Args: { p_post_id: string }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          confirmed_count: number
+          content: string
+          created_at: string
+          helpful_count: number
+          id: string
+          interesting_count: number
+          location_latitude: number
+          location_longitude: number
+          location_visibility: string
+          media_height: number
+          media_id: string
+          media_mime_type: string
+          media_size_bytes: number
+          media_storage_path: string
+          media_width: number
+          reply_count: number
+          total_count: number
+          updated_at: string
+          viewer_reactions: string[]
+        }[]
+      }
+      get_community_post_detail_v2: {
+        Args: { p_post_id: string }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          category: string
+          confirmed_count: number
+          content: string
+          created_at: string
+          helpful_count: number
+          id: string
+          interesting_count: number
+          location_latitude: number
+          location_longitude: number
+          location_visibility: string
+          media_height: number
+          media_id: string
+          media_mime_type: string
+          media_size_bytes: number
+          media_storage_path: string
+          media_width: number
+          post_type: string
+          reply_count: number
+          total_count: number
+          updated_at: string
+          viewer_reactions: string[]
+        }[]
+      }
+      get_commuter_request_detail_v1: {
+        Args: { p_request_id: string }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          category: string
+          created_at: string
+          description: string
+          distance_meters: number
+          expires_at: string
+          id: string
+          location_latitude: number
+          location_longitude: number
+          location_visibility: string
+          max_budget: number
+          radius_meters: number
+          status: string
+          title: string
+          total_count: number
+          updated_at: string
+        }[]
+      }
       get_merchant_network_access: {
         Args: { target_merchant_id: string }
         Returns: {
@@ -3785,6 +4133,78 @@ export type Database = {
       is_valid_wgs84_geometry: {
         Args: { allowed_types: string[]; input_geometry: unknown }
         Returns: boolean
+      }
+      list_community_comments_v1: {
+        Args: { p_limit?: number; p_offset?: number; p_post_id: string }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          content: string
+          created_at: string
+          depth: number
+          id: string
+          parent_comment_id: string
+          post_id: string
+          total_root_count: number
+          updated_at: string
+        }[]
+      }
+      list_community_cultural_map_v1: {
+        Args: {
+          p_categories?: string[]
+          p_east: number
+          p_limit?: number
+          p_north: number
+          p_south: number
+          p_west: number
+        }
+        Returns: {
+          author_display_name: string
+          author_id: string
+          category: string
+          confirmed_count: number
+          content: string
+          created_at: string
+          id: string
+          location_latitude: number
+          location_longitude: number
+          location_visibility: string
+          post_type: string
+          reply_count: number
+        }[]
+      }
+      list_community_demand_signal_responses_v1: {
+        Args: { p_signal_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          merchant_display_name: string
+          merchant_id: string
+          message: string
+          signal_id: string
+          status: string
+          updated_at: string
+        }[]
+      }
+      list_community_demand_signals_v1: {
+        Args: { p_category?: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          budget_max: number
+          budget_median: number
+          budget_min: number
+          category: string
+          center_latitude: number
+          center_longitude: number
+          cluster_radius_meters: number
+          id: string
+          latest_activity_at: string
+          request_count: number
+          status: string
+          total_count: number
+          window_end: string
+          window_start: string
+        }[]
       }
       list_community_feed: {
         Args: { p_limit?: number; p_offset?: number }
@@ -3820,6 +4240,104 @@ export type Database = {
           media_size_bytes: number
           media_storage_path: string
           media_width: number
+          total_count: number
+          updated_at: string
+        }[]
+      }
+      list_community_feed_v3: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          confirmed_count: number
+          content: string
+          created_at: string
+          helpful_count: number
+          id: string
+          interesting_count: number
+          location_latitude: number
+          location_longitude: number
+          location_visibility: string
+          media_height: number
+          media_id: string
+          media_mime_type: string
+          media_size_bytes: number
+          media_storage_path: string
+          media_width: number
+          reply_count: number
+          total_count: number
+          updated_at: string
+          viewer_reactions: string[]
+        }[]
+      }
+      list_community_feed_v4: {
+        Args: {
+          p_category?: string
+          p_limit?: number
+          p_offset?: number
+          p_post_type?: string
+        }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          category: string
+          confirmed_count: number
+          content: string
+          created_at: string
+          helpful_count: number
+          id: string
+          interesting_count: number
+          location_latitude: number
+          location_longitude: number
+          location_visibility: string
+          media_height: number
+          media_id: string
+          media_mime_type: string
+          media_size_bytes: number
+          media_storage_path: string
+          media_width: number
+          post_type: string
+          reply_count: number
+          total_count: number
+          updated_at: string
+          viewer_reactions: string[]
+        }[]
+      }
+      list_community_response_merchants_v1: {
+        Args: never
+        Returns: {
+          display_name: string
+          id: string
+        }[]
+      }
+      list_commuter_requests_v1: {
+        Args: {
+          p_category?: string
+          p_latitude?: number
+          p_limit?: number
+          p_longitude?: number
+          p_offset?: number
+          p_radius_meters?: number
+        }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          category: string
+          created_at: string
+          description: string
+          distance_meters: number
+          expires_at: string
+          id: string
+          location_latitude: number
+          location_longitude: number
+          location_visibility: string
+          max_budget: number
+          radius_meters: number
+          status: string
+          title: string
           total_count: number
           updated_at: string
         }[]
@@ -3898,9 +4416,19 @@ export type Database = {
         Returns: Record<string, unknown>[]
       }
       pgr_version: { Args: never; Returns: string }
+      refresh_community_demand_signals_v1: { Args: never; Returns: undefined }
       reject_merchant_claim: {
         Args: { claim_id: string; review_note?: string }
         Returns: string
+      }
+      remove_community_reaction_v1: {
+        Args: { p_post_id: string; p_reaction_type: string }
+        Returns: {
+          confirmed_count: number
+          helpful_count: number
+          interesting_count: number
+          viewer_reactions: string[]
+        }[]
       }
       search_merchants_nearby: {
         Args: {
@@ -3956,6 +4484,24 @@ export type Database = {
           p_transport_node_id: string
         }
         Returns: Json
+      }
+      upsert_community_demand_signal_response_v1: {
+        Args: {
+          p_merchant_id: string
+          p_message?: string
+          p_signal_id: string
+          p_status: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          merchant_display_name: string
+          merchant_id: string
+          message: string
+          signal_id: string
+          status: string
+          updated_at: string
+        }[]
       }
       wgs84_distance_meters: {
         Args: { destination: unknown; origin: unknown }
@@ -4169,3 +4715,4 @@ export const Constants = {
     },
   },
 } as const
+

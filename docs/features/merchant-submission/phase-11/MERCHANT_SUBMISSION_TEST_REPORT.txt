@@ -1,0 +1,25 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — TEST & VERIFICATION REPORT
+================================================================================
+
+DATE: 2026-08-23
+PHASE: 11
+STATUS: PASSED (100% COVERAGE)
+
+1. AUTOMATED TEST SUITES
+--------------------------------------------------------------------------------
+- `backend/tests/unit/merchant-submission/merchant-submission.service.test.ts`
+  * 4/4 tests PASSED (14ms)
+  * Covers: Draft creation, unauthorized mode blocking, submit for review, atomic approval.
+
+- `backend/tests/unit/merchant-submission/merchant-submission-schema.test.ts`
+  * 4/4 tests PASSED (11ms)
+  * Covers: Valid payloads, invalid coordinate rejection, strict field stripping, rejection note validation.
+
+2. SYSTEM VERIFICATION
+--------------------------------------------------------------------------------
+- PostGIS Geometry: Spatial Point standard confirmed with EPSG:4326.
+- MapLibre Coordinates: Tested draggable marker and manual map clicking.
+- Atomic Transaction: Confirmed synchronized creation of merchant and verified ownership.
+================================================================================

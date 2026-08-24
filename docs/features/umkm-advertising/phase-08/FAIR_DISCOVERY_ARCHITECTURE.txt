@@ -1,0 +1,35 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 08 — FAIR DISCOVERY ARCHITECTURE
+================================================================================
+
+1. EXECUTIVE ARCHITECTURE OVERVIEW
+--------------------------------------------------------------------------------
+Phase 08 establishes the Fair Discovery subdomain in GETRA, integrating organic
+transit discoverability, community-curated Hidden Gems, and paid Sponsored Placements
+into a unified, fair, and transparent search experience for commuters.
+
+Key architectural boundaries:
+- Subdomain Separation:
+  * Fair Discovery: `backend/src/features/fair-discovery/` and `frontend/src/features/fair-discovery/`
+  * Advertising Engine: `backend/src/features/umkm-advertising/`
+- Zero Organic Score Contamination:
+  * Advertising revenue or campaign status NEVER modifies organic relevance scoring.
+  * `score += advertisingWeight` is strictly forbidden.
+- Clear Stream Partitioning:
+  * Stream 1: Original (Organic) — Pure spatial proximity and hard constraints.
+  * Stream 2: Hidden Gem — Curated by community data quality & transit engagement.
+  * Stream 3: Sponsored — Commercial campaign placement satisfying exact search context.
+
+2. COMPOSITION PIPELINE
+--------------------------------------------------------------------------------
+1. Commuter initiates search or pans map:
+   Input: { origin: [lng, lat], radiusMeters, category, query, openNow, maxWalkingMinutes }
+2. `FairDiscoveryCompositionService` queries organic merchants within radius.
+3. Partitions organic candidates into `original` and `hidden_gems` (data_quality_score >= 80).
+4. Calls `SponsoredPlacementAdapter` (consuming public `AdServingService.getSponsoredPinCandidates`).
+5. Applies Hard-Constraint Parity on sponsored candidates (Category, Query, Walking Limit).
+6. Deduplicates: Removes sponsored merchant from duplicate organic list appearance.
+7. Clamps sponsored candidates to `MAX_SPONSORED_RESULTS_PER_DISCOVERY = 1`.
+8. Emits `FairDiscoveryResult` to frontend API response.

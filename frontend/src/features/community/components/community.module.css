@@ -156,6 +156,15 @@
   color: var(--getra-primary);
   font-size: 12px;
   font-weight: 900;
+  overflow: hidden;
+}
+
+.avatar img,
+.profileAvatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .composerBody,
@@ -836,6 +845,17 @@
   font-size: 12px;
 }
 
+.authorProfileLink {
+  color: var(--getra-ink);
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.authorProfileLink:hover {
+  color: var(--getra-primary);
+}
+
 .commentContent {
   margin: 7px 0 0;
   color: var(--getra-ink);
@@ -846,7 +866,308 @@
 }
 
 .commentActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-top: 8px;
+}
+
+.reportAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.reportButton {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--getra-ink-soft);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.reportMessage {
+  color: var(--getra-primary);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.reportDialog {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.reportDialogPanel {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--getra-line-strong);
+  background: var(--getra-surface);
+  padding: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.reportDialogPanel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reportDialogPanel label {
+  display: grid;
+  gap: 6px;
+  color: var(--getra-ink-soft);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reportDialogPanel select,
+.reportDialogPanel textarea {
+  width: 100%;
+  border: 1px solid var(--getra-line);
+  background: var(--getra-surface-dark);
+  color: var(--getra-ink);
+  font: inherit;
+  font-size: 13px;
+  padding: 10px;
+}
+
+.reportDialogPanel textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.notificationMenu {
+  position: relative;
+}
+
+.notificationButton {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--getra-line-strong);
+  background: rgba(6, 14, 22, 0.72);
+  color: var(--getra-ink);
+  cursor: pointer;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid #06131d;
+  background: #22c55e;
+  color: #02100a;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.notificationPanel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 80;
+  width: min(340px, calc(100vw - 24px));
+  border: 1px solid var(--getra-line-strong);
+  background: var(--getra-surface);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.38);
+}
+
+.notificationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--getra-line);
+  padding: 12px;
+}
+
+.notificationList {
+  display: grid;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.notificationItem {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 4px;
+  border: 0;
+  border-bottom: 1px solid var(--getra-line);
+  padding: 12px;
+  background: transparent;
+  color: var(--getra-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.notificationItemUnread {
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.notificationItem span {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.notificationItem time,
+.notificationEmpty {
+  color: var(--getra-ink-soft);
+  font-size: 11px;
+}
+
+.notificationItem time {
+  grid-column: 2;
+}
+
+.notificationEmpty {
+  margin: 0;
+  padding: 14px 12px;
+}
+
+.profilePanel {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 16px;
+  border: 1px solid var(--getra-line);
+  background: var(--getra-surface);
+  padding: 18px;
+}
+
+.profileAvatar {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--getra-primary);
+  background: var(--getra-primary-soft);
+  color: var(--getra-primary);
+  font-size: 20px;
+  font-weight: 900;
+  overflow: hidden;
+}
+
+.profileBody {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.profileBody h2,
+.profileBody p {
+  margin: 0;
+}
+
+.profileBody h2 {
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.profileBody p {
+  color: var(--getra-ink-soft);
+  font-size: 13px;
+}
+
+.profileStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.profileStats div {
+  border: 1px solid var(--getra-line);
+  padding: 10px;
+}
+
+.profileStats dt {
+  color: var(--getra-ink-soft);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.profileStats dd {
+  margin: 3px 0 0;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.friendState {
+  color: var(--getra-primary);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.friendActionRow,
+.friendCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.friendList {
+  display: grid;
+  gap: 10px;
+}
+
+.friendCard {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--getra-line);
+  background: var(--getra-surface);
+  padding: 12px;
+}
+
+.friendCard strong,
+.friendCard span {
+  display: block;
+}
+
+.friendCard strong {
+  color: var(--getra-ink);
+  font-size: 13px;
+}
+
+.friendCard span {
+  color: var(--getra-ink-soft);
+  font-size: 11px;
+}
+
+.requestAuthorRow,
+.mapFindingAuthor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.requestAuthorRow {
+  margin-bottom: 12px;
+}
+
+.mapFindingAuthor .avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 10px;
 }
 
 .feedState {
@@ -959,6 +1280,14 @@
   display: grid;
 }
 
+.requestTabs {
+  display: inline-flex;
+  width: fit-content;
+  margin: 14px 18px 0;
+  border: 1px solid var(--getra-line-strong);
+  background: rgba(255, 255, 255, 0.02);
+}
+
 .requestCard {
   display: grid;
   gap: 10px;
@@ -1042,6 +1371,146 @@
 .requestDetail > .requestFacts {
   border-bottom: 1px solid var(--getra-line);
   padding: 18px;
+}
+
+.signalCard,
+.signalDetail,
+.responsePanel {
+  display: grid;
+  gap: 12px;
+  border-bottom: 1px solid var(--getra-line);
+  padding: 16px 18px;
+}
+
+.signalCardHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.signalCardHeader h3 {
+  margin: 5px 0 0;
+  font-size: 17px;
+  letter-spacing: 0;
+}
+
+.signalCardHeader strong {
+  color: var(--getra-primary);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.signalFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--getra-ink-soft);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.responsePanel header h3 {
+  margin: 4px 0 0;
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+.responseList,
+.responseForm {
+  display: grid;
+  gap: 10px;
+}
+
+.responseCard {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--getra-line);
+  padding: 11px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.responseCard header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.responseCard strong {
+  color: var(--getra-ink);
+  font-size: 13px;
+}
+
+.responseCard time,
+.responseCard span {
+  color: var(--getra-ink-soft);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.responseCard p {
+  margin: 0;
+  color: var(--getra-ink);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.responseForm label {
+  display: grid;
+  gap: 6px;
+}
+
+.responseForm label > span,
+.statusOptions legend {
+  color: var(--getra-ink-soft);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.responseForm select,
+.responseForm textarea {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--getra-line);
+  padding: 0 10px;
+  background: var(--getra-surface-dark);
+  color: var(--getra-ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.responseForm textarea {
+  min-height: 86px;
+  resize: vertical;
+  padding: 10px;
+  line-height: 1.55;
+}
+
+.statusOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  border: 1px solid var(--getra-line);
+  padding: 10px;
+}
+
+.statusOptions label {
+  min-height: 32px;
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  border: 1px solid var(--getra-line-strong);
+  padding: 0 9px;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+}
+
+.statusOptions input {
+  margin: 0;
 }
 
 .culturalMapPanel {
@@ -1275,14 +1744,25 @@
 
   .requestComposer,
   .requestCard,
+  .signalCard,
+  .signalDetail,
+  .responsePanel,
   .requestDetailHeader,
   .requestDetail > .requestFacts {
     padding: 14px 10px;
   }
 
   .requestCardHeader,
-  .requestActions {
+  .requestActions,
+  .signalCardHeader,
+  .signalFooter,
+  .responseCard header {
     display: grid;
+  }
+
+  .requestTabs {
+    width: calc(100% - 20px);
+    margin: 10px;
   }
 
   .culturalMapToolbar {

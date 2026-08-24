@@ -31,6 +31,8 @@ setWorkerUrl(
   "/maplibre/maplibre-gl-worker.mjs",
 );
 
+import { CampaignEventService, type SponsoredPinDTO } from "@/src/features/umkm-advertising";
+
 type GetraMapProps = {
   merchants: Merchant[];
   selectedId: string | null;
@@ -44,6 +46,8 @@ type GetraMapProps = {
   routeGeometry?: GeoJSON.LineString | null;
   routeIsFallback?: boolean;
   importBoundaries?: GeoJSON.FeatureCollection<GeoJSON.MultiPolygon> | null;
+  sponsoredPlacements?: SponsoredPinDTO[];
+  onSelectSponsored?: (placement: SponsoredPinDTO) => void;
 };
 
 type DatasetBounds = {
@@ -544,6 +548,8 @@ export function GetraMap({
   routeGeometry,
   routeIsFallback,
   importBoundaries,
+  sponsoredPlacements,
+  onSelectSponsored,
 }: GetraMapProps) {
   const [
     activeBasemapId,
@@ -560,6 +566,11 @@ export function GetraMap({
     useRef<MapLibreMap | null>(null);
 
   const merchantMarkersRef =
+    useRef<Map<string, Marker>>(
+      new Map(),
+    );
+
+  const sponsoredMarkersRef =
     useRef<Map<string, Marker>>(
       new Map(),
     );
@@ -728,6 +739,8 @@ export function GetraMap({
       },
     );
 
+    const sponsoredMarkers = sponsoredMarkersRef.current;
+
     return () => {
       merchantMarkers.forEach(
         (marker) =>
@@ -735,6 +748,13 @@ export function GetraMap({
       );
 
       merchantMarkers.clear();
+
+      sponsoredMarkers.forEach(
+        (marker) =>
+          marker.remove(),
+      );
+
+      sponsoredMarkers.clear();
 
       userLocationMarkerRef.current?.remove();
       userLocationMarkerRef.current = null;
@@ -982,6 +1002,76 @@ export function GetraMap({
     selectedId,
     onSelect,
   ]);
+
+  /*
+   * Sponsored Pin markers
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    sponsoredMarkersRef.current.forEach((marker) => marker.remove());
+    sponsoredMarkersRef.current.clear();
+
+    if (!sponsoredPlacements || sponsoredPlacements.length === 0) return;
+
+    const bounds = map.getBounds();
+
+    for (const placement of sponsoredPlacements) {
+      const [lng, lat] = placement.geometry.coordinates;
+
+      // Track IMPRESSION if marker is inside visible map viewport
+      const isVisible =
+        bounds &&
+        lat >= bounds.getSouth() &&
+        lat <= bounds.getNorth() &&
+        lng >= bounds.getWest() &&
+        lng <= bounds.getEast();
+
+      if (isVisible) {
+        CampaignEventService.recordEvent({
+          event_type: "IMPRESSION",
+          campaign_id: placement.campaign_id,
+          creative_id: placement.creative_id,
+          placement: "SPONSORED_PIN",
+          context: { surface: "MAPLIBRE_COMMUTER_MAP" },
+        });
+      }
+
+      const el = document.createElement("div");
+      el.className = "group relative flex flex-col items-center cursor-pointer select-none transition-transform duration-200 hover:scale-110";
+      el.innerHTML = `
+        <span style="font-size:9px; font-weight:800; text-transform:uppercase; background:#f59e0b; color:#ffffff; padding:2px 6px; border-radius:9999px; border:1px solid #fde68a; box-shadow:0 2px 4px rgba(0,0,0,0.3); margin-bottom:2px;">✨ SPONSORED</span>
+        <div style="width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg, #d97706, #f59e0b, #fbbf24); border:2px solid #ffffff; box-shadow:0 4px 6px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:#ffffff; font-size:13px;">📣</div>
+      `;
+
+      el.onclick = () => {
+        CampaignEventService.recordEvent({
+          event_type: "SPONSORED_PIN_CLICK",
+          campaign_id: placement.campaign_id,
+          creative_id: placement.creative_id,
+          placement: "SPONSORED_PIN",
+          context: { surface: "MAPLIBRE_COMMUTER_MAP" },
+        });
+        onSelectSponsored?.(placement);
+      };
+
+      const popup = new Popup({ offset: 20 }).setHTML(`
+        <div style="padding: 6px; font-family: sans-serif; max-width: 200px;">
+          <span style="background: #fef3c7; color: #92400e; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase;">✨ Sponsored</span>
+          <h5 style="margin: 4px 0 2px 0; font-size: 12px; font-weight: 700; color: #0f172a;">${placement.headline}</h5>
+          <p style="margin: 0; font-size: 10px; color: #64748b;">${placement.merchant_name} (${placement.merchant_category})</p>
+        </div>
+      `);
+
+      const marker = new Marker({ element: el, anchor: "bottom" })
+        .setLngLat([lng, lat])
+        .setPopup(popup)
+        .addTo(map);
+
+      sponsoredMarkersRef.current.set(placement.campaign_id, marker);
+    }
+  }, [sponsoredPlacements, onSelectSponsored]);
 
   /*
    * User GPS marker

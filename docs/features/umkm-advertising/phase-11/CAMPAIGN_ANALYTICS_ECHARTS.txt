@@ -1,0 +1,19 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — VISUALIZATION & CHART SPECIFICATION
+================================================================================
+
+1. VISUALIZATION PRINCIPLES
+--------------------------------------------------------------------------------
+- Interactive Rendering:
+  - Supports clean interactive bar and timeseries visualization.
+  - Interactive day selection updates the daily metric breakdown dynamically.
+- Color Taxonomy:
+  * Impressions: Blue (`#3b82f6`)
+  * Sponsored Pin Clicks: Amber (`#f59e0b`)
+  * Profile Opens: Purple (`#a855f7`)
+  * Route Requests: Emerald (`#10b981`)
+- Zero Synthetic Charts:
+  - If no events are recorded for the selected filter/timeframe, renders a clear
+    `AnalyticsEmptyState` rather than synthetic mock curves.
+================================================================================

@@ -1,0 +1,25 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — MAPLIBRE LOCATION PICKER INTEGRATION
+================================================================================
+
+1. COMPONENT INTEGRATION
+--------------------------------------------------------------------------------
+Component: `MerchantMapPicker`
+Path: `frontend/src/features/merchant-submission/components/merchant-submission-map-picker.tsx`
+
+2. CAPABILITIES & FEATURES
+--------------------------------------------------------------------------------
+- Interactive Point Selection:
+  - Users can click anywhere on the MapLibre canvas to drop or reposition the pin.
+  - The custom Emerald merchant pin is draggable with real-time coordinate updates.
+- Standard Coordinate Standard:
+  - PostGIS standard `EPSG:4326` (WGS 84).
+  - Stored and formatted as `[longitude, latitude]` (GeoJSON standard).
+- Device Geolocation:
+  - "Gunakan Lokasi Saya" button queries `navigator.geolocation` with explicit browser permission.
+  - Automatically pans and zooms to the user's current GPS location upon approval.
+- Basemap Reusability:
+  - Uses canonical MAPID basemap configurations via `getBasemapOption(getDefaultBasemapId())`.
+  - Does not invent unofficial external tile endpoints or custom map servers.
+================================================================================

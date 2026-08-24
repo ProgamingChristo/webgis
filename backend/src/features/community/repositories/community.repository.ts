@@ -6,12 +6,25 @@ import {
   COMMUNITY_PHOTO_SIGNED_URL_SECONDS,
 } from "../constants/community.constants";
 import {
+  mapAdminCommunityReportRow,
+  mapCommunityAnalyticsRow,
   mapCommunityCulturalMapRow,
+  mapCommunityDemandSignalRow,
   mapCommunityCommentRow,
+  mapCommunityNotificationRow,
+  mapCommunityFriendListRow,
+  mapCommunityUserProfileRow,
   mapCommunityPostRow,
+  mapCommunityReportRow,
+  mapCommunityReputationRow,
+  mapCommunityResponseMerchantRow,
+  mapCommunityUmkmResponseRow,
   mapCommuterRequestRow,
 } from "../mappers/community.mapper";
 import type {
+  AdminCommunityReportPage,
+  AdminCommunityReportQuery,
+  CommunityAnalytics,
   CommunityComment,
   CommunityCommentDatabaseRow,
   CommunityCommentPage,
@@ -19,14 +32,37 @@ import type {
   CommunityCulturalMapDatabaseRow,
   CommunityCulturalMapItem,
   CommunityCulturalMapQuery,
+  CommunityDemandSignal,
+  CommunityDemandSignalDatabaseRow,
+  CommunityDemandSignalPage,
+  CommunityDemandSignalQuery,
   CommunityFeedItem,
   CommunityFeedPage,
   CommunityFeedQuery,
+  CommunityModerationAction,
+  CommunityFriendListDatabaseRow,
+  CommunityFriendListPage,
+  CommunityFriendListQuery,
+  CommunityFriendshipAction,
+  CommunityNotificationDatabaseRow,
+  CommunityNotificationPage,
+  CommunityNotificationQuery,
   CommunityPostDatabaseRow,
   CommunityPostRepository,
   CommunityReactionSummary,
   CommunityReactionSummaryDatabaseRow,
   CommunityReactionType,
+  CommunityReport,
+  CommunityReportDatabaseRow,
+  CommunityReputation,
+  CommunityReputationDatabaseRow,
+  CommunityUserProfile,
+  CommunityUserProfileDatabaseRow,
+  CommunityResponseMerchant,
+  CommunityResponseMerchantDatabaseRow,
+  CommunityUmkmResponse,
+  CommunityAnalyticsDatabaseRow,
+  CommunityUmkmResponseDatabaseRow,
   CommuterRequestDatabaseRow,
   CommuterRequestItem,
   CommuterRequestPage,
@@ -34,6 +70,8 @@ import type {
   CreateCommuterRequestInput,
   CreateCommunityCommentInput,
   CreateCommunityPostInput,
+  CreateCommunityReportInput,
+  CreateCommunityUmkmResponseInput,
 } from "../types/community.types";
 
 export class SupabaseCommunityRepository
@@ -318,6 +356,294 @@ export class SupabaseCommunityRepository
     }
 
     return mapCommuterRequestRow(data as CommuterRequestDatabaseRow);
+  }
+
+  async listDemandSignals(
+    query: CommunityDemandSignalQuery,
+  ): Promise<CommunityDemandSignalPage> {
+    const { data, error } = await (this.client as any)
+      .rpc("list_community_demand_signals_v1", {
+        p_limit: query.limit,
+        p_offset: (query.page - 1) * query.limit,
+        p_category: query.category ?? null,
+      });
+
+    if (error) {
+      throw mapDatabaseError(error, "community_demand_signals.list");
+    }
+
+    const rows = (data ?? []) as CommunityDemandSignalDatabaseRow[];
+
+    return {
+      items: rows.map((row) => mapCommunityDemandSignalRow(row)),
+      page: query.page,
+      limit: query.limit,
+      total: Number(rows[0]?.total_count ?? 0),
+    };
+  }
+
+  async getDemandSignal(signalId: string): Promise<CommunityDemandSignal> {
+    const { data, error } = await (this.client as any)
+      .rpc("get_community_demand_signal_detail_v1", {
+        p_signal_id: signalId,
+      })
+      .single();
+
+    if (error) {
+      throw mapDatabaseError(error, "community_demand_signals.get");
+    }
+
+    return mapCommunityDemandSignalRow(data as CommunityDemandSignalDatabaseRow);
+  }
+
+  async listDemandSignalResponses(
+    signalId: string,
+  ): Promise<CommunityUmkmResponse[]> {
+    const { data, error } = await (this.client as any)
+      .rpc("list_community_demand_signal_responses_v1", {
+        p_signal_id: signalId,
+      });
+
+    if (error) {
+      throw mapDatabaseError(error, "community_demand_responses.list");
+    }
+
+    return ((data ?? []) as CommunityUmkmResponseDatabaseRow[]).map((row) =>
+      mapCommunityUmkmResponseRow(row),
+    );
+  }
+
+  async listResponseMerchants(): Promise<CommunityResponseMerchant[]> {
+    const { data, error } = await (this.client as any)
+      .rpc("list_community_response_merchants_v1");
+
+    if (error) {
+      throw mapDatabaseError(error, "community_response_merchants.list");
+    }
+
+    return ((data ?? []) as CommunityResponseMerchantDatabaseRow[]).map((row) =>
+      mapCommunityResponseMerchantRow(row),
+    );
+  }
+
+  async upsertDemandSignalResponse(
+    input: CreateCommunityUmkmResponseInput,
+  ): Promise<CommunityUmkmResponse> {
+    const { data, error } = await (this.client as any)
+      .rpc("upsert_community_demand_signal_response_v1", {
+        p_signal_id: input.signalId,
+        p_merchant_id: input.merchantId,
+        p_status: input.status,
+        p_message: input.message ?? null,
+      })
+      .single();
+
+    if (error) {
+      throw mapDatabaseError(error, "community_demand_responses.upsert");
+    }
+
+    return mapCommunityUmkmResponseRow(data as CommunityUmkmResponseDatabaseRow);
+  }
+
+  async listNotifications(
+    query: CommunityNotificationQuery,
+  ): Promise<CommunityNotificationPage> {
+    const { data, error } = await (this.client as any)
+      .rpc("list_community_notifications_v1", {
+        p_limit: query.limit,
+        p_offset: (query.page - 1) * query.limit,
+      });
+
+    if (error) {
+      throw mapDatabaseError(error, "community_notifications.list");
+    }
+
+    const rows = (data ?? []) as CommunityNotificationDatabaseRow[];
+    const { data: unreadData, error: unreadError } = await (this.client as any)
+      .rpc("count_community_unread_notifications_v1");
+
+    if (unreadError) {
+      throw mapDatabaseError(unreadError, "community_notifications.countUnread");
+    }
+
+    return {
+      items: rows.map((row) => mapCommunityNotificationRow(row)),
+      page: query.page,
+      limit: query.limit,
+      total: Number(rows[0]?.total_count ?? 0),
+      unreadCount: Number(unreadData ?? 0),
+    };
+  }
+
+  async markNotificationRead(notificationId: string): Promise<void> {
+    const { error } = await (this.client as any)
+      .rpc("mark_community_notification_read_v1", {
+        p_notification_id: notificationId,
+      });
+
+    if (error) {
+      throw mapDatabaseError(error, "community_notifications.markRead");
+    }
+  }
+
+  async markAllNotificationsRead(): Promise<void> {
+    const { error } = await (this.client as any)
+      .rpc("mark_all_community_notifications_read_v1");
+
+    if (error) {
+      throw mapDatabaseError(error, "community_notifications.markAllRead");
+    }
+  }
+
+  async createReport(
+    input: CreateCommunityReportInput,
+  ): Promise<CommunityReport> {
+    const { data, error } = await (this.client as any)
+      .rpc("create_community_report_v1", {
+        p_target_type: input.targetType,
+        p_target_id: input.targetId,
+        p_reason: input.reason,
+        p_details: input.details ?? null,
+      })
+      .single();
+
+    if (error) {
+      throw mapDatabaseError(error, "community_reports.create");
+    }
+
+    return mapCommunityReportRow(data as CommunityReportDatabaseRow);
+  }
+
+  async listAdminReports(
+    query: AdminCommunityReportQuery,
+  ): Promise<AdminCommunityReportPage> {
+    const { data, error } = await (this.client as any)
+      .rpc("list_admin_community_reports_v1", {
+        p_limit: query.limit,
+        p_offset: (query.page - 1) * query.limit,
+        p_status: query.status ?? null,
+      });
+
+    if (error) {
+      throw mapDatabaseError(error, "community_reports.adminList");
+    }
+
+    const rows = (data ?? []) as CommunityReportDatabaseRow[];
+
+    return {
+      items: rows.map((row) => mapAdminCommunityReportRow(row)),
+      page: query.page,
+      limit: query.limit,
+      total: Number(rows[0]?.total_count ?? 0),
+    };
+  }
+
+  async moderateReport(
+    reportId: string,
+    action: CommunityModerationAction,
+  ): Promise<void> {
+    const { error } = await (this.client as any)
+      .rpc("moderate_community_target_v1", {
+        p_report_id: reportId,
+        p_action: action,
+      });
+
+    if (error) {
+      throw mapDatabaseError(error, "community_reports.moderate");
+    }
+  }
+
+  async getReputation(userId: string): Promise<CommunityReputation> {
+    const { data, error } = await (this.client as any)
+      .rpc("get_community_reputation_v1", {
+        p_user_id: userId,
+      })
+      .single();
+
+    if (error) {
+      throw mapDatabaseError(error, "community_reputation.get");
+    }
+
+    return mapCommunityReputationRow(data as CommunityReputationDatabaseRow);
+  }
+
+  async getAnalytics(): Promise<CommunityAnalytics> {
+    const { data, error } = await (this.client as any)
+      .rpc("get_community_analytics_v1")
+      .single();
+
+    if (error) {
+      throw mapDatabaseError(error, "community_analytics.get");
+    }
+
+    return mapCommunityAnalyticsRow(data as CommunityAnalyticsDatabaseRow);
+  }
+
+  async getCommunityUserProfile(userId: string): Promise<CommunityUserProfile> {
+    const { data, error } = await (this.client as any)
+      .rpc("get_community_friendship_profile_v1", {
+        p_user_id: userId,
+      })
+      .single();
+
+    if (error) {
+      throw mapDatabaseError(error, "community_friendships.profile");
+    }
+
+    return mapCommunityUserProfileRow(data as CommunityUserProfileDatabaseRow);
+  }
+
+  async createFriendRequest(targetUserId: string): Promise<CommunityUserProfile> {
+    const { data, error } = await (this.client as any)
+      .rpc("create_community_friend_request_v1", {
+        p_user_id: targetUserId,
+      })
+      .single();
+
+    if (error) {
+      throw mapDatabaseError(error, "community_friendships.createRequest");
+    }
+
+    return mapCommunityUserProfileRow(data as CommunityUserProfileDatabaseRow);
+  }
+
+  async actOnFriendship(
+    friendshipId: string,
+    action: CommunityFriendshipAction,
+  ): Promise<void> {
+    const { error } = await (this.client as any)
+      .rpc("act_on_community_friendship_v1", {
+        p_friendship_id: friendshipId,
+        p_action: action,
+      });
+
+    if (error) {
+      throw mapDatabaseError(error, "community_friendships.act");
+    }
+  }
+
+  async listFriendships(
+    query: CommunityFriendListQuery,
+  ): Promise<CommunityFriendListPage> {
+    const { data, error } = await (this.client as any)
+      .rpc("list_community_friendships_v1", {
+        p_view: query.view,
+        p_limit: query.limit,
+        p_offset: (query.page - 1) * query.limit,
+      });
+
+    if (error) {
+      throw mapDatabaseError(error, "community_friendships.list");
+    }
+
+    const rows = (data ?? []) as CommunityFriendListDatabaseRow[];
+
+    return {
+      items: rows.map((row) => mapCommunityFriendListRow(row)),
+      page: query.page,
+      limit: query.limit,
+      total: Number(rows[0]?.total_count ?? 0),
+    };
   }
 
   private async attachSignedMediaUrlsToItem(

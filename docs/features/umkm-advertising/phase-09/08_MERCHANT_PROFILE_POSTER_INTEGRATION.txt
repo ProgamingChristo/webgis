@@ -1,0 +1,34 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: MERCHANT PROFILE POSTER INTEGRATION
+=====================================================
+
+1. INTEGRATION SURFACE
+In `frontend/components/getra-dashboard.tsx`, when a commuter selects a merchant pin or list card, the right sidebar displays the "Detail lokasi" (Merchant Profile Drawer).
+
+2. REACT HOOK CONSUMPTION
+The dashboard calls:
+```typescript
+const { poster: profilePoster } = useProfilePoster({
+  merchantId: selectedMerchant?.id ?? null,
+});
+```
+
+3. UI COMPONENT RENDERING
+When `profilePoster` is non-null:
+```tsx
+{profilePoster && (
+  <div className="mb-3">
+    <ProfilePoster
+      poster={profilePoster}
+      onRequestRoute={() => {
+        if (selectedMerchant) {
+          setRouteDestinationId(selectedMerchant.id);
+        }
+      }}
+    />
+  </div>
+)}
+```
+
+4. PRESERVATION OF CANONICAL DATA
+The promotional poster is rendered as an additive promotional banner. It does NOT replace or overwrite any canonical merchant attributes (such as address, brand, category, open hours, or coordinates).

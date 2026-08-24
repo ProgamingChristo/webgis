@@ -1,0 +1,26 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: CAMPAIGN EVENT PRIVACY & DATA MINIMIZATION
+=====================================================
+
+1. DATA MINIMIZATION AUDIT
+GETRA advertising analytics adheres strictly to data minimization principles:
+
+| Field / Attribute | Stored in Events? | Privacy Rationale |
+| :--- | :--- | :--- |
+| `user_id` | **NO** | Commuter identity is not required to count advertising impressions and interactions. |
+| Exact GPS coordinates | **NO** | Spatial serving already verified eligibility; location tracking history is excluded. |
+| User IP Address | **NO** | IP is checked only in memory by rate limiters and not persisted to event tables. |
+| User Agent / Fingerprint | **NO** | Device fingerprinting is prohibited. |
+| Search Query Text | **NO** | Raw search text is not logged in advertising events. |
+| Ephemeral Session Key | **YES** | Cryptographically random UUID stored in sessionStorage for browser session lifetime to deduplicate impressions. |
+| Campaign ID / Creative ID | **YES** | Required for campaign performance accounting. |
+| Placement Type | **YES** | Identifies surface (`SPONSORED_PIN`, `CONTEXTUAL_BANNER`, `PROFILE_POSTER`). |
+| Timestamp (`occurred_at`) | **YES** | Authoritative server timestamp of interaction. |
+
+2. SEPARATION OF TEST/DUMMY DATA
+- Test campaigns (e.g. `99999999-9999-4999-9999-999999999999`) and test merchants are explicitly tracked.
+- Phase 11 aggregation queries can filter events by campaign lineage to prevent test data from contaminating real merchant analytics.
+
+3. DATA RETENTION POLICY
+- Current Status: Retention policy not yet defined for historical raw event logs.
+- Recommendation for Future: Retain raw event rows for 90 days and archive/aggregate into daily summary tables.

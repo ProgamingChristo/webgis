@@ -1,0 +1,23 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — METRICS DICTIONARY
+================================================================================
+
+1. CANONICAL CAMPAIGN INTERACTION METRICS
+--------------------------------------------------------------------------------
+Metric Name          | Event Type Source    | Calculation / Definition
+---------------------|----------------------|---------------------------------------------------------
+Impressions          | IMPRESSION           | Count of times ad placement entered client viewport/screen.
+Sponsored Pin Clicks | SPONSORED_PIN_CLICK  | Count of direct click interactions on map sponsored pins.
+Profile Opens        | PROFILE_OPEN         | Count of campaign-attributed merchant profile drawer opens.
+Route Requests       | ROUTE_REQUEST        | Count of walking route navigation requests initiated from ad.
+Sponsored Pin CTR    | Derived              | (SPONSORED_PIN_CLICK / SPONSORED_PIN IMPRESSIONS) * 100%
+
+2. DISCLAIMERS & SCOPE BOUNDARIES
+--------------------------------------------------------------------------------
+- GETRA Analytics strictly measures commuter digital interaction events.
+- It DOES NOT measure cash register transactions, offline footfall counts,
+  or financial Return on Investment (ROI).
+- Disclaimer displayed on all UI views:
+  "Analytics GETRA mengukur interaksi campaign nyata, bukan penjualan atau ROI."
+================================================================================

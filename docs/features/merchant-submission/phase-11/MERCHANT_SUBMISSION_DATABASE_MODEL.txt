@@ -1,0 +1,38 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — DATABASE MODEL SPECIFICATION
+================================================================================
+
+1. TABLE SCHEMA
+--------------------------------------------------------------------------------
+Name: `public.merchant_submissions`
+
+```sql
+CREATE TABLE IF NOT EXISTS public.merchant_submissions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    submitted_by UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    description TEXT,
+    address TEXT,
+    location extensions.geometry(Point, 4326) NOT NULL,
+    opening_hours JSONB NOT NULL DEFAULT '{}'::jsonb,
+    image_url TEXT,
+    status TEXT NOT NULL DEFAULT 'DRAFT'
+        CHECK (status IN ('DRAFT', 'PENDING_REVIEW', 'APPROVED', 'REJECTED', 'CANCELLED')),
+    canonical_merchant_id UUID REFERENCES public.merchants(id) ON DELETE SET NULL,
+    reviewed_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMPTZ,
+    review_note TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+```
+
+2. INDEXES
+--------------------------------------------------------------------------------
+- `idx_merchant_submissions_submitted_by` (btree on submitted_by)
+- `idx_merchant_submissions_status` (btree on status)
+- `idx_merchant_submissions_location` (gist on location)
+- `idx_merchant_submissions_canonical_id` (btree on canonical_merchant_id)
+================================================================================

@@ -1,0 +1,39 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM WORKSPACE — DOMAIN MODEL SPECIFICATION
+================================================================================
+
+1. DOMAIN PURPOSE
+--------------------------------------------------------------------------------
+The UMKM Workspace provides a unified management surface for micro, small, and
+medium enterprises (UMKM) operating physical retail and food & beverage outlets
+around transit corridors.
+
+2. CORE ENTITIES & RELATIONS
+--------------------------------------------------------------------------------
+1. User Context:
+   - Identifies whether an authenticated account has activated 'UMKM' mode.
+   - Distinct from merchant ownership.
+
+2. Owned Verified Merchants:
+   - Canonical merchant entities in public.merchants where `owner_id = user.id`.
+   - Represents legally/administratively verified businesses capable of running
+     promotional campaigns.
+
+3. Merchant Submissions (Draft & Pending):
+   - In-flight business registration records in public.merchant_submissions.
+   - Tracks curation status (DRAFT, PENDING_REVIEW, APPROVED, REJECTED, CANCELLED).
+
+4. Active Promotional Campaigns:
+   - Live ad campaigns in public.ad_campaigns linked to owned merchants.
+   - Drives commuter discovery and map sponsored pin placements.
+
+3. WORKSPACE AGGREGATE STRUCTURE
+--------------------------------------------------------------------------------
+UmkmWorkspaceSummary:
+├── verified_merchants_count: number
+├── active_campaigns_count: number
+├── pending_submissions_count: number
+├── owned_merchants: OwnedMerchantItem[]
+└── recent_submissions: SubmissionSummaryItem[]
+================================================================================

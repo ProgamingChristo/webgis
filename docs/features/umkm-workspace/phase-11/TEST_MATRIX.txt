@@ -1,0 +1,22 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM WORKSPACE — TEST MATRIX & VERIFICATION
+================================================================================
+
+1. TEST SUITE OVERVIEW
+--------------------------------------------------------------------------------
+Unit & Integration Tests:
+- backend/tests/unit/umkm-workspace/umkm-workspace.service.test.ts (2 passed)
+
+2. TEST CASES AND COVERAGE
+--------------------------------------------------------------------------------
+Case ID  | Scenario                                         | Expected Result      | Status
+---------|--------------------------------------------------|----------------------|--------
+TC-WS-01 | User with UMKM mode loads workspace with data   | 200 OK, full summary | PASSED
+TC-WS-02 | User with UMKM mode loads workspace with 0 merch | 200 OK, empty state  | PASSED
+TC-WS-03 | User without UMKM mode requests /api/umkm/worksp | 403 Forbidden        | PASSED
+TC-WS-04 | Admin requests /api/umkm/workspace               | 200 OK               | PASSED
+TC-WS-05 | Unauthenticated request to /api/umkm/workspace   | 401 Unauthorized     | PASSED
+TC-WS-06 | Client Headbar displays UMKM link if UMKM mode   | Rendered properly    | PASSED
+TC-WS-07 | Client Headbar hides UMKM link for regular user  | Hidden properly      | PASSED
+================================================================================

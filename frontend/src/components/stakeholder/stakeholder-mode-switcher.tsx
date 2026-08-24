@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
 import { ExperienceMode } from "@/src/types/stakeholder.types";
 
@@ -10,9 +11,19 @@ import { ExperienceMode } from "@/src/types/stakeholder.types";
  */
 export function StakeholderModeSwitcher() {
   const { activeExperience, availableExperiences, setActiveExperience } = useStakeholder();
+  const pathname = usePathname();
+  const router = useRouter();
+  const isCommunityActive = pathname.startsWith("/community");
 
   const handleSelect = (mode: ExperienceMode) => {
     setActiveExperience(mode);
+    if (pathname.startsWith("/community")) {
+      router.push("/");
+    }
+  };
+
+  const handleCommunitySelect = () => {
+    router.push("/community");
   };
 
   const labels: Record<ExperienceMode, string> = {
@@ -29,10 +40,10 @@ export function StakeholderModeSwitcher() {
       role="tablist"
     >
       {availableExperiences.map((mode) => {
-        const isActive = activeExperience === mode;
+        const isActive = !isCommunityActive && activeExperience === mode;
         return (
+          <React.Fragment key={mode}>
           <button
-            key={mode}
             type="button"
             role="tab"
             aria-selected={isActive}
@@ -41,6 +52,18 @@ export function StakeholderModeSwitcher() {
           >
             {labels[mode]}
           </button>
+          {mode === "GENERAL" ? (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={isCommunityActive}
+              className={`stakeholder-button ${isCommunityActive ? "stakeholder-button--active" : ""}`}
+              onClick={handleCommunitySelect}
+            >
+              Community
+            </button>
+          ) : null}
+          </React.Fragment>
         );
       })}
     </nav>

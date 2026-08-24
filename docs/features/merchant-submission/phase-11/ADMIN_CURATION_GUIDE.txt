@@ -1,0 +1,37 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — ADMIN CURATION GUIDE
+================================================================================
+
+1. CURATION OBJECTIVES
+--------------------------------------------------------------------------------
+The admin curation process maintains high spatial precision, data hygiene, and
+legitimacy for merchants entering the GETRA transit discovery index.
+
+2. CURATION API ENDPOINTS
+--------------------------------------------------------------------------------
+1. List Pending Submissions:
+   GET /api/admin/merchant-submissions?limit=50&offset=0
+   - Requires ADMIN role (profiles.account_role = 'ADMIN').
+   - Returns array of submissions with status = 'PENDING_REVIEW'.
+
+2. Approve Submission:
+   POST /api/admin/merchant-submissions/{id}/approve
+   - Payload: { "note": "Data usaha valid dan koordinat tepat." }
+   - Automatically:
+     1. Creates record in public.merchants with:
+        - name = submission.name
+        - category = submission.category
+        - description = submission.description
+        - address = submission.address
+        - location = submission.location
+        - owner_id = submission.submitted_by
+        - publish_status = 'PUBLISHED'
+        - verification_status = 'VERIFIED'
+     2. Updates submission status to 'APPROVED' and links canonical_merchant_id.
+
+3. Reject Submission:
+   POST /api/admin/merchant-submissions/{id}/reject
+   - Payload: { "note": "Koordinat lokasi berada di tengah jalan / data tidak valid." }
+   - Sets status to 'REJECTED' and notifies submitter via review_note.
+================================================================================

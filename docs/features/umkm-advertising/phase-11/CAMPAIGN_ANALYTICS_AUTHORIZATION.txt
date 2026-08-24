@@ -1,0 +1,26 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — AUTHORIZATION & ACCESS CONTROL SPECIFICATION
+================================================================================
+
+1. MULTI-TIER ACCESS VERIFICATION
+--------------------------------------------------------------------------------
+To access campaign analytics via `GET /api/umkm/advertising/campaigns/:id/analytics`:
+
+1. Identity Verification:
+   - Request must contain a valid Supabase JWT Bearer token.
+
+2. Stakeholder Mode Verification:
+   - User must have active 'UMKM' mode in `user_stakeholder_modes` or 'ADMIN' account role.
+
+3. Verified Merchant Ownership:
+   - System resolves the merchant owning the target campaign: `ad_campaigns.merchant_id`.
+   - Checks `merchants.owner_id = user.id`.
+   - If user does not own the merchant, the request is rejected with 403 Forbidden.
+
+2. CROSS-MERCHANT ISOLATION
+--------------------------------------------------------------------------------
+- Merchant A cannot access Campaign B's analytics.
+- Campaign dropdowns on the frontend are pre-filtered to include only campaigns
+  associated with merchants owned by the active user.
+================================================================================

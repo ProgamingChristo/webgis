@@ -1,0 +1,26 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 09: PROFILE POSTER SERVING ENGINE
+=====================================================
+
+1. SERVING ENGINE RESPONSIBILITY
+`ProfilePosterServingService` evaluates candidate campaigns for display as rich promotional posters inside a merchant's own profile drawer.
+
+2. STRICT SAME-MERCHANT IDENTITY ENFORCEMENT
+To preserve user trust and brand integrity:
+- Rule: A poster from Merchant A will NEVER appear on Merchant B's profile.
+- Mechanism: The query strictly filters `ad_campaigns.merchant_id = merchantId` and verifies equality before evaluating creatives.
+
+3. EVALUATION PIPELINE
+When a commuter views Merchant X (`merchantId`):
+1. Merchant Check:
+   Verifies Merchant X exists and is published (`publish_status != 'ARCHIVED' && publish_status != 'HIDDEN'`).
+2. Campaign Query:
+   Queries campaigns owned strictly by Merchant X with `status IN ('ACTIVE', 'APPROVED')`.
+3. Schedule Boundary Check:
+   Enforces start_at <= now < end_at.
+4. Creative Readiness Check:
+   Fetches creative with `creative_type = 'PROFILE_POSTER'`. Must be `status = 'READY'` with valid `headline`.
+5. DTO Construction:
+   Returns safe public `ProfilePosterDTO` with `label: "Sponsored"`, headline, description, image URL, cta_type, and campaign end date.
+6. Null Fallback:
+   If Merchant X has no active campaign or no ready poster creative, returns `null` immediately.

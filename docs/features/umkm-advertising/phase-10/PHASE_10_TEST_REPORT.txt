@@ -1,0 +1,31 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: TEST REPORT
+=====================================================
+
+1. AUTOMATED UNIT & INTEGRATION TESTS
+- `backend/tests/unit/umkm-advertising/campaign-event.service.test.ts`: 8/8 PASSED
+  - IMPRESSION recording
+  - SPONSORED_PIN_CLICK recording
+  - PROFILE_OPEN recording
+  - ROUTE_REQUEST recording
+  - Incompatible event-placement rejection
+  - Missing campaign rejection
+  - Mismatched creative rejection
+  - Database unique dedup key collision handling
+- `backend/tests/unit/umkm-advertising/campaign-event-schema.test.ts`: 6/6 PASSED
+  - Valid canonical payload acceptance
+  - Non-canonical event type rejection (`BANNER_CLICK`, `PURCHASE`)
+  - Injected `user_id` rejection
+  - Injected `revenue` / `roi` rejection
+  - Invalid UUID rejection
+  - Bounded context validation
+- Full Backend Test Suite: 71 test suites (495 tests passed, 0 failures).
+
+2. SMOKE & VERIFICATION SCRIPT EXECUTION
+- Provision Script: `provision-phase10-event-test-data.ts` executed cleanly.
+- Smoke Execution: All 4 event types recorded and verified in `public.campaign_events` table.
+- Verification Script: `verify-phase10-campaign-events.ts` reported exact count and breakdown.
+
+3. PRODUCTION BUILD VERIFICATION
+- Backend Next.js Build: PASSED (46 API routes compiled cleanly).
+- Frontend Next.js Build: PASSED (11 pages compiled cleanly).

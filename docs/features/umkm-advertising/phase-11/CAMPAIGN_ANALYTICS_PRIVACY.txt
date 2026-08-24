@@ -1,0 +1,21 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+CAMPAIGN ANALYTICS — PRIVACY PROTECTION & DATA HYGIENE
+================================================================================
+
+1. COMMUTER PRIVACY GUARANTEES
+--------------------------------------------------------------------------------
+1. No Personal Identifiable Information (Zero PII):
+   - The analytics API and frontend report aggregate counts only.
+   - User identities (`auth.users.id`), emails, names, and IP addresses are NEVER
+     stored in `public.campaign_events` nor returned by the analytics service.
+
+2. No Commuter Movement / GPS Tracking:
+   - Route request metrics indicate only that a routing computation was triggered
+     towards the merchant.
+   - The origin point, route path, commute frequency, and travel speed of commuters
+     are strictly private and NEVER recorded or disclosed.
+
+3. Merchant Isolation:
+   - Campaign reporting is strictly sandboxed to the authenticated merchant owner.
+================================================================================

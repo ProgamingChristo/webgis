@@ -1,0 +1,30 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM WORKSPACE — INTEGRATION POINTS SPECIFICATION
+================================================================================
+
+1. HEADBAR NAVIGATION INTEGRATION
+--------------------------------------------------------------------------------
+File: frontend/src/components/layout/Navbar.tsx
+- Integrates dynamic badge/link:
+  - If authContext.stakeholder_modes contains "UMKM" or profile.account_role === "ADMIN",
+    renders prominent "UMKM Workspace" link.
+  - Links directly to /umkm.
+
+2. ADVERTISING PLATFORM INTEGRATION
+--------------------------------------------------------------------------------
+- From Workspace Owned Merchant list:
+  - Quick action "Pasang Iklan" navigates directly to `/umkm/advertising?merchantId=${merchant.id}`.
+  - Automatically pre-selects the merchant and checks advertising eligibility.
+
+3. MERCHANT SUBMISSION LIFECYCLE INTEGRATION
+--------------------------------------------------------------------------------
+- From Workspace Quick Actions / Submissions summary:
+  - "Tambahkan UMKM Baru" navigates to `/umkm/merchants/new`.
+  - Submissions list items link to `/umkm/submissions/${id}` with real-time status updates.
+
+4. CAMPAIGN ANALYTICS INTEGRATION
+--------------------------------------------------------------------------------
+- Workspace quick actions and merchant campaign summaries link to `/umkm/advertising/analytics`
+  for instant visibility into commuter response metrics.
+================================================================================

@@ -1,0 +1,51 @@
+GETRA - UMKM INTELLIGENCE & ADVERTISING TRACK
+PHASE 10: FRONTEND MANUAL TEST GUIDE
+=====================================================
+
+1. STARTING THE APPLICATIONS
+- Backend:
+  ```bash
+  cd backend
+  npm run dev
+  # Running at http://localhost:3001
+  ```
+- Frontend:
+  ```bash
+  cd frontend
+  npm run dev
+  # Running at http://localhost:3000
+  ```
+
+2. TEST STEP 1: IMPRESSION (SPONSORED PIN & BANNER)
+1. Open http://localhost:3000 in your browser.
+2. Select "Penelusuran Adil" (Fair Discovery).
+3. Search for "kopi" or select category "CAFE".
+4. Observe the Contextual Banner in the search stream and Sponsored Pin on the map.
+5. In Network tab, observe `POST /api/advertising/events` for:
+   - `IMPRESSION` (`placement: "CONTEXTUAL_BANNER"`)
+   - `IMPRESSION` (`placement: "SPONSORED_PIN"`)
+6. Pan the map or trigger re-renders. Verify no duplicate `IMPRESSION` requests are made.
+
+3. TEST STEP 2: SPONSORED_PIN_CLICK
+1. Click the golden megaphone marker `📣 ✨ SPONSORED` on the MapLibre map.
+2. Observe `POST /api/advertising/events` with payload `event_type: "SPONSORED_PIN_CLICK"`.
+3. The popup opens normally with campaign headline and details.
+
+4. TEST STEP 3: PROFILE_OPEN
+1. From the Sponsored Pin or Contextual Banner, click "Lihat Profil".
+2. Observe `POST /api/advertising/events` with `event_type: "PROFILE_OPEN"`.
+3. The merchant detail drawer opens displaying "Warung Kopi Selamat GETRA".
+
+5. TEST STEP 4: PROFILE POSTER IMPRESSION & ROUTE_REQUEST
+1. In the merchant detail drawer, scroll to view the "Promosi Spesial" poster.
+2. When the poster enters view, observe `POST /api/advertising/events` with `event_type: "IMPRESSION"`, `placement: "PROFILE_POSTER"`.
+3. Click "Petunjuk Rute" on the poster.
+4. Observe `POST /api/advertising/events` with `event_type: "ROUTE_REQUEST"`, `placement: "PROFILE_POSTER"`.
+5. The walking route line is rendered on the map.
+
+6. TEST STEP 5: VERIFY PERSISTED EVENT LOGS
+Run the verification script in `backend/`:
+```bash
+npx tsx --env-file=.env.local src/features/umkm-advertising/scripts/verify-phase10-campaign-events.ts
+```
+Verify that the counts increment correctly according to interactions.

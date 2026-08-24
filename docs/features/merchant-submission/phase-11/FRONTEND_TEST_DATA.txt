@@ -1,0 +1,19 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+MERCHANT SUBMISSION — FRONTEND TEST DATA SPECIFICATION
+================================================================================
+
+1. TEST SUBMISSION DATA
+--------------------------------------------------------------------------------
+- Test Merchant Name: "DUMMY GETRA UMKM PHASE 11"
+- Test Category: "Makanan & Minuman"
+- Test Coordinates: [106.827153, -6.175392] (Lng: 106.827153, Lat: -6.175392)
+- Test Address: "Jl. Medan Merdeka Barat No. 1, Jakarta Pusat"
+- Test Description: "Kopi dan makanan khas komuter transit di stasiun integrasi."
+- Test Image URL: "https://images.unsplash.com/photo-1554118811-1e0d58224f24"
+
+2. CURATION TEST NOTES
+--------------------------------------------------------------------------------
+- Approval Note: "Verifikasi lapangan dan titik koordinat telah terbukti valid."
+- Rejection Note: "Koordinat yang dipilih berada di luar jangkauan koridor transit GETRA."
+================================================================================

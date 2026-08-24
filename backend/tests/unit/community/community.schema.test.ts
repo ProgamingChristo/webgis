@@ -14,9 +14,17 @@ import {
   communityPostContentSchema,
   communityPostTypeSchema,
   communityReactionTypeSchema,
+  actOnCommunityFriendshipSchema,
+  communityFriendshipListQuerySchema,
   createCommuterRequestSchema,
   createCommunityCommentSchema,
+  createCommunityFriendRequestSchema,
   createCommunityPostSchema,
+  createCommunityReportSchema,
+  createCommunityUmkmResponseSchema,
+  communityDemandSignalQuerySchema,
+  communityNotificationQuerySchema,
+  moderateCommunityReportSchema,
 } from "@/src/features/community";
 
 describe("Community schemas", () => {
@@ -442,6 +450,56 @@ describe("Community schemas", () => {
     ).toThrow();
   });
 
+  it("validates demand signal query and UMKM response payload", () => {
+    expect(
+      communityDemandSignalQuerySchema.parse({
+        page: "1",
+        limit: "10",
+        category: "FOOD",
+      }),
+    ).toEqual({
+      page: 1,
+      limit: 10,
+      category: "FOOD",
+    });
+
+    expect(
+      createCommunityUmkmResponseSchema.parse({
+        merchant_id: "11111111-1111-4111-8111-111111111111",
+        status: "PREPARING",
+        message: "Sedang kami siapkan \u{1F35A}\u{1F964}",
+      }),
+    ).toEqual({
+      merchant_id: "11111111-1111-4111-8111-111111111111",
+      status: "PREPARING",
+      message: "Sedang kami siapkan \u{1F35A}\u{1F964}",
+    });
+
+    for (const payload of [
+      {
+        merchant_id: "11111111-1111-4111-8111-111111111111",
+        status: "DONE",
+      },
+      {
+        merchant_id: "11111111-1111-4111-8111-111111111111",
+        status: "PREPARING",
+        responder_user_id: "22222222-2222-4222-8222-222222222222",
+      },
+      {
+        merchant_id: "11111111-1111-4111-8111-111111111111",
+        status: "PREPARING",
+        merchant_name: "Nama palsu",
+      },
+      {
+        merchant_id: "11111111-1111-4111-8111-111111111111",
+        status: "PREPARING",
+        message: "x".repeat(501),
+      },
+    ]) {
+      expect(() => createCommunityUmkmResponseSchema.parse(payload)).toThrow();
+    }
+  });
+
   it("accepts emoji and multiline comment content", () => {
     const content = "Aku juga lihat tadi pagi.\nMasih buka 👍🔥";
 
@@ -518,5 +576,71 @@ describe("Community schemas", () => {
     for (const reactionType of ["LIKE", "LOVE", "ADMIN_CONFIRMED", "VERIFIED"]) {
       expect(() => communityReactionTypeSchema.parse(reactionType)).toThrow();
     }
+  });
+
+  it("validates Phase 9 notifications, reports, and moderation actions", () => {
+    expect(communityNotificationQuerySchema.parse({})).toEqual({
+      page: 1,
+      limit: 20,
+    });
+    expect(
+      createCommunityReportSchema.parse({
+        target_type: "POST",
+        target_id: "11111111-1111-4111-8111-111111111111",
+        reason: "WRONG_LOCATION",
+        details: "Koordinatnya bergeser",
+      }),
+    ).toEqual({
+      target_type: "POST",
+      target_id: "11111111-1111-4111-8111-111111111111",
+      reason: "WRONG_LOCATION",
+      details: "Koordinatnya bergeser",
+    });
+    expect(moderateCommunityReportSchema.parse({ action: "HIDE" })).toEqual({
+      action: "HIDE",
+    });
+    expect(() =>
+      createCommunityReportSchema.parse({
+        target_type: "POST",
+        target_id: "11111111-1111-4111-8111-111111111111",
+        reason: "ADMIN_DELETE",
+      }),
+    ).toThrow();
+  });
+
+  it("validates Phase 10 friendship payloads without trusted client fields", () => {
+    expect(
+      createCommunityFriendRequestSchema.parse({
+        user_id: "11111111-1111-4111-8111-111111111111",
+      }),
+    ).toEqual({
+      user_id: "11111111-1111-4111-8111-111111111111",
+    });
+    expect(actOnCommunityFriendshipSchema.parse({ action: "ACCEPT" })).toEqual({
+      action: "ACCEPT",
+    });
+    expect(communityFriendshipListQuerySchema.parse({})).toEqual({
+      view: "FRIENDS",
+      page: 1,
+      limit: 20,
+    });
+
+    expect(() =>
+      createCommunityFriendRequestSchema.parse({
+        user_id: "11111111-1111-4111-8111-111111111111",
+        requester_id: "22222222-2222-4222-8222-222222222222",
+      }),
+    ).toThrow();
+    expect(() =>
+      createCommunityFriendRequestSchema.parse({
+        user_id: "11111111-1111-4111-8111-111111111111",
+        status: "ACCEPTED",
+      }),
+    ).toThrow();
+    expect(() =>
+      actOnCommunityFriendshipSchema.parse({
+        action: "FOLLOW",
+      }),
+    ).toThrow();
   });
 });
