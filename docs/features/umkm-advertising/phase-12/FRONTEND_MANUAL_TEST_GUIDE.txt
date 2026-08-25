@@ -1,0 +1,45 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — FRONTEND MANUAL TEST GUIDE (PHASE 12)
+================================================================================
+
+1. STARTING SERVERS
+--------------------------------------------------------------------------------
+- Backend: `cd backend && npm run dev` (http://localhost:3001)
+- Frontend: `cd frontend && npm run dev` (http://localhost:3000)
+
+2. ENVIRONMENT PRECHECK
+--------------------------------------------------------------------------------
+Ensure `.env.local` contains:
+- `MIDTRANS_SERVER_KEY`: Present
+- `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY`: Present
+- `MIDTRANS_IS_PRODUCTION=false`
+
+3. STEP-BY-STEP PAYMENT TEST
+--------------------------------------------------------------------------------
+Step 1: Navigate to Campaign
+1. Sign in as USER with UMKM mode at http://localhost:3000/login.
+2. Open UMKM Workspace -> "Kelola Iklan" (http://localhost:3000/umkm/advertising).
+3. On your active campaign card, observe the new tab "Pembayaran (Sandbox)".
+
+Step 2: Inspect Payment Panel
+1. Click "Pembayaran (Sandbox)".
+2. Verify:
+   - "MIDTRANS SANDBOX" badge is visible.
+   - Initial status indicates "Belum Dibayar" (or "Menunggu Pembayaran").
+   - Nominal is displayed as "Rp 50.000 (Uji Coba Teknis)".
+   - Order ID is displayed if an order was created.
+
+Step 3: Trigger Snap Sandbox Payment
+1. Click "Bayar dengan Midtrans (Sandbox)".
+2. Observe Midtrans Snap popup opening cleanly.
+3. Select "Credit/Debit Card".
+4. Enter test card: `4811 1111 1111 1114`, expiry `12/28`, CVV `123`.
+5. Enter OTP `112233` on the Midtrans 3DS simulator.
+6. Observe popup closing and notification updating to "Pembayaran Sandbox Terverifikasi".
+
+Step 4: Verify Persistence Across Page Reload
+1. Hard refresh browser page (F5 / Ctrl+R).
+2. Open "Pembayaran (Sandbox)" again.
+3. Verify status remains "Terverifikasi (PAID)".
+================================================================================

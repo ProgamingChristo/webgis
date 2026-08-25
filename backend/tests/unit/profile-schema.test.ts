@@ -7,6 +7,7 @@ describe("profile update schema", () => {
     ["id", "00000000-0000-0000-0000-000000000001"],
     ["role", "ADMIN"],
     ["account_role", "ADMIN"],
+    ["trust_score", 100],
   ])("rejects immutable field %s", (field, value) => {
     const parsed = patchProfileSchema.safeParse({
       display_name: "TEST USER",

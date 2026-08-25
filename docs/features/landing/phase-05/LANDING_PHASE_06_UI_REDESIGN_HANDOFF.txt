@@ -1,0 +1,27 @@
+GETRA LANDING PHASE 06 UI REDESIGN HANDOFF
+
+Phase 6 scope:
+- Authenticated GETRA application UI redesign.
+- Do not redesign the public landing in Phase 6.
+
+Landing status:
+- Landing is responsive and may be used as design source of truth.
+
+Reusable design source:
+- Official logo: frontend/public/brand/getra-logo.png
+- Logo component: frontend/src/features/landing/components/getra-logo.tsx
+- Color language: dark navy, GETRA cyan, GETRA green, amber caution.
+- Surface language: rounded glass panels, subtle radial/grid backgrounds, high-contrast text.
+- Typography: bold compact headings, readable body copy, uppercase section labels used sparingly.
+- Motion: subtle route/marker/reveal motion with reduced-motion support.
+- Map language: map-first, route/access/service-area evidence, provenance labels.
+- Responsive principles: no page horizontal overflow, mobile stacked flow, tablet breakpoint recomposition, 1366x768 demo readiness.
+- Touch principles: comfortable CTA/menu/footer touch targets.
+- Accessibility: visible focus, logo/screenshot alt text, mobile menu Escape support, reduced-motion support.
+
+Important:
+- Authenticated app should align visually with landing but stay operational, map-first, and data-dense.
+- Do not make authenticated WebGIS as cinematic as the public landing hero.
+
+READY FOR APPLICATION UI REDESIGN:
+- YES

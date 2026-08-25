@@ -1,0 +1,23 @@
+GETRA LANDING ACCESSIBILITY RESPONSIVE REPORT
+
+Keyboard/focus:
+- Existing focus-visible styles preserved.
+- Mobile menu Escape close verified.
+- Anchor click close verified.
+
+Touch targets:
+- Footer and inline signup touch targets improved.
+- Automated tinyTouchTargets result: [] in final matrix.
+
+Zoom:
+- 100%, 125%, 150% usable.
+
+Images:
+- Official logo alt preserved.
+- Real map screenshot alt preserved.
+
+Reduced motion:
+- Existing reduced-motion CSS preserved and tests pass.
+
+Result:
+- ACCESSIBILITY RESPONSIVE: PASS

@@ -1,0 +1,54 @@
+GETRA LANDING PHASE 05 RESPONSIVE ISSUE REGISTER
+
+ID: R-001
+Severity: Medium
+Viewport: 360x800, 390x844, 430x932 baseline audit
+Section: Header / Footer / Inline CTA links
+Symptom: Automated touch-target audit flagged text-only footer/inline links and sr-only skip link as too small.
+Root Cause: Footer links were plain text anchors; skip link required audit exclusion because sr-only is intentionally 1x1 until focused.
+Fix:
+- Footer links changed to inline-flex min-h-10 touch targets.
+- Hero signup link changed to inline-flex min-h-8 with focus-visible styling.
+- Browser audit excludes intentional 1x1 sr-only controls.
+Files:
+- frontend/src/features/landing/components/landing-footer.tsx
+- frontend/src/features/landing/components/landing-hero.tsx
+- scripts/audit-landing-browser.mjs
+Retest: PASS, tinyTouchTargets: [] in all required viewport/orientation/zoom cases.
+Status: FIXED
+
+ID: R-002
+Severity: Low
+Viewport: 360x800, 390x844, 430x932
+Section: Header logo
+Symptom: Phase 4 logo mobile width was 168px; Phase 5 guideline prefers around 120-145px mobile.
+Root Cause: Phase 4 optimized for brand readability before the full responsive gate.
+Fix:
+- Header logo width adjusted to 140px mobile, 160px tablet, 190px desktop.
+- Branding guide updated.
+Files:
+- frontend/src/features/landing/components/getra-logo.tsx
+- docs/features/landing/final/GETRA_LANDING_BRANDING_GUIDE.txt
+Retest: PASS, official logo visible with aspect ratio 2.81 in all cases and no overflow.
+Status: FIXED
+
+ID: R-003
+Severity: Medium
+Viewport: 360x800, 390x844, 430x932
+Section: Responsive header / mobile navigation
+Symptom: Mobile menu used a top dropdown below the fixed header and could visually cover hero text.
+Root Cause: Menu layout expanded vertically from the header instead of using a responsive side navigation pattern.
+Fix:
+- Replaced mobile dropdown with right-side off-canvas sidebar.
+- Added outside-click backdrop, close button, Escape close, anchor-click close, and sidebar login CTA.
+- Kept desktop navigation unchanged.
+Files:
+- frontend/src/features/landing/components/landing-header.tsx
+Retest: PASS, browser matrix confirms mobileMenuOpened, mobileMenuEscapeClosed, and mobileMenuAnchorClosed true across mobile/tablet/zoom cases with no overflow.
+Status: FIXED
+
+Open issues:
+- Critical: 0
+- High: 0
+- Medium: 0
+- Low: 0

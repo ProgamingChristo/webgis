@@ -1,0 +1,19 @@
+GETRA LANDING TROUBLESHOOTING
+
+Logo missing:
+- Confirm frontend/public/brand/getra-logo.png exists.
+- Confirm getra-logo.tsx src is /brand/getra-logo.png.
+- Run npm run build -w frontend to catch static asset issues.
+
+Logo distorted:
+- Do not set fixed height that changes aspect ratio.
+- Use h-auto and object-contain.
+- Confirm width/height metadata match the actual file.
+
+Browser audit fails:
+- Read the JSON output for missing content, dead links, overflow, logo visibility, console errors, or same-origin network failures.
+- Fix the specific failing viewport before declaring done.
+
+Test fails after copy change:
+- If content intentionally changed, update the exact required strings in tests and audit script.
+- Do not remove tests just to silence failures.

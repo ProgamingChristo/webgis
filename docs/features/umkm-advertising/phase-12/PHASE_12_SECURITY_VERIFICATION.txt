@@ -1,0 +1,27 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — PHASE 12 SECURITY AUDIT REPORT
+================================================================================
+
+DATE: 2026-08-24
+STATUS: PASSED (ZERO VULNERABILITIES DETECTED)
+
+1. SECURITY DEFENSES VERIFIED
+--------------------------------------------------------------------------------
+1. Server Key Isolation:
+   - `MIDTRANS_SERVER_KEY` is strictly confined to server-side Node.js environment.
+   - Zero occurrences in `NEXT_PUBLIC_*` or client bundle.
+2. Digital Signature Protection:
+   - Webhook enforces SHA-512 signature checking with `crypto.timingSafeEqual`.
+   - Tampered payloads and invalid signatures are rejected with 401 Unauthorized.
+3. Amount & Order Verification:
+   - Webhooks verify that `gross_amount` exactly matches the server-recorded `order.amount`.
+   - Clients cannot modify the trusted amount via DevTools or API body injection.
+4. Ownership & Cross-Merchant Isolation:
+   - Checkout requires authenticated user with verified merchant ownership.
+   - Cross-merchant checkout attempts are rejected with 403 Forbidden.
+5. Idempotency & State Transition Safety:
+   - Out-of-order notifications cannot downgrade a `PAID` state to `PENDING` or `FAILED`.
+6. Secret Exposure Check:
+   - Zero credentials or server keys committed to source code or git history.
+================================================================================

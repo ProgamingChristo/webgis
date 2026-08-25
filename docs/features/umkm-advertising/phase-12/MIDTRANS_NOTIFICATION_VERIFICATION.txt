@@ -1,0 +1,21 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — NOTIFICATION SIGNATURE & WEBHOOK VERIFICATION
+================================================================================
+
+1. SIGNATURE VERIFICATION SPECIFICATION
+--------------------------------------------------------------------------------
+- Expected Hash Algorithm: SHA-512
+- Hash Formula:
+  `expected_signature = SHA512(order_id + status_code + gross_amount + server_key)`
+- Comparison Method:
+  Constant-time string comparison using `crypto.timingSafeEqual` to prevent timing attacks.
+
+2. SECURITY & VALIDATION GATES
+--------------------------------------------------------------------------------
+1. Signature Verification: Mismatch yields immediate 401 Unauthorized rejection.
+2. Known Order Lookup: If `order_id` is unknown in `ad_payment_orders`, no rogue order is created.
+3. Gross Amount Equality: Notification `gross_amount` must equal recorded `order.amount`.
+4. Idempotent State Transitions: Repeated notifications for same state trigger zero duplicate side effects.
+5. Out-of-Order Safety: Late-arriving `pending` notifications cannot revert an order that is already `PAID`.
+================================================================================

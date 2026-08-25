@@ -1,0 +1,27 @@
+GETRA LANDING PHASE 03
+SECURITY VERIFICATION
+
+Runtime source scan
+-------------------
+PASS
+
+Command
+-------
+rg -n 'fetch\(|authenticatedFetch|/api/|SUPABASE_SERVICE_ROLE_KEY|MIDTRANS_SERVER_KEY|database password|access_token|refresh_token|service_role|IMPRESSION|SPONSORED_PIN_CLICK|PROFILE_OPEN|ROUTE_REQUEST|javascript:void|href="#"' frontend/src/features/landing/components frontend/src/features/landing/data frontend/src/features/landing/hooks frontend/src/features/landing/types frontend/app/page.tsx frontend/app/globals.css scripts/capture-landing-screenshot.mjs scripts/audit-landing-browser.mjs
+
+Result
+------
+No runtime hits.
+
+Confirmed
+---------
+- no private API call
+- no campaign event
+- no payment call
+- no AI request
+- no private user data
+- no service role exposure
+- no Midtrans server key exposure
+- no private MAPID secret exposure
+- no screenshot secret observed
+

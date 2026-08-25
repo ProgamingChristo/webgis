@@ -1,0 +1,56 @@
+GETRA LANDING PHASE 03
+REAL GETRA MAP SCREENSHOT
+
+Asset
+-----
+frontend/public/images/landing/getra-pedestrian-route-showcase.webp
+
+Format / size
+-------------
+- Format: WebP
+- Dimensions: 860 x 600
+- Size: 67,522 bytes
+
+Source
+------
+Captured from actual running GETRA frontend:
+- URL: http://localhost:3000/
+- Source component: frontend/src/features/landing/components/webgis-hero-map.tsx
+- Capture method: Chrome DevTools Protocol via scripts/capture-landing-screenshot.mjs
+- Viewport: 1440 x 900
+
+Scenario
+--------
+GETRA WebGIS public route fixture/test scenario:
+- start point: transit/test start marker
+- pedestrian route: MapLibre-rendered GETRA route fixture
+- destination: merchant/test destination marker
+- service area: visible catchment polygon
+
+Data classification
+-------------------
+Safe test/fixture visual. It does not use browser GPS, a private user location, auth token, developer tools, email, or private account identity.
+
+Privacy / secret verification
+-----------------------------
+Checked visually and via source/security scan:
+- no access token
+- no refresh token
+- no Supabase service role
+- no Midtrans server key
+- no private MAPID credential
+- no user email/name
+- no developer console
+
+Refresh procedure
+-----------------
+1. Run GETRA frontend locally.
+2. Run: node scripts/capture-landing-screenshot.mjs
+3. Convert/crop with sharp or rerun the documented capture workflow.
+4. Verify the image visually.
+5. Confirm file remains reasonably optimized.
+
+Note
+----
+The brief preferred authenticated General WebGIS where available. For non-secret automated capture, Phase 03 used the actual public GETRA WebGIS route fixture so no login credential, token, or private geolocation was needed.
+

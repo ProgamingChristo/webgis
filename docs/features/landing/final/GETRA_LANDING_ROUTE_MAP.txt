@@ -1,0 +1,22 @@
+GETRA LANDING ROUTE MAP
+
+Public routes:
+- /: public landing page.
+- /login: sign in.
+- /signup: registration.
+
+Authenticated routes referenced by product copy:
+- /app: GETRA WebGIS dashboard shell after authentication/onboarding.
+
+In-page anchors:
+- #tentang: why GETRA exists.
+- #cara-kerja: GIS/AI workflow.
+- #fitur: interactive product feature explorer.
+- #umkm: UMKM and advertising story.
+- #teknologi: technology stack and trust model.
+- #top: return to landing top.
+
+Rules:
+- Public header/footer must not link to dead placeholders.
+- Avoid href="#" except if immediately replaced by a real anchor.
+- Login/signup links are allowed public entry points.

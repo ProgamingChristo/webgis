@@ -1,0 +1,21 @@
+GETRA LANDING PHASE 03
+AUTH REGRESSION
+
+HTTP route smoke
+----------------
+- http://localhost:3000/ -> 200
+- http://localhost:3000/login -> 200
+- http://localhost:3000/signup -> 200
+- http://localhost:3000/app -> 200
+
+Routing preserved
+-----------------
+- / remains public landing.
+- /login remains login page.
+- /signup remains signup page.
+- /app remains authenticated app shell route.
+
+Credential login note
+---------------------
+Phase 03 did not print or automate a password-bearing login command. Browser E2E verified public landing navigation and route availability without exposing credentials or tokens.
+

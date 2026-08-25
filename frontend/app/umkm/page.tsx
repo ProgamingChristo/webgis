@@ -1,11 +1,17 @@
 "use client";
 
+import { GetraAppShell } from "@/src/components/getra-ui";
 import { UmkmWorkspace } from "@/src/features/umkm-workspace";
 
 export default function UmkmWorkspacePage() {
   return (
-    <main className="min-h-screen bg-slate-900 text-slate-100">
+    <GetraAppShell
+      description="Kelola merchant, submission, promosi, dan konteks usaha lokal tanpa meninggalkan ekosistem GETRA."
+      eyebrow="GETRA for Business"
+      title="Pusat Manajemen & Aktivasi UMKM"
+      tone="umkm"
+    >
       <UmkmWorkspace />
-    </main>
+    </GetraAppShell>
   );
 }

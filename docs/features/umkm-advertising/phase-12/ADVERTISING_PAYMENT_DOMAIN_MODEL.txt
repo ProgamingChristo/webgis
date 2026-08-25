@@ -1,0 +1,23 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — ADVERTISING PAYMENT DOMAIN MODEL
+================================================================================
+
+1. DOMAIN SEPARATION PRINCIPLES
+--------------------------------------------------------------------------------
+- Payment Order ≠ Advertising Campaign:
+  * A Campaign (`public.ad_campaigns`) defines promotion content, targeting, and schedule.
+  * A Payment Order (`public.ad_payment_orders`) records a financial transaction attempt.
+  * Payment status is NOT added to the campaign lifecycle status enum.
+
+- Payment Status ≠ Campaign Lifecycle Status:
+  * Payment Statuses: `CREATED`, `PENDING`, `PAID`, `FAILED`, `EXPIRED`, `CANCELLED`, `REFUNDED`.
+  * Campaign Statuses: `DRAFT`, `READY`, `SCHEDULED`, `ACTIVE`, `PAUSED`, `ENDED`, `CANCELLED`.
+  * A campaign reaching `PAID` payment state does NOT automatically become `ACTIVE`; it must
+    still satisfy creative readiness, targeting validity, and schedule boundaries.
+
+- Payment ≠ Organic Search / Ranking Boost:
+  * Paid campaigns remain explicitly labeled as `Sponsored`.
+  * Payment does NOT grant "Hidden Gem" or "Original" organic ranking badges.
+  * Fair Discovery hard constraints and geographic relevance filters remain non-negotiable.
+================================================================================

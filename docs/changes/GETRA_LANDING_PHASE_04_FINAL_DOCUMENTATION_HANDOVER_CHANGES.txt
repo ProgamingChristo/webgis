@@ -1,0 +1,42 @@
+GETRA LANDING PHASE 04 FINAL DOCUMENTATION HANDOVER CHANGES
+
+Date:
+- 2026-08-24
+
+Scope:
+- Final public landing branding integration.
+- Final documentation and handover pack.
+- Frontend landing regression coverage.
+
+Changed:
+- Added official GETRA logo public asset:
+  frontend/public/brand/getra-logo.png
+- Added reusable logo component:
+  frontend/src/features/landing/components/getra-logo.tsx
+- Updated landing header to use official logo.
+- Updated landing footer to use official logo.
+- Added Phase 04 branding tests:
+  frontend/src/features/landing/__tests__/phase4-branding.test.tsx
+- Extended browser audit to validate official logo visibility.
+- Added final docs under:
+  docs/features/landing/final/
+- Follow-up polish:
+  - Replaced remaining provisional "G" brand card with the official GETRA logo.
+  - Added the map-powered application layer positioning copy.
+  - Removed hard section separator borders from public landing sections/footer.
+  - Extended the landing background treatment so lower sections do not fall back to plain black.
+
+Not changed:
+- Backend.
+- Database.
+- Auth/onboarding flow.
+- MAPID/WebGIS app runtime.
+- Private admin/import features.
+
+Quality gates:
+- Frontend typecheck: PASS
+- Frontend lint: PASS
+- Frontend test: PASS, 8 files / 39 tests
+- Frontend build: PASS
+- Browser audit: PASS, logo visible and no overflow/dead links/critical console/same-origin critical network failures across audited viewports
+- Landing scoped security scan: PASS, no secret values found in changed landing assets/source/docs

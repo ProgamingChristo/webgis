@@ -1,0 +1,29 @@
+GETRA LANDING PHASE 02
+ADVERTISING LANDING MODEL
+
+Advertising Manager concepts
+----------------------------
+- Campaign
+- Creative
+- Spatial Targeting
+- Schedule
+- Sponsored Pin
+- Banner
+- Profile Poster
+- Midtrans Sandbox
+
+Analytics preview metrics
+-------------------------
+- Impressions
+- Sponsored Pin Clicks
+- Profile Opens
+- Route Requests
+
+Claims avoided
+--------------
+The landing does not claim revenue, profit, ROI, ROAS, sales impact, conversion uplift, or production merchant counts.
+
+Payment/event safety
+--------------------
+The landing does not open Snap, create checkout transactions, call payment APIs, or create campaign analytics events.
+

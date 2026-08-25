@@ -1,0 +1,36 @@
+WEBGIS HERO DESIGN
+==================
+
+Map library
+-----------
+MapLibre GL, memakai dependency yang sudah ada.
+
+Basemap
+-------
+Menggunakan integrasi MAPID basemap project melalui frontend/lib/mapid.ts.
+Tidak ada endpoint atau secret MAPID baru.
+
+Map component
+-------------
+frontend/src/features/landing/components/webgis-hero-map.tsx
+
+Visual layers
+-------------
+- illustrative transit corridor
+- illustrative pedestrian route
+- illustrative service area polygon
+- illustrative points: transit, UMKM, hidden gem, sponsored example
+
+Loading / fallback
+------------------
+Jika MapLibre/WebGL/basemap gagal, hero menampilkan fallback WebGIS grid yang
+tetap menjelaskan konsep tanpa blank/black box.
+
+Interaction
+-----------
+Map landing dibuat non-interactive agar tidak mengganggu scroll.
+
+Analytics
+---------
+Tidak ada advertising event, impression, sponsored click, profile open, atau
+route request.

@@ -1,0 +1,39 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — DEPLOYMENT, ENVIRONMENT & HANDOVER GUIDE
+================================================================================
+
+1. RUNTIME & ENVIRONMENT DIFFERENCES
+--------------------------------------------------------------------------------
+- Local Development:
+  * Backend: `cd backend && npm run dev` (Port 3001)
+  * Frontend: `cd frontend && npm run dev` (Port 3000)
+- Production Deployment:
+  * Build standalone production artifacts using `npm run build`.
+  * Manage processes using PM2, Docker, or serverless edge hosts (e.g. Vercel).
+
+2. PRODUCTION ENVIRONMENT VARIABLES
+--------------------------------------------------------------------------------
+Server-Side (`backend/.env.local` / Secret Manager):
+- `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: Public anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY`: Service role key for admin workflows
+- `MIDTRANS_SERVER_KEY`: Server key for Snap and Status verification
+- `MIDTRANS_CLIENT_KEY`: Reference key
+- `MIDTRANS_MERCHANT_ID`: Merchant ID
+- `MIDTRANS_IS_PRODUCTION`: `false` (Sandbox) / `true` (Production, when authorized)
+- `MIDTRANS_SANDBOX_TEST_AMOUNT_IDR`: Default test nominal
+
+Frontend Client-Side (`frontend/.env.local`):
+- `NEXT_PUBLIC_GETRA_API_URL`: Backend API URL (e.g. `http://localhost:3001` or production domain)
+- `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY`: Browser-safe Midtrans client key
+- `NEXT_PUBLIC_MAPID_BASEMAP_KEY`: MapLibre GL basemap key
+
+3. PRODUCTION MIDTRANS ACTIVATION CRITERIA
+--------------------------------------------------------------------------------
+Before enabling production payments (`MIDTRANS_IS_PRODUCTION=true`):
+1. Obtain production merchant credentials from Midtrans Production Dashboard.
+2. Define official commercial advertising package pricing tiers approved by business stakeholders.
+3. Configure publicly accessible HTTPS webhook endpoint in Midtrans Merchant Portal.
+4. Execute End-to-End payment verification using real payment methods under controlled testing.
+================================================================================

@@ -1,0 +1,26 @@
+GETRA LANDING LOGO RESPONSIVE REPORT
+
+Official asset:
+- frontend/public/brand/getra-logo.png
+
+Component:
+- frontend/src/features/landing/components/getra-logo.tsx
+
+Responsive sizing:
+- Header: 140px mobile, 160px tablet, 190px desktop.
+- Footer: 190px mobile/tablet, 220px desktop.
+
+Aspect ratio:
+- Browser audit measured visible logo ratio: 2.81 in all cases.
+
+Subtitle:
+- Preserved in official logo asset.
+
+Header behavior:
+- PASS, no overlap and no overflow.
+
+Footer behavior:
+- PASS.
+
+Result:
+- LOGO RESPONSIVE: PASS

@@ -1,0 +1,31 @@
+GETRA LANDING BRANDING GUIDE
+
+Official logo path:
+- frontend/public/brand/getra-logo.png
+
+Logo source:
+- User-provided approved asset:
+  frontend/logo/logo getra.jpeg
+- The source image is a two-variant brand sheet.
+- The public asset uses the navy horizontal lockup variant from that approved source, preserving the icon, GETRA wordmark, subtitle, and colors.
+
+Logo alt:
+- GETRA — Geo-Enabled Transit & Retail Analytics
+
+Implementation:
+- Component: frontend/src/features/landing/components/getra-logo.tsx
+- Header: LandingHeader uses GetraLogo with priority.
+- Footer: LandingFooter uses GetraLogo without priority.
+
+Rules:
+- Do not redraw the logo.
+- Do not recolor the logo.
+- Do not replace the wordmark font.
+- Do not remove the subtitle.
+- Do not stretch the aspect ratio.
+- If a higher-resolution official same-design asset is provided later, replace only the file at frontend/public/brand/getra-logo.png and keep component metadata updated.
+
+Visual behavior:
+- Header logo width: approximately 140px mobile, 160px tablet, 190px desktop.
+- Footer logo width: approximately 190px mobile/tablet, 220px desktop.
+- Logo is placed on dark/navy surfaces so the official navy lockup remains coherent with the GETRA brand.

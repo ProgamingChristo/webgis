@@ -1,0 +1,1106 @@
+﻿
+
+
+PRODUCT REQUIREMENTS DOCUMENT
+GETRA
+Geo-Enabled Transit & Retail Analytics
+MAPID WebGIS Competition 2026 — Mass Transportation Edition
+Versi: 1.0
+Status: Draft PRD — Competition MVP
+Tanggal: 14 Agustus 2026
+Sumber utama: GETRA Master AI Context V2 + dua dokumen Feature Context
+
+Konsep inti: ACCESS + SUPPLY + DEMAND + BUSINESS SPACE + COMMUNITY + TIME → spatial intelligence yang dapat ditindaklanjuti.
+Dokumen ini hanya mencakup kebutuhan produk. Rincian engineering dan kontrak implementasi dipisahkan dari PRD.
+
+Daftar Isi
+Ringkasan Eksekutif
+Latar Belakang, Masalah, dan Visi
+Tujuan Produk dan Non-Tujuan
+Pengguna Sasaran dan Jobs-to-be-Done
+Ruang Lingkup dan Prioritas MVP
+Alur Pengguna dan Pengalaman Inti
+Persyaratan Fungsional
+Persyaratan Integrasi MAPID
+Persyaratan Data dan GIS
+Persyaratan UX dan Responsivitas
+Persyaratan API dan Arsitektur Produk
+Persyaratan Nonfungsional, Keamanan, dan Observabilitas
+Metrik Keberhasilan
+Rencana Rilis dan Dependensi
+Definition of Done dan Penerimaan
+Risiko dan Mitigasi
+Pertanyaan Terbuka dan Keputusan yang Dibutuhkan
+Matriks Keterlacakan Kompetisi
+Pemetaan 16 Fitur ke Lima Modul GETRA
+Lampiran: Glosarium
+Ringkasan Eksekutif
+GETRA (Geo-Enabled Transit & Retail Analytics) adalah WebGIS berbantuan AI yang menghubungkan transportasi massal, akses pejalan kaki, UMKM lokal, sinyal permintaan, ruang usaha, aktivitas komunitas, dan data lapangan. GETRA dirancang untuk mengubah data spasial menjadi penemuan, rekomendasi, penjelasan, dan dukungan keputusan—bukan sekadar menampilkan titik dan garis pada peta.
+MVP kompetisi memprioritaskan satu klaster pilot yang koheren dan satu alur lengkap dari kebutuhan komuter hingga penemuan UMKM. Integrasi MAPID harus terlihat sebagai manfaat teknis dan produk: MAPID MAPS untuk ekosistem peta, GEO MAPID untuk pengelolaan data spasial, serta MAPID Apps/FORM untuk survei dan validasi lapangan.
+Dokumen Feature Context merinci 16 fitur utama dalam sembilan bidang tematik. Agar tetap konsisten dengan Master Context, PRD ini memetakan keenam belas fitur tersebut ke lima modul produk GETRA, tanpa mengubah identitas produk atau memperluas scope MVP secara otomatis.
+Prinsip produk: GIS menghitung; AI menginterpretasikan. Jarak, geometri, rute, service area, skor, agregasi, dan relasi spasial harus berasal dari GIS/database. AI hanya memahami kueri, membentuk parameter, dan menjelaskan hasil yang benar-benar tersedia.
+Elemen
+Definisi PRD
+Antarmuka utama
+Peta WebGIS interaktif yang responsif dan dapat diakses publik.
+Nilai utama
+Spatial intelligence yang menghubungkan akses, suplai, demand proxy, komunitas, ruang usaha, dan waktu.
+Cerita MVP
+Pengguna mencari kebutuhan lokal, memperoleh kandidat berbasis GIS, melihat akses transit/jalan kaki, memahami konteks, dan memeriksa bukti komunitas/lapangan.
+Pilot
+Satu klaster transportasi–UMKM yang lengkap, stabil, dan dapat didemonstrasikan.
+MAPID
+Integrasi bermakna dan dapat ditelusuri; bukan logo, tangkapan layar, atau iframe dekoratif.
+Batas utama
+Tidak ada endpoint, data, koordinat, skor, kuota, atau kemampuan MAPID yang boleh direkayasa.
+
+Latar Belakang, Masalah, dan Visi
+Masalah yang diselesaikan
+Informasi transportasi, akses pejalan kaki, UMKM, permintaan lokal, ruang usaha, dan aktivitas komunitas sering berada dalam sistem atau dataset yang terpisah. Akibatnya, pengguna sulit memahami bukan hanya apa yang ada di suatu lokasi, tetapi juga apakah lokasi tersebut dapat dicapai, relevan terhadap kebutuhan, didukung sinyal aktivitas, dan memiliki peluang bisnis atau perencanaan.
+Komuter membutuhkan penemuan UMKM yang relevan dan benar-benar dapat dicapai dari jaringan transportasi.
+UMKM membutuhkan diagnosis visibilitas dan konteks permintaan, bukan sekadar pin di peta.
+Calon pelaku usaha membutuhkan perbandingan ruang usaha berdasarkan akses, demand proxy, suplai, dan persaingan.
+Komunitas membutuhkan kanal kontribusi yang terikat lokasi, waktu, dan validasi.
+Perencana membutuhkan profil kawasan dan skenario berbasis GIS dengan pemisahan baseline dan scenario.
+Visi produk
+GETRA menjadi lapisan spatial-temporal intelligence yang membantu pengguna menemukan, memahami, membandingkan, dan mengambil keputusan di sekitar transportasi massal dan ekonomi lokal. Peta adalah pusat pengalaman; AI membuat pengalaman lebih mudah dipahami, tetapi tidak menggantikan perhitungan GIS.
+Proposisi nilai
+Pengguna
+Nilai yang diberikan GETRA
+Bukti dalam produk
+Komuter
+Penemuan yang relevan dan dapat dicapai berjalan kaki.
+Smart Search, filter, rute, service area, dan Fair Discovery.
+Pemilik UMKM
+Konteks visibilitas dan permintaan untuk meningkatkan discoverability.
+Profil UMKM, Demand Intelligence, Visibility Diagnosis, dan AI Copilot.
+Pelaku usaha
+Perbandingan lokasi berbasis sinyal spasial yang dapat dijelaskan.
+Opportunity Map, Business Space Comparison, dan komponen skor terdokumentasi.
+Komunitas
+Kontribusi lokal yang terikat lokasi dan dapat divalidasi.
+Contribution Form, Explore Trail, observasi aksesibilitas, foto, dan waktu.
+Perencana
+Insight kawasan dan skenario yang dapat diuji.
+Transit Area Profile, Need Map, Scenario Closure, dan perbandingan baseline–scenario.
+
+Tujuan Produk dan Non-Tujuan
+Tujuan
+Menghadirkan WebGIS interaktif dengan peta sebagai antarmuka utama dan MAPID MAPS sebagai ekosistem basemap utama.
+Menyediakan alur natural-language search → parameter terstruktur → validasi → GIS/database → hasil → penjelasan AI.
+Menghubungkan akses transportasi dan pejalan kaki dengan penemuan UMKM secara adil dan transparan.
+Menunjukkan pemanfaatan GEO MAPID, MAPID Apps/FORM, serta data aktivitas MAPID yang memang tersedia dan diizinkan.
+Menyediakan insight bisnis dan perencanaan yang menggunakan komponen skor serta sumber data yang dapat ditelusuri.
+Menyediakan pengalaman responsif yang stabil untuk desktop, tablet, dan mobile.
+Non-tujuan
+Membangun produk peta umum yang tidak berfokus pada transportasi, aksesibilitas, UMKM, dan ekonomi lokal.
+Mengimplementasikan seluruh modul dan fitur sekaligus dengan mengorbankan stabilitas alur inti.
+Menggunakan AI untuk membuat geometri, jarak, rute, skor, jumlah POI, atau relasi spasial.
+Menganggap sinyal aktivitas sebagai permintaan manusia yang presisi apabila data tidak mendukung klaim tersebut.
+Mengganti integrasi MAPID dengan teknologi lain hanya untuk mempercepat demo.
+Membuat endpoint, skema respons, izin, kuota, atau perilaku autentikasi MAPID yang belum terverifikasi.
+Memposisikan autentikasi, Midtrans, poster profil, badge, Trust Score, atau chatbot sebagai inovasi geospasial utama; semuanya adalah fungsi pendukung platform.
+Definisi keberhasilan MVP
+Sinyal penerimaan: Core flow komuter-ke-UMKM berjalan lengkap; integrasi MAPID dapat ditelusuri; AI hanya merujuk hasil GIS/database; analisis GIS dapat direproduksi; dan URL publik stabil serta responsif.
+Pengguna Sasaran dan Jobs-to-be-Done
+Segmen
+Kebutuhan utama
+Jobs-to-be-Done
+Hasil yang diharapkan
+Komuter / pejalan kaki
+Menemukan kebutuhan dekat transit.
+Ketika berada atau akan tiba di stasiun, saya ingin menemukan UMKM yang sesuai dan dapat dicapai berjalan kaki.
+Pilihan relevan, rute jelas, dan alasan rekomendasi transparan.
+Pemilik UMKM
+Memahami visibilitas dan demand proxy.
+Saya ingin tahu mengapa usaha saya kurang terlihat dan peluang tindakan yang masuk akal.
+Diagnosis berbasis data dan saran yang dapat ditindaklanjuti.
+Calon pelaku usaha
+Membandingkan ruang usaha.
+Saya ingin membandingkan lokasi berdasarkan akses, aktivitas, suplai, dan persaingan.
+Perbandingan konsisten dengan komponen skor yang dijelaskan.
+Kontributor komunitas
+Membagikan observasi lokal.
+Saya ingin menambahkan temuan aksesibilitas, rekomendasi, atau kondisi lapangan pada lokasi tertentu.
+Kontribusi tercatat, bertimestamp, dan dapat dimoderasi.
+Perencana kawasan
+Memahami kebutuhan dan dampak skenario.
+Saya ingin melihat profil kawasan serta perubahan akses ketika kondisi jaringan berubah.
+Baseline dan scenario terpisah dengan dampak terukur oleh GIS.
+
+Peran sistem
+Pengunjung publik: mencari, memfilter, melihat peta, rute, profil, dan insight yang dipublikasikan.
+Kontributor: mengirim data komunitas atau survei yang terikat lokasi sesuai proses validasi.
+UMKM/pengelola usaha: mengelola atau meninjau profil, insight, dan iklan apabila akses tersebut diaktifkan.
+Moderator/admin: memvalidasi kontribusi, mengelola dataset, dan menjaga kualitas publikasi.
+[UNKNOWN] Model autentikasi, verifikasi kepemilikan UMKM, dan detail hak akses belum dikonfirmasi dalam konteks proyek.
+Ruang Lingkup dan Prioritas MVP
+Lapisan
+Isi
+Ekspektasi rilis
+CORE / MUST WORK
+Geo-AI Search; Smart Alternative; manual filter; basic/adaptive pedestrian routing; service area; Route Switch; Fair Discovery; UMKM Spatial Discoverability; Sponsored Pin; GETRA Community dasar; contribution form.
+Berfungsi end-to-end pada klaster pilot dan menjadi syarat demo.
+PILOT
+Comfort-Aware Route pada ruas tersurvei; Demand Pulse/Retail Gap sederhana; AI Copilot; contextual promotion dan analytics dasar; Business Space Comparison; satu Explore Trail; satu Scenario Closure.
+Diimplementasikan selektif setelah core stabil dan memakai data yang dapat diverifikasi.
+FOUNDATION
+Accessibility Need Map; Time-Capsule; Potential Waste Pressure.
+Fondasi produk/arsitektur; dapat berupa kemampuan terbatas yang jujur dan tidak mengganggu core.
+
+Ruang lingkup kompetisi
+Satu klaster pilot yang memiliki data transportasi, UMKM, jaringan pejalan kaki, dan bukti lapangan yang memadai.
+Satu alur komuter-ke-UMKM lengkap sebagai cerita utama demo.
+Integrasi MAPID yang dapat ditelusuri secara teknis dan melalui provenance data.
+AI-assisted spatial reasoning yang selalu menggunakan hasil GIS/database.
+Akses publik, responsif, dan cukup stabil untuk demonstrasi kompetisi.
+Di luar ruang lingkup MVP
+Ekspansi nasional atau cakupan multi-kota sebelum pilot tervalidasi.
+Optimasi komersial penuh untuk iklan, billing, atau marketplace ruang usaha.
+Prediksi permintaan presisi tanpa kualitas data dan metode validasi yang memadai.
+Simulasi geometri oleh AI atau skenario yang tidak dihitung ulang oleh GIS.
+Integrasi terhadap layanan MAPID yang belum memiliki dokumentasi, izin, atau kredensial terverifikasi.
+Alur Pengguna dan Pengalaman Inti
+Alur utama: komuter ke UMKM
+Pengguna membuka GETRA dan melihat peta klaster pilot dengan konteks transportasi.
+Pengguna memasukkan kebutuhan dalam bahasa alami atau memilih filter manual.
+AI mengekstrak parameter terstruktur; sistem memvalidasi nilai dan batasannya.
+GIS/database memfilter kandidat berdasarkan kategori, jarak, waktu buka, harga, akses, dan batas keras lainnya.
+Sistem menampilkan kategori Original, Hidden Gem, dan Sponsored secara terpisah serta berlabel jelas.
+Pengguna membuka profil UMKM dan melihat atribut, sumber data, serta konteks relevan.
+Pengguna meminta rute berjalan kaki dan dapat beralih antaralternatif yang tersedia.
+GETRA menunjukkan jarak, estimasi waktu, service area, dan sumber mesin rute.
+AI menjelaskan alasan rekomendasi dan konteks demand/activity berdasarkan data aktual.
+Pengguna melihat bukti komunitas/lapangan atau melanjutkan ke insight peluang yang terkait.
+Alur pemilik UMKM
+Membuka profil UMKM dan melihat status data serta visibilitas.
+Meninjau demand proxy, pola waktu, akses transit, dan perbandingan suplai yang tersedia.
+Menerima Visibility Diagnosis yang memisahkan fakta, inferensi, dan keterbatasan data.
+Menggunakan AI Copilot untuk memahami tindakan yang didukung bukti.
+Membuat Sponsored Pin bila fitur aktif; label sponsor tidak mengubah ranking organik atau skor aksesibilitas.
+Alur perencanaan skenario
+Pengguna memilih kawasan atau elemen jaringan yang akan dianalisis.
+Sistem menampilkan BASELINE dan parameter skenario secara eksplisit.
+GIS menghitung ulang rute, aksesibilitas, UMKM terdampak, dan catchment demand yang relevan.
+UI membandingkan BASELINE vs SCENARIO dan menampilkan sumber serta waktu perhitungan.
+AI merangkum konsekuensi tanpa mengubah atau mengarang hasil spasial.
+Fallback dan state wajib
+Jika parsing AI gagal, pengguna tetap dapat menggunakan filter manual tanpa kehilangan konteks peta.
+Jika layanan routing utama gagal, UI menjelaskan kegagalan dan hanya memakai fallback yang telah disetujui serta menampilkan sumbernya.
+Jika data tidak cukup, sistem menampilkan 'data tidak mencukupi' dan tidak menghasilkan klaim atau skor palsu.
+Jika layer/map gagal dimuat, UI menyediakan retry dan state error yang tidak menutupi seluruh antarmuka.
+Jika kontribusi belum divalidasi, status tersebut terlihat dan tidak diperlakukan sebagai kebenaran final.
+Persyaratan Fungsional
+Prioritas menggunakan tiga lapisan: MUST (harus bekerja untuk MVP), PILOT (ditambahkan setelah core stabil), dan FOUNDATION (fondasi/eksplorasi terbatas). Setiap persyaratan harus diuji menggunakan data yang nyata atau data uji yang diberi label jelas.
+Platform peta dan data
+ID
+Persyaratan
+Prioritas
+Kriteria penerimaan
+FR-PLT-001
+Peta interaktif menjadi antarmuka utama untuk eksplorasi, pencarian, layer, hasil, dan rute.
+MUST
+Pengguna dapat pan, zoom, memilih fitur, dan mempertahankan konteks saat panel dibuka.
+FR-PLT-002
+MAPID MAPS digunakan sebagai ekosistem basemap utama sesuai akses/dokumentasi resmi.
+MUST
+Basemap tampil pada demo publik dan konfigurasi tidak mengekspos secret yang tidak semestinya.
+FR-PLT-003
+Layer transportasi, UMKM, ruang usaha, komunitas, dan analitik dapat ditampilkan/dimatikan sesuai scope.
+MUST
+Kontrol layer mencerminkan layer yang tersedia dan tidak membuat layer fiktif.
+FR-PLT-004
+Interaksi fitur menampilkan ringkasan atribut dan akses ke detail terkait.
+MUST
+Klik/tap pada fitur membuka informasi tanpa kehilangan posisi peta.
+FR-PLT-005
+Sistem mendukung filter kategori, jarak, harga, jam buka, dan aksesibilitas jika atribut tersedia.
+MUST
+Filter hanya aktif untuk field terverifikasi; hasil konsisten dengan query backend.
+FR-PLT-006
+Setiap layer/dataset memiliki metadata sumber dan waktu impor/pembaruan.
+MUST
+Provenance dapat diperiksa dari detail dataset atau fitur yang relevan.
+FR-PLT-007
+Data besar tidak dimuat seluruhnya ke browser tanpa strategi query/rendering.
+MUST
+Aplikasi memakai bbox, pagination, clustering, tiling, atau simplifikasi sesuai dataset.
+FR-PLT-008
+Aplikasi menyediakan state loading, kosong, error, retry, dan data tidak cukup.
+MUST
+Setiap core flow memiliki state yang dapat diuji tanpa blank screen.
+
+Modul 1 — Commuter Discovery & Access
+ID
+Persyaratan
+Prioritas
+Kriteria penerimaan
+FR-M1-001
+Smart Search menerima kueri kebutuhan dalam bahasa alami.
+MUST
+Kueri menghasilkan JSON parameter tervalidasi atau memicu fallback manual.
+FR-M1-002
+Parser AI hanya mengisi parameter pencarian, bukan hasil spasial.
+MUST
+Output parser tidak berisi koordinat, geometri rute, jarak, atau skor buatan AI.
+FR-M1-003
+Filter manual tersedia sebagai jalur utama/fallback.
+MUST
+Pengguna dapat menyelesaikan pencarian inti saat AI tidak tersedia.
+FR-M1-004
+Batas keras diterapkan sebelum ranking; Smart Alternative hanya boleh melonggarkan preferensi lunak dan harus menjelaskan komprominya.
+MUST
+Kategori, batas biaya/waktu/jarak, dan akses yang ditetapkan sebagai hard constraint tidak dilanggar, termasuk oleh item sponsor.
+FR-M1-005
+Sistem menghitung service area pejalan kaki dengan batas waktu yang dapat dipilih pada rentang pilot, misalnya 5–15 menit, memakai GIS atau layanan terverifikasi.
+MUST
+Polygon/hasil jangkauan dapat direproduksi dari input, graph/provider, dan parameter yang sama.
+FR-M1-006
+Routing mendukung preview, jarak, waktu berjalan, Route Switch, Hindari Ruas Ini, serta Comfort-Aware Route hanya pada ruas yang telah disurvei.
+MUST/PILOT
+Rute dasar bekerja; perubahan ruas menghitung ulang hasil; alternatif cepat/nyaman menampilkan trade-off dan cakupan data kenyamanan.
+FR-M1-007
+Sumber rute dicatat sebagai GETRA pedestrian engine, MAPID Maps, atau fallback yang disetujui.
+MUST
+UI/API menyertakan route_source pada setiap hasil.
+FR-M1-008
+Fair Discovery memisahkan Original, Hidden Gem, dan Sponsored.
+MUST
+Kategori dan label terlihat jelas dalam daftar dan peta.
+FR-M1-009
+Sponsored tidak dapat membeli status Hidden Gem atau mengubah skor akses/rute.
+MUST
+Pengujian ranking membuktikan sponsor tidak mengubah hard constraints dan organic score.
+FR-M1-010
+Alasan rekomendasi merujuk fakta aktual seperti kategori, jarak, akses, waktu, dan sumber.
+MUST
+Setiap penjelasan dapat ditelusuri ke field hasil GIS/database.
+FR-M1-011
+Kondisi tanpa rute atau kandidat dijelaskan secara jujur; sistem dapat menawarkan Smart Alternative tanpa menyamarkannya sebagai exact match.
+MUST
+UI tidak membuat garis semu, tidak melanggar hard constraint, dan menampilkan preferensi apa yang berubah.
+FR-M1-012
+Geocoding digunakan hanya melalui layanan dan skema yang terverifikasi.
+PILOT
+Provider, parameter, dan respons terdokumentasi sebelum aktivasi.
+
+Modul 2 — UMKM Intelligence & Activation
+ID
+Persyaratan
+Prioritas
+Kriteria penerimaan
+FR-M2-001
+Setiap UMKM memiliki profil dengan atribut inti, lokasi, kategori, jam operasional, harga, dan sumber jika tersedia.
+MUST
+Field yang tidak tersedia ditandai, bukan diisi secara fiktif.
+FR-M2-002
+Profil menunjukkan akses transit dan pejalan kaki yang dihitung oleh GIS.
+MUST
+Metrik mengacu ke stasiun/rute dan metode yang terverifikasi.
+FR-M2-003
+UMKM Spatial Discoverability menilai tiga lapisan: data readiness, location readiness, dan market relevance.
+MUST/PILOT
+Diagnosis mencakup kelengkapan data, koordinat/pintu masuk/jaringan pedestrian, serta kesesuaian demand/kompetisi; fakta, inference, dan data kurang dipisahkan.
+FR-M2-004
+Demand Intelligence menggabungkan Demand Pulse, pencarian tanpa hasil, Request Board, sinyal Struk Go, supply/harga Menu Go, dan Retail Gap sesuai ketersediaan.
+PILOT
+Output dapat mencakup kategori, rentang harga, waktu kebutuhan, supply gap, dan area demand tinggi; setiap sinyal memiliki definisi, sumber, periode, dan transformasi.
+FR-M2-005
+Istilah demand proxy/estimated demand digunakan ketika data tidak mewakili permintaan aktual secara langsung.
+MUST
+Tidak ada klaim 'permintaan pasti' tanpa validasi yang mendukung.
+FR-M2-006
+AI UMKM Copilot menjelaskan Demand Intelligence, Retail Gap, Request Board, profil, kompetisi, harga, dan jam; dapat membantu draft respons/promosi.
+PILOT
+Jawaban menyertakan evidence fields, keterbatasan data, dan tidak menjamin omzet, keuntungan, atau keberhasilan usaha.
+FR-M2-007
+Pengguna dapat meninjau konteks waktu/pola aktivitas bila timestamp tersedia.
+PILOT
+UI menampilkan periode analisis dan tidak mencampur periode tanpa label.
+FR-M2-008
+Sponsored Pin dapat dikelola dan selalu diberi label.
+MUST
+Pin sponsor tidak menyamar sebagai rekomendasi organik.
+FR-M2-009
+Spatial Promotion mendukung target area/waktu, Contextual Promo Banner, dan campaign analytics tanpa mengubah organic ranking.
+PILOT
+Analytics dibatasi pada tayangan, klik pin, pembukaan profil, dan permintaan rute; tidak diklaim sebagai transaksi atau ROI.
+FR-M2-010
+Verifikasi kepemilikan profil diterapkan sebelum perubahan data oleh pemilik.
+PILOT
+Workflow autentikasi/otorisasi disetujui sebelum fitur edit publik diaktifkan.
+FR-M2-011
+UMKM berkeliling menampilkan lokasi terakhir beserta timestamp dan status verifikasi, bukan lokasi real-time jika data tidak mendukung.
+MUST
+UI memakai wording 'terakhir ditemukan' dan tidak menyatakan posisi terkini tanpa pembaruan valid.
+FR-M2-012
+Poster profil dan Midtrans diperlakukan sebagai fungsi pendukung; payment hanya diaktifkan bila scope, sandbox, dan keamanan telah disetujui.
+PILOT
+Kegagalan payment/poster tidak memengaruhi ranking, routing, atau klaim inovasi WebGIS.
+
+Modul 3 — Business Space Intelligence
+ID
+Persyaratan
+Prioritas
+Kriteria penerimaan
+FR-M3-001
+Opportunity Map menampilkan ruang usaha tercatat, kategori, status sewa/jual, tanggal pencatatan, foto, dan akses transit sesuai field yang tersedia.
+PILOT
+Setiap titik/polygon berasal dari dataset terverifikasi, menampilkan freshness, dan memiliki provenance.
+FR-M3-002
+Pengguna dapat membandingkan setidaknya dua ruang usaha pada field yang sama.
+PILOT
+Perbandingan menggunakan periode dan definisi metrik konsisten.
+FR-M3-003
+Analisis peluang dapat menggunakan akses, demand proxy, supply gap, persaingan, akses transit, dan aktivitas lokal.
+PILOT
+Hanya komponen yang datanya tersedia yang dihitung.
+FR-M3-004
+Bobot opportunity score terdokumentasi dan berversi.
+PILOT
+UI/API dapat menunjukkan komponen, bobot, versi, dan waktu perhitungan.
+FR-M3-005
+AI menjelaskan score; AI tidak menghitung atau mengganti komponen score.
+PILOT
+Narasi dapat ditelusuri ke output analytics.
+FR-M3-006
+Ketiadaan harga, luas, fasilitas, atau status real-time terstruktur menghasilkan flag data tidak cukup, bukan score palsu.
+MUST
+Business Space Intelligence menyebut hasil sebagai penyaringan awal dan menampilkan field yang tidak tersedia.
+FR-M3-007
+Hasil tidak diposisikan sebagai rekomendasi investasi, jaminan keuntungan, atau penilaian legalitas.
+MUST
+UI menyatakan hasil sebagai decision support dengan freshness dan keterbatasan data.
+
+Modul 4 — Community & Local Experience
+ID
+Persyaratan
+Prioritas
+Kriteria penerimaan
+FR-M4-001
+GETRA Community menampilkan kontribusi yang terikat lokasi.
+MUST
+Kontribusi memiliki geometri/koordinat valid dan dapat ditemukan di peta.
+FR-M4-002
+Contribution Form menerima kategori, deskripsi, lokasi, waktu, dan foto bila tersedia.
+MUST
+Validasi wajib mencegah payload kosong atau lokasi di luar area yang diizinkan.
+FR-M4-003
+Kontribusi memiliki attribution, lokasi/ruas, timestamp, serta tipe seperti Temuan Komuter, Cultural Map, Permintaan Komuter, aksesibilitas, atau perubahan usaha.
+MUST
+Setiap tipe memiliki schema; data publik menampilkan attribution/timestamp dan geo-anchor sesuai kebijakan.
+FR-M4-004
+Kontribusi menjalani moderasi/validasi; points, Trust Score, batas laporan, dan histori hanya mendukung kualitas partisipasi.
+MUST/PILOT
+Status pending/validated/rejected terlihat; reputasi tidak menggantikan pemeriksaan lokasi, waktu, dan bukti.
+FR-M4-005
+Permintaan Komuter yang serupa dapat diagregasi secara spasial dan menerima respons UMKM terstruktur.
+PILOT
+Respons menggunakan status sudah tersedia, akan diuji, sedang disiapkan, atau belum dapat disediakan; agregasi menyimpan periode dan area.
+FR-M4-006
+MAPID Apps/FORM digunakan untuk survei lapangan wajib sesuai akses yang tersedia.
+MUST
+Rekaman survei dapat ditelusuri dari MAPID ke dataset GETRA.
+FR-M4-007
+Satu Explore Trail tersedia pada klaster pilot dan dikurasi manual untuk MVP.
+PILOT
+Trail memiliki urutan, geometri/stop, durasi/budget/tema, deskripsi, bukti lapangan, serta tidak diklaim dibuat otomatis oleh AI.
+FR-M4-008
+Community evidence tidak otomatis menjadi kebenaran sistem.
+MUST
+UI/API menyertakan status validasi dan sumber kontribusi.
+
+Modul 5 — Area Planning & Resilience
+ID
+Persyaratan
+Prioritas
+Kriteria penerimaan
+FR-M5-001
+Transit Area Profile merangkum akses, UMKM dominan, waktu aktivitas, pola harga, supply/demand, dan karakter kawasan hanya jika didukung data.
+FOUNDATION
+Setiap indikator memiliki definisi, sumber, periode, dan metode; label seperti kawasan kampus/kantor tidak dibuat tanpa bukti.
+FR-M5-002
+Accessibility Need Map memetakan kebutuhan pengguna, bukan sekadar inventaris fasilitas fisik.
+FOUNDATION
+Kebutuhan seperti rute tanpa tangga, ramp, stroller, atau minim penyeberangan berasal dari kontribusi/agregasi yang cukup dan dapat direproduksi.
+FR-M5-003
+Waste Pressure Map menggunakan kepadatan usaha, waktu transaksi, kondisi pembeli, laporan komunitas, dan fasilitas yang tersedia sebagai proxy.
+FOUNDATION
+Output hanya zona/waktu potensi tekanan dan prioritas perhatian; tidak menyatakan volume sampah aktual tanpa penimbangan.
+FR-M5-004
+Scenario Closure memisahkan BASELINE dan SCENARIO secara eksplisit.
+PILOT
+UI/API menampilkan parameter kedua kondisi dan waktu kalkulasi.
+FR-M5-005
+GIS menghitung rute alternatif, tambahan waktu, perubahan service area, UMKM kehilangan akses, dan ruas penting akibat penutupan.
+PILOT
+Hasil dapat diuji ulang dengan input skenario, graph, data version, dan parameter yang sama.
+FR-M5-006
+AI hanya merangkum perbedaan baseline–scenario.
+PILOT
+Narasi tidak berisi angka atau geometri di luar hasil GIS.
+FR-M5-007
+Time-Capsule menyimpan perubahan UMKM, harga/menu, properti, demand, akses pedestrian, dan Retail Gap dengan versi waktu.
+FOUNDATION
+Record memiliki valid_from, valid_to bila ada, recorded_at, source, verification status, serta dapat dibedakan dari data terkini.
+FR-M5-008
+Satu skenario penutupan yang koheren tersedia untuk demo.
+PILOT
+Skenario memiliki alasan, area, baseline, scenario, hasil, dan keterbatasan.
+
+AI dan penjelasan
+ID
+Persyaratan
+Prioritas
+Kriteria penerimaan
+FR-AI-001
+AI parser menghasilkan structured query JSON yang mengikuti schema dan allowlist.
+MUST
+Payload yang tidak valid ditolak sebelum menyentuh GIS/database.
+FR-AI-002
+Semua structured output divalidasi tipe, enum, rentang, dan field yang diizinkan.
+MUST
+Test mencakup field ekstra, enum salah, injection, dan nilai kosong.
+FR-AI-003
+AI explanation hanya menerima result set dan evidence fields yang telah dihitung.
+MUST
+Prompt/context tidak meminta AI menebak data yang tidak tersedia.
+FR-AI-004
+Setiap rekomendasi memiliki alasan yang dapat ditelusuri.
+MUST
+UI menampilkan faktor utama dan sumber/indikator terkait.
+FR-AI-005
+Ketidakpastian dan data kurang dinyatakan secara eksplisit.
+MUST
+Jawaban tidak mengganti UNKNOWN dengan asumsi tersembunyi.
+FR-AI-006
+Manual fallback tersedia untuk semua core search/filter flow.
+MUST
+Core flow dapat selesai saat layanan AI dinonaktifkan.
+FR-AI-007
+Koordinat, geometri, jarak, score, ranking, dan agregasi tidak dibuat oleh AI.
+MUST
+Pengujian grounding menolak output yang tidak ada dalam evidence.
+FR-AI-008
+Status kegagalan AI dicatat tanpa menyimpan secret atau data sensitif.
+MUST
+Log memuat request ID/status/latency, bukan prompt sensitif atau API key.
+
+Persyaratan Integrasi MAPID
+Komponen
+Peran dalam GETRA
+Persyaratan produk
+Status
+MAPID MAPS
+Basemap dan layanan lokasi yang diizinkan.
+Menjadi ekosistem basemap utama; routing/geocoding hanya diaktifkan setelah kontrak API terverifikasi.
+CONFIRMED / detail API UNKNOWN
+GEO MAPID
+Manajemen project, layer, import, visualisasi, dan workflow data spasial.
+Dataset yang dikelola atau disiapkan di GEO MAPID harus memiliki keterlacakan ke database GETRA.
+CONFIRMED
+MAPID Apps / FORM
+Survei dan validasi lapangan.
+Dipakai untuk aktivitas lapangan wajib; data masuk melalui proses validasi, normalisasi, dan provenance.
+CONFIRMED
+MAPID Activity Data
+Menu Go, Struk Go, Property Go, Community Activity, atau sumber lain yang diizinkan.
+Digunakan sebagai activity/demand proxy hanya jika akses, schema, periode, dan lisensi terverifikasi.
+AVAILABILITY UNKNOWN
+API Key
+Identifikasi penggunaan dan/atau akses API sesuai layanan.
+Disimpan sebagai secret backend kecuali dokumentasi resmi mewajibkan exposure publik.
+KEY AVAILABLE; AUTH UNKNOWN
+
+Aturan integrasi
+Integrasi MAPID harus memiliki manfaat teknis/data yang dapat dijelaskan dalam demo dan dokumentasi.
+MAPID-specific request ditempatkan di adapter/service terisolasi, bukan tersebar di komponen frontend.
+Sebelum coding endpoint: periksa dokumentasi resmi, autentikasi, request, respons, permission, rate limit, quota, dan production constraint.
+Setelah endpoint terverifikasi: simpan contoh schema yang telah disanitasi, bangun adapter, dan tambahkan automated test.
+Sumber rute, geocoding, layer, dan data aktivitas harus terlihat pada metadata internal dan sesuai kebutuhan pada UI.
+Tidak ada API key aktual yang boleh muncul di source code, README, screenshot, log, prompt, frontend, atau repository publik.
+[UNKNOWN] Endpoint, mekanisme autentikasi, format request/response, rate limit, quota, dan izin produksi MAPID memerlukan verifikasi sebelum implementasi.
+[BLOCKED] Fitur yang membutuhkan endpoint MAPID tertentu tidak boleh dinyatakan selesai sebelum dokumentasi dan uji koneksi tersedia.
+Persyaratan Data dan GIS
+Domain data logis
+Domain
+Entitas utama
+Kebutuhan produk
+Transport
+stations, transit_lines, pedestrian_nodes, pedestrian_edges
+Pencarian dekat transit, routing, service area, scenario closure.
+Business
+umkm, business_spaces, advertisements
+Profil, discoverability, opportunity, comparison, dan sponsored pin.
+Activity
+menu_go, struk_go, property_go, community_activity, survey_activity
+Demand/activity proxy dan validasi lapangan.
+Community
+contributions, trails, accessibility_observations
+Bukti lokal, moderasi, dan Explore Trail.
+Analytics
+demand_scores, supply_scores, visibility_scores, opportunity_scores, accessibility_scores
+Decision support yang berversi dan dapat dijelaskan.
+Planning
+transit_profiles, need_areas, waste_pressure, scenarios, time_capsules
+Profil kawasan, analisis kebutuhan, skenario, dan snapshot waktu.
+
+Sumber data MAPID pada Feature Context
+Sumber
+Field yang disebut dalam konteks fitur
+Penggunaan GETRA
+Status
+Menu Go
+Lokasi kuliner, jenis usaha, menu, harga rata-rata, kondisi pembeli, foto, status menetap/berkeliling.
+Supply, profil UMKM, harga, discoverability, dan Retail Gap.
+PROJECT CONTEXT; schema aktual wajib diverifikasi
+Struk Go
+Aktivitas transaksi, kategori merchant, waktu, metode pembayaran, foto bukti, lokasi.
+Activity/demand proxy dan pola waktu; nominal memerlukan ekstraksi tambahan dari foto.
+PROJECT CONTEXT; schema aktual wajib diverifikasi
+Properti Go
+Kategori properti, status sewa/jual, tanggal pencatatan, alamat, foto, koordinat.
+Opportunity Map, freshness, comparison, dan penyaringan awal ruang usaha.
+PROJECT CONTEXT; field harga/luas/fasilitas/real-time belum tersedia secara terstruktur
+
+Proses ingestion wajib
+Identifikasi sumber/provider dan hak penggunaan.
+Identifikasi geometry type.
+Periksa CRS dan lakukan transformasi terkontrol bila diperlukan.
+Inspeksi attribute schema dan definisi setiap field.
+Identifikasi unique identifier/original identifier.
+Periksa null dan field wajib.
+Periksa duplicate geometry dan duplicate record.
+Periksa serta perbaiki invalid geometry dengan transformasi yang dicatat.
+Normalisasi atribut ke schema GETRA tanpa menghapus nilai asli yang dibutuhkan.
+Simpan provenance, waktu import, lisensi, dan riwayat transformasi.
+Provenance minimum
+source_provider; source_product; dataset/source_layer; retrieved_at/source_imported_at.
+source_original_id/original_id; geometry_type; source_url bila tersedia.
+source_license; transformation; version/batch identifier.
+Status validasi dan catatan kualitas data.
+Persyaratan perhitungan GIS
+ID
+Persyaratan
+Kriteria penerimaan
+GIS-001
+Jarak, route, service area, spatial join, filter, score, dan agregasi dihitung di GIS/database.
+Hasil identik untuk input, data version, dan parameter yang sama.
+GIS-002
+PostgreSQL + PostGIS menjadi database spasial utama.
+Geometry tersimpan dengan SRID yang diketahui dan spatial index yang sesuai.
+GIS-003
+Pedestrian routing memakai graph yang disetujui.
+Node/edge, direction, cost, dan restriction terdokumentasi.
+GIS-004
+Spatial query menggunakan index, bbox, pagination, atau strategi setara.
+Query plan pada dataset pilot tidak melakukan full scan yang tidak perlu.
+GIS-005
+Semua score memiliki komponen, bobot, versi, dan timestamp.
+Score dapat direproduksi dan dijelaskan dari input tersimpan.
+GIS-006
+Scenario analysis menghitung ulang kondisi baseline dan scenario.
+Perbandingan menyimpan parameter dan output kedua kondisi.
+GIS-007
+Data tidak valid atau CRS tidak diketahui tidak dipublikasikan diam-diam.
+Pipeline menolak/quarantine record dan mencatat error category.
+
+Persyaratan UX dan Responsivitas
+ID
+Persyaratan
+Kriteria penerimaan
+UX-001
+Peta tetap menjadi konteks utama ketika search, detail, AI, atau filter dibuka.
+Panel tidak menutup seluruh peta kecuali pola mobile yang dapat ditutup dengan jelas.
+UX-002
+Desktop, tablet, dan mobile memiliki layout responsif.
+Core flow dapat diselesaikan pada ketiga ukuran tanpa elemen terpotong.
+UX-003
+Panel mobile dapat collapse/expand dan menjaga state pencarian.
+Menutup panel tidak menghapus hasil/rute tanpa tindakan eksplisit.
+UX-004
+AI panel tidak memblokir kontrol peta atau hasil inti.
+Pengguna dapat mengecilkan/menutup panel dan kembali ke konteks sebelumnya.
+UX-005
+Original, Hidden Gem, dan Sponsored memiliki label visual berbeda dan dapat dipahami.
+Uji visual menunjukkan sponsor tidak menyerupai status organik.
+UX-006
+Legenda, layer control, loading, empty, error, dan retry tersedia.
+Setiap state utama memiliki copy yang jelas dan tindakan berikutnya.
+UX-007
+Sumber, waktu data, dan keterbatasan dapat ditemukan tanpa membebani tampilan utama.
+Detail provenance tersedia melalui panel/detail sekunder.
+UX-008
+Kontrol tap/click dan teks tetap terbaca pada perangkat target.
+QA visual memastikan tidak ada clipping, overlap, atau control yang tidak dapat digunakan.
+
+[PROJECT DECISION] Detail design system, breakpoint, dan target aksesibilitas formal perlu ditetapkan pada spesifikasi UX terpisah.
+Persyaratan API dan Arsitektur Produk
+Frontend bertanggung jawab pada interaksi, rendering, state, kontrol peta, form, loading/error state, dan presentasi hasil. Backend bertanggung jawab pada business logic, GIS, normalisasi, scoring, ranking, orchestration AI, integrasi MAPID, caching, validasi, logging, dan keamanan. Frontend tidak boleh terhubung langsung ke PostgreSQL atau menyimpan secret backend.
+Alur referensi: Frontend → GETRA API → domain service → repository/PostGIS. Integrasi eksternal melalui MAPID adapter. AI service → structured output validator → domain/GIS → grounded explanation.
+Domain API
+Domain
+Tanggung jawab produk
+/api/search
+Parsing parameter, validasi, kandidat, dan metadata query.
+/api/routing
+Rute, alternatif, distance/time, geometry, dan route_source.
+/api/accessibility
+Service area dan indikator akses yang dihitung GIS.
+/api/umkm
+Profil, detail, discoverability, dan data terkait.
+/api/demand
+Demand/activity proxy, periode, komponen, dan provenance.
+/api/business-space
+Daftar, detail, comparison, dan opportunity components.
+/api/community
+Contribution, validation status, trail, dan evidence.
+/api/planning
+Transit profile, need area, scenario, dan time capsule.
+/api/ai
+Structured parsing dan grounded explanation orchestration.
+/api/mapid
+Proxy/adapter internal untuk layanan MAPID yang telah terverifikasi.
+/api/health
+Health/readiness untuk layanan inti dan dependency yang relevan.
+
+Kontrak respons minimum
+request_id; status; data/result; source/provider; data_version/retrieved_at bila relevan.
+error object yang konsisten dengan kategori, pesan aman, dan retry guidance.
+route_source atau analysis_method untuk hasil spasial.
+evidence fields dan limitation flags untuk output yang dijelaskan AI.
+Tidak ada secret, credential, atau internal stack trace pada respons publik.
+[PROJECT DECISION] Schema request/response final disusun pada API specification setelah dataset dan provider MAPID terverifikasi.
+Persyaratan Nonfungsional, Keamanan, dan Observabilitas
+ID
+Area
+Persyaratan
+Kriteria penerimaan
+NFR-PERF-001
+Performa peta
+Gunakan spatial index, bbox query, pagination, clustering, lazy loading, caching, dan simplified geometry bila tepat.
+Core flow tidak memuat dataset besar seluruhnya ke browser.
+NFR-PERF-002
+Target latency
+Target numerik ditetapkan setelah baseline dataset pilot dan provider terverifikasi.
+UNKNOWN — requires verification; baseline test wajib sebelum freeze.
+NFR-SEC-001
+Secret management
+API key/credential disimpan di environment/deployment secret dan tidak dicetak ke log.
+Repo dan build frontend lulus secret scan.
+NFR-SEC-002
+Validasi input
+Semua endpoint memvalidasi schema, tipe, enum, geometry, ukuran payload, dan field allowlist.
+Test negatif mencakup input salah, field ekstra, dan payload berbahaya.
+NFR-SEC-003
+Akses database
+Frontend tidak terhubung langsung ke PostgreSQL; hak akses backend mengikuti least privilege.
+Connection string tidak ada di bundle publik.
+NFR-OBS-001
+Logging
+Catat request ID, endpoint, latency, source, error category, GIS operation, dan AI status.
+Log tidak berisi API key, secret, atau data sensitif.
+NFR-DQ-001
+Data quality
+Null, duplicate, invalid geometry, CRS, dan provenance diperiksa sebelum publikasi.
+Import batch menghasilkan laporan validasi.
+NFR-REL-001
+Reliability
+Core flow memiliki error handling dan fallback yang disetujui.
+Demo tetap dapat menjelaskan kegagalan dependency tanpa blank state.
+NFR-RESP-001
+Responsiveness
+Fungsi inti berjalan pada desktop, tablet, dan mobile.
+QA lintas viewport lulus sebelum freeze.
+NFR-PUB-001
+Publikasi
+Aplikasi dapat diakses melalui URL publik untuk kompetisi.
+URL stabil, tidak memerlukan credential internal, dan core flow dapat dijalankan.
+
+Keamanan API key MAPID
+Gunakan variabel seperti MAPID_API_KEY, MAPID_MAPS_KEY, atau MAPID_APPS_KEY hanya setelah kebutuhan per layanan dikonfirmasi.
+Jangan menggunakan NEXT_PUBLIC_* untuk secret kecuali dokumentasi resmi secara eksplisit mewajibkan key publik.
+Proxy request melalui backend bila key harus dirahasiakan.
+Jangan mencetak key di log, dokumentasi, screenshot, atau error response.
+Jangan menebak atau merekonstruksi key yang teredaksi.
+Metrik Keberhasilan
+Metrik
+Definisi
+Target MVP
+Core flow completion
+Persentase sesi uji yang berhasil menyelesaikan search → candidate → profile → route → explanation.
+Wajib lulus seluruh skenario demo yang disepakati.
+Grounded AI rate
+Output AI yang seluruh klaim faktualnya dapat ditelusuri ke evidence fields.
+Tidak ada fabrikasi pada acceptance test.
+Routing reproducibility
+Hasil rute konsisten untuk input, data version, dan provider yang sama.
+Wajib lulus test deterministik pada klaster pilot.
+MAPID traceability
+Jumlah alur/dataset MAPID yang memiliki sumber dan provenance lengkap.
+Semua integrasi yang didemonstrasikan dapat ditelusuri.
+Survey evidence
+Kontribusi lapangan yang valid dan terikat lokasi dari MAPID Apps/FORM.
+Tersedia evidence yang cukup untuk cerita pilot; jumlah target TBD.
+Responsive completion
+Core flow selesai pada viewport desktop, tablet, dan mobile.
+Wajib lulus QA pada tiga kategori perangkat.
+Critical defect
+Defect yang memblokir core flow atau mengekspos secret.
+Nol pada production freeze.
+Performance
+Latency API, waktu render peta, dan penggunaan data browser.
+Target numerik ditentukan setelah baseline; belum dikonfirmasi.
+
+[PROJECT DECISION] Target numerik non-kompetisi ditetapkan setelah baseline pengukuran pada dataset dan deployment pilot.
+Rencana Rilis dan Dependensi
+Fase
+Fokus
+Cakupan
+Exit gate
+P0–P2
+Foundation
+Shell/desain, data & map foundation, spatial UI, database/GIS foundation.
+Peta dan data pilot dapat dimuat; provenance serta koneksi PostGIS siap.
+P3–P6
+Core journey
+Smart Search, routing, Fair Discovery, UMKM Profile.
+Alur komuter-ke-UMKM berjalan tanpa AI fabrication dan memiliki fallback.
+P7–P8
+Intelligence
+Demand Intelligence dan AI Copilot.
+Insight memakai signal terverifikasi dan explanation grounded.
+P9–P12
+Expansion
+Community, advertising, business space, area planning/scenario.
+Fitur pilot terpilih terhubung ke cerita utama tanpa merusak core.
+P13
+Integration & QA
+End-to-end testing, performance, security, responsive QA.
+Semua acceptance test core lulus; tidak ada defect kritis.
+P14
+Demo & Freeze
+Data/demo seed final, deployment, observability, dan rehearsal.
+URL publik stabil dan cerita demo dapat diulang.
+
+Dependensi kritis
+Dependensi
+Status
+Dampak
+Dataset klaster pilot
+BLOCKED jika belum dipilih/diinspeksi
+Menentukan schema, CRS, cakupan, dan acceptance test nyata.
+Pedestrian graph
+UNKNOWN
+Diperlukan untuk routing/service area GETRA yang deterministik.
+Dokumentasi MAPID API
+UNKNOWN
+Diperlukan untuk auth, request/response, rate limit, quota, dan provider adapter.
+MAPID Apps/FORM survey design
+PERLU KEPUTUSAN
+Menentukan field lapangan, moderation, serta evidence pilot.
+Bobot score
+PERLU KEPUTUSAN
+Diperlukan untuk visibility/opportunity/accessibility score yang transparan.
+AI provider/model
+UNKNOWN
+Diperlukan untuk schema output, budget, latency, dan fallback.
+Public deployment
+UNKNOWN
+Diperlukan untuk production configuration, secret, domain, dan health checks.
+
+Definition of Done dan Penerimaan
+Produk
+☐ Masalah dan nilai GETRA terlihat jelas dalam satu cerita pengguna yang koheren.
+☐ Lima modul terhubung secara konseptual; fitur MVP tidak terasa sebagai demo terpisah.
+☐ Satu klaster pilot lengkap tersedia dan semua keterbatasan data dinyatakan.
+Peta dan data
+☐ Peta interaktif, responsif, memiliki layer control, search, filter, dan MAPID MAPS basemap.
+☐ Data MAPID dan survei lapangan terintegrasi serta memiliki provenance.
+☐ Spatial data telah divalidasi: CRS, null, duplicate, geometry validity, dan identifier.
+GIS dan AI
+☐ Spatial query, routing, accessibility, serta scenario yang masuk scope bekerja dan dapat direproduksi.
+☐ AI ada di UI, menginterpretasikan kueri, memakai structured output, dan tidak memfabrikasi nilai GIS.
+☐ Manual fallback tersedia dan explanation hanya menggunakan hasil aktual.
+Engineering dan demo
+☐ API terdokumentasi; backend terstruktur; database terindeks; secret terlindungi; error ditangani; test tersedia.
+☐ URL publik stabil, mobile responsive, cukup cepat, dan tidak memiliki broken core flow.
+☐ Demo menunjukkan kontribusi MAPID secara teknis dan melalui data/evidence.
+Shipping gate: GETRA tidak boleh dinyatakan selesai jika core flow belum diuji, integrasi MAPID tidak dapat dilacak, atau AI masih dapat menghasilkan fakta spasial yang tidak berasal dari GIS/database.
+Risiko dan Mitigasi
+ID
+Risiko
+Dampak
+Mitigasi
+R-01
+Detail MAPID API belum terverifikasi
+Tinggi
+Jangan coding endpoint; verifikasi dokumentasi/akses, uji respons, dan bangun adapter dengan test.
+R-02
+Data pilot tidak lengkap atau schema berubah
+Tinggi
+Profiling awal, data contract, provenance, validation report, dan versioned ingestion.
+R-03
+AI memfabrikasi nilai spasial
+Tinggi
+Structured schema, allowlist, evidence-only explanation, deterministic tests, dan manual fallback.
+R-04
+Scope terlalu besar
+Tinggi
+Freeze satu core story dan satu klaster; pilot/foundation hanya setelah exit gate core.
+R-05
+Routing pejalan kaki tidak akurat
+Tinggi
+Validasi graph, source label, field survey, route comparison, dan edge-case tests.
+R-06
+Demand proxy disalahartikan
+Sedang
+Definisi indikator, periode, confidence/limitation, dan wording yang tidak mengklaim demand aktual.
+R-07
+Sponsored merusak Fair Discovery
+Sedang
+Hard constraints dulu, organic ranking terpisah, label jelas, dan test invariance.
+R-08
+Map lambat pada mobile
+Sedang
+BBox/tiles, clustering, lazy loading, cache, geometry simplification, dan device QA.
+R-09
+Kontribusi komunitas tidak tepercaya
+Sedang
+Attribution, timestamp, geo-anchor, moderation, validation status, dan audit trail.
+R-10
+Secret terekspos pada deployment
+Tinggi
+Backend proxy, deployment secrets, log redaction, repository/build secret scan.
+
+Pertanyaan Terbuka dan Keputusan yang Dibutuhkan
+ID
+Pertanyaan
+Status
+Dampak
+OQ-01
+Klaster pilot final dan boundary spasialnya?
+BLOCKED
+Menentukan semua data, query, survey, dan demo.
+OQ-02
+Schema aktual layer GEO MAPID yang telah diimpor?
+UNKNOWN
+Wajib diinspeksi sebelum schema integration.
+OQ-03
+Endpoint, auth, respons, permission, rate limit, dan quota MAPID?
+UNKNOWN
+Memblokir adapter produksi untuk layanan terkait.
+OQ-04
+Provider routing utama dan fallback yang disetujui?
+UNKNOWN
+Menentukan route_source dan acceptance test.
+OQ-05
+Sumber dan lisensi pedestrian graph?
+UNKNOWN
+Memblokir routing/service area milik GETRA.
+OQ-06
+Field wajib dan proses moderasi contribution form?
+PROJECT DECISION
+Diperlukan untuk MAPID Apps/FORM survey.
+OQ-07
+Definisi serta bobot demand, visibility, opportunity, accessibility score?
+PROJECT DECISION
+Diperlukan sebelum score dipublikasikan.
+OQ-08
+Peran pengguna, autentikasi, dan verifikasi kepemilikan UMKM?
+UNKNOWN
+Memblokir edit profile dan ad manager publik.
+OQ-09
+Target performa numerik dan kapasitas demo?
+PROJECT DECISION
+Ditetapkan setelah baseline dataset/deployment.
+OQ-10
+AI provider/model, structured-output support, budget, dan fallback?
+UNKNOWN
+Menentukan implementasi AI service.
+OQ-11
+Public hosting, domain, monitoring, dan secret manager?
+UNKNOWN
+Memblokir production freeze.
+OQ-12
+Kebijakan privasi, retensi, dan publikasi data kontributor?
+UNKNOWN
+Wajib sebelum menerima kontribusi publik.
+OQ-13
+Schema, lisensi, refresh cycle, dan identifier aktual Menu Go, Struk Go, serta Properti Go?
+UNKNOWN
+Wajib sebelum data contract dan ingestion produksi.
+OQ-14
+Apakah nominal Struk Go akan diekstrak dari foto; dengan metode dan proses verifikasi apa?
+PROJECT DECISION
+Menentukan apakah nominal boleh dipakai dalam Demand Intelligence.
+OQ-15
+Atribut ruas apa yang tersedia untuk Comfort-Aware Route dan bagaimana kualitas surveinya?
+UNKNOWN
+Membatasi rute nyaman pada ruas yang benar-benar tersurvei.
+OQ-16
+Aturan agregasi Request Board, event campaign analytics, Trust Score, dan scope Midtrans sandbox?
+PROJECT DECISION
+Diperlukan sebelum fitur komunitas/promosi lanjutan diaktifkan.
+
+Matriks Keterlacakan Kompetisi
+Kebutuhan kompetisi
+Respons GETRA
+Bukti penerimaan
+WebGIS interaktif
+Peta sebagai antarmuka utama; layer, search, filter, route, dan detail.
+Demo core flow + responsive QA.
+MAPID MAPS
+Basemap utama dan layanan lokasi yang terverifikasi.
+Provider/source terlihat; konfigurasi dan adapter terdokumentasi.
+GEO MAPID
+Pengelolaan/import layer dan workflow data spasial.
+Dataset/layer memiliki provenance ke GEO MAPID.
+MAPID Apps/FORM
+Survei lapangan dan validasi lokal.
+Contribution/survey record terikat lokasi dan dapat ditelusuri.
+AI dalam interface
+Smart Search, AI explanation, dan UMKM Copilot.
+Structured output test, manual fallback, dan grounding test.
+Insight, bukan raw data
+Fair Discovery, Demand Intelligence, opportunity, dan planning insight.
+Komponen/metode terlihat dan explanation merujuk hasil aktual.
+Real data
+Data transportasi, UMKM, aktivitas, dan survei yang terverifikasi.
+Metadata sumber, versi, lisensi, dan validation report.
+Akses publik
+Deployment responsif melalui URL publik.
+Production smoke test pada desktop/tablet/mobile.
+Cerita end-to-end
+Pencarian → GIS → akses → UMKM → demand context → community → scenario.
+Demo rehearsal yang dapat diulang tanpa broken core flow.
+
+Pemetaan 16 Fitur ke Lima Modul GETRA
+Keputusan struktur: Dokumen fitur mengelompokkan enam belas fitur ke sembilan bidang tematik. PRD mempertahankan lima modul utama dari Master Context dan menggunakan tabel berikut sebagai peta keterlacakan, bukan sebagai perluasan scope otomatis.
+Fitur 1–8
+No.
+Fitur
+Modul induk
+Prioritas
+Batas/keputusan utama
+1
+Smart Search & Recommendation
+M1 — Discovery & Access
+MUST
+Chat-to-Map, hard/soft constraints, Smart Alternative, dan grounded explanation.
+2
+Adaptive Pedestrian Routing
+M1 — Discovery & Access
+MUST/PILOT
+Basic route wajib; comfort route hanya pada ruas tersurvei.
+3
+Demand Intelligence
+M2 — UMKM Intelligence
+PILOT
+Demand Pulse/Retail Gap memakai proxy, periode, dan sumber terverifikasi.
+4
+Fair Discovery Engine
+M1 — Discovery & Access
+MUST
+Organic, Hidden Gem, dan Sponsored dipisahkan; sponsor tidak mengubah score organik.
+5
+UMKM Profile & Discoverability
+M2 — UMKM Intelligence
+MUST
+Data, location, dan market readiness; mobile seller memakai last-seen timestamp.
+6
+AI UMKM Copilot
+M2 — UMKM Intelligence
+PILOT
+Lapisan penjelasan/saran dari analytics; tidak menjamin omzet.
+7
+GETRA Advertising Manager
+M2 — UMKM Intelligence
+MUST/PILOT
+Sponsored Pin core; targeting/analytics pilot; Midtrans dan poster pendukung.
+8
+Business Space Intelligence
+M3 — Business Space
+PILOT
+Penyaringan awal; freshness dan field yang hilang harus terlihat.
+
+Fitur 9–16
+No.
+Fitur
+Modul induk
+Prioritas
+Batas/keputusan utama
+9
+Transit Area Profile
+M5 — Planning & Resilience
+FOUNDATION/PILOT
+Karakter kawasan hanya dinyatakan bila didukung data.
+10
+Accessibility Need Map
+M5 — Planning & Resilience
+FOUNDATION
+Memetakan kebutuhan pengguna, bukan hanya fasilitas fisik.
+11
+GETRA Community
+M4 — Community
+MUST
+Temuan, Cultural Map, Request Board, dan respons UMKM berbasis lokasi.
+12
+Explore Trails
+M4 — Community
+PILOT
+Satu trail demo dikurasi manual; otomasi penuh roadmap.
+13
+GETRA Waste Pressure Map
+M5 — Planning & Resilience
+FOUNDATION
+Indikasi tekanan; bukan pengukuran volume sampah aktual.
+14
+Community Accessibility Contribution
+M4 — Community
+MUST
+Laporan titik/ruas, status pending, lokasi/waktu, dan moderasi.
+15
+Access Resilience & Scenario Closure
+M5 — Planning & Resilience
+PILOT
+Dikerjakan setelah routing dasar stabil; baseline vs scenario dihitung GIS.
+16
+Transit Time-Capsule Map
+M5 — Planning & Resilience
+FOUNDATION
+Temporal schema sejak awal; visualisasi historis lengkap roadmap.
+
+Lampiran: Glosarium
+Istilah
+Definisi
+Accessibility / aksesibilitas
+Kemudahan mencapai lokasi melalui jaringan dan moda yang relevan; dihitung oleh GIS.
+Baseline
+Kondisi awal sebelum parameter skenario diterapkan.
+Demand proxy
+Sinyal pengganti yang mengindikasikan aktivitas/permintaan, bukan pengukuran permintaan aktual kecuali tervalidasi.
+Fair Discovery
+Aturan penemuan yang memisahkan Original, Hidden Gem, dan Sponsored serta menjaga hard constraints.
+GEO MAPID
+Platform pengelolaan project, layer, import, editing, dan analisis data spasial dalam ekosistem MAPID.
+Hard constraints
+Syarat yang harus dipenuhi sebelum ranking, seperti kategori, jarak, harga, jam buka, dan aksesibilitas.
+Hidden Gem
+Kandidat organik yang memenuhi definisi GETRA; status tidak dapat dibeli melalui sponsor.
+MAPID Apps / FORM
+Kapabilitas pengumpulan data lapangan dan aktivitas berbasis lokasi.
+Opportunity score
+Skor peluang yang berasal dari komponen dan bobot analytics yang terdokumentasi; bukan jaminan bisnis.
+Provenance
+Catatan sumber, produk, dataset/layer, original ID, waktu, lisensi, dan transformasi data.
+Route source
+Mesin/provider yang menghasilkan hasil rute: GETRA, MAPID Maps, atau fallback yang disetujui.
+Scenario
+Kondisi alternatif yang parameternya diterapkan dan dihitung ulang oleh GIS.
+Service area
+Area yang dapat dijangkau berdasarkan jaringan, mode, dan batas waktu/jarak tertentu.
+Spatial intelligence
+Insight keputusan yang dihasilkan dari data, perhitungan GIS, dan interpretasi yang dapat dijelaskan.
+
+

@@ -1,0 +1,24 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — FRONTEND PAYMENT EXPERIENCE & FLOW
+================================================================================
+
+1. PAYMENT UI TOPOLOGY
+--------------------------------------------------------------------------------
+- Component: `CampaignPaymentPanel`
+  * Embedded directly within `CampaignCard` under tab "Pembayaran (Sandbox)".
+- Visual Indicators:
+  * `SandboxPaymentBadge`: Highlights test mode in amber/emerald.
+  * `CampaignPaymentStatusBadge`: Renders live status (PAID / PENDING / UNPAID / FAILED).
+  * Clear Disclaimer Box: "Simulasi Pembayaran Midtrans Sandbox - Tidak ada dana riil yang ditarik."
+  * CTA Button: "Bayar dengan Midtrans (Sandbox)" with live loader.
+  * Action Button: "Cek Status" (calls `/api/umkm/advertising/campaigns/:id/payment/refresh`).
+
+2. SNAP POPUP LIFECYCLE
+--------------------------------------------------------------------------------
+1. User clicks "Bayar dengan Midtrans (Sandbox)".
+2. Snap JS popup opens over the viewport.
+3. User enters Midtrans test card number (e.g. 4811111111111114) and OTP (112233).
+4. Snap calls `onSuccess` -> frontend shows "Memverifikasi status server-side...".
+5. Backend confirms `PAID` -> status updates permanently to "Terverifikasi (PAID)".
+================================================================================

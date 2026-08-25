@@ -1,0 +1,25 @@
+GETRA LANDING BROWSER ZOOM TEST REPORT
+
+Method:
+- 1366x768 zoom simulated with equivalent effective CSS viewport.
+
+100%:
+- 1366x768: PASS
+
+125%:
+- 1093x614 effective viewport: PASS
+
+150%:
+- 911x512 effective viewport: PASS
+
+Results:
+- Navigation usable.
+- Header stable.
+- Logo visible.
+- CTA visible.
+- Footer usable.
+- No horizontal overflow.
+- No critical console/network errors.
+
+ZOOM 150% USABLE:
+- YES

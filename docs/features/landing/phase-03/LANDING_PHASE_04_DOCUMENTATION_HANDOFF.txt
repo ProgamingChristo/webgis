@@ -1,0 +1,37 @@
+GETRA LANDING PHASE 04 HANDOFF
+
+Verified facts
+--------------
+- Public route: /
+- Authenticated app route: /app
+- Feature root: frontend/src/features/landing
+- Header: sticky, scroll-polished, desktop anchors, mobile menu.
+- Sections: Hero, Why GETRA, What is GETRA, GIS/AI, Feature Explorer, Fair Discovery, Commuter, Community, UMKM, Add UMKM, Advertising, Business Space, Data Trust, Technology, Final CTA, Footer.
+- Motion: CSS/IntersectionObserver only, no new dependency.
+- Reduced motion: implemented.
+- Screenshot asset: frontend/public/images/landing/getra-pedestrian-route-showcase.webp
+- Screenshot component: frontend/src/features/landing/components/getra-map-screenshot.tsx
+- Footer component: frontend/src/features/landing/components/landing-footer.tsx
+- Browser audit script: scripts/audit-landing-browser.mjs
+- Screenshot capture script: scripts/capture-landing-screenshot.mjs
+
+Quality status
+--------------
+- typecheck: PASS
+- lint: PASS
+- tests: PASS
+- build: PASS
+- browser E2E: PASS
+- security scan: PASS
+
+Known limitations for Phase 04
+------------------------------
+- Formal Lighthouse score not measured.
+- Formal WCAG/screen-reader certification not completed.
+- Credential-bearing login automation intentionally not printed/executed in Phase 03.
+- Screenshot uses public GETRA WebGIS fixture to avoid private auth/token/GPS exposure.
+
+Phase 04 recommended work
+-------------------------
+Final documentation package, maintenance guide, content map, test guide, and handover.
+

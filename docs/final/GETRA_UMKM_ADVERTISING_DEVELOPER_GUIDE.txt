@@ -1,0 +1,58 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — DEVELOPER & ENGINEERING GUIDE
+================================================================================
+
+1. DIRECTORY & FEATURE-FOLDER ARCHITECTURE
+--------------------------------------------------------------------------------
+The codebase strictly adheres to feature-folder separation:
+
+Backend (`backend/src/features/`):
+- `umkm-workspace/`: Workspace summary & owned merchant aggregation.
+- `merchant-submission/`: Submission draft staging, duplicate detection, atomic approval.
+- `merchant-ownership/`: Canonical verification of `merchants.owner_id`.
+- `umkm-advertising/`:
+  * `creative/`: Ad copy and multimedia creative assets.
+  * `targeting/`: PostGIS spatial radius buffers and transit study areas.
+  * `lifecycle/`: Campaign readiness engine and lifecycle state machine.
+  * `ad-serving/`: Proximity calculation and candidate ranking.
+  * `contextual-banner/`: Feed-level contextual promo banner serving.
+  * `profile-poster/`: Merchant drawer promo poster serving.
+  * `events/`: Append-only event tracking (`public.campaign_events`).
+  * `analytics/`: Aggregate timeseries and placement metrics.
+  * `payment/`: Midtrans Snap client, webhook verification, `ad_payment_orders`.
+
+Frontend (`frontend/src/features/`):
+- `umkm-workspace/`: Workspace dashboard, summary metrics, quick actions.
+- `merchant-submission/`: MapLibre coordinate picker, submission forms, detail views.
+- `umkm-advertising/`:
+  * `components/campaign/`: Campaign lists, cards, and modal editors.
+  * `creative/`: Multimedia creative managers.
+  * `targeting/`: Interactive map radius and study area selectors.
+  * `lifecycle/`: Readiness panels and lifecycle action triggers.
+  * `ad-serving/`: Serving preview and simulation panel.
+  * `events/`: IntersectionObserver viewport impression hooks.
+  * `analytics/`: ECharts timeseries, placement breakdowns, summary cards.
+  * `payment/`: Midtrans Snap popup integration, Sandbox badges, status listeners.
+
+2. DATABASE & MIGRATION WORKFLOW
+--------------------------------------------------------------------------------
+Always use the migration-first workflow:
+```bash
+# 1. Check local/remote migration status
+npx supabase migration list
+
+# 2. Test schema changes safely
+npx supabase db push --dry-run
+
+# 3. Apply schema changes to remote Supabase DB
+npx supabase db push --include-all
+```
+CRITICAL: Never run `supabase db reset --linked` on remote environments!
+
+3. THIN ROUTE & SERVICE PATTERN
+--------------------------------------------------------------------------------
+- API handlers in `backend/app/api/**` must remain ultra-thin shells.
+- All business rules, validation, and domain state transitions belong inside
+  dedicated services and repositories within `backend/src/features/**`.
+================================================================================

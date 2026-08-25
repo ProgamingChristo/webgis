@@ -54,6 +54,7 @@ type LocatedMerchant =
 type DatasetId =
   | "all-areas"
   | "admin-import"
+  | `admin-import:${string}`
   | "coffee-jakarta-barat"
   | "mapid-food-jakarta-pusat";
 
@@ -69,6 +70,41 @@ const ROUTE_ORIGIN_CENTER =
 
 const MAX_ROUTE_SEARCH_RESULTS =
   6;
+
+function toAdminImportDatasetId(
+  layerId: string,
+): DatasetId {
+  return `admin-import:${layerId}`;
+}
+
+function isAdminImportDataset(
+  value: DatasetId,
+): value is
+  | "admin-import"
+  | `admin-import:${string}` {
+  const dataset = String(value);
+
+  return (
+    dataset ===
+      "admin-import" ||
+    dataset.startsWith(
+      "admin-import:",
+    )
+  );
+}
+
+function getAdminImportLayerId(
+  value: DatasetId,
+) {
+  return value.startsWith(
+    "admin-import:",
+  )
+    ? value.replace(
+        "admin-import:",
+        "",
+      )
+    : null;
+}
 
 function distanceMeters(
   a: {
@@ -357,6 +393,14 @@ export function GetraDashboard() {
     );
 
   const [
+    adminImportedLayers,
+    setAdminImportedLayers,
+  ] =
+    useState<AdminImportedLayer[]>(
+      [],
+    );
+
+  const [
     query,
     setQuery,
   ] =
@@ -471,24 +515,54 @@ export function GetraDashboard() {
       ],
     );
 
+  const activeAdminImportedLayer =
+    useMemo(() => {
+      const layerId =
+        getAdminImportLayerId(
+          datasetId,
+        );
+
+      if (!layerId) {
+        return null;
+      }
+
+      return (
+        adminImportedLayers.find(
+          (layer) =>
+            layer.layer_id ===
+            layerId,
+        ) ?? null
+      );
+    }, [
+      adminImportedLayers,
+      datasetId,
+    ]);
+
+  const fallbackAdminImportedMerchants =
+    adminImportedLayer?.merchants;
+
   const baseMerchants =
     useMemo(
       () =>
         datasetId ===
         "all-areas"
           ? allMerchants
-          : datasetId ===
-              "admin-import"
-            ? adminImportedLayer
-                ?.merchants ?? []
+          : isAdminImportDataset(
+              datasetId,
+            )
+            ? activeAdminImportedLayer
+                ?.merchants ??
+              fallbackAdminImportedMerchants ??
+              []
             : datasetId ===
                 "mapid-food-jakarta-pusat"
               ? mapidMerchants
               : COFFEE_SHOPS,
       [
-        adminImportedLayer,
+        activeAdminImportedLayer,
         allMerchants,
         datasetId,
+        fallbackAdminImportedMerchants,
         mapidMerchants,
       ],
     );
@@ -497,11 +571,14 @@ export function GetraDashboard() {
     datasetId ===
       "all-areas"
       ? "Semua data lokasi GETRA"
-      : datasetId ===
-          "admin-import"
-        ? adminImportedLayer
+      : isAdminImportDataset(
+          datasetId,
+        )
+        ? activeAdminImportedLayer
             ?.layer_name ??
-          "Data import database"
+          adminImportedLayer
+            ?.layer_name ??
+          "Layer import database"
         : datasetId ===
           "mapid-food-jakarta-pusat"
         ? "Makanan-minuman Jakarta Pusat"
@@ -519,11 +596,14 @@ export function GetraDashboard() {
         ]
           .filter(Boolean)
           .join(" + ")
-      : datasetId ===
-          "admin-import"
-        ? adminImportedLayer
+      : isAdminImportDataset(
+          datasetId,
+        )
+        ? activeAdminImportedLayer
             ?.limitation ??
-          "Data import database"
+          adminImportedLayer
+            ?.limitation ??
+          "Layer import database"
         : datasetId ===
           "mapid-food-jakarta-pusat"
         ? mapidLayerName
@@ -547,21 +627,6 @@ export function GetraDashboard() {
                 "Pusat sebaran semua data GETRA",
             }
           : datasetId ===
-              "admin-import"
-            ? {
-                ...calculateMerchantOrigin(
-                  adminImportedLayer
-                    ?.merchants ?? [],
-                  {
-                    ...COFFEE_SHOP_ORIGIN,
-                    name:
-                      "Pusat sebaran admin import",
-                  },
-                ),
-                name:
-                  "Pusat sebaran admin import",
-              }
-            : datasetId ===
               "mapid-food-jakarta-pusat"
             ? {
                 ...calculateMerchantOrigin(
@@ -575,8 +640,40 @@ export function GetraDashboard() {
                 name:
                   "Pusat sebaran makanan-minuman Jakarta Pusat",
               }
+            : isAdminImportDataset(
+                datasetId,
+              )
+            ? {
+                ...calculateMerchantOrigin(
+                  activeAdminImportedLayer
+                    ?.merchants ??
+                    adminImportedLayer
+                      ?.merchants ??
+                    [],
+                  {
+                    ...COFFEE_SHOP_ORIGIN,
+                    name:
+                      `Pusat sebaran ${
+                        activeAdminImportedLayer
+                          ?.layer_name ??
+                        adminImportedLayer
+                          ?.layer_name ??
+                        "layer import"
+                      }`,
+                  },
+                ),
+                name:
+                  `Pusat sebaran ${
+                    activeAdminImportedLayer
+                      ?.layer_name ??
+                    adminImportedLayer
+                      ?.layer_name ??
+                    "layer import"
+                  }`,
+              }
             : COFFEE_SHOP_ORIGIN,
       [
+        activeAdminImportedLayer,
         adminImportedLayer,
         allMerchants,
         datasetId,
@@ -619,6 +716,11 @@ export function GetraDashboard() {
         baseMerchants,
       ],
     );
+
+  const visibleImportBoundaries =
+    isAdminImportDataset(datasetId)
+      ? activeAdminImportedLayer?.boundaries ?? null
+      : adminImportedLayer?.boundaries ?? null;
 
   const brandOptions =
     useMemo(
@@ -992,6 +1094,10 @@ export function GetraDashboard() {
                 ?.features ?? [],
           );
 
+        setAdminImportedLayers(
+          result.layers,
+        );
+
         setAdminImportedLayer(
           result.total_features > 0
             ? {
@@ -1007,7 +1113,7 @@ export function GetraDashboard() {
                 persisted:
                   true,
                 limitation:
-                  "Data import tersimpan di database sebagai SURVEYED.",
+                  "Layer tersimpan di database sebagai SURVEYED.",
                 boundaries: {
                   type:
                     "FeatureCollection",
@@ -1020,6 +1126,9 @@ export function GetraDashboard() {
       })
       .catch(() => {
         if (active) {
+          setAdminImportedLayers(
+            [],
+          );
           setAdminImportedLayer(
             null,
           );
@@ -1391,9 +1500,10 @@ export function GetraDashboard() {
             {datasetId ===
             "all-areas"
               ? "All data"
-              : datasetId ===
-                  "admin-import"
-                ? "Admin import"
+              : isAdminImportDataset(
+                  datasetId,
+                )
+                ? "Import"
                 : datasetId ===
                   "mapid-food-jakarta-pusat"
                 ? "MAPID 2025"
@@ -1429,9 +1539,10 @@ export function GetraDashboard() {
                 {datasetId ===
                 "all-areas"
                   ? "GETRA search"
-                  : datasetId ===
-                      "admin-import"
-                    ? "Admin import search"
+                  : isAdminImportDataset(
+                      datasetId,
+                    )
+                    ? "Import search"
                     : datasetId ===
                       "mapid-food-jakarta-pusat"
                     ? "MAPID search"
@@ -1509,24 +1620,35 @@ export function GetraDashboard() {
               >
                 Semua data
               </button>
-              {adminImportedLayer ? (
-                <button
-                  type="button"
-                  className={
-                    datasetId ===
-                    "admin-import"
-                      ? "dataset-button dataset-button--active"
-                      : "dataset-button"
-                  }
-                  onClick={() =>
-                    handleDatasetChange(
-                      "admin-import",
-                    )
-                  }
-                >
-                  Data import
-                </button>
-              ) : null}
+              {adminImportedLayers.map(
+                (layer) => {
+                  const importDatasetId =
+                    toAdminImportDatasetId(
+                      layer.layer_id,
+                    );
+
+                  return (
+                    <button
+                      key={layer.layer_id}
+                      type="button"
+                      className={
+                        datasetId ===
+                        importDatasetId
+                          ? "dataset-button dataset-button--active"
+                          : "dataset-button"
+                      }
+                      onClick={() =>
+                        handleDatasetChange(
+                          importDatasetId,
+                        )
+                      }
+                      title={`${layer.layer_name} (${layer.total_features} titik)`}
+                    >
+                      {layer.layer_name}
+                    </button>
+                  );
+                },
+              )}
               <button
                 type="button"
                 className={
@@ -1949,8 +2071,9 @@ export function GetraDashboard() {
                 datasetId ===
                 "all-areas"
                   ? "contoh: FOUR LEAVES atau Starbucks Puri"
-                  : datasetId ===
-                      "admin-import"
+                  : isAdminImportDataset(
+                      datasetId,
+                    )
                     ? "contoh: nama titik dari import admin"
                     : datasetId ===
                       "mapid-food-jakarta-pusat"
@@ -2060,8 +2183,14 @@ export function GetraDashboard() {
                   <span className="eyebrow">
                     {datasetId === "all-areas"
                       ? "Hasil semua data"
-                      : datasetId === "admin-import"
-                        ? "Hasil admin import"
+                      : isAdminImportDataset(datasetId)
+                        ? `Hasil ${
+                            activeAdminImportedLayer
+                              ?.layer_name ??
+                            adminImportedLayer
+                              ?.layer_name ??
+                            "import"
+                          }`
                         : datasetId === "mapid-food-jakarta-pusat"
                         ? "Hasil MAPID"
                         : "Hasil GeoJSON"}
@@ -2083,8 +2212,8 @@ export function GetraDashboard() {
                   <span className="source-stamp">
                     {datasetId === "all-areas"
                       ? "ALL"
-                      : datasetId === "admin-import"
-                        ? "ADMIN"
+                      : isAdminImportDataset(datasetId)
+                        ? "IMPORT"
                         : datasetId === "mapid-food-jakarta-pusat"
                         ? "MAPID"
                         : "2026"}
@@ -2153,10 +2282,17 @@ export function GetraDashboard() {
               <span>
                 {datasetId ===
                 "all-areas"
-                  ? "Semua layer aktif ditampilkan bersama. Pakai filter cakupan data untuk fokus ke Jakarta Pusat atau Jakarta Barat."
-                  : datasetId ===
-                      "admin-import"
-                    ? "Data hasil import tersimpan di database dan dapat digunakan untuk pencarian maupun routing."
+                  ? "Semua layer aktif ditampilkan bersama. Pakai filter cakupan data untuk fokus ke layer import, Jakarta Pusat, atau Jakarta Barat."
+                  : isAdminImportDataset(
+                      datasetId,
+                    )
+                    ? `${
+                        activeAdminImportedLayer
+                          ?.layer_name ??
+                        adminImportedLayer
+                          ?.layer_name ??
+                        "Data hasil import"
+                      } tersimpan di database dan dapat digunakan untuk pencarian maupun routing.`
                     : datasetId ===
                       "mapid-food-jakarta-pusat"
                     ? "Layer MAPID dinormalisasi lewat backend GETRA agar bisa dicari, dipilih, dan dipakai routing."
@@ -2192,8 +2328,7 @@ export function GetraDashboard() {
             routeGeometry={route?.geometry}
             routeIsFallback={routeIsFallback}
             importBoundaries={
-              adminImportedLayer
-                ?.boundaries ?? null
+              visibleImportBoundaries
             }
             sponsoredPlacements={fairDiscoveryResult?.sponsored}
             onSelectSponsored={() => {

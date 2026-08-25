@@ -1,0 +1,21 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — MIDTRANS TO GETRA STATUS MAPPING TABLE
+================================================================================
+
++----------------------------+-----------------+---------------------+
+| Midtrans Transaction Status| Fraud Status    | GETRA Payment Status|
++----------------------------+-----------------+---------------------+
+| settlement                 | *               | PAID                |
+| capture                    | accept / (none) | PAID                |
+| capture                    | challenge       | PENDING             |
+| capture                    | deny            | FAILED              |
+| pending                    | *               | PENDING             |
+| deny                       | *               | FAILED              |
+| expire                     | *               | EXPIRED             |
+| cancel                     | *               | CANCELLED           |
+| refund                     | *               | REFUNDED            |
+| partial_refund             | *               | REFUNDED            |
+| (any unrecognized status)  | *               | FAILED              |
++----------------------------+-----------------+---------------------+
+================================================================================

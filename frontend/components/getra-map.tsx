@@ -199,19 +199,52 @@ function addJakartaAdminBoundaries(
   map: MapLibreMap,
   importBoundaries: GeoJSON.FeatureCollection<GeoJSON.MultiPolygon> | null,
 ) {
-  void importBoundaries;
-
   if (!map.isStyleLoaded()) {
     return;
   }
+
+  const boundaryFeatures = new Map<
+    string,
+    GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon>
+  >();
+
+  JAKARTA_ADMIN_BOUNDARIES.features.forEach((feature, index) => {
+    const id =
+      typeof feature.properties?.id === "string"
+        ? feature.properties.id
+        : `static-${index}`;
+
+    boundaryFeatures.set(id, feature);
+  });
+
+  (importBoundaries?.features ?? []).forEach((feature, index) => {
+    const boundaryMethod =
+      typeof feature.properties?.boundary_method === "string"
+        ? feature.properties.boundary_method
+        : null;
+
+    /*
+     * Older admin imports stored a broad rectangle around the point extent.
+     * Those rectangles caused the "kotak gede" visual artifact, so keep them
+     * persisted for audit metadata but do not render them as admin boundaries.
+     */
+    if (boundaryMethod === "import_extent_with_safety_padding") {
+      return;
+    }
+
+    const id =
+      typeof feature.properties?.id === "string"
+        ? feature.properties.id
+        : `import-${index}`;
+
+    boundaryFeatures.set(id, feature);
+  });
 
   const boundaryData: GeoJSON.FeatureCollection<
     GeoJSON.Polygon | GeoJSON.MultiPolygon
   > = {
     type: "FeatureCollection",
-    features: [
-      ...JAKARTA_ADMIN_BOUNDARIES.features,
-    ],
+    features: Array.from(boundaryFeatures.values()),
   };
 
   const existingSource =
@@ -231,150 +264,158 @@ function addJakartaAdminBoundaries(
     ).setData(
       boundaryData,
     );
-    return;
+  } else {
+    map.addSource(
+      "jakarta-admin-boundaries",
+      {
+        type: "geojson",
+        data:
+          boundaryData,
+      },
+    );
   }
 
-  map.addSource(
-    "jakarta-admin-boundaries",
-    {
-      type: "geojson",
-      data:
-        boundaryData,
-    },
-  );
+  if (!map.getLayer("jakarta-admin-boundary-fill")) {
+    map.addLayer({
+      id: "jakarta-admin-boundary-fill",
+      type: "fill",
+      source: "jakarta-admin-boundaries",
+      paint: {
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "id",
+          ],
+          "jakarta-barat",
+          "#22d3ee",
+          "jakarta-pusat",
+          "#9af24a",
+          "jakarta-timur",
+          "#f59e0b",
+          "#22d3ee",
+        ],
+        "fill-opacity": [
+          "case",
+          [
+            "has",
+            "boundary_method",
+          ],
+          0.025,
+          0.05,
+        ],
+      },
+    });
+  }
 
-  map.addLayer({
-    id: "jakarta-admin-boundary-fill",
-    type: "fill",
-    source: "jakarta-admin-boundaries",
-    paint: {
-      "fill-color": [
-        "match",
-        [
+  if (!map.getLayer("jakarta-admin-boundary-casing")) {
+    map.addLayer({
+      id: "jakarta-admin-boundary-casing",
+      type: "line",
+      source: "jakarta-admin-boundaries",
+      paint: {
+        "line-color": "#041018",
+        "line-width": [
+          "interpolate",
+          [
+            "linear",
+          ],
+          [
+            "zoom",
+          ],
+          10,
+          6,
+          14,
+          8,
+        ],
+        "line-opacity": 0.58,
+      },
+    });
+  }
+
+  if (!map.getLayer("jakarta-admin-boundary-line")) {
+    map.addLayer({
+      id: "jakarta-admin-boundary-line",
+      type: "line",
+      source: "jakarta-admin-boundaries",
+      paint: {
+        "line-color": [
+          "match",
+          [
+            "get",
+            "id",
+          ],
+          "jakarta-barat",
+          "#22d3ee",
+          "jakarta-pusat",
+          "#9af24a",
+          "jakarta-timur",
+          "#f59e0b",
+          "#22d3ee",
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear",
+          ],
+          [
+            "zoom",
+          ],
+          10,
+          3.8,
+          14,
+          5.5,
+        ],
+        "line-opacity": [
+          "case",
+          [
+            "has",
+            "boundary_method",
+          ],
+          0.72,
+          0.95,
+        ],
+      },
+    });
+  }
+
+  if (!map.getLayer("jakarta-admin-boundary-label")) {
+    map.addLayer({
+      id: "jakarta-admin-boundary-label",
+      type: "symbol",
+      source: "jakarta-admin-boundaries",
+      minzoom: 10,
+      layout: {
+        "text-field": [
           "get",
-          "id",
+          "name",
         ],
-        "jakarta-barat",
-        "#22d3ee",
-        "jakarta-pusat",
-        "#9af24a",
-        "#22d3ee",
-      ],
-      "fill-opacity": [
-        "case",
-        [
-          "has",
-          "boundary_method",
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+          ],
+          [
+            "zoom",
+          ],
+          10,
+          11,
+          14,
+          15,
         ],
-        0.025,
-        0.05,
-      ],
-    },
-  });
-
-  map.addLayer({
-    id: "jakarta-admin-boundary-casing",
-    type: "line",
-    source: "jakarta-admin-boundaries",
-    paint: {
-      "line-color": "#041018",
-      "line-width": [
-        "interpolate",
-        [
-          "linear",
-        ],
-        [
-          "zoom",
-        ],
-        10,
-        6,
-        14,
-        8,
-      ],
-      "line-opacity": 0.58,
-    },
-  });
-
-  map.addLayer({
-    id: "jakarta-admin-boundary-line",
-    type: "line",
-    source: "jakarta-admin-boundaries",
-    paint: {
-      "line-color": [
-        "match",
-        [
-          "get",
-          "id",
-        ],
-        "jakarta-barat",
-        "#22d3ee",
-        "jakarta-pusat",
-        "#9af24a",
-        "#22d3ee",
-      ],
-      "line-width": [
-        "interpolate",
-        [
-          "linear",
-        ],
-        [
-          "zoom",
-        ],
-        10,
-        3.8,
-        14,
-        5.5,
-      ],
-      "line-opacity": [
-        "case",
-        [
-          "has",
-          "boundary_method",
-        ],
-        0.72,
-        0.95,
-      ],
-    },
-  });
-
-  map.addLayer({
-    id: "jakarta-admin-boundary-label",
-    type: "symbol",
-    source: "jakarta-admin-boundaries",
-    minzoom: 10,
-    layout: {
-      "text-field": [
-        "get",
-        "name",
-      ],
-      "text-font": [
-        "Noto Sans Bold",
-      ],
-      "text-size": [
-        "interpolate",
-        [
-          "linear",
-        ],
-        [
-          "zoom",
-        ],
-        10,
-        11,
-        14,
-        15,
-      ],
-      "text-transform": "uppercase",
-      "text-letter-spacing": 0.08,
-      "text-allow-overlap": false,
-      "symbol-placement": "point",
-    },
-    paint: {
-      "text-color": "#eef8fa",
-      "text-halo-color": "#041018",
-      "text-halo-width": 2.5,
-      "text-opacity": 0.88,
-    },
-  });
+        "text-transform": "uppercase",
+        "text-letter-spacing": 0.08,
+        "text-allow-overlap": false,
+        "symbol-placement": "point",
+      },
+      paint: {
+        "text-color": "#eef8fa",
+        "text-halo-color": "#041018",
+        "text-halo-width": 2.5,
+        "text-opacity": 0.88,
+      },
+    });
+  }
 }
 
 function toRouteFeatureCollection(
@@ -805,9 +846,8 @@ export function GetraMap({
       activeBasemap.style,
     );
 
-    map.once(
-      "style.load",
-      () => {
+    const syncBasemapOverlays = () => {
+      try {
         addJakartaAdminBoundaries(
           map,
           importBoundariesRef.current,
@@ -822,8 +862,43 @@ export function GetraMap({
           routeGeometryRef.current,
           routeIsFallbackRef.current,
         );
-      },
+      } catch (error) {
+        console.error(
+          "[GETRA MAP ERROR] Failed to sync map overlays.",
+          error,
+        );
+      }
+    };
+
+    const timeoutId =
+      window.setTimeout(
+        syncBasemapOverlays,
+        150,
+      );
+
+    map.once(
+      "style.load",
+      syncBasemapOverlays,
     );
+
+    map.once(
+      "idle",
+      syncBasemapOverlays,
+    );
+
+    return () => {
+      window.clearTimeout(
+        timeoutId,
+      );
+      map.off(
+        "style.load",
+        syncBasemapOverlays,
+      );
+      map.off(
+        "idle",
+        syncBasemapOverlays,
+      );
+    };
   }, [
     activeBasemapId,
   ]);

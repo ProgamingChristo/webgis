@@ -1,0 +1,48 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+PHASE 13 TESTING HANDOFF SPECIFICATION
+================================================================================
+
+DATE: 2026-08-24
+SOURCE PHASE: Phase 12 (Midtrans Sandbox Payment Integration)
+TARGET PHASE: Phase 13 (Full System Testing, Security, Regression, Performance, E2E)
+
+1. SYSTEMS & SUBSYSTEMS READY FOR FULL SYSTEM VERIFICATION
+--------------------------------------------------------------------------------
+1. Authentication & Onboarding:
+   - Account roles (USER, ADMIN) & multi-stakeholder modes (UMKM, INVESTOR, GOVERNMENT).
+   - Session persistence, refresh, and role-based route protection.
+
+2. UMKM Workspace & Headbar:
+   - Dynamic Headbar navigation link for USER+UMKM.
+   - Centralized UMKM Workspace at `/umkm`.
+
+3. Merchant Submission & Ownership:
+   - MapLibre interactive location picker (EPSG:4326 PostGIS point).
+   - Draft staging, cancellation, and atomic admin approval with verified ownership linking.
+
+4. Advertising Platform Foundation & Targeting:
+   - Campaign CRUD, Creatives (Headlines, body, image storage).
+   - Spatial Targeting (Transit stop study areas + pedestrian network walking buffers).
+   - Campaign Schedule & Lifecycle State Machine.
+
+5. Ad Serving & Fair Discovery Integration:
+   - Sponsored Pin map layer rendering with proximity calculation.
+   - Fair Discovery non-sponsored search preservation with sponsor ranking limits.
+   - Contextual Banner & Profile Poster surfaces.
+
+6. Event Tracking & Analytics:
+   - Append-only event tracking (Impressions, Clicks, Profile Opens, Route Requests).
+   - Server-aggregated analytics dashboard with timeseries and placement breakdowns.
+
+7. Midtrans Sandbox Payment Integration:
+   - Snap Sandbox token creation, popup checkout flow, webhook signature verification,
+     and payment order persistence.
+
+2. HANDOFF ACTIONS REQUIRED IN PHASE 13
+--------------------------------------------------------------------------------
+- Execute full system end-to-end regression tests across all 12 phases.
+- Perform load and performance benchmarking on spatial routing and ad serving pipelines.
+- Verify comprehensive RLS isolation across all application tables.
+- Validate rotated Midtrans Sandbox credentials prior to final demonstration.
+================================================================================

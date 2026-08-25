@@ -1,0 +1,22 @@
+GETRA LANDING PHASE 02
+MERCHANT SUBMISSION LANDING MODEL
+
+Workflow shown
+--------------
+1. USER + UMKM stakeholder mode
+2. Tambah UMKM
+3. Isi profil usaha
+4. Pilih lokasi di map
+5. Pending review
+6. Trusted review
+7. Approved
+8. Verified merchant
+
+Security message
+----------------
+Pengajuan tidak otomatis menjadi merchant terverifikasi.
+
+Landing implementation
+----------------------
+The landing uses an illustrative workflow and does not mount the authenticated production merchant submission form.
+

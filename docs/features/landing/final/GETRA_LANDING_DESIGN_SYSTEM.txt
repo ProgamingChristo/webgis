@@ -1,0 +1,24 @@
+GETRA LANDING DESIGN SYSTEM
+
+Visual language:
+- Dark navy base.
+- Cyan and green spatial accents.
+- Rounded glass panels.
+- Subtle grid backgrounds.
+- Real WebGIS screenshot grounding.
+- Official GETRA logo anchors the page identity.
+
+Core colors:
+- Navy/slate background: existing Tailwind slate/getra tokens.
+- GETRA cyan: primary spatial/interactive accent.
+- GETRA green: positive route/eligibility accent.
+- White/slate text: readable high-contrast hierarchy.
+
+Typography:
+- Use the existing app font stack.
+- Keep headings bold and compact.
+- Use uppercase tracking sparingly for section labels.
+
+Tailwind:
+- Tailwind v4 utilities remain the styling layer.
+- Avoid bespoke global CSS unless it supports reusable motion or accessibility behavior.

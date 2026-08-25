@@ -1,0 +1,35 @@
+GETRA LANDING PHASE 03
+RESPONSIVE VERIFICATION
+
+Browser audit command
+---------------------
+node scripts/audit-landing-browser.mjs
+
+URL
+---
+http://localhost:3000/
+
+Viewport matrix
+---------------
+- 360: PASS
+- 390: PASS
+- 768: PASS
+- 1024: PASS
+- 1280: PASS
+- 1366: PASS
+- 1440: PASS
+- 1920: PASS
+
+Checks
+------
+- required landing content present
+- mobile menu opens below desktop breakpoint
+- no dead placeholder links
+- no critical horizontal overflow
+- no same-origin critical network error
+- no critical console exception
+
+Result
+------
+PASS
+

@@ -1,0 +1,28 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — ENVIRONMENT VARIABLE SECURITY & ROTATION POLICY
+================================================================================
+
+1. ENVIRONMENT VARIABLE TAXONOMY
+--------------------------------------------------------------------------------
+1. Server-Only Variables (STRICTLY PROHIBITED in client bundle):
+   - `MIDTRANS_SERVER_KEY`: Private authentication key for Snap & Status API calls.
+   - `MIDTRANS_CLIENT_KEY`: Private reference key on server.
+   - `MIDTRANS_MERCHANT_ID`: Merchant account identifier on Midtrans.
+   - `MIDTRANS_IS_PRODUCTION`: Environment gate flag (MUST BE 'false' in Phase 12).
+   - `MIDTRANS_SANDBOX_TEST_AMOUNT_IDR`: Trusted nominal for Sandbox test payments.
+
+2. Browser-Allowed Variables:
+   - `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY`: Public client key required by `snap.js`.
+
+2. HARD PRODUCTION GATE
+--------------------------------------------------------------------------------
+- If `MIDTRANS_IS_PRODUCTION === true`, `MidtransClient` intentionally throws an
+  error preventing live customer charges during Phase 12 development and testing.
+
+3. CREDENTIAL EXPOSURE & ROTATION NOTICE
+--------------------------------------------------------------------------------
+- NOTE: Any Midtrans Sandbox Server Key that has been exposed in screenshots or
+  shared logs must be rotated/regenerated from the Midtrans Merchant Portal
+  before final Phase 13 verification and production deployment.
+================================================================================

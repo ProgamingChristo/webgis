@@ -1,0 +1,52 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — QUICKSTART ACCESS GUIDE
+================================================================================
+
+1. STARTING THE APPLICATION
+--------------------------------------------------------------------------------
+GETRA runs as two synchronized Next.js runtimes:
+
+Backend Server (API & Spatial Engine):
+```bash
+cd backend
+npm run dev
+```
+- URL: `http://localhost:3001`
+- Health Check: `http://localhost:3001/api/health`
+
+Frontend Client (WebGIS & User Interface):
+```bash
+cd frontend
+npm run dev
+```
+- URL: `http://localhost:3000`
+
+2. AUTHENTICATION & LOGIN
+--------------------------------------------------------------------------------
+1. Open `http://localhost:3000/login` in your browser.
+2. Sign in with standard credentials:
+   - Email: `user@example.com` (or your verified test user)
+   - Password: `Password123!`
+3. Verify that session is established and you are redirected to the main dashboard.
+
+3. NAVIGATION ROUTE MATRIX
+--------------------------------------------------------------------------------
++-------------------+----------------------------+-----------------------+------------------------------------------+
+| Feature           | Frontend Route             | Required Access       | Purpose                                  |
++-------------------+----------------------------+-----------------------+------------------------------------------+
+| General / WebGIS  | /                          | Public / Authenticated| Transit & Retail Map Exploration         |
+| Community Feed    | /community                 | Authenticated         | Commuter posts, findings, requests       |
+| UMKM Workspace    | /umkm                      | USER + UMKM Mode      | UMKM central hub, owned merchant summary |
+| Tambah UMKM       | /umkm/merchants/new        | USER + UMKM Mode      | Register new merchant with MapLibre      |
+| Submission Detail | /umkm/submissions/:id      | Submitter / Admin     | View review status & verification notes  |
+| Advertising Home  | /umkm/advertising          | Verified Merchant Owner| Create & manage campaigns & creatives    |
+| Campaign Analytics| /umkm/advertising/analytics| Verified Merchant Owner| Real-time commuter interaction analytics |
++-------------------+----------------------------+-----------------------+------------------------------------------+
+
+4. WHEN DOES UMKM HEADBAR APPEAR?
+--------------------------------------------------------------------------------
+- General User (No UMKM mode): Headbar shows [ General | Community | Profile ].
+- UMKM User (UMKM mode active): Headbar shows [ General | Community | UMKM Workspace | Profile ].
+- Administrator (account_role = 'ADMIN'): Possesses full access to UMKM Workspace & Admin curation APIs.
+================================================================================

@@ -1,0 +1,74 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — DATABASE & SPATIAL SCHEMA GUIDE
+================================================================================
+
+1. CORE DATABASE TABLES & RELATIONS
+--------------------------------------------------------------------------------
+- `public.profiles`
+  * `id` (UUID, PK -> auth.users.id)
+  * `account_role` (TEXT: 'USER' | 'ADMIN')
+  * `full_name`, `avatar_url`, `created_at`, `updated_at`
+
+- `public.user_stakeholder_modes`
+  * `user_id` (UUID, FK -> profiles.id)
+  * `mode` (TEXT: 'UMKM' | 'INVESTOR' | 'GOVERNMENT')
+
+- `public.merchants`
+  * `id` (UUID, PK)
+  * `name`, `category`, `address`, `description`, `image_url`
+  * `location` (GEOMETRY(Point, 4326), PostGIS Point standard)
+  * `owner_id` (UUID, nullable, FK -> profiles.id)
+  * `verification_status` ('UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'REJECTED')
+  * `publish_status` ('DRAFT' | 'PUBLISHED' | 'ARCHIVED')
+
+- `public.merchant_submissions`
+  * `id` (UUID, PK)
+  * `submitted_by` (UUID, FK -> auth.users.id)
+  * `status` ('DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'CANCELLED')
+  * `location` (GEOMETRY(Point, 4326))
+  * `canonical_merchant_id` (UUID, FK -> merchants.id)
+  * `reviewed_by`, `reviewed_at`, `review_note`
+
+- `public.ad_campaigns`
+  * `id` (UUID, PK)
+  * `merchant_id` (UUID, FK -> merchants.id)
+  * `name`, `description`, `status` ('DRAFT' | 'READY' | 'SCHEDULED' | 'ACTIVE' | 'PAUSED' | 'ENDED' | 'CANCELLED')
+  * `start_at`, `end_at`, `created_at`, `updated_at`
+
+- `public.ad_creatives`
+  * `id` (UUID, PK)
+  * `campaign_id` (UUID, FK -> ad_campaigns.id)
+  * `headline`, `body`, `image_url`, `call_to_action`, `status` ('DRAFT' | 'READY')
+
+- `public.ad_campaign_targets`
+  * `id` (UUID, PK)
+  * `campaign_id` (UUID, FK -> ad_campaigns.id)
+  * `radius_meters` (INTEGER, 250m - 10,000m)
+  * `study_area_ids` (UUID[])
+
+- `public.ad_payment_orders`
+  * `id` (UUID, PK)
+  * `campaign_id` (UUID, FK -> ad_campaigns.id)
+  * `created_by` (UUID, FK -> auth.users.id)
+  * `order_id` (TEXT, UNIQUE)
+  * `amount` (INTEGER), `currency` (TEXT, 'IDR')
+  * `status` ('CREATED' | 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED' | 'CANCELLED' | 'REFUNDED')
+  * `snap_token`, `snap_redirect_url`, `paid_at`
+
+- `public.campaign_events` (Append-Only)
+  * `id` (UUID, PK)
+  * `campaign_id` (UUID, FK -> ad_campaigns.id)
+  * `event_type` ('IMPRESSION' | 'SPONSORED_PIN_CLICK' | 'PROFILE_OPEN' | 'ROUTE_REQUEST')
+  * `placement` ('SPONSORED_PIN' | 'CONTEXTUAL_BANNER' | 'PROFILE_POSTER')
+  * `occurred_at` (TIMESTAMPTZ, default now())
+  * `dedup_key` (TEXT, UNIQUE constraint with occurred_at hour bucket)
+
+2. SPATIAL MODEL & POSTGIS OPERATORS
+--------------------------------------------------------------------------------
+- Spatial Reference: `EPSG:4326` (WGS 84 coordinate standard).
+- Format: `[longitude, latitude]` (GeoJSON standard).
+- Spatial Queries:
+  * `ST_DWithin(m.location::geography, ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography, radius)`
+  * `ST_Distance(m.location::geography, ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography)`
+================================================================================

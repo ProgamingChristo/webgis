@@ -1,0 +1,185 @@
+TRACK:
+GETRA PUBLIC LANDING
+
+PHASE:
+01
+
+TITLE:
+Foundation, Public Routing, Tailwind CSS v4 Design System & WebGIS Hero
+
+DATE:
+2026-08-24
+
+BRANCH:
+finalmerge
+
+BASE COMMIT:
+e53f742
+
+FINAL COMMIT:
+N/A - working tree changes not committed by Codex
+
+ROUTING
+=======
+ROOT BEFORE:
+/ rendered authenticated GetraDashboard.
+
+ROOT AFTER:
+/ renders public GETRA Landing Page.
+
+LOGIN:
+/login unchanged as login route.
+
+SIGNUP:
+/signup unchanged as signup route.
+
+POST LOGIN:
+onboarding_complete=true -> /app
+onboarding_complete=false -> /onboarding
+
+MIDDLEWARE:
+No middleware added. AuthProvider updated.
+
+FEATURE
+=======
+FRONTEND ROOT:
+frontend/src/features/landing
+
+BACKEND:
+NONE
+
+FILES CREATED:
+frontend/app/app/page.tsx
+frontend/src/features/landing/**
+frontend/vitest.config.mts
+frontend/public/favicon.svg
+docs/features/landing/**
+docs/changes/GETRA_LANDING_PHASE_01_FOUNDATION_WEBGIS_HERO_CHANGES.txt
+
+FILES MODIFIED:
+frontend/app/page.tsx
+frontend/app/layout.tsx
+frontend/app/login/page.tsx
+frontend/app/signup/page.tsx
+frontend/app/onboarding/page.tsx
+frontend/app/globals.css
+frontend/src/components/providers/AuthProvider.tsx
+frontend/package.json
+vitest.config.mts
+
+FILES DELETED:
+NONE
+
+DESIGN SYSTEM
+=============
+TAILWIND VERSION:
+4.2.1
+
+TOKENS:
+getra-bg, getra-surface, getra-green, getra-cyan, getra-blue, getra-amber
+
+GLOBAL CSS IMPACT:
+Additive @theme tokens and smooth scroll.
+
+AUTH APP VISUAL REGRESSION:
+No intentional visual changes to authenticated app components.
+
+WEBGIS HERO
+===========
+MAPLIBRE:
+Existing maplibre-gl dependency reused.
+
+BASEMAP:
+Existing MAPID GL Style integration reused through frontend/lib/mapid.ts.
+
+MAP DATA:
+Small deterministic landing fixture.
+
+DATA CLASSIFICATION:
+Illustrative landing data, not production merchant data.
+
+ROUTE VISUAL:
+Illustrative pedestrian route.
+
+SERVICE AREA VISUAL:
+Illustrative catchment polygon.
+
+MARKERS:
+Transit, UMKM, Hidden Gem, Sponsored example.
+
+SEARCH PREVIEW:
+Static illustrative query/chips only.
+
+FAIR DISCOVERY PREVIEW:
+Conceptual marker categories only; no campaign attribution.
+
+SECURITY
+========
+PRIVATE API CALLS:
+None required on public root landing smoke.
+
+SERVICE ROLE:
+Not exposed.
+
+MAPID SECRET:
+No new MAPID endpoint/key. Existing public basemap integration reused.
+
+MIDTRANS SECRET:
+Not exposed.
+
+CAMPAIGN EVENTS:
+None.
+
+SECRET SCAN:
+No service role/Midtrans/private MAPID token added in landing files.
+
+QUALITY
+=======
+TYPECHECK:
+PASS
+
+LINT:
+PASS
+
+TEST:
+PASS
+
+BUILD:
+PASS
+
+BROWSER:
+PASS smoke using puppeteer-core and local Edge/Chrome.
+
+RESPONSIVE:
+PASS smoke for 390x844 and 1440x900; no horizontal overflow observed.
+
+CONSOLE:
+No critical application errors observed in smoke.
+
+NETWORK:
+No private GETRA API required for anonymous root landing.
+No 4xx observed on final landing smoke.
+
+AUTH REGRESSION
+===============
+LOGIN:
+PASS. Dev login redirected to /app and rendered workspace.
+
+SIGNUP:
+Route available.
+
+SESSION:
+Login/signup session persistence code preserved. Login regression passed without printing tokens.
+
+POST LOGIN:
+Updated to /app for completed users.
+
+LOGOUT:
+Existing logout flow untouched.
+
+KNOWN LIMITATIONS:
+Hero map uses illustrative geometry and is not a full production map.
+Full storytelling and analytics are deferred to later landing phases.
+
+READY FOR PHASE 2:
+YES

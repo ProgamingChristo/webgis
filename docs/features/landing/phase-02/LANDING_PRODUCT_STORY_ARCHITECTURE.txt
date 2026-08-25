@@ -1,0 +1,48 @@
+GETRA PUBLIC LANDING PAGE
+PHASE 02 - PRODUCT STORY ARCHITECTURE
+
+Scope
+-----
+Phase 02 extends the Phase 01 public landing from a hero-first page into a complete product story for anonymous visitors.
+
+Implemented route:
+- / remains public.
+- Authenticated application remains separated at /app.
+- /login and /signup remain explicit CTAs.
+
+Frontend architecture
+---------------------
+Canonical feature root:
+- frontend/src/features/landing
+
+Composition:
+1. LandingHeader
+2. LandingHero
+3. WhyGetraSection
+4. WhatIsGetraSection
+5. GisAiSection
+6. FeatureExplorerSection
+7. FairDiscoverySection
+8. CommuterSection
+9. CommunitySection
+10. UmkmSection
+11. MerchantSubmissionSection
+12. AdvertisingSection
+13. BusinessSpaceSection
+14. DataTrustSection
+15. TechnologySection
+16. FinalCtaSection
+17. LandingFooter
+
+Interaction model
+-----------------
+Only the feature explorer is a client component. The rest of the Phase 02 story is static React UI for low client-side cost.
+
+Map policy
+----------
+Only the hero uses the landing WebGIS map preview. Additional section visuals are implemented with lightweight HTML/CSS/SVG-like compositions instead of extra MapLibre instances.
+
+Security policy
+---------------
+The public landing does not call private backend APIs, production AI, Midtrans checkout, campaign event tracking, or authenticated data endpoints.
+

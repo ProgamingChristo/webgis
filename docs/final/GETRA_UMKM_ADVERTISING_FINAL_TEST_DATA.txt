@@ -1,0 +1,42 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — FINAL TEST & DEMO DATA SPECIFICATION
+================================================================================
+
+1. TEST USER & AUTHENTICATION
+--------------------------------------------------------------------------------
+- Test User: `user@example.com`
+- Account Role: `USER` (in `public.profiles`)
+- Stakeholder Mode: `UMKM` (in `public.user_stakeholder_modes`)
+
+2. CANONICAL TEST MERCHANT FIXTURES
+--------------------------------------------------------------------------------
+Fixture 1: Owned & Verified Merchant
+- Name: "Warung Kopi Selamat"
+- Category: "Makanan & Minuman"
+- Coordinates: `[107.6100, -6.9147]` (Bandung transit zone)
+- Ownership: Verified owner = Test User
+
+Fixture 2: Merchant Submission Draft
+- Name: "DUMMY GETRA FINAL UMKM"
+- Category: "Retail"
+- Status: `DRAFT` / `PENDING_REVIEW`
+
+3. TEST CAMPAIGN FIXTURE
+--------------------------------------------------------------------------------
+- Campaign Name: "DUMMY GETRA FINAL DEMO CAMPAIGN"
+- Merchant: "Warung Kopi Selamat"
+- Creative Headline: "Promo Kopi Transit Diskon 20%"
+- Creative Body: "Tunjukkan tiket transit Anda dan dapatkan diskon 20% untuk semua varian kopi espresso."
+- Radius Buffer: 1000 meters
+- Schedule: Current active window (Auto-refreshed to start_at = now - 1 hr, end_at = now + 7 days)
+- Payment Status: `PAID` (Simulated via Midtrans Sandbox)
+- Lifecycle Status: `ACTIVE`
+
+4. TEST SIMULATION CARDS (MIDTRANS SANDBOX)
+--------------------------------------------------------------------------------
+- Test Card: `4811 1111 1111 1114`
+- Expiry: Any future date (e.g. `12/28`)
+- CVV: `123`
+- OTP: `112233`
+================================================================================

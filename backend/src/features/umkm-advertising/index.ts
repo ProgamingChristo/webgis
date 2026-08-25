@@ -33,3 +33,4 @@ export * from "./contextual-banner";
 export * from "./profile-poster";
 export * from "./events";
 export * from "./analytics";
+export * from "./payment";

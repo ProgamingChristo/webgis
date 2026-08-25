@@ -1,0 +1,22 @@
+GETRA LANDING ASSET MAINTENANCE GUIDE
+
+Official logo:
+- Source: frontend/logo/logo getra.jpeg
+- Public asset: frontend/public/brand/getra-logo.png
+- Component: frontend/src/features/landing/components/getra-logo.tsx
+
+If replacing logo:
+1. Use only a user-approved official asset.
+2. Preserve colors, subtitle, and aspect ratio.
+3. Update getra-logo.tsx width/height if dimensions change.
+4. Run frontend tests and browser audit.
+5. Update this documentation.
+
+Real map screenshot:
+- Source path: frontend/public/images/landing/getra-pedestrian-route-showcase.webp
+- Replace only with sanitized GETRA WebGIS screenshots.
+
+Do not commit:
+- Raw screenshots with browser PII.
+- Token-bearing URLs.
+- Temporary image processing files outside ignored tmp/work directories.

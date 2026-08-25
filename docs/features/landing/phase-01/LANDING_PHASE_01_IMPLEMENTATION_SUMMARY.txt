@@ -1,0 +1,29 @@
+LANDING PHASE 01 IMPLEMENTATION SUMMARY
+=======================================
+
+Implemented
+-----------
+- Public / landing page
+- Landing feature folder
+- Landing-only header
+- Tailwind CSS v4 GETRA tokens
+- Full-screen WebGIS-inspired hero
+- Lightweight MapLibre hero map
+- Hero overlays, search preview, and metrics
+- /app authenticated shell for previous dashboard
+- Auth guard update for public root
+- Frontend tests and frontend Vitest config
+- Phase 01 documentation and changelog
+
+Not implemented by design
+-------------------------
+- Full product storytelling sections
+- Real AI requests
+- Landing analytics
+- Backend services
+- Database migrations
+- Advertising campaign events
+
+Decision
+--------
+Phase 01 is ready for Phase 02 after final local validation remains green.

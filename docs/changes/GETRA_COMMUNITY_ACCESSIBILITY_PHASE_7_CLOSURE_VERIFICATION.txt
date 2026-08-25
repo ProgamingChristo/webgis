@@ -1,0 +1,69 @@
+GETRA COMMUNITY ACCESSIBILITY CONTRIBUTION - PHASE 7 CLOSURE VERIFICATION
+
+Date: 2026-08-24
+Branch: finalmerge
+Head: e53f74261368e7fbdcbb5c140679e89d79437bed
+
+Closure status: PASS
+
+Addendum status: PASS
+- Final demo executed successfully with real frontend, real backend, linked Supabase, real authenticated test users, live RLS/RPC/API, screenshots, and consolidated documentation.
+- Consolidated docs: docs/community-accessibility-contribution/README.md
+- Demo evidence: docs/community-accessibility-contribution/demo.md
+- Demo assets: docs/community-accessibility-contribution/assets/demo/
+
+Verified target:
+- Supabase project: Getra Mapid
+- Ref: sesakxnjaphrxqxllqjm
+- Region: ap-northeast-1
+- Status: ACTIVE_HEALTHY
+
+Applied remote migrations:
+- 20260824100000_community_contribution_map_projection.sql
+- 20260824101000_restore_community_contribution_create_validation.sql
+- 20260824102000_optimize_community_contribution_map_projection.sql
+
+Live verification:
+- list_community_contribution_map_features_v1 exists and is executable by authenticated users only.
+- Anonymous RPC invocation is denied.
+- Approved contributions project to the map.
+- Pending and rejected contributions do not project to the map.
+- Map response omits author, email, phone, role, reviewer, raw report_data, point, and trust-score fields.
+- Infrastructure reports use contribution geometry.
+- Merchant price and hours reports use canonical merchant geometry.
+- Merchant location changed reports use candidate reported_new_location geometry.
+- User history remains owner-scoped.
+- USER, UMKM-mode USER, GOVERNMENT-mode USER, and self-review attempts are denied.
+- Direct author, status, review, point-event, and trust-score mutations are denied.
+- Duplicate self-submission is denied with GETRA_CONTRIBUTION_DUPLICATE.
+- Admin moderation awards points and updates trust summary through live RPC/API.
+- Canonical merchant price and hours fields remain unchanged by contribution approval.
+
+Browser verification:
+- Chromium/Puppeteer submitted a real contribution through the frontend form.
+- The submitted browser contribution landed as PENDING.
+- Admin moderation queue rendered the pending browser submission.
+- Backend admin confirm API approved the browser submission.
+- User history rendered the approved contribution.
+- Approved contribution map projection rendered in the frontend.
+- Captured browser map API response passed privacy-shape checks.
+- No critical browser console/runtime errors were observed.
+
+Performance evidence:
+- Remote read-only EXPLAIN of the approved-only projection query used idx_community_contributions_location_gist, idx_merchants_location_gist, and idx_community_contributions_target_merchant.
+- Execution time observed: 14.088 ms for the live bounded projection query.
+
+Fresh quality gates:
+- Backend typecheck: PASS
+- Backend lint: PASS
+- Backend tests: PASS, 85 files passed, 1 skipped; 597 tests passed, 1 skipped
+- Backend build: PASS
+- Frontend typecheck: PASS
+- Frontend lint: PASS
+- Frontend tests: PASS, 8 files passed; 39 tests passed
+- Frontend build: PASS
+
+Notes:
+- Photo evidence remains intentionally deferred and is not a Phase 7 blocker.
+- No new product functionality was added in the corrective closure pass.
+- No destructive database operation was run.

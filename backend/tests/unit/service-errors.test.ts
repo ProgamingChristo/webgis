@@ -11,8 +11,12 @@ describe("service error mapping", () => {
   it.each<[RepositoryErrorCode, ApplicationErrorCode, boolean]>([
     ["NOT_FOUND", "NOT_FOUND", false],
     ["CONFLICT", "CONFLICT", false],
+    ["CONTRIBUTION_DUPLICATE", "CONTRIBUTION_DUPLICATE", false],
+    ["CONTRIBUTION_RATE_LIMITED", "CONTRIBUTION_RATE_LIMITED", false],
     ["VALIDATION_ERROR", "VALIDATION_ERROR", false],
     ["FORBIDDEN", "FORBIDDEN", false],
+    ["INVALID_OBSERVATION_TIME", "INVALID_OBSERVATION_TIME", false],
+    ["INVALID_TARGET_LOCATION", "INVALID_TARGET_LOCATION", false],
     ["DATABASE_ERROR", "DATABASE_ERROR", true],
   ])(
     "maps repository %s to application %s",

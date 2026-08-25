@@ -1,0 +1,27 @@
+GETRA LANDING FINAL ARCHITECTURE
+
+Public route:
+- / renders the public marketing/competition landing.
+- /app renders the authenticated GETRA WebGIS shell.
+- /login and /signup remain authentication entry points.
+
+Primary frontend files:
+- frontend/app/page.tsx: public page entry.
+- frontend/src/features/landing/components/landing-page.tsx: page composition.
+- frontend/src/features/landing/components/landing-header.tsx: fixed public navigation.
+- frontend/src/features/landing/components/landing-hero.tsx: hero story and WebGIS preview.
+- frontend/src/features/landing/components/getra-logo.tsx: official logo component.
+- frontend/src/features/landing/components/getra-map-screenshot.tsx: real map showcase image.
+- frontend/src/features/landing/components/landing-footer.tsx: final footer and route map.
+- frontend/app/globals.css: Tailwind v4 theme tokens and motion primitives.
+
+Data/security architecture:
+- Landing content is static and public.
+- No private Supabase data is exposed.
+- No access token, refresh token, JWT, service key, database URL, MAPID key, or user GPS state is rendered by the landing page.
+- The map screenshot is a safe fixture/showcase asset, not a live private user session.
+
+Design architecture:
+- Header/footer use the same official GETRA logo component.
+- Hero uses live CSS/SVG WebGIS motifs plus the real screenshot section below.
+- Motion is CSS-only and respects prefers-reduced-motion.

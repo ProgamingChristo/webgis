@@ -49,6 +49,11 @@ export function CommunityPage() {
       : feed.meta.total;
 
   function changeView(view: CommunityView) {
+    if (view === "contributions") {
+      router.push("/community/contributions");
+      return;
+    }
+
     setActiveView(view);
     router.replace(view === "home" ? "/community" : `/community?view=${view}`);
   }

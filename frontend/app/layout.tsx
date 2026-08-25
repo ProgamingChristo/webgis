@@ -10,10 +10,16 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "GETRA — Geo-Enabled Transit & Retail Analytics",
-  description: "WebGIS spatial decision support untuk akses transit dan peluang ekonomi lokal.",
+  description:
+    "WebGIS spatial intelligence untuk transportasi massal, akses pedestrian, UMKM, dan kawasan transit.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id">
       <body className={inter.className}>

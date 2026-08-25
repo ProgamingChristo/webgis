@@ -27,6 +27,7 @@ import {
   getExperienceBadges,
   getPrimaryExperienceLabel,
 } from "@/src/lib/user-experience";
+import { GetraAppShell } from "@/src/components/getra-ui";
 import { profileService } from "@/src/services/profile.service";
 
 interface ProfileForm {
@@ -242,7 +243,13 @@ export default function ProfileSettingsPage() {
   const avatarImage = avatarPreview || form.avatar_url || null;
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#050a10] text-slate-100">
+    <GetraAppShell
+      description="Kelola foto profil, nama tampilan, username, nomor HP, dan bio yang tampil pada profil publik GETRA."
+      eyebrow="Account settings"
+      title="Profil GETRA"
+      tone="profile"
+    >
+    <div className="relative overflow-hidden text-slate-100">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(34,211,238,0.16),transparent_30%),radial-gradient(circle_at_85%_18%,rgba(154,242,74,0.12),transparent_28%),linear-gradient(120deg,rgba(255,255,255,0.025),transparent_30%)]" />
 
       <div className="relative mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[360px_1fr] lg:px-8">
@@ -250,7 +257,7 @@ export default function ProfileSettingsPage() {
           <button
             className="inline-flex h-11 items-center gap-2 rounded-2xl border border-cyan-300/20 px-4 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-300/65 hover:bg-cyan-300/8"
             type="button"
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/app")}
           >
             <ArrowLeft size={16} />
             Dashboard
@@ -561,7 +568,8 @@ export default function ProfileSettingsPage() {
           onClose={() => setSuccessAlertName(null)}
         />
       ) : null}
-    </main>
+    </div>
+    </GetraAppShell>
   );
 }
 

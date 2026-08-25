@@ -1,0 +1,17 @@
+GETRA LANDING ACCESSIBILITY GUIDE
+
+Requirements:
+- Skip link is present.
+- Official logo has alt: GETRA — Geo-Enabled Transit & Retail Analytics.
+- Header navigation has aria-label.
+- Mobile menu button exposes aria-expanded and aria-controls.
+- Focus-visible styles are present on links/buttons.
+- Reduced-motion media query is implemented.
+
+Content:
+- Avoid text embedded only in screenshots when the same meaning is required for users.
+- Keep sufficient contrast on CTA buttons and small labels.
+
+Manual check:
+- Keyboard through header, CTAs, feature explorer, and footer.
+- Verify focus is visible and order is logical.

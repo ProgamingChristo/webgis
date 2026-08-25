@@ -1,0 +1,209 @@
+TRACK:
+GETRA PUBLIC LANDING
+
+PHASE:
+02
+
+TITLE:
+Product Storytelling
+& Interactive Feature Experience
+
+DATE:
+2026-08-24
+
+BRANCH:
+finalmerge
+
+BASE COMMIT:
+e53f742
+
+FINAL COMMIT:
+N/A - working tree not committed
+
+SECTIONS
+========
+
+WHY GETRA:
+PASS - implemented with Distance != Access, Demand/Supply fragmentation, Popularity/Relevance, and Freshness.
+
+WHAT IS GETRA:
+PASS - implemented with SDSS/WebGIS definition and system relationship visual.
+
+GIS VS AI:
+PASS - implemented with "GIS menghitung; AI menginterpretasikan" principle.
+
+SMART SEARCH:
+PASS - illustrative query to structured filter flow.
+
+ROUTING:
+PASS - network distance/routing concept shown as illustrative.
+
+SERVICE AREA:
+PASS - irregular/network-like catchment shown; no circular buffer claim.
+
+FAIR DISCOVERY:
+PASS - Original, Hidden Gem, Sponsored, constraints-first model.
+
+COMMUTER:
+PASS - General/Commuter baseline explained as not an auth role.
+
+COMMUNITY:
+PASS - findings, requests, provenance, verification, moderation, trust concepts.
+
+UMKM:
+PASS - stakeholder mode and merchant ownership separation explained.
+
+ADD UMKM:
+PASS - submission/review/verified workflow shown.
+
+ADVERTISING:
+PASS - campaign, creative, spatial targeting, schedule, sponsored placements, analytics preview.
+
+BUSINESS SPACE:
+PASS - pilot/spatial screening, no investment guarantee.
+
+DATA TRUST:
+PASS - source, timestamp/freshness, verification, provenance.
+
+TECHNOLOGY:
+PASS - active stack shown; ECharts not claimed as active dependency because package audit did not find it.
+
+FINAL CTA:
+PASS - /login and /signup CTAs.
+
+FOOTER:
+PASS - landing anchor links.
+
+NAVIGATION
+==========
+
+HEADER LINKS:
+Tentang, Cara Kerja, Fitur, Untuk UMKM, Teknologi, Masuk.
+
+ANCHORS:
+#tentang, #cara-kerja, #fitur, #umkm, #teknologi.
+
+LOGIN CTA:
+/login
+
+SIGNUP CTA:
+/signup
+
+DEAD LINKS:
+NONE
+
+INTERACTION
+===========
+
+FEATURE EXPLORER:
+PASS - client-side tab interface for Smart Search, Pedestrian Routing, Service Area, Fair Discovery.
+
+SCROLL REVEAL:
+NOT PHASE 02 FINAL POLISH - section navigation uses browser anchors and smooth scroll.
+
+KEYBOARD:
+PASS BASELINE - tab buttons are native buttons with role=tab and aria-selected.
+
+REDUCED MOTION:
+PASS - global prefers-reduced-motion disables smooth scroll and transitions.
+
+SECURITY
+========
+
+PRIVATE API:
+NONE
+
+CAMPAIGN EVENTS:
+NONE
+
+MIDTRANS CALL:
+NONE
+
+AI CALL:
+NONE
+
+PRIVATE DATA:
+NONE
+
+SECRET SCAN:
+PASS
+
+PERFORMANCE
+===========
+
+MAP INSTANCES:
+Only hero map preview; no repeated heavy MapLibre instances added for sections.
+
+NEW DEPENDENCIES:
+NONE
+
+CLIENT COMPONENTS:
+Feature explorer only for Phase 02 additions.
+
+LARGE ASSETS:
+NONE
+
+QUALITY
+=======
+
+TYPECHECK:
+PASS - npm run typecheck -w frontend
+
+LINT:
+PASS - npm run lint -w frontend
+
+UNIT TEST:
+PASS - npm run test -w frontend
+
+FRONTEND SUITE:
+PASS - configured frontend suite: 6 files / 31 tests
+
+BUILD:
+PASS - npm run build -w frontend
+
+BROWSER:
+PASS BASELINE - local HTTP smoke on existing server.
+
+RESPONSIVE:
+BASELINE SOURCE REVIEW PASS; final responsive QA belongs to Phase 03.
+
+CONSOLE:
+NOT FULLY CAPTURED WITHOUT BROWSER AUTOMATION; no source-level critical issue found.
+
+NETWORK:
+PASS BASELINE - anonymous landing source/HTML scan found no private API/secret marker.
+
+AUTH REGRESSION
+===============
+
+LOGIN:
+HTTP 200
+
+SIGNUP:
+HTTP 200
+
+GENERAL:
+Preserved at /app architecture level.
+
+COMMUNITY:
+Route remains present in build output.
+
+UMKM:
+Routes remain present in build output.
+
+PROFILE:
+Routes remain present in build output.
+
+LOGOUT:
+No Phase 02 change to logout behavior.
+
+KNOWN LIMITATIONS:
+- Final motion polish is Phase 03.
+- Full accessibility certification is Phase 03/04.
+- Full cross-browser matrix is Phase 03/04.
+- Full landing E2E is Phase 03/04.
+- ECharts is not represented as active because it was not found as a current dependency.
+
+READY FOR LANDING PHASE 3:
+YES
+

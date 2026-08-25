@@ -1,0 +1,18 @@
+GETRA LANDING WEBGIS HERO GUIDE
+
+Purpose:
+- Show that GETRA is a WebGIS product, not a generic SaaS page.
+- Communicate route, accessibility, POI, evidence, and spatial intelligence quickly.
+
+Implementation:
+- Component: frontend/src/features/landing/components/webgis-hero-map.tsx
+- Supporting components:
+  - hero-spatial-overlay.tsx
+  - hero-search-preview.tsx
+  - hero-metric-strip.tsx
+
+Rules:
+- Keep visuals synthetic/safe in hero unless explicitly using approved real screenshots.
+- Do not show private user GPS coordinates.
+- Keep GIS-first language: GIS computes, AI interprets.
+- Preserve reduced-motion behavior.

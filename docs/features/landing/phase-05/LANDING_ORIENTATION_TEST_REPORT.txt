@@ -1,0 +1,21 @@
+GETRA LANDING ORIENTATION TEST REPORT
+
+Mobile portrait:
+- 390x844: PASS
+
+Mobile landscape:
+- 844x390: PASS
+
+Tablet portrait:
+- 768x1024: PASS
+
+Tablet landscape:
+- 1024x768: PASS
+
+Verified:
+- Header remains stable.
+- Logo remains visible.
+- Menu behavior passes where menu is active.
+- Hero map remains contained.
+- Real map screenshot remains readable.
+- No horizontal overflow in any orientation case.

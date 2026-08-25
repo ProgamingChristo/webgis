@@ -1,0 +1,21 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — SNAP CHECKOUT INTEGRATION FLOW
+================================================================================
+
+1. CHECKOUT WORKFLOW
+--------------------------------------------------------------------------------
+1. Initiation:
+   - User clicks "Bayar dengan Midtrans (Sandbox)" on `CampaignPaymentPanel`.
+2. Script Loading:
+   - `loadMidtransSnap()` loads `https://app.sandbox.midtrans.com/snap/snap.js` dynamically.
+3. Backend Order Creation:
+   - Frontend calls `POST /api/umkm/advertising/campaigns/:id/payment/checkout`.
+   - Backend determines trusted amount server-side and issues unique `order_id`.
+   - Backend calls Midtrans Snap Sandbox API and returns `{ snap_token, order_id, ... }`.
+4. Popup Checkout:
+   - Frontend invokes `window.snap.pay(snap_token, { onSuccess, onPending, onError, onClose })`.
+5. UX Callback Handling:
+   - Callbacks trigger `PaymentService.refreshPaymentStatus(campaignId)` to reconcile with GETRA server.
+   - `PAID` state is displayed only after backend confirmation.
+================================================================================

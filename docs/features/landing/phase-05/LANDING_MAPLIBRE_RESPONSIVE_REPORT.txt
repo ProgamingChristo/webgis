@@ -1,0 +1,25 @@
+GETRA LANDING MAPLIBRE RESPONSIVE REPORT
+
+Scope:
+- Public landing WebGIS hero visual and real GETRA map screenshot.
+
+Mobile map size:
+- PASS, contained in rounded parent and not wider than viewport.
+
+Tablet map size:
+- PASS.
+
+Desktop map size:
+- PASS.
+
+Resize/orientation:
+- PASS across viewport matrix and orientation matrix.
+
+Touch/scroll:
+- Public landing hero map does not create page horizontal overflow or block page scrolling in the automated matrix.
+
+Fallback:
+- Hero has fallback copy for map load failure.
+
+Cleanup:
+- No critical console errors observed.

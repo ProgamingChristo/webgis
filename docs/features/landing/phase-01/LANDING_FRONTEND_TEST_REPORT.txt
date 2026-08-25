@@ -1,0 +1,43 @@
+LANDING FRONTEND TEST REPORT
+============================
+
+Date
+----
+2026-08-24
+
+Frontend URL
+------------
+http://localhost:3000
+
+Automated quality gates
+-----------------------
+Frontend typecheck: PASS
+Frontend lint: PASS
+Frontend unit tests: PASS
+Frontend build: PASS
+
+Unit tests
+----------
+5 files passed, 28 tests passed.
+Landing tests cover:
+- header brand and valid links
+- hero copy and CTA
+- GIS/AI semantic boundary
+- deterministic illustrative map data
+- landing page does not render login/dashboard markers
+
+Browser smoke
+-------------
+Puppeteer-core with local Edge/Chrome:
+- / rendered landing h1
+- / did not render dashboard marker
+- /login rendered login UI
+- /signup rendered signup UI
+- /app as guest redirected to /login
+- dev login redirected to /app and rendered workspace
+- mobile viewport had no horizontal overflow
+
+Network
+-------
+Root landing smoke did not require private GETRA APIs.
+No 4xx responses observed after favicon metadata was added.

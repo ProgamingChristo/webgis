@@ -1,0 +1,20 @@
+GETRA LANDING HANDOVER
+
+Delivered in Phase 04:
+- Official GETRA logo integrated into landing header and footer.
+- Reusable GetraLogo component created.
+- Public brand asset stored at frontend/public/brand/getra-logo.png.
+- Browser audit extended to validate logo visibility.
+- Phase 04 regression tests added.
+- Final documentation folder created.
+
+Ownership map:
+- Branding asset: frontend/public/brand/getra-logo.png
+- Branding component: frontend/src/features/landing/components/getra-logo.tsx
+- Header/footer usage: landing-header.tsx and landing-footer.tsx
+- Real map showcase: getra-map-screenshot.tsx
+- QA script: scripts/audit-landing-browser.mjs
+
+Future handoff note:
+- Start from README.txt and GETRA_LANDING_FINAL_RELEASE_REPORT.txt.
+- Do not begin a new landing phase until Phase 04 quality gates are green.

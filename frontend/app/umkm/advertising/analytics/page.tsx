@@ -1,11 +1,17 @@
 "use client";
 
 import { Suspense } from "react";
+import { GetraAppShell } from "@/src/components/getra-ui";
 import { AnalyticsDashboard } from "@/src/features/umkm-advertising/analytics";
 
 export default function CampaignAnalyticsPage() {
   return (
-    <main className="min-h-screen bg-slate-900 text-slate-100">
+    <GetraAppShell
+      description="Pantau performa campaign, interaksi pengguna, placement, dan tren promosi lokasi."
+      eyebrow="GETRA Analytics"
+      title="Campaign analytics"
+      tone="umkm"
+    >
       <Suspense
         fallback={
           <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
@@ -16,6 +22,6 @@ export default function CampaignAnalyticsPage() {
       >
         <AnalyticsDashboard />
       </Suspense>
-    </main>
+    </GetraAppShell>
   );
 }

@@ -84,7 +84,7 @@ export function UmkmWorkspace() {
           <p className="text-xs text-slate-400 mt-1 mb-5">{displayError}</p>
           <div className="flex items-center justify-center gap-3">
             <Link
-              href="/"
+              href="/app"
               className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
             >
               Kembali ke Beranda
@@ -113,7 +113,7 @@ export function UmkmWorkspace() {
               className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-200 transition-colors"
             >
               <ArrowLeft size={13} />
-              Beranda GETRA
+              General WebGIS
             </Link>
             <span className="text-slate-600">•</span>
             <span className="text-xs font-semibold text-emerald-400">Workspace UMKM</span>

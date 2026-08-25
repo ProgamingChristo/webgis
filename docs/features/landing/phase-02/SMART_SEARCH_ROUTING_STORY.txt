@@ -1,0 +1,29 @@
+GETRA LANDING PHASE 02
+SMART SEARCH + ROUTING STORY
+
+Smart Search
+------------
+Illustrative query:
+- Makan <= Rp30.000 maksimal 10 menit berjalan.
+
+Displayed structured filters:
+- category=food
+- max_price=30000
+- max_walk=10
+- open_now=true
+
+Product accuracy
+----------------
+Natural-language search is presented as an intent-to-filter assistant. It does not replace GIS filtering or manual filters.
+
+Pedestrian Routing
+------------------
+The routing preview communicates:
+- straight-line distance can differ from network distance.
+- walking route, walking time, and distance remain GIS/pgRouting responsibilities.
+- displayed values are illustrative, not production-wide guarantees.
+
+Service Area
+------------
+The catchment visual is irregular/network-like. It is not presented as a generic circular buffer.
+

@@ -1,0 +1,35 @@
+GETRA LANDING PHASE 01 ARCHITECTURE
+===================================
+
+Frontend feature
+----------------
+frontend/src/features/landing
+
+Main shell
+----------
+frontend/app/page.tsx tetap tipis dan hanya merender LandingPage.
+
+Authenticated application shell
+-------------------------------
+frontend/app/app/page.tsx merender GetraDashboard. Ini menjaga aplikasi lama
+tetap tersedia setelah / berubah menjadi public landing.
+
+Components
+----------
+- landing-page.tsx
+- landing-header.tsx
+- landing-hero.tsx
+- webgis-hero-map.tsx
+- hero-search-preview.tsx
+- hero-spatial-overlay.tsx
+- hero-metric-strip.tsx
+
+Data / utility
+--------------
+- landing-content.ts untuk copy/metrics/tags.
+- landing-map.utils.ts untuk fixture WebGIS deterministik.
+- landing.types.ts untuk tipe landing.
+
+Backend
+-------
+Tidak ada backend API, service, repository, atau migration baru.

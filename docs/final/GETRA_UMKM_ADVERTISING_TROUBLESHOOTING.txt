@@ -1,0 +1,46 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — TROUBLESHOOTING & DIAGNOSTIC GUIDE
+================================================================================
+
+1. AUTHENTICATION & HEADBAR
+--------------------------------------------------------------------------------
+Case 1: "UMKM" link missing from Headbar
+- Symptom: Headbar shows only General, Community, Profile.
+- Likely Cause: User profile does not have 'UMKM' mode in `user_stakeholder_modes`.
+- Safe Fix: Navigate to Profile/Onboarding settings or update `user_stakeholder_modes` for user.
+
+Case 2: 401 Unauthorized / Session expired
+- Symptom: API requests fail with 401.
+- Safe Fix: Sign out and sign in again at `/login` to refresh Supabase JWT session.
+
+2. MERCHANT SUBMISSION & MAPLIBRE
+--------------------------------------------------------------------------------
+Case 3: MapLibre location picker not rendering
+- Symptom: Blank gray box instead of map canvas.
+- Likely Cause: Missing `NEXT_PUBLIC_MAPID_BASEMAP_KEY` or MapLibre GL worker script.
+- Safe Fix: Verify `.env.local` contains valid map key and ensure `copy-maplibre-worker.mjs` ran during build.
+
+Case 4: Submission stuck in "Menunggu Review"
+- Symptom: Submission submitted but merchant does not appear in "Merchant Saya".
+- Likely Cause: Submission awaiting admin approval.
+- Safe Fix: Use Admin account to call `POST /api/admin/merchant-submissions/:id/approve`.
+
+3. MIDTRANS SANDBOX PAYMENT
+--------------------------------------------------------------------------------
+Case 5: Snap popup does not open
+- Symptom: Clicking "Bayar dengan Midtrans" shows error or does nothing.
+- Likely Cause: `MIDTRANS_SERVER_KEY` or `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY` missing.
+- Safe Fix: Check `.env.local` and ensure valid Sandbox keys are present.
+
+Case 6: Payment state remains "PENDING" after Snap completion
+- Symptom: Snap popup closed but panel still shows "Menunggu Pembayaran".
+- Safe Fix: Click "Cek Status" on the payment panel to trigger real-time status reconciliation from Midtrans Status API.
+
+4. AD SERVING & FAIR DISCOVERY
+--------------------------------------------------------------------------------
+Case 7: Sponsored Pin not visible on General Map
+- Symptom: Campaign is active but pin does not render on commuter map.
+- Likely Cause: Map center is outside campaign targeting radius, or campaign schedule has not started.
+- Safe Fix: Pan map closer to merchant coordinates, or update campaign start_at to current time.
+================================================================================

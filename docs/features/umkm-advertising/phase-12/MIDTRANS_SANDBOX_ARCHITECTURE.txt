@@ -1,0 +1,61 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — PHASE 12: MIDTRANS SANDBOX ARCHITECTURE
+================================================================================
+
+1. SYSTEM TOPOLOGY & PAYMENT FLOW
+--------------------------------------------------------------------------------
+The Midtrans Sandbox Payment Integration connects UMKM Advertising with
+Midtrans Payment Gateway using a server-authoritative Snap workflow:
+
+```text
++-------------------+             +-----------------------+             +-----------------------+
+|   UMKM Frontend   |             |     GETRA Backend     |             |   Midtrans Sandbox    |
+|   (Browser/Snap)  |             |     (Server Layer)    |             |    (Snap Gateway)     |
++-------------------+             +-----------------------+             +-----------------------+
+          |                                   |                                     |
+          | 1. Klik Bayar                     |                                     |
+          |---------------------------------->|                                     |
+          |    (POST checkout)                | 2. Verifikasi Auth, Mode UMKM       |
+          |                                   |    & Kepemilikan Merchant           |
+          |                                   | 3. Tentukan Nominal Server-Side     |
+          |                                   | 4. Buat Order (GETRA-AD-...)        |
+          |                                   | 5. Request Snap Transaction         |
+          |                                   |------------------------------------>|
+          |                                   | 6. Snap Token Response              |
+          |                                   |<------------------------------------|
+          | 7. Return Snap Token              |                                     |
+          |<----------------------------------|                                     |
+          |                                                                         |
+          | 8. window.snap.pay(token)                                               |
+          |------------------------------------------------------------------------>|
+          | 9. Simulasi Pembayaran Sandbox (Kartu Tes/Simulator)                   |
+          |                                                                         |
+          | 10. UI Callback (onSuccess / onClose)                                   |
+          |<------------------------------------------------------------------------|
+          |                                                                         |
+          |                                   | 11. External HTTP Notification      |
+          |                                   |<------------------------------------|
+          |                                   | 12. Verifikasi Signature SHA-512    |
+          |                                   | 13. Verifikasi Nominal & Order ID   |
+          |                                   | 14. Update Status (PAID)            |
+          |                                   |                                     |
+          | 15. GET/POST Refresh Status       |                                     |
+          |---------------------------------->|                                     |
+          | 16. Return Status PAID            |                                     |
+          |<----------------------------------|                                     |
+          |                                   |                                     |
+```
+
+2. ARCHITECTURAL BOUNDARIES
+--------------------------------------------------------------------------------
+- Browser is NOT Payment Authority:
+  * Client callbacks (`onSuccess`, `onPending`) never mark orders as PAID in the database.
+  * Payment status transition to PAID occurs strictly upon backend signature verification
+    or authoritative status API reconciliation.
+- Isolated Feature-Folder Structure:
+  * Backend: `backend/src/features/umkm-advertising/payment/`
+  * Frontend: `frontend/src/features/umkm-advertising/payment/`
+- Thin API Handlers:
+  * API routes under `backend/app/api/` delegate all payment logic to dedicated services.
+================================================================================

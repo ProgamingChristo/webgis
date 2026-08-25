@@ -1,0 +1,30 @@
+GETRA LANDING PHASE 03
+FINAL FOOTER DESIGN
+
+Component
+---------
+frontend/src/features/landing/components/landing-footer.tsx
+
+Content
+-------
+- GETRA brand and product description.
+- GIS menghitung / AI menginterpretasikan principle.
+- Explore links: Tentang, Cara Kerja, Fitur, Untuk UMKM, Teknologi.
+- Access links: Masuk, Daftar GETRA, Kembali ke atas.
+- MAPID 2025 / 2026 competition context note.
+
+Routes / anchors
+----------------
+- /login
+- /signup
+- #top
+- #tentang
+- #cara-kerja
+- #fitur
+- #umkm
+- #teknologi
+
+Accessibility
+-------------
+Footer uses semantic footer/nav landmarks, labeled nav groups, native links, and focus-visible outlines. No placeholder href or javascript link is used.
+

@@ -15,6 +15,7 @@ import {
   persistAuthSession,
   type BrowserAuthSession,
 } from "@/src/lib/auth-client";
+import { GetraLogo } from "@/src/components/getra-ui";
 
 import styles from "../auth.module.css";
 
@@ -162,7 +163,7 @@ export default function LoginPage() {
 
       router.replace(
         onboardingComplete
-          ? "/"
+          ? "/app"
           : "/onboarding",
       );
 
@@ -199,9 +200,7 @@ export default function LoginPage() {
     <main className={styles.page}>
       <section className={styles.hero}>
         <div className={styles.brand}>
-          <div className={styles.brandMark}>
-            G
-          </div>
+          <GetraLogo className={styles.brandLogo} />
 
           <div className={styles.brandText}>
             <strong>

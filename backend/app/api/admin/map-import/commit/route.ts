@@ -57,6 +57,9 @@ type RegionSummary = {
   id: string;
   name: string;
   count: number;
+  boundaryMethod:
+    | "jakarta_admin_curated_boundary"
+    | "import_extent_with_safety_padding";
   bounds: {
     west: number;
     south: number;
@@ -87,7 +90,11 @@ export async function POST(
 
     const batchId = randomUUID();
     const importedAt = new Date().toISOString();
-    const regions = summarizeRegions(payload.merchants, batchId);
+    const regions = summarizeRegions(
+      payload.merchants,
+      batchId,
+      payload.layer_name,
+    );
     const supabase = getServiceRoleSupabaseClient();
 
     const sourceCode = `admin_import_${createHash("sha256")
@@ -153,7 +160,7 @@ export async function POST(
         region_id: region.id,
         region_name: region.name,
         feature_count: region.count,
-        boundary_method: "import_extent_with_safety_padding",
+        boundary_method: region.boundaryMethod,
       },
     }));
 
@@ -183,7 +190,7 @@ export async function POST(
     );
 
     const merchantRows = payload.merchants.map((merchant) => {
-      const regionName = getMerchantRegionName(merchant);
+      const regionName = getMerchantRegionName(merchant, payload.layer_name);
       const regionId = slugify(regionName);
 
       return {
@@ -284,11 +291,88 @@ export const OPTIONS = createOptionsHandler(
   "/api/admin/map-import/commit",
 );
 
-function getMerchantRegionName(merchant: ImportMerchant) {
+type JakartaAdminBoundaryDefinition = {
+  id: string;
+  name: string;
+  geometry: GeoJSON.MultiPolygon;
+};
+
+const JAKARTA_ADMIN_BOUNDARY_REGISTRY: Record<
+  string,
+  JakartaAdminBoundaryDefinition
+> = {
+  "jakarta-timur": {
+    id: "jakarta-timur",
+    name: "Jakarta Timur",
+    geometry: {
+      type: "MultiPolygon",
+      coordinates: [[[
+        [106.875034, -6.192381],
+        [106.865675, -6.192632],
+        [106.860992, -6.194471],
+        [106.851038, -6.201599],
+        [106.85164, -6.202475],
+        [106.852944, -6.201876],
+        [106.855478, -6.202718],
+        [106.855758, -6.204476],
+        [106.854365, -6.206329],
+        [106.849981, -6.20553],
+        [106.847696, -6.209144],
+        [106.837462, -6.205528],
+        [106.822776, -6.202678],
+        [106.821575, -6.209323],
+        [106.818395, -6.214599],
+        [106.799785, -6.228819],
+        [106.797595, -6.22926],
+        [106.795831, -6.229259],
+        [106.796632, -6.236997],
+        [106.803047, -6.244704],
+        [106.807975, -6.252929],
+        [106.813541, -6.261923],
+        [106.822105, -6.272249],
+        [106.829483, -6.287115],
+        [106.84076, -6.301083],
+        [106.858192, -6.31426],
+        [106.881615, -6.315438],
+        [106.901006, -6.306754],
+        [106.914409, -6.293014],
+        [106.930533, -6.278245],
+        [106.944767, -6.260246],
+        [106.953369, -6.235431],
+        [106.960334, -6.213105],
+        [106.966587, -6.190106],
+        [106.971893, -6.166302],
+        [106.969082, -6.152824],
+        [106.957915, -6.139855],
+        [106.942537, -6.12818],
+        [106.919871, -6.120886],
+        [106.899748, -6.12347],
+        [106.882039, -6.162307],
+        [106.878417, -6.167263],
+        [106.876357, -6.17464],
+        [106.875034, -6.192381],
+      ]]],
+    },
+  },
+};
+
+function getMerchantRegionName(
+  merchant: ImportMerchant,
+  layerName?: string,
+) {
+  const detectedRegion = detectJakartaAdminRegionName(
+    merchant.city,
+    merchant.district,
+    merchant.province,
+    layerName,
+  );
+
   return (
+    detectedRegion ||
     merchant.city?.trim() ||
     merchant.district?.trim() ||
     merchant.province?.trim() ||
+    layerName?.trim() ||
     "Wilayah import"
   );
 }
@@ -296,11 +380,12 @@ function getMerchantRegionName(merchant: ImportMerchant) {
 function summarizeRegions(
   merchants: ImportMerchant[],
   batchId: string,
+  layerName: string,
 ): RegionSummary[] {
   const groups = new Map<string, ImportMerchant[]>();
 
   for (const merchant of merchants) {
-    const name = getMerchantRegionName(merchant);
+    const name = getMerchantRegionName(merchant, layerName);
     groups.set(name, [...(groups.get(name) ?? []), merchant]);
   }
 
@@ -317,25 +402,56 @@ function summarizeRegions(
       east: east + longitudePadding,
       north: north + latitudePadding,
     };
+    const curatedBoundary =
+      JAKARTA_ADMIN_BOUNDARY_REGISTRY[slugify(name)];
 
     return {
-      id: slugify(name),
-      name,
+      id: curatedBoundary?.id ?? slugify(name),
+      name: curatedBoundary?.name ?? name,
       count: members.length,
+      boundaryMethod: curatedBoundary
+        ? "jakarta_admin_curated_boundary"
+        : "import_extent_with_safety_padding",
       bounds,
-      geometry: {
-        type: "MultiPolygon",
-        coordinates: [[[
-          [bounds.west, bounds.south],
-          [bounds.east, bounds.south],
-          [bounds.east, bounds.north],
-          [bounds.west, bounds.north],
-          [bounds.west, bounds.south],
-        ]]],
-      },
+      geometry:
+        curatedBoundary?.geometry ?? {
+          type: "MultiPolygon",
+          coordinates: [[[
+            [bounds.west, bounds.south],
+            [bounds.east, bounds.south],
+            [bounds.east, bounds.north],
+            [bounds.west, bounds.north],
+            [bounds.west, bounds.south],
+          ]]],
+        },
       batch_id: batchId,
     } as RegionSummary & { batch_id: string };
   });
+}
+
+function detectJakartaAdminRegionName(
+  ...candidates: Array<string | undefined>
+) {
+  const combined = candidates
+    .filter((candidate): candidate is string => Boolean(candidate?.trim()))
+    .join(" ")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (/\bjakarta\s*timur\b|\bjakarta\s*tim\b|\bjatim\b/.test(combined)) {
+    return "Jakarta Timur";
+  }
+
+  if (/\bjakarta\s*pusat\b|\bjakarta\s*pus\b|\bjakpus\b/.test(combined)) {
+    return "Jakarta Pusat";
+  }
+
+  if (/\bjakarta\s*barat\b|\bjakarta\s*bar\b|\bjakbar\b/.test(combined)) {
+    return "Jakarta Barat";
+  }
+
+  return null;
 }
 
 function createMerchantSlug(

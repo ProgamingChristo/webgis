@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Store, Sparkles, CheckCircle2, ChevronRight } from "lucide-react";
+import { GetraAppShell } from "@/src/components/getra-ui";
 import { AdvertisingEligibilityGate, CampaignList } from "@/src/features/umkm-advertising";
 import { useUserMerchants } from "@/src/features/umkm-advertising/hooks/use-user-merchants";
 
@@ -58,7 +59,13 @@ export default function AdvertisingPage() {
   );
 
   return (
-    <main className="advertising-theme min-h-screen bg-[#050a10] bg-[linear-gradient(rgba(34,211,238,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.035)_1px,transparent_1px)] bg-[size:32px_32px] px-4 py-6 text-slate-100 sm:px-6 lg:px-8">
+    <GetraAppShell
+      description="Kelola campaign, materi promosi, penargetan radius, dan readiness iklan untuk merchant UMKM."
+      eyebrow="GETRA Advertising"
+      title="Advertising Manager"
+      tone="umkm"
+    >
+    <div className="advertising-theme text-slate-100">
       <div className="mx-auto max-w-5xl space-y-6">
         <header className="rounded-2xl border border-cyan-400/20 bg-slate-950/85 p-6 shadow-2xl shadow-cyan-950/20 backdrop-blur sm:flex sm:items-end sm:justify-between">
           <div>
@@ -76,7 +83,7 @@ export default function AdvertisingPage() {
             </p>
           </div>
           <Link
-            href="/"
+            href="/app"
             className="mt-5 inline-flex min-h-10 items-center justify-center rounded-xl border border-cyan-400/25 px-4 text-xs font-bold text-cyan-200 transition hover:border-cyan-300 hover:bg-cyan-400/10 sm:mt-0"
           >
             ← Kembali ke dashboard
@@ -237,6 +244,7 @@ export default function AdvertisingPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
+    </GetraAppShell>
   );
 }

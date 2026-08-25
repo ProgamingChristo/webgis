@@ -1,0 +1,22 @@
+LANDING MAP DATA
+================
+
+Source
+------
+frontend/src/features/landing/utils/landing-map.utils.ts
+
+Classification
+--------------
+ILLUSTRATIVE LANDING DATA.
+NOT PRODUCTION MERCHANT DATA.
+NO ANALYTICS OR CAMPAIGN ATTRIBUTION.
+
+Why safe
+--------
+Fixture kecil, deterministik, dan tidak mengambil merchant privat, campaign,
+profile, payment, admin, atau community private data.
+
+Claims
+------
+Visual tidak mengklaim jumlah UMKM, revenue impact, live traffic, live user
+location, atau status merchant aktual.

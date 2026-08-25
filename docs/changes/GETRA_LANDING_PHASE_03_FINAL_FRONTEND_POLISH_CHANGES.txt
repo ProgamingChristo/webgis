@@ -1,0 +1,288 @@
+TRACK:
+GETRA PUBLIC LANDING
+
+PHASE:
+03
+
+TITLE:
+Integration,
+Motion,
+Real GETRA Map Showcase,
+Footer,
+Responsive,
+Accessibility,
+Performance
+& Final Frontend QA
+
+DATE:
+2026-08-24
+
+BRANCH:
+finalmerge
+
+BASE COMMIT:
+e53f742
+
+FINAL COMMIT:
+N/A - working tree not committed
+
+MOTION
+======
+
+MOTION LIBRARY:
+None. CSS + IntersectionObserver.
+
+SECTION REVEAL:
+PASS - reusable RevealOnScroll.
+
+ROUTE ANIMATION:
+PASS - getra-route-draw.
+
+MARKER ANIMATION:
+PASS - getra-marker-pulse.
+
+SERVICE AREA:
+PASS - screenshot and hero service-area visual retained.
+
+GIS/AI FLOW:
+PASS - principle preserved.
+
+FAIR DISCOVERY:
+PASS - section retained and tested.
+
+UMKM:
+PASS - section retained and tested.
+
+REDUCED MOTION:
+PASS - prefers-reduced-motion disables decorative motion.
+
+REAL GETRA SCREENSHOT
+=====================
+
+SOURCE ROUTE:
+http://localhost:3000/ public GETRA WebGIS hero route fixture.
+
+TEST DATA:
+Safe deterministic fixture/test visual.
+
+START:
+Transit/test start marker.
+
+DESTINATION:
+Merchant/test destination marker.
+
+ROUTE:
+MapLibre-rendered GETRA route fixture.
+
+ASSET PATH:
+frontend/public/images/landing/getra-pedestrian-route-showcase.webp
+
+FORMAT:
+WebP
+
+SIZE:
+67,522 bytes
+
+PRIVACY:
+PASS
+
+SECRETS:
+PASS
+
+MOBILE:
+PASS
+
+FOOTER
+======
+
+COMPONENT:
+frontend/src/features/landing/components/landing-footer.tsx
+
+NAVIGATION:
+PASS
+
+LOGIN:
+/login
+
+SIGNUP:
+/signup
+
+PRINCIPLE:
+GIS menghitung / AI menginterpretasikan visible.
+
+COMPETITION CONTEXT:
+MAPID 2025 / 2026 competition context visible.
+
+RESPONSIVE:
+PASS
+
+ACCESSIBILITY:
+PASS baseline.
+
+RESPONSIVE
+==========
+
+360:
+PASS
+
+390:
+PASS
+
+768:
+PASS
+
+1024:
+PASS
+
+1280:
+PASS
+
+1366:
+PASS
+
+1440:
+PASS
+
+1920:
+PASS
+
+ACCESSIBILITY
+=============
+
+LANDMARKS:
+PASS
+
+HEADINGS:
+PASS baseline
+
+KEYBOARD:
+PASS baseline
+
+FOCUS:
+PASS
+
+SKIP LINK:
+PASS
+
+IMAGE ALT:
+PASS
+
+REDUCED MOTION:
+PASS
+
+PERFORMANCE
+===========
+
+MAP INSTANCES:
+No additional MapLibre instance.
+
+SCREENSHOT SIZE:
+67,522 bytes.
+
+NEW DEPENDENCIES:
+None.
+
+CLIENT COMPONENTS:
+Header, reveal, feature explorer, hooks.
+
+CLEANUP:
+Observers/frame cleanup implemented.
+
+OBSERVED ISSUES:
+None critical.
+
+SECURITY
+========
+
+PRIVATE API:
+NONE
+
+CAMPAIGN EVENTS:
+NONE
+
+PAYMENT CALL:
+NONE
+
+AI CALL:
+NONE
+
+PRIVATE USER DATA:
+NONE
+
+SCREENSHOT SECRET:
+NONE
+
+CLIENT SECRET:
+SAFE
+
+SECRET SCAN:
+PASS
+
+AUTH REGRESSION
+===============
+
+LOGIN:
+HTTP 200
+
+SIGNUP:
+HTTP 200
+
+POST LOGIN:
+Credential-bearing automation not printed/executed in Phase 03.
+
+SESSION:
+No Phase 03 change.
+
+LOGOUT:
+No Phase 03 change.
+
+GENERAL:
+/app route remains present.
+
+COMMUNITY:
+Routes remain present in build output.
+
+UMKM:
+Routes remain present in build output.
+
+PROFILE:
+Routes remain present in build output.
+
+QUALITY
+=======
+
+TYPECHECK:
+PASS
+
+LINT:
+PASS
+
+TEST:
+PASS - 7 files / 36 tests
+
+BUILD:
+PASS
+
+BROWSER E2E:
+PASS
+
+CONSOLE:
+0 critical
+
+NETWORK:
+0 same-origin critical
+
+DEAD BUTTONS:
+NONE found in landing audit
+
+DEAD LINKS:
+NONE found in landing audit
+
+KNOWN LIMITATIONS:
+- Formal Lighthouse score not measured.
+- Formal WCAG certification not completed.
+- Screenshot uses public GETRA WebGIS route fixture to avoid private token/GPS exposure.
+
+READY FOR LANDING PHASE 4:
+YES
+

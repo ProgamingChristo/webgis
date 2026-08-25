@@ -1,0 +1,15 @@
+GETRA LANDING MOTION GUIDE
+
+Motion principles:
+- Subtle, spatial, and purposeful.
+- Route draw and marker pulse should support WebGIS comprehension.
+- Avoid heavy animation that distracts from content.
+
+Files:
+- frontend/app/globals.css contains scoped landing animation primitives.
+- Components apply classes such as getra-reveal and getra-route-draw.
+
+Accessibility:
+- prefers-reduced-motion is supported.
+- Do not add critical information that only appears through animation.
+- Keep keyboard focus states visible.

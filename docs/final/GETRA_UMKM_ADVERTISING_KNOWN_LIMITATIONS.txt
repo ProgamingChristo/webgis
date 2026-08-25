@@ -1,0 +1,25 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — KNOWN LIMITATIONS & EXPLICIT DEFERRALS
+================================================================================
+
+1. PAYMENT GATEWAY BOUNDARIES
+--------------------------------------------------------------------------------
+- Midtrans Sandbox Only: Live customer charging is intentionally disabled in Phase 14.
+- Fixed Nominal: Commercial dynamic pricing tiers are deferred; technical test nominal
+  (Rp 50.000) is used for Sandbox verification.
+- Local Webhooks: External Midtrans webhooks in local development require a public HTTPS
+  tunnel (e.g. ngrok) or manual server-side refresh via the "Cek Status" action button.
+
+2. ANALYTICS BOUNDARIES
+--------------------------------------------------------------------------------
+- Interaction Telemetry Only: GETRA Analytics measures user attention and map interactions
+  (Impressions, Pin Clicks, Profile Opens, Route Requests).
+- Not Sales / ROI: Does not track physical merchant POS transactions, revenue, profit,
+  or financial Return on Investment (ROI/ROAS).
+
+3. SPATIAL & ROUTING BOUNDARIES
+--------------------------------------------------------------------------------
+- PostGIS & pgRouting Authority: Spatial distance and route geometry calculations are
+  computed strictly by PostGIS algorithms; AI is utilized solely for contextual insights.
+================================================================================

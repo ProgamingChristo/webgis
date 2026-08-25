@@ -1,0 +1,842 @@
+MAPID WEBGIS COMPETITION #2 - 2026
+Maps That Think! - Mass Transportation Edition
+PRODUCT REQUIREMENT
+DOCUMENT (PRD)
+GETRA
+Geo-Enabled Transit & Retail Analytics
+Platform WebGIS untuk Optimasi Aksesibilitas & Pengembangan Ekonomi
+di Kawasan Transit Perkotaan Jakarta
+Nama Tim Owalah
+Judul Proyek GETRA - Geo-Enabled Transit & Retail
+Analytics
+Institusi Pradita University
+Ketua Tim TBD - working assumption: Christopher Atera
+Putra
+Kontak christopher.atera@student.pradita.ac.id |
+087888370352
+Anggota Tim dan Usulan Pembagian Peran
+No. Nama Lengkap Usulan Peran dalam Tim
+1 Christopher Atera Putra Project Lead / Product
+2 Allegra Aretha Putri UX / Survey & Validation
+3 Revan Anthony Frontend / WebGIS
+4 Azhriel Fatahillah Backend / Spatial Data
+5 Audrey Lim Data / AI / QA
+Versi 1.0 | 24 Agustus 2026 | Peran tim = working assumption; konfirmasi sebelum submission.
+
+-- 1 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 2
+Basis dokumen: PRD ini menyintesis proposal GETRA dan mengikuti struktur resmi Template
+PRD MAPID WebGIS Competition 2026. Elemen yang tidak dinyatakan eksplisit di proposal -
+khususnya pembagian peran tim, lokasi final survey, dan target non-functional numerik -
+ditulis sebagai working assumption / engineering target agar PRD dapat diuji dan dikelola.
+1 Ringkasan Eksekutif
+GETRA (Geo-Enabled Transit & Retail Analytics) adalah WebGIS berbasis spatial intelligence yang
+menghubungkan akses transportasi massal, jaringan pedestrian, discoverability UMKM, sinyal
+demand-supply, ruang usaha, dan kontribusi komunitas dalam satu model spasial-temporal.
+Produk ditujukan untuk menyelesaikan masalah keputusan yang selama ini terfragmentasi:
+komuter sulit menilai pilihan UMKM berdasarkan waktu berjalan nyata, harga, jam operasional,
+dan kondisi akses; UMKM tidak memiliki gambaran demand yang terikat pada lokasi-waktu;
+calon pelaku usaha tidak dapat membandingkan ruang berdasarkan transit, kompetisi, dan
+kesegaran data secara terpadu.
+Dataset utama yang digunakan mencakup MAPID MAPS sebagai basemap, Menu Go untuk
+supply/atribut UMKM, Struk Go untuk sinyal transaksi yang dapat diverifikasi, Properti Go untuk
+kandidat ruang usaha, data titik transit dan jaringan pedestrian, hasil survey klaster pilot, event
+agregat GETRA, serta kontribusi komunitas. Survey Activities difokuskan pada satu klaster transit
+di Jakarta untuk memvalidasi koordinat, kondisi akses pejalan kaki, informasi UMKM, dan atribut
+lapangan yang tidak cukup dijelaskan oleh jarak geometris.
+Analisis spasial dilaksanakan di PostgreSQL/PostGIS dan pgRouting: spatial filtering, network
+service area 5-15 menit, shortest/weighted pedestrian routing, Route Switch melalui edge
+penalty/exclusion, multi-criteria ranking untuk Fair Discovery, demand-supply comparison dan
+Retail Gap, catchment transit untuk ruang usaha, serta simulasi before-after ketika satu ruas
+pedestrian ditutup. MapLibre GL JS menampilkan pin, route line, service area, demand/Retail Gap
+layer, properti, kontribusi, dan perbandingan skenario; Apache ECharts menampilkan pola waktu
+dan analitik.
+AI dibatasi pada dua tugas: (1) mengekstraksi pertanyaan bahasa alami menjadi parameter
+terstruktur yang tervalidasi dan (2) menjelaskan hasil GIS/data dengan sumber, cap waktu,
+status verifikasi, dan batas klaim. AI tidak menghitung jarak, rute, service area, Accessibility
+Score, atau Retail Gap. Target produk adalah prototipe satu klaster dengan alur commuter-
+UMKM end-to-end yang stabil; fitur yang membutuhkan critical mass atau histori panjang
+disajikan sebagai pilot terbatas atau fondasi data, bukan sebagai insight produksi.
+Outcome utama: Search -> Fair Discovery -> route/service area -> map untuk komuter; profile
+-> diagnosis -> demand/Retail Gap -> AI Copilot -> response/promotion untuk UMKM; serta
+screening awal Business Space Intelligence dan area-resilience pilot.
+
+-- 2 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 3
+2 Tujuan Produk
+Problem statement, product goals, dan value proposition
+2.1 Problem Statement
+Masalah Dampak yang perlu diselesaikan
+Akses last-mile tidak identik dengan jarak
+lurus
+Kualitas trotoar, penyeberangan, ramp,
+hambatan, dan posisi entrance membuat dua
+lokasi dengan jarak geometris serupa
+memiliki waktu serta kenyamanan akses yang
+berbeda.
+Keputusan komuter dan UMKM terpisah Pencarian, kebutuhan, transaksi, supply, dan
+lokasi usaha belum terhubung menjadi insight
+spasial-temporal yang dapat ditindaklanjuti.
+Ranking digital rentan bias
+popularitas/promosi
+Hasil organik dan sponsor sering bercampur;
+pengguna perlu pemisahan yang transparan
+setelah hard constraints seperti lokasi, harga,
+jam buka, dan waktu berjalan dipenuhi.
+Data komunitas cepat berubah Perubahan harga, jam, lokasi, dan kondisi
+akses perlu provenance, timestamp, status
+verifikasi, serta versioning agar dapat diaudit.
+2.2 Tujuan
+ Menyediakan mesin discovery UMKM yang mempertimbangkan kategori, budget, jam buka,
+waktu berjalan jaringan, dan kondisi akses - bukan sekadar kedekatan visual.
+ Mengubah interaksi komuter menjadi demand signal agregat yang dapat dibaca serta
+direspons UMKM tanpa mengekspos identitas individu.
+ Menyediakan routing pedestrian, service area, Route Switch, dan simulasi skenario yang
+dapat diaudit melalui graph yang sama.
+ Menawarkan Business Space Intelligence sebagai screening awal berbasis akses transit,
+demand-supply, kompetisi, serta freshness data.
+ Menggunakan AI sebagai interface dan explanation layer yang terikat pada output GIS,
+bukan sebagai mesin perhitungan spasial atau prediksi omzet.
+2.3 Value Proposition
+Pengguna Nilai yang diterima
+Komuter Temukan UMKM yang benar-benar terjangkau
+berdasarkan jaringan pedestrian dan
+constraint nyata; bedakan original, Hidden
+Gem, dan sponsor secara transparan.
+
+-- 3 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 4
+Pengguna Nilai yang diterima
+UMKM Diagnosis discoverability, pemahaman
+demand/Retail Gap, respons kebutuhan lokal,
+serta promosi spasial yang berlabel.
+Calon pelaku usaha Bandingkan kandidat ruang berdasarkan
+catchment transit, kompetisi, demand-supply,
+dan freshness data sebelum survei lanjutan.
+Pengelola kawasan Baca profil area, kebutuhan akses, dampak
+closure, dan perubahan spasial-temporal
+sebagai decision-support, bukan klaim
+prediksi absolut.
+3 Ruang Lingkup Produk
+Batas kompetisi untuk menjaga fokus dan validitas klaim
+3.1 In-Scope
+ 1 klaster pilot kawasan transit di Jakarta; perluasan wilayah bersifat roadmap.
+ Smart Search & Recommendation, filter manual, UMKM profile, basic routing, service area,
+Route Switch, Fair Discovery, Sponsored Pin, GETRA Community, dan contribution form
+sebagai core.
+ Demand Intelligence, Visibility Diagnosis, AI UMKM Copilot ringan, Business Space
+Comparison, satu Explore Trail, dan satu Scenario Closure sebagai pilot terbatas.
+ Accessibility Need Map melalui skema pengumpulan, Transit Time-Capsule melalui temporal
+versioning, dan Potential Waste Pressure sebagai proxy/foundation - bukan insight produksi
+penuh.
+ MAPID MAPS, Menu Go, Struk Go, Properti Go, transit/pedestrian data, survey pilot, event
+GETRA, dan community contribution dengan provenance + timestamp + verification state.
+ PostGIS/pgRouting untuk perhitungan spasial; AI structured output/RAG opsional untuk
+intent dan explanation.
+ Visualisasi WebGIS melalui MapLibre GL JS dan analitik melalui Apache ECharts.
+3.2 Out-of-Scope
+ Produksi penuh untuk seluruh DKI Jakarta pada tahap kompetisi.
+ Prediksi omzet, ROI, keuntungan, atau klaim causal business impact.
+ Volume sampah aktual; Potential Waste Pressure hanya proxy jika data aktual tidak tersedia.
+ Jaminan ketersediaan properti secara real-time; data harus menampilkan sumber/tanggal
+dan warning freshness.
+ Model AI yang menghitung rute, jarak, service area, Accessibility Score, atau Retail Gap.
+ Aplikasi mobile native dan integrasi pembayaran produksi; Midtrans hanya sandbox bila
+diperlukan.
+ Comfort routing lanjutan jika graph dasar belum stabil dan lolos uji topologi.
+
+-- 4 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 5
+Scope guardrail: Jika core search-routing-fairness-profile-community belum stabil, tim
+menghentikan ekspansi fitur pilot dan mengalokasikan sisa waktu ke data quality, topology
+test, dan usability.
+4 User Persona
+Persona sintetis untuk kebutuhan PRD; bukan data responden nyata
+Persona 1 - Komuter
+Atribut Isi
+Nama Dimas Pratama
+Usia 23
+Latar belakang Karyawan muda yang rutin menggunakan
+MRT/KRL/TransJakarta dan berjalan kaki dari
+node transit.
+Goals Mencari makanan/layanan sesuai budget
+tanpa detour besar.
+Pain Points Jarak di peta tidak selalu sama dengan waktu
+jalan; hasil populer mendominasi.
+Needs Waktu jalan realistis, jam buka, harga, rute
+aman/nyaman, sumber data jelas.
+User Story Sebagai komuter, saya ingin mencari "makan
+di bawah 30 ribu, maksimal 10 menit jalan"
+agar saya mendapat pilihan yang benar-benar
+terjangkau dari stasiun.
+Persona 2 - Pemilik UMKM
+Atribut Isi
+Nama Sari Wulandari
+Usia 36
+Latar belakang Pemilik usaha makanan dekat kawasan transit
+dengan sumber daya pemasaran terbatas.
+Goals Meningkatkan discoverability dan merespons
+demand lokal.
+Pain Points Tidak tahu kategori/slot waktu yang kurang
+supply; promosi mudah tenggelam.
+
+-- 5 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 6
+Atribut Isi
+Needs Profil terverifikasi, Visibility Diagnosis,
+demand/Retail Gap, respons permintaan,
+promosi berlabel.
+User Story Sebagai pemilik UMKM, saya ingin tahu kapan
+dan kategori apa yang dicari di sekitar saya
+agar saya bisa menyesuaikan penawaran
+tanpa menebak.
+Persona 3 - Calon Pelaku Usaha
+Atribut Isi
+Nama Naya Rahman
+Usia 29
+Latar belakang Calon penyewa kios yang membandingkan
+beberapa lokasi dekat transit.
+Goals Menyaring lokasi sebelum survei fisik dan
+negosiasi.
+Pain Points Listing properti tidak menjelaskan demand,
+kompetisi, atau akses pedestrian.
+Needs Catchment transit, competition density,
+demand-supply, freshness warning,
+comparison.
+User Story Sebagai calon pelaku usaha, saya ingin
+membandingkan 2-3 ruang usaha
+berdasarkan akses dan gap kategori agar
+shortlist saya lebih rasional.
+Persona 4 - Pengelola Kawasan
+Atribut Isi
+Nama Bima Santoso
+Usia 34
+Latar belakang Staf perencanaan/operasional kawasan yang
+memantau akses dan aktivitas sekitar transit.
+Goals Memahami kebutuhan akses serta dampak
+perubahan jaringan.
+Pain Points Data akses dan aktivitas tersebar; sulit melihat
+dampak closure.
+
+-- 6 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 7
+Atribut Isi
+Needs Area profile, accessibility contribution,
+scenario closure, temporal history.
+User Story Sebagai pengelola kawasan, saya ingin
+mensimulasikan penutupan satu ruas agar
+saya dapat melihat perubahan service area
+dan UMKM yang terdampak.
+5 Dataset Dasar
+Sumber MAPID/competition dan data operasional turunannya
+5.1 Dataset dasar yang digunakan
+Dataset Sumber Fungsi dalam Produk
+MAPID MAPS MAPID Basemap dan konteks
+pemetaan untuk layer GETRA.
+Menu Go MAPID / Survey Activities Supply UMKM: kategori,
+menu, harga, foto, kondisi
+pembeli, status
+menetap/berkeliling;
+dinormalisasi menjadi profil
+supply + freshness.
+Struk Go MAPID / Survey Activities Sinyal transaksi: merchant,
+waktu, metode pembayaran,
+bukti, lokasi; digunakan hanya
+secara agregat dan nilai
+nominal hanya jika dapat
+diekstraksi serta diverifikasi.
+Properti Go MAPID / Survey Activities Kategori properti, status
+sewa/jual, tanggal
+pencatatan, alamat, foto,
+koordinat; input Business
+Space screening dengan
+freshness warning.
+Titik transit & jaringan
+pedestrian
+Dataset dasar + hasil survey Node transit, entrance, edge-
+node pedestrian,
+penyeberangan, trotoar,
+ramp, hambatan; membentuk
+graph routing/service area.
+5.2 Data turunan/operasional
+ Aktivitas GETRA: search, request, route request, response UMKM, dan campaign click -
+disimpan sebagai event agregat/anonim untuk Demand Intelligence.
+
+-- 7 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 8
+ Community contribution: perubahan harga/jam/lokasi, laporan akses, temuan hambatan -
+masuk status pending/confirmed dengan Trust Score dan temporal versioning.
+ Derived GIS: service area, route, Retail Gap, catchment, competition density, scenario-
+difference, dan area profile; hasil harus menyimpan parameter, timestamp, dan sumber
+input.
+6 Rencana Survey Activities
+Pengumpulan data lapangan untuk validasi klaster pilot
+6.1 Lokasi dan cakupan
+Survey dilakukan pada satu klaster kawasan transit di Jakarta. Lokasi final dipilih pada M1
+berdasarkan ketersediaan dataset MAPID, kepadatan UMKM, keterhubungan node transit,
+kelayakan berjalan kaki, serta kemampuan tim melakukan verifikasi lapangan. Cakupan analisis
+menggunakan catchment jaringan 5-15 menit dari node/entrance transit, bukan radius garis
+lurus.
+6.2 Objek yang disurvei
+Objek Atribut utama
+Node transit / entrance Koordinat, jenis node, akses keluar/masuk,
+keterhubungan ke jaringan pedestrian.
+Edge pedestrian Kontinuitas trotoar, penyeberangan,
+ramp/tangga, hambatan, kondisi akses,
+arah/kemungkinan dilalui.
+UMKM Nama, kategori, koordinat, frontage,
+menu/harga bila tersedia, jam operasi, foto,
+status verifikasi/freshness.
+Properti kandidat Koordinat, status sewa/jual,
+signage/ketersediaan yang terlihat, tanggal
+observasi, foto dan catatan.
+Konteks area Temuan akses, titik konflik, perubahan kondisi
+lapangan, dan catatan yang relevan untuk
+community/accessibility contribution.
+6.3 Output dan ketentuan survey
+ Output minimum: nama/kategori objek, tanggal-waktu, alamat/catatan lokasi, foto
+dokumentasi, kondisi objek, catatan survey, latitude, longitude, source/provenance, dan
+verification status.
+ Foto harus jelas; tidak menampilkan wajah seseorang secara jelas atau plat nomor
+kendaraan; data tidak boleh diambil dari Google Street View/internet sebagai pengganti
+survey lapangan.
+ Koordinat dan geometri divalidasi terhadap posisi objek; duplikasi dan anomali ditinjau
+sebelum ingestion.
+
+-- 8 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 9
+ Data survey digunakan untuk melengkapi dataset dasar, memvalidasi kondisi lapangan,
+menambah titik/edge pada peta, menjadi input analisis spasial, dan menjadi dasar
+explanation/insight AI.
+6.4 Quality gate survey
+Gate Kriteria
+Completeness Field wajib terisi; objek tanpa
+koordinat/timestamp/source tidak masuk
+layer confirmed.
+Spatial validity Koordinat berada pada konteks lokasi yang
+masuk akal; geometri invalid ditolak atau
+diperbaiki sebelum publish.
+Freshness Setiap record memiliki observed_at /
+updated_at; data properti dan jam
+operasional menampilkan freshness warning
+bila lama.
+Verification Survey terverifikasi dipisahkan dari
+community contribution pending.
+Privacy Foto dan event analitik tidak dimaksudkan
+untuk menyimpan identitas individu.
+7 Metode Pengolahan Data, AI, dan Analisis Spasial
+7.1 Data Processing
+ Cleaning: standardisasi kategori, format jam, price band, geometri, koordinat, duplikasi, dan
+field kosong.
+ Validation: schema validation, spatial sanity check, provenance, timestamp/freshness,
+verification state, dan aturan trusted fields.
+ Integration: satu sumber kebenaran untuk geometry + attribute + provenance + timestamp +
+verification; satu graph pedestrian dipakai ulang oleh routing, Explore Trails, dan Scenario
+Closure.
+ Temporal handling: perubahan komunitas/data lapangan dicatat sebagai version/event agar
+before-after dan Time-Capsule dapat dibangun tanpa menimpa histori.
+7.2 Spatial Analysis
+Domain Metode Output
+Search & ranking Attribute filters, spatial query,
+hard constraints, semantic
+retrieval, multi-criteria
+ranking.
+Original / Hidden Gem / Smart
+Alternative / sponsor berlabel.
+
+-- 9 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 10
+Domain Metode Output
+Access & routing Shortest path, network
+service area, edge
+exclusion/penalty, weighted
+comfort cost bila graph stabil.
+Rute, walking time, catchment
+5-15 menit, Route Switch.
+Demand & area Zone-time aggregation,
+demand-supply comparison,
+Retail Gap, area profiling.
+Demand Pulse, kategori
+kurang supply, waktu
+kebutuhan, profil area.
+Business space Transit catchment,
+competition density, spatial
+suitability/comparison.
+Shortlist lokasi + indicator
+comparison + AI Location
+Insight.
+Resilience & temporal Edge removal comparison,
+before-after service area,
+temporal versioning.
+UMKM terdampak, tambahan
+waktu, histori perubahan.
+7.3 AI Integration dan Guardrails
+Konteks Input AI Proses Output
+Komuter Pertanyaan, titik
+transit, preferensi
+Intent extraction ->
+JSON tervalidasi
+Parameter pencarian
++ explanation hasil.
+UMKM Profil, demand, Retail
+Gap, request
+Rangkuman data +
+RAG/template
+Saran profil, paket,
+promosi, response.
+Business Space Properti, akses,
+demand-supply
+Perbandingan
+indikator terstruktur
+Kelebihan,
+keterbatasan,
+warning.
+AI boundary: LLM tidak menghitung jarak, rute, service area, Accessibility Score, atau Retail
+Gap; nilai tersebut berasal dari PostGIS/pgRouting dan baru kemudian dijelaskan. Output AI
+harus menyertakan konteks sumber/timestamp dan tidak menjamin omzet.
+
+-- 10 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 11
+Gambar 1. Alur data, analisis spasial, dan integrasi AI GETRA.
+8 Fitur Produk dan Acceptance Criteria
+Prioritas mengikuti komitmen proposal: P0 = inti wajib; P1 = pilot terbatas; P2 = fondasi
+roadmap. Acceptance criteria di bawah menjadi definition of done untuk demo kompetisi, bukan
+SLA produksi.
+Fitur Produk Acceptance Criteria
+P0 - Smart Search & Manual Filter User dapat memasukkan bahasa alami atau
+filter kategori/budget/walk time/open-now;
+intent disimpan sebagai schema tervalidasi.
+Jika AI gagal, filter manual tetap berfungsi.
+P0 - UMKM Discovery Map Hasil memenuhi hard constraints dan tampil
+sebagai pin dengan atribut minimum:
+nama/kategori, price band atau harga relevan,
+jam/status buka jika ada, freshness/source,
+dan estimasi walking time bila route tersedia.
+P0 - Basic Pedestrian Routing Sistem menghasilkan route line melalui graph
+pedestrian valid; origin/destination
+terhubung; error state jelas jika graph
+terputus.
+P0 - Network Service Area User dapat melihat catchment jaringan 5-15
+menit dari node transit/point; polygon/hasil
+berasal dari graph, bukan buffer Euclidean.
+P0 - Route Switch User dapat menghindari/penalize ruas yang
+dipilih dan melihat rute alternatif serta
+perubahan waktu; jika tidak ada alternatif,
+sistem menjelaskan keterbatasan.
+
+-- 11 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 12
+Fitur Produk Acceptance Criteria
+P0 - Fair Discovery Setelah hard constraints terpenuhi, hasil
+dibedakan menjadi Original, Hidden Gem, dan
+Sponsored; sponsor memiliki label dan tidak
+menyamar sebagai organic ranking.
+P0 - UMKM Profile UMKM memiliki halaman/profile dengan
+atribut usaha, kategori, menu/harga/foto bila
+tersedia, source, freshness, dan verification
+state.
+P0 - Sponsored Pin Promosi tampil sebagai pin/placement
+berlabel sponsor; metadata kampanye tidak
+mengubah status verifikasi data inti UMKM.
+P0 - GETRA Community & Contribution User dapat mengirim temuan/perubahan;
+record masuk pending, memiliki
+timestamp/location, dan tidak otomatis
+menimpa verified data sebelum validasi.
+P1 - Visibility Diagnosis UMKM menerima diagnosis berbasis
+kelengkapan/freshness/discoverability signal
+yang dapat ditelusuri; tidak berupa klaim
+omzet.
+P1 - Demand Intelligence / Retail Gap Dashboard pilot menampilkan agregasi
+demand-supply zona-waktu dan kategori yang
+under-supplied; data sparse diberi label
+pilot/simulasi.
+P1 - AI UMKM Copilot Copilot hanya menggunakan profil +
+demand/Retail Gap/request yang tersedia;
+rekomendasi menyebut dasar data dan
+batasan.
+P1 - Business Space Comparison User dapat membandingkan kandidat
+Properti Go berdasarkan catchment transit,
+demand-supply, competition, dan freshness;
+output berupa screening awal + warning.
+P1 - Explore Trail Minimal satu route tematik terkurasi dapat
+ditampilkan dan menggunakan graph yang
+sama dengan routing dasar.
+P1 - Scenario Closure Minimal satu skenario edge closure dapat
+dibandingkan before-after untuk service
+area/walking time/UMKM terdampak.
+P2 - Accessibility Need Map Foundation Skema kontribusi dan agregasi kebutuhan
+akses tersedia; tidak mengklaim coverage
+populasi jika sample belum cukup.
+
+-- 12 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 13
+Fitur Produk Acceptance Criteria
+P2 - Transit Time-Capsule Foundation Perubahan atribut/layer dapat disimpan
+sebagai version dan minimal dua snapshot
+contoh dapat dibandingkan.
+P2 - Potential Waste Pressure Proxy Jika dibuat, layer menggunakan indikator
+proksi yang dijelaskan; tidak dilabeli sebagai
+volume sampah aktual.
+8.1 Engineering Acceptance Targets (working targets)
+Area Target
+Intent parsing >= 90% dari golden test query pilot
+menghasilkan schema valid; sisanya harus
+fallback ke filter manual.
+Route validity Seluruh route demo harus berada pada
+connected pedestrian graph dan tidak
+melewati edge yang ditandai tidak dapat
+dilalui.
+Spatial response Target p95 <= 3 detik untuk query/routing inti
+pada dataset pilot setelah warm-up; jika
+belum tercapai, gunakan
+precompute/materialized view/caching.
+Map usability Layer utama dapat ditoggle tanpa UI crash;
+loading/error/empty state tersedia.
+Data auditability Hasil insight utama menampilkan
+source/freshness/verification atau link ke
+metadata terkait.
+Privacy Demand analytics menggunakan event
+agregat/anonim; PII tidak diperlukan untuk
+ranking atau area analytics.
+9 Persyaratan Teknis
+Technology stack, architecture, non-functional requirements
+Komponen Rencana Teknis
+Frontend Next.js, React, TypeScript, Tailwind CSS,
+MapLibre GL JS, Apache ECharts.
+Backend/API Next.js Route Handlers + Zod; Supabase Edge
+Functions untuk kebutuhan server-side
+ringan; FastAPI/Python opsional untuk
+batch/spatial specialty.
+
+-- 13 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 14
+Komponen Rencana Teknis
+Database/GIS Supabase PostgreSQL + PostGIS + pgRouting;
+Redis/TimescaleDB hanya sebagai hipotesis
+optimasi jika dibutuhkan.
+AI/Search Satu provider LLM melalui AI router,
+structured output, pgvector/semantic retrieval
+opsional, RAG untuk konten terkontrol,
+manual-filter fallback.
+Auth/Security Supabase Auth, Row Level Security, server-
+side authorization, schema validation, rate
+limit sesuai kelas endpoint, secret
+management.
+Storage/Ops Supabase Storage, logging, backup,
+migration/seed process, monitoring error dan
+query utama.
+Deployment Vercel untuk web/app; Supabase managed
+services untuk DB/Auth/Storage; repository
+Git-based dengan branch/release discipline.
+Gambar 2. Arsitektur teknologi target GETRA.
+9.1 Non-Functional Requirements
+NFR Requirement
+Performance Spatial indexes wajib untuk geometri utama;
+query pilot diukur; gunakan materialized
+view/cache hanya setelah bottleneck terbukti.
+
+-- 14 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 15
+NFR Requirement
+Reliability Failure AI tidak memutus fungsi filter/routing
+inti; error API tidak boleh menyebabkan peta
+blank tanpa fallback state.
+Security Authorization USER/ADMIN dipisahkan dari
+stakeholder capability; operasi admin dan
+trusted-field update harus server-enforced.
+Data integrity Geometry valid, FK/constraint, provenance,
+updated_at, verification state, dan
+audit/temporal record pada data yang sering
+berubah.
+Observability Log endpoint, error intent parsing, failed
+route, ingestion failure, dan latency query;
+hindari log PII/secret.
+Scalability Mulai satu klaster; scale-out melalui spatial
+partitioning/materialized view per wilayah,
+cache, dan batch process tanpa mengganti
+model inti.
+10 User Flow / Wireframe
+10.1 User Flow
+Gambar 3. Alur utama komuter, UMKM, dan Business Space/Planning.
+
+-- 15 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 16
+10.2 Wireframe Konseptual
+Gambar 4. Wireframe halaman utama: search/filter - map - insight panel.
+Prinsip interaksi: peta tetap menjadi pusat keputusan; sidebar kiri mengendalikan intent/filter
+dan daftar hasil, sedangkan panel insight menjelaskan alasan ranking, source/freshness, route
+metrics, demand/area context, atau AI explanation. Sponsored result selalu berlabel; AI
+explanation tidak menggantikan angka GIS.
+11 Timeline Development
+Rencana 8 minggu untuk mengikuti struktur template kompetisi
+Minggu Fokus Kegiatan Target Output
+M1 Scope, data audit,
+pilot selection
+Audit dataset
+MAPID/Survey; pilih
+klaster; finalisasi
+schema, auth,
+role/capability,
+geospatial model,
+ingestion contract.
+Pilot boundary + data
+dictionary + DB
+skeleton.
+M2 Survey & graph
+foundation
+Survey awal;
+normalisasi
+Menu/Struk/Properti;
+transit
+node/entrance;
+pedestrian edge-
+node; basic map +
+UMKM profile.
+Verified seed data +
+connected graph v1.
+
+-- 16 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 17
+Minggu Fokus Kegiatan Target Output
+M3 Search & service area Manual filter;
+structured intent;
+spatial candidate
+retrieval; service area;
+route test harness.
+Search/filter + service
+area demo.
+M4 Routing & fairness Basic routing; Route
+Switch; Fair Discovery;
+Sponsored Pin;
+contribution
+form/community
+workflow.
+Core commuter flow
+end-to-end.
+M5 UMKM intelligence Demand event
+aggregation; Retail
+Gap pilot; Visibility
+Diagnosis; campaign
+analytics skeleton.
+UMKM dashboard
+pilot.
+M6 AI & business space AI UMKM Copilot
+ringan; Business
+Space comparison;
+freshness warnings;
+one Explore Trail.
+Pilot UMKM +
+property flows.
+M7 Resilience &
+validation
+One Scenario Closure;
+topology/ranking
+validation; usability
+test; performance
+profiling; data
+cleanup.
+Validated demo
+candidate.
+M8 Freeze, deployment,
+submission
+Feature freeze; UAT;
+backup/seed;
+deployment; demo
+script;
+documentation;
+contingency fixes
+only.
+Release candidate +
+PRD + demo-ready
+deployment.
+Prioritas waktu: Jika M4 core flow belum stabil, M5-M7 pilot features dipangkas. Proposal
+sendiri menempatkan critical-mass/history features sebagai prototipe terbatas/fondasi,
+sehingga schedule tidak boleh mengorbankan core.
+
+-- 17 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 18
+12 Risiko dan Mitigasi
+Risiko Dampak Mitigasi / Go-No-Go
+Graph pedestrian tidak
+konsisten
+Rute salah/terputus; demo
+gagal
+Topology test + sampled
+route validation; fallback ke
+basic routing; hentikan
+comfort weighting bila core
+graph belum stabil.
+Demand terlalu sedikit Retail Gap terlihat
+meyakinkan tetapi tidak
+representatif
+Gunakan pilot/simulasi
+berlabel; tampilkan sample
+size/freshness; jangan klaim
+pola populasi.
+AI salah mengekstraksi intent Filter tidak sesuai user
+request
+JSON schema validation,
+golden-query test, manual-
+filter fallback, error logging.
+Community contribution tidak
+andal
+Verified data terkontaminasi Pending state,
+source/timestamp/location
+checks, rate limit, Trust Score,
+review before promote.
+Properti kedaluwarsa Business Space memberi
+shortlist menyesatkan
+Selalu tampilkan
+source/date/freshness;
+warning; wajib verifikasi
+availability di luar sistem.
+Query spasial lambat UX buruk dan demo timeout Spatial index, query plan
+review, bounded pilot,
+materialized view/cache untuk
+query berat.
+Scope creep Core flow tidak selesai P0/P1/P2 gate; freeze feature;
+no-go pilot feature jika core
+acceptance belum lolos.
+Privasi/logging PII masuk analytics/log Event anonim/agregat;
+minimisasi field; jangan log
+secret/token/PII; review
+before demo.
+Ketergantungan layanan
+pihak ketiga
+Demo terganggu jika API
+eksternal down
+Graceful degradation,
+cache/static pilot data yang
+legal, env health check,
+fallback manual filters.
+
+-- 18 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 19
+13 Rencana Deployment
+Komponen Rencana
+Hosting Vercel untuk Next.js WebGIS; production
+branch dilindungi; environment preview untuk
+QA.
+Database Supabase PostgreSQL/PostGIS/pgRouting
+dengan migration script, seed klaster pilot,
+RLS, backup, dan connection secret pada
+environment.
+Storage Supabase Storage untuk foto/survey asset
+dengan access policy; hindari public bucket
+untuk data sensitif.
+Repository Git-based repository; branch integrasi/release;
+CI minimal menjalankan type-check, lint,
+unit/integration test yang tersedia, dan build.
+AI Provider/AI Router melalui server-side call; API
+key tidak pernah dikirim ke browser; schema
+validation + timeout + fallback.
+Monitoring Health endpoint, error logging, latency query
+utama, failed intent parse, failed route, dan
+ingestion error.
+Release M8 feature freeze -> migration backup -> seed
+verify -> smoke test P0 -> deploy -> UAT -> tag
+release -> demo script.
+13.1 Demo Readiness Checklist
+ Core commuter flow: search/filter -> Fair Discovery -> route/service area -> map berjalan
+tanpa data manual di tengah demo.
+ UMKM flow: profile -> Visibility/Demand pilot -> AI Copilot/response atau promotion minimal
+satu skenario.
+ Source, timestamp/freshness, verification state, dan sponsor label terlihat pada output yang
+relevan.
+ AI dimatikan/timeout tetap memungkinkan manual filter dan fungsi GIS inti.
+ Database migration/seed dapat direproduksi; backup tersedia sebelum final demo.
+ Tidak ada secret di repository atau client bundle.
+
+-- 19 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 20
+A Lampiran
+Traceability, asumsi, dan reference basis
+A.1 Requirement Traceability Matrix
+Source Requirement PRD Coverage
+Proposal: target satu klaster end-to-end P0 commuter flow + UMKM
+profile/community; timeline M1-M8; demo
+checklist.
+Proposal: Fair Discovery Feature P0 Fair Discovery + sponsor label +
+hard constraints.
+Proposal: PostGIS/pgRouting computes Metode 7.2, AI boundary 7.3, technical
+architecture 9.
+Proposal: Demand Intelligence / Retail Gap
+pilot
+Feature P1 + sparse-data risk + no population
+claim.
+Proposal: Business Space Intelligence Dataset Properti Go + spatial comparison +
+freshness warning.
+Proposal: Community + Trust/temporal
+version
+Contribution P0 + data quality gate + temporal
+handling.
+Proposal: Scenario Closure / Time-Capsule /
+Waste Pressure
+P1 one scenario + P2 foundations; explicit no
+overclaim.
+Template: Survey Activities Section 6
+location/object/output/rules/validation.
+Template: AI flow diagram Figure 1 and AI guardrails.
+Template: Technology Architecture Figure 2 and section 9.
+Template: User Flow/Wireframe Figures 3-4 and section 10.
+A.2 Working Assumptions / TBD sebelum submission
+ Konfirmasi ketua tim dan pembagian peran formal; cover PRD menggunakan working
+allocation agar struktur tim dapat dinilai.
+ Konfirmasi nama klaster/stasiun/halte pilot setelah audit dataset dan rencana survey final.
+ Konfirmasi dataset dasar MAPID yang diwajibkan panitia bila terdapat daftar dataset spesifik
+di luar dokumen template yang diberikan.
+ Engineering targets numerik (intent pass rate dan spatial p95) adalah target internal yang
+dapat disesuaikan setelah profiling awal; bukan klaim performa yang sudah tercapai.
+ Proposal menyebut target pertengahan September dan rencana pembuktian tujuh minggu;
+template menyediakan M1-M8. PRD menambahkan M8 sebagai
+freeze/deployment/submission week agar kedua dokumen konsisten.
+
+-- 20 of 21 --
+
+GETRA | Product Requirement Document | MAPID WebGIS Competition 2026
+Owalah · Pradita University 21
+A.3 Basis Dokumen
+1. GETRA Proposal - Geo-Enabled Transit & Retail Analytics, 2026.
+2. Template_PRD_MAPID_WebGIS_Competition_2026 - Maps That Think! Mass Transportation
+Edition.
+
+-- 21 of 21 --
+

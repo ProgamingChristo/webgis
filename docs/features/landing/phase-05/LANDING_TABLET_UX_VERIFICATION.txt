@@ -1,0 +1,20 @@
+GETRA LANDING TABLET UX VERIFICATION
+
+Viewports:
+- 768x1024: PASS
+- 1024x768: PASS
+
+Breakpoint behavior:
+- Header remains stable.
+- Mobile-style menu is used below lg and passes interaction checks.
+- Desktop navigation appears at lg and remains readable.
+
+Hero:
+- Content and WebGIS visual remain balanced.
+- Hero map contained.
+
+Sections:
+- What is GETRA, GIS/AI, Feature Explorer, Fair Discovery, Community, UMKM, Data Trust, Technology, Final CTA, and Footer recompute without overflow.
+
+Result:
+- TABLET READY: YES

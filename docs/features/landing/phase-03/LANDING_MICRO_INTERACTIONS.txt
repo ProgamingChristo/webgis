@@ -1,0 +1,23 @@
+GETRA LANDING PHASE 03
+MICRO INTERACTIONS
+
+Implemented
+-----------
+- Sticky header opacity/border polish after scroll.
+- Mobile menu button with aria-expanded and Escape close.
+- Section reveal one-shot.
+- Hero text stagger.
+- Hero WebGIS route draw overlay.
+- Marker pulse overlay.
+- Screenshot card subtle hover lift.
+- Feature explorer visual/card hover lift.
+- Final footer links with focus-visible styling.
+
+Design principle
+----------------
+Motion is spatial and restrained. No bounce, large transforms, gaming-like effects, or heavy animation packages.
+
+Accessibility
+-------------
+All interactions use native anchors/buttons. Focus outlines remain visible. Reduced motion disables decorative movement.
+

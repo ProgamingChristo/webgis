@@ -1,0 +1,57 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — FRONTEND ACCEPTANCE & MANUAL TEST GUIDE
+================================================================================
+
+1. TEST ENVIRONMENT PREPARATION
+--------------------------------------------------------------------------------
+1. Start Backend: `cd backend && npm run dev` (http://localhost:3001)
+2. Start Frontend: `cd frontend && npm run dev` (http://localhost:3000)
+3. Open Chromium browser (Chrome / Edge) at `http://localhost:3000`
+
+2. MASTER END-TO-END ACCEPTANCE TEST FLOW
+--------------------------------------------------------------------------------
+Flow 1: Login & Headbar Navigation
+- Action: Open http://localhost:3000/login, sign in as USER with UMKM mode.
+- Expected: Headbar displays "UMKM" navigation link.
+
+Flow 2: UMKM Workspace
+- Action: Click "UMKM" in headbar -> opens http://localhost:3000/umkm.
+- Expected: Displays "Merchant Saya", "Pengajuan UMKM", and Quick Action links.
+
+Flow 3: Register New UMKM with MapLibre Location Picker
+- Action: Click "Tambah UMKM" -> opens http://localhost:3000/umkm/merchants/new.
+- Action: Fill Name ("DUMMY GETRA FINAL UMKM"), Category ("Makanan & Minuman").
+- Action: Click on the interactive map to place a pin, drag pin to fine-tune.
+- Action: Click "Simpan Draft" -> redirects to submission detail with status `Draft`.
+- Action: Click "Ajukan untuk Review" -> status updates to `Menunggu Review`.
+
+Flow 4: Advertising Manager & Campaign Creation
+- Action: Navigate to http://localhost:3000/umkm/advertising.
+- Action: Click "Buat Campaign Draft".
+- Action: Fill campaign name ("DUMMY GETRA FINAL CAMPAIGN").
+- Expected: Campaign card appears in list with status `DRAFT`.
+
+Flow 5: Manage Creative & Spatial Targeting
+- Action: Click "Kelola Materi" -> enter Headline & Body copy -> Save.
+- Action: Click "Targeting Wilayah" -> select 1000m radius -> Save.
+- Action: Click "Jadwal & Kesiapan" -> configure active schedule -> Save.
+
+Flow 6: Midtrans Sandbox Payment
+- Action: Click "Pembayaran (Sandbox)" tab on campaign card.
+- Action: Verify "MIDTRANS SANDBOX" badge and nominal (Rp 50.000).
+- Action: Click "Bayar dengan Midtrans (Sandbox)".
+- Action: In Snap popup, enter test card `4811 1111 1111 1114`, expiry `12/28`, CVV `123`, OTP `112233`.
+- Action: Observe popup closing and status updating to "Terverifikasi (PAID)".
+- Action: Hard refresh browser (F5) -> status remains "Terverifikasi (PAID)".
+
+Flow 7: Serving Preview & Fair Discovery
+- Action: Click "Uji Penayangan (Preview)" -> verify ad is servable within target radius.
+- Action: Navigate to General Search (http://localhost:3000/) -> run search in target zone.
+- Expected: Sponsored Pin appears on map with "Sponsored" disclosure.
+
+Flow 8: Commuter Interaction Tracking & Analytics
+- Action: Click Sponsored Pin -> open merchant profile drawer -> click "Rute ke Sini".
+- Action: Navigate to http://localhost:3000/umkm/advertising/analytics.
+- Expected: Dashboard reflects updated interaction metrics (Impressions, Clicks, Profile Opens, Route Requests), ECharts timeseries render cleanly.
+================================================================================

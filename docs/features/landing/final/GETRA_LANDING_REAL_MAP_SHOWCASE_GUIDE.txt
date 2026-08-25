@@ -1,0 +1,18 @@
+GETRA LANDING REAL MAP SHOWCASE GUIDE
+
+Asset:
+- frontend/public/images/landing/getra-pedestrian-route-showcase.webp
+
+Component:
+- frontend/src/features/landing/components/getra-map-screenshot.tsx
+
+Source:
+- Captured in Phase 03 from the GETRA frontend WebGIS route scenario.
+- Uses safe fixture/test context.
+- Does not expose private GPS, tokens, or authenticated user secrets.
+
+Maintenance:
+- Replace only with approved GETRA runtime screenshots.
+- Before replacement, scan for credentials, user PII, private coordinates, browser extensions, and unrelated tabs.
+- Keep file size below 250 KB where possible.
+- Keep alt text descriptive.

@@ -1,0 +1,29 @@
+LANDING ACCESSIBILITY CHECK
+===========================
+
+Semantic structure
+------------------
+Landing uses main, header/nav, sections, h1, h2, and article cards.
+
+Keyboard
+--------
+Primary CTA, secondary CTA, brand link, and login link are anchor elements and
+keyboard reachable.
+
+Focus
+-----
+Focus-visible styles use GETRA cyan outline.
+
+Map
+---
+Hero map is supplementary. Figure has accessible label and figcaption. Core
+message is present in text outside the map.
+
+Contrast
+--------
+Primary text uses white/slate on navy background. CTA uses high-contrast
+green/cyan gradient with dark text.
+
+Reduced motion
+--------------
+Existing global prefers-reduced-motion rule remains active.

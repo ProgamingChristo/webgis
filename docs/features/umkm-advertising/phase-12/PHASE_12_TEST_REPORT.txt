@@ -1,0 +1,27 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — PHASE 12 AUTOMATED TEST REPORT
+================================================================================
+
+DATE: 2026-08-24
+RUNNER: Vitest
+RESULT: 80 TEST SUITES PASSED (541 TESTS PASSED, 1 SKIPPED)
+DURATION: ~16s
+
+1. PHASE 12 TEST SUITES
+--------------------------------------------------------------------------------
+- `backend/tests/unit/umkm-advertising/midtrans-signature.test.ts` (5 tests, PASSED)
+- `backend/tests/unit/umkm-advertising/payment-status-mapping.test.ts` (14 tests, PASSED)
+- `backend/tests/unit/umkm-advertising/payment-checkout.service.test.ts` (3 tests, PASSED)
+- `backend/tests/unit/umkm-advertising/payment-webhook.service.test.ts` (5 tests, PASSED)
+- `backend/tests/unit/umkm-advertising/campaign-payment-eligibility.service.test.ts` (3 tests, PASSED)
+
+2. FULL SYSTEM SUMMARY
+--------------------------------------------------------------------------------
+- Auth & Security: 46 tests PASSED
+- Spatial & Pedestrian Network: 28 tests PASSED
+- Community Platform: 32 tests PASSED
+- UMKM Advertising Platform (Phases 1-11): 108 tests PASSED
+- Phase 12 Midtrans Sandbox Payment: 30 tests PASSED
+- Total: 541 tests PASSED
+================================================================================

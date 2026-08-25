@@ -1,0 +1,27 @@
+GETRA LANDING TEST GUIDE
+
+Frontend quality gates:
+- npm run typecheck -w frontend
+- npm run lint -w frontend
+- npm run test -w frontend
+- npm run build -w frontend
+
+Browser audit:
+- node scripts/audit-landing-browser.mjs
+
+What the tests cover:
+- Official logo asset metadata and alt text.
+- Header/footer branding.
+- Landing content and anchors.
+- Motion CSS primitives.
+- Real map screenshot asset.
+- Browser responsiveness and mobile menu.
+- Same-origin critical network failures.
+
+Manual smoke:
+1. Open http://localhost:3000/
+2. Confirm official logo appears in header.
+3. Scroll to footer and confirm official logo appears again.
+4. Test mobile viewport menu.
+5. Click Masuk and Daftar links.
+6. Confirm no dead placeholder links.

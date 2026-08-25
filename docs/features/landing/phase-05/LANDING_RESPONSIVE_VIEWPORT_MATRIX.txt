@@ -1,0 +1,21 @@
+GETRA LANDING RESPONSIVE VIEWPORT MATRIX
+
+Viewport | Device Class | Header | Hero | Map | Why GETRA | Feature Explorer | Fair Discovery | UMKM | Footer | Overflow | Console | Status
+360x800 | Mobile | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | NONE | 0 | PASS
+390x844 | Mobile | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | NONE | 0 | PASS
+430x932 | Mobile | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | NONE | 0 | PASS
+768x1024 | Tablet portrait | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | NONE | 0 | PASS
+1024x768 | Tablet landscape | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | NONE | 0 | PASS
+1280x720 | Laptop short | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | NONE | 0 | PASS
+1366x768 | Laptop demo | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | NONE | 0 | PASS
+1440x900 | Desktop | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | NONE | 0 | PASS
+1536x864 | Desktop | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | NONE | 0 | PASS
+1920x1080 | Large desktop | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | NONE | 0 | PASS
+
+Browser audit result:
+- criticalConsoleCount: 0
+- sameOriginCriticalNetwork: []
+- officialLogoVisible: true in all cases
+- heroMapContained: true in all cases
+- realMapReadable: true in all cases
+- tinyTouchTargets: [] in all cases after fix

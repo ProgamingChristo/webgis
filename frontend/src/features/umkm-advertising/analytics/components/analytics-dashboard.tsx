@@ -37,16 +37,27 @@ export function AnalyticsDashboard() {
 
       try {
         setLoadingCampaigns(true);
-        const data = await apiClient.get<Array<{ id: string; name: string }>>("/api/umkm/advertising/campaigns");
-        if (Array.isArray(data)) {
-          const mapped = data.map((c: { id: string; name: string }) => ({ id: c.id, name: c.name }));
-          setCampaigns(mapped);
+        const merchantsRes = await apiClient.get<Array<{ id: string; name: string }>>("/api/umkm/advertising/my-merchants");
+        if (Array.isArray(merchantsRes) && merchantsRes.length > 0) {
+          const allCampaigns: Array<{ id: string; name: string }> = [];
+          for (const m of merchantsRes) {
+            try {
+              const camps = await apiClient.get<Array<{ id: string; name: string }>>(`/api/umkm/advertising/campaigns?merchantId=${m.id}`);
+              if (Array.isArray(camps)) {
+                allCampaigns.push(...camps.map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
+              }
+            } catch (err) {
+              console.error("[AnalyticsDashboard] Error loading merchant campaigns:", err);
+            }
+          }
 
-          if (mapped.length > 0) {
-            if (urlCampaignId && mapped.some((c: { id: string; name: string }) => c.id === urlCampaignId)) {
+          setCampaigns(allCampaigns);
+
+          if (allCampaigns.length > 0) {
+            if (urlCampaignId && allCampaigns.some((c) => c.id === urlCampaignId)) {
               setSelectedCampaignId(urlCampaignId);
             } else {
-              setSelectedCampaignId(mapped[0].id);
+              setSelectedCampaignId(allCampaigns[0].id);
             }
           }
         }

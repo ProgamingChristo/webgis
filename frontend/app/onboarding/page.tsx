@@ -114,7 +114,7 @@ export default function OnboardingPage() {
           );
         }
 
-        router.replace("/");
+        router.replace("/app");
         router.refresh();
       } catch (err: unknown) {
         setErrorMsg(

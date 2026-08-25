@@ -1,0 +1,18 @@
+GETRA LANDING PHASE 02
+DATA TRUST LANDING MODEL
+
+Trusted Spatial Data section
+----------------------------
+The landing communicates that spatial data needs source, time, verification, and provenance.
+
+Displayed trust dimensions
+--------------------------
+- Source
+- Timestamp / Freshness
+- Verification
+- Provenance
+
+Purpose
+-------
+Visitors should understand that GETRA treats spatial data as evidence with context, not as anonymous dots.
+

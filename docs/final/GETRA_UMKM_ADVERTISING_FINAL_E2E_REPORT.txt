@@ -1,0 +1,61 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — FINAL END-TO-END ACCEPTANCE AUDIT REPORT
+================================================================================
+
+DATE: 2026-08-24
+FINAL RELEASE STATUS: READY FOR DEMO
+BROWSER: Chromium 130+ / Chrome
+VIEWPORT: 1920x1080 (Desktop) & 1024x768 (Tablet/Laptop)
+
+1. COMPONENT-BY-COMPONENT ACCEPTANCE MATRIX
+--------------------------------------------------------------------------------
+1. Authentication & Headbar:
+   - Login / Logout: PASS
+   - Session retention across refresh: PASS
+   - Dynamic Headbar for UMKM mode: PASS
+
+2. UMKM Workspace & Add UMKM:
+   - Workspace summary rendering: PASS
+   - MapLibre interactive point picker: PASS
+   - Draft creation & persistence: PASS
+   - Submission review workflow: PASS
+   - Admin atomic approval: PASS
+   - Verified merchant ownership linking: PASS
+
+3. Advertising Manager & Campaign Lifecycle:
+   - Campaign creation (DRAFT): PASS
+   - Creative asset configuration: PASS
+   - Spatial targeting (Radius buffer): PASS
+   - Schedule validation: PASS
+   - Lifecycle state machine (DRAFT -> READY -> ACTIVE -> PAUSED): PASS
+
+4. Midtrans Sandbox Payment:
+   - Sandbox badges visible: PASS
+   - Server-derived test amount (Rp 50.000): PASS
+   - Snap popup integration: PASS
+   - SHA-512 webhook signature verification: PASS
+   - Server-side status reconciliation: PASS
+   - Payment persistence across reload & relogin: PASS
+
+5. Ad Serving & Fair Discovery:
+   - Serving preview simulation: PASS
+   - Sponsored Pin rendering on MapLibre: PASS
+   - Sponsored disclosure visible: PASS
+   - Fair Discovery organic ranking unchanged: PASS
+   - Contextual promo banner serving: PASS
+   - Merchant drawer profile poster serving: PASS
+
+6. Event Tracking & Analytics:
+   - Append-only event ingestion (Impressions, Clicks, Profile Opens, Route Requests): PASS
+   - Viewport visibility & deduplication: PASS
+   - Real-time analytics dashboard with ECharts: PASS
+   - Zero-PII privacy protection: PASS
+
+7. System Health & Quality:
+   - Browser Console: 0 critical uncaught errors
+   - Network Panel: 0 unexplained 4xx/5xx errors
+   - Typechecks & Linters: PASS (0 errors, 0 warnings)
+   - Test Suites: PASS (84 test files, 560 tests passed, 1 skipped)
+   - Production Builds: PASS (Next.js Turbopack)
+================================================================================

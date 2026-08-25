@@ -1,0 +1,50 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — 26-STEP LIVE DEMONSTRATION SCRIPT
+================================================================================
+
+1. DEMO PRECHECK
+--------------------------------------------------------------------------------
+- Verify Backend (3001) and Frontend (3000) are running.
+- Ensure test account `user@example.com` has UMKM mode active.
+
+2. COMPLETE STEP-BY-STEP LIVE PRESENTATION FLOW
+--------------------------------------------------------------------------------
+[Part 1: Authentication & UMKM Workspace]
+Step 1: Sign in at http://localhost:3000/login with user credentials.
+Step 2: Point out the dynamic "UMKM" navigation link appearing in the Headbar.
+Step 3: Click "UMKM" to open the UMKM Workspace (http://localhost:3000/umkm).
+Step 4: Show the "Merchant Saya" section displaying owned verified merchants.
+Step 5: Click "Tambah UMKM ke GETRA" (http://localhost:3000/umkm/merchants/new).
+Step 6: Demonstrate the MapLibre interactive location picker by clicking and dragging the pin.
+Step 7: Click "Simpan Draft", explain the draft staging and review workflow.
+
+[Part 2: Advertising Manager & Campaign Setup]
+Step 8: Open Advertising Manager (http://localhost:3000/umkm/advertising).
+Step 9: Open the demo campaign card ("DUMMY GETRA FINAL DEMO CAMPAIGN").
+Step 10: Show Creative Management (Headline, body, image preview).
+Step 11: Show Spatial Map Targeting (1000m radius circle buffer around merchant).
+Step 12: Show Schedule & Campaign Readiness panel.
+
+[Part 3: Midtrans Sandbox Payment Integration]
+Step 13: Switch to "Pembayaran (Sandbox)" tab on the campaign card.
+Step 14: Highlight the prominent "MIDTRANS SANDBOX" badge and server-derived test amount.
+Step 15: Click "Bayar dengan Midtrans (Sandbox)" to open the Snap popup.
+Step 16: Enter test card `4811 1111 1111 1114`, complete 3DS simulation with OTP `112233`.
+Step 17: Show status updating to "Terverifikasi (PAID)", explain server-side SHA-512 verification.
+
+[Part 4: Public Commuter Experience & Fair Discovery]
+Step 18: Click "Uji Penayangan" (Preview) to verify spatial containment.
+Step 19: Navigate to General Search (http://localhost:3000/).
+Step 20: Run discovery search near the transit corridor.
+Step 21: Show Original and Hidden Gem results, followed by the Sponsored merchant card.
+Step 22: Point out the explicit "Sponsored" disclosure badge.
+Step 23: Locate the Sponsored Pin on the MapLibre map and click it.
+Step 24: Show the Merchant Detail Drawer with the Profile Poster promotion.
+Step 25: Click "Rute ke Sini" to generate a transit pedestrian route.
+
+[Part 5: Campaign Analytics Dashboard]
+Step 26: Navigate to http://localhost:3000/umkm/advertising/analytics.
+         Show real-time updated metrics (Impressions, Clicks, Profile Opens, Route Requests),
+         ECharts timeseries trends, and emphasize the strict zero-PII privacy architecture.
+================================================================================

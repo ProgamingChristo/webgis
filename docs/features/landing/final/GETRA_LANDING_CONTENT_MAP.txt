@@ -1,0 +1,26 @@
+GETRA LANDING CONTENT MAP
+
+Header:
+- Official GETRA logo.
+- Navigation anchors: Tentang, Cara Kerja, Fitur, Untuk UMKM, Teknologi.
+- Primary action: Masuk.
+
+Hero:
+- Spatial Intelligence Platform positioning.
+- Main promise: Geo-Enabled Transit & Retail Analytics.
+- Explains GIS computes and AI interprets.
+- CTA to login and learn more.
+- WebGIS visual preview with transit, pedestrian, POI, route, and evidence motifs.
+
+Story sections:
+- Why GETRA exists.
+- GIS + AI workflow.
+- Feature explorer: Fair Discovery, Community, UMKM, Advertising, Business Space Intelligence.
+- Real GETRA map showcase from Phase 03.
+- Technology and trust.
+
+Footer:
+- Official GETRA logo.
+- Short product explanation.
+- Explore/access navigation.
+- Competition context note.

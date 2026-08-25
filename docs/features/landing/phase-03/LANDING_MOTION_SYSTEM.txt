@@ -1,0 +1,35 @@
+GETRA LANDING PHASE 03
+MOTION SYSTEM
+
+Date
+----
+2026-08-24
+
+Dependency
+----------
+No animation dependency was added. Phase 03 uses CSS, Tailwind-compatible classes, IntersectionObserver, and browser media queries.
+
+Animation primitives
+--------------------
+- getra-fade-up: hero text/CTA stagger.
+- getra-route-draw: subtle route line stroke-dash animation.
+- getra-marker-pulse: cyan/green node pulse.
+- getra-soft-float: very small spatial panel float.
+- getra-reveal: section reveal on scroll.
+
+Durations/easing
+----------------
+- Reveal: 680ms, cubic-bezier(0.16, 1, 0.3, 1).
+- Hero stagger: 720ms with short delays.
+- Route draw: 3.2s loop.
+- Marker pulse: 2.8s loop.
+- Soft float: 7s loop.
+
+Cleanup
+-------
+RevealOnScroll disconnects IntersectionObserver after first reveal and on unmount. Scroll state uses requestAnimationFrame and cancels pending frames on cleanup.
+
+Reduced motion
+--------------
+@media (prefers-reduced-motion: reduce) disables route drawing, marker pulse, soft float, scroll transitions, and reveal transforms while keeping content visible.
+

@@ -1,0 +1,27 @@
+GETRA LANDING PHASE 02
+TECHNOLOGY LANDING MODEL
+
+Section anchor:
+- #teknologi
+
+Displayed active stack
+----------------------
+- Next.js 16
+- TypeScript
+- Tailwind CSS v4
+- MapLibre GL
+- Supabase
+- PostgreSQL + PostGIS
+- pgRouting
+- Zod
+- AI Provider Router
+- Midtrans Sandbox
+
+ECharts note
+------------
+ECharts is not listed as an active dependency in the current package audit. Phase 02 therefore does not present ECharts as an active implementation dependency. The analytics preview is lightweight HTML/CSS.
+
+Accuracy rule
+-------------
+The section lists technology that is visible in the current repo/dependency model and avoids presenting unimplemented infrastructure as mandatory runtime.
+

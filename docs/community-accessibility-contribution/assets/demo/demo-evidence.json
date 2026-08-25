@@ -1,0 +1,67 @@
+{
+  "runId": "phase7-final-demo-1787581331237",
+  "date": "2026-08-24T14:22:11.241Z",
+  "environment": {
+    "branch": "finalmerge",
+    "head": "e53f74261368e7fbdcbb5c140679e89d79437bed",
+    "frontendUrl": "http://localhost:3000",
+    "apiUrl": "http://localhost:8080",
+    "supabaseProject": "sesakxnjaphrxqxllqjm",
+    "browser": "Chrome headless via puppeteer-core"
+  },
+  "screenshots": [
+    "docs/community-accessibility-contribution/assets/demo/01-contribution-form.png",
+    "docs/community-accessibility-contribution/assets/demo/02-pending-history.png",
+    "docs/community-accessibility-contribution/assets/demo/03-admin-moderation.png",
+    "docs/community-accessibility-contribution/assets/demo/04-approved-history.png",
+    "docs/community-accessibility-contribution/assets/demo/05-points-trust.png",
+    "docs/community-accessibility-contribution/assets/demo/06-approved-map.png",
+    "docs/community-accessibility-contribution/assets/demo/07-rejected-history.png",
+    "docs/community-accessibility-contribution/assets/demo/08-notification.png",
+    "docs/community-accessibility-contribution/assets/demo/09-merchant-location-select.png",
+    "docs/community-accessibility-contribution/assets/demo/09-merchant-location-browser.png"
+  ],
+  "api": {
+    "historyStatus": 200,
+    "notificationsStatus": 200,
+    "mapStatus": 200,
+    "summary": {
+      "totalContributions": 6,
+      "pendingCount": 3,
+      "approvedCount": 2,
+      "rejectedCount": 1,
+      "contributionPoints": 2,
+      "trustScore": 60,
+      "reviewedContributions": 3,
+      "trustApprovedContributions": 2,
+      "trustRejectedContributions": 1
+    },
+    "notificationsCount": 3,
+    "approvedMapContainsApproved": true,
+    "rejectedMapContainsRejected": false,
+    "merchantCanonicalUnchanged": true
+  },
+  "security": {
+    "userModerationDenied": true,
+    "statusSpoofDenied": true,
+    "pointsSpoofDenied": true,
+    "trustSpoofDenied": true
+  },
+  "privacy": {
+    "mapForbiddenKeys": []
+  },
+  "reportTypes": {
+    "SIDEWALK_OBSTRUCTION": "PASS",
+    "CROSSING": "PASS",
+    "MERCHANT_LOCATION_CHANGED": "PASS",
+    "RAMP_OR_GUIDING_BLOCK": "PASS",
+    "MERCHANT_PRICE_CHANGED": "PASS",
+    "MERCHANT_HOURS_CHANGED": "PASS"
+  },
+  "cleanup": [
+    "Deleted isolated demo contribution records by exact IDs.",
+    "Deleted isolated demo merchant by exact ID.",
+    "Deleted isolated demo auth users/profiles by exact IDs."
+  ],
+  "status": "PASS"
+}

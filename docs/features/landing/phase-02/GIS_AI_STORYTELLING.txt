@@ -1,0 +1,31 @@
+GETRA LANDING PHASE 02
+GIS / AI STORYTELLING
+
+Principle
+---------
+GIS menghitung.
+AI menginterpretasikan.
+
+AI responsibility
+-----------------
+- Parse natural-language intent.
+- Convert user text into structured parameters.
+- Summarize and explain GIS-derived outputs.
+
+GIS responsibility
+------------------
+- Distance.
+- Route.
+- Walking time.
+- Service area.
+- Spatial containment.
+- Spatial filtering.
+- Network accessibility.
+
+Landing behavior
+----------------
+The landing shows an illustrative flow only:
+User question -> AI intent parsing -> structured parameters -> PostGIS/pgRouting -> spatial computation -> ranked/route result -> grounded explanation.
+
+No production AI call is made from the public landing.
+

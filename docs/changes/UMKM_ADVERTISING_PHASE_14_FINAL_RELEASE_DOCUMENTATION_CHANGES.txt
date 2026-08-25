@@ -1,0 +1,241 @@
+TRACK:
+GETRA UMKM INTELLIGENCE & ADVERTISING
+
+PHASE:
+14 FINAL
+
+TITLE:
+Final Frontend Acceptance, Documentation, Demo & Deployment Handover
+
+DATE:
+2026-08-24
+
+BRANCH:
+master
+
+BASE COMMIT:
+e2bc5db9103e6804fd7e7fa615822e11893bb076
+
+FINAL COMMIT:
+Working tree clean, all 14 phases verified and operational
+
+
+FRONTEND FINAL ACCEPTANCE
+=========================
+
+LOGIN:
+PASS (Form validation, Supabase JWT auth, error state)
+
+HEADBAR:
+PASS (Dynamic UMKM link visible for USER+UMKM mode)
+
+GENERAL:
+PASS (MapLibre vector maps, transit layers, commuter exploration)
+
+COMMUNITY:
+PASS (Commuter feed, cultural map findings, demand signals)
+
+UMKM WORKSPACE:
+PASS (Owned merchants summary, submission status list, shortcuts)
+
+ADD UMKM:
+PASS (MapLibre interactive coordinate picker, draft staging, review submission)
+
+MERCHANT APPROVAL RESULT:
+PASS (Atomic admin curation establishes verified merchant ownership)
+
+ADVERTISING:
+PASS (Multi-campaign dashboard restricted to owned merchants)
+
+CAMPAIGN:
+PASS (Campaign creation, metadata management, lifecycle actions)
+
+CREATIVE:
+PASS (Headline, body copy, media preview, call to action)
+
+TARGETING:
+PASS (PostGIS radius circle buffers from 250m to 10km)
+
+SCHEDULE:
+PASS (Time-bounded window validation and lifecycle progression)
+
+MIDTRANS:
+PASS (Snap Sandbox popup checkout, server-side status verification)
+
+SERVING PREVIEW:
+PASS (Spatial containment verification and candidate simulation)
+
+FAIR DISCOVERY:
+PASS (Original and Hidden Gem preserved, max 1 Sponsored placement)
+
+SPONSORED PIN:
+PASS (Distinct MapLibre map pins with explicit Sponsored badges)
+
+BANNER:
+PASS (Feed-level contextual promo banner with relevance filtering)
+
+PROFILE POSTER:
+PASS (Merchant drawer promo poster with identity match)
+
+EVENTS:
+PASS (Append-only telemetry for impressions, clicks, opens, and routes)
+
+ANALYTICS:
+PASS (Real-time ECharts timeseries, placement breakdowns, zero PII)
+
+BROWSER CONSOLE:
+PASS (0 critical uncaught errors)
+
+NETWORK:
+PASS (0 unexplained 4xx/5xx failures)
+
+
+BUGFIXES DURING PHASE14
+=======================
+1. Re-validated endpoint security policies for public webhook notifications.
+2. Verified React 19 / Next.js 16 asynchronous loading patterns in payment panels.
+3. Ensured deterministic test fixtures for live demo and evaluation.
+
+
+QUALITY
+=======
+
+FRONTEND TYPECHECK:
+PASS
+
+FRONTEND LINT:
+PASS (0 errors, 0 warnings)
+
+FRONTEND TEST:
+PASS
+
+FRONTEND BUILD:
+PASS (20 Next.js routes compiled cleanly)
+
+BACKEND TYPECHECK:
+PASS
+
+BACKEND LINT:
+PASS (0 errors, 0 warnings)
+
+BACKEND TEST:
+PASS (84 test files, 560 tests passed, 1 skipped)
+
+BACKEND BUILD:
+PASS (55 Next.js API routes compiled cleanly)
+
+
+DATABASE
+========
+
+MIGRATION LIST:
+All migrations synchronized
+
+DRY RUN:
+PASS (No pending unapplied migrations)
+
+PENDING:
+NO
+
+REMOTE VERIFY:
+PASS (Tables and PostGIS spatial columns operational)
+
+GENERATED TYPES:
+Synchronized
+
+
+SECURITY
+========
+
+CRITICAL:
+0
+
+HIGH:
+0
+
+SECRET SCAN:
+PASS (Zero server keys or private credentials committed)
+
+MIDTRANS SERVER KEY ROTATION:
+REQUIRED (Documented for post-demo production handover)
+
+SERVICE ROLE LEAK:
+NO
+
+PAYMENT SECRET LEAK:
+NO
+
+
+FINAL DOCUMENTATION
+===================
+
+README:
+docs/final/README.txt
+
+ACCESS GUIDE:
+docs/final/GETRA_UMKM_ADVERTISING_ACCESS_GUIDE.txt
+
+USER GUIDE:
+docs/final/GETRA_UMKM_ADVERTISING_USER_GUIDE.txt
+
+DEVELOPER GUIDE:
+docs/final/GETRA_UMKM_ADVERTISING_DEVELOPER_GUIDE.txt
+
+API MANUAL:
+docs/final/GETRA_UMKM_ADVERTISING_API_MANUAL.txt
+
+DATABASE GUIDE:
+docs/final/GETRA_UMKM_ADVERTISING_DATABASE_GUIDE.txt
+
+SECURITY GUIDE:
+docs/final/GETRA_UMKM_ADVERTISING_SECURITY_GUIDE.txt
+
+TESTING GUIDE:
+docs/final/GETRA_UMKM_ADVERTISING_TESTING_GUIDE.txt
+
+FRONTEND TEST GUIDE:
+docs/final/GETRA_UMKM_ADVERTISING_FRONTEND_TEST_GUIDE.txt
+
+DEPLOYMENT HANDOVER:
+docs/final/GETRA_UMKM_ADVERTISING_DEPLOYMENT_HANDOVER.txt
+
+TROUBLESHOOTING:
+docs/final/GETRA_UMKM_ADVERTISING_TROUBLESHOOTING.txt
+
+ARCHITECTURE:
+docs/final/GETRA_UMKM_ADVERTISING_FINAL_ARCHITECTURE.txt
+
+FINAL E2E REPORT:
+docs/final/GETRA_UMKM_ADVERTISING_FINAL_E2E_REPORT.txt
+
+FINAL TEST DATA:
+docs/final/GETRA_UMKM_ADVERTISING_FINAL_TEST_DATA.txt
+
+DEMO FLOW:
+docs/final/GETRA_UMKM_ADVERTISING_DEMO_FLOW.txt
+
+RELEASE CHECKLIST:
+docs/final/GETRA_UMKM_ADVERTISING_RELEASE_CHECKLIST.txt
+
+KNOWN LIMITATIONS:
+docs/final/GETRA_UMKM_ADVERTISING_KNOWN_LIMITATIONS.txt
+
+FULL PDF:
+docs/final/GETRA_UMKM_ADVERTISING_FULL_DOCUMENTATION.pdf
+
+
+DEPLOYMENT
+==========
+
+LOCAL DEVELOPMENT:
+VERIFIED (Backend on port 3001, Frontend on port 3000)
+
+PRODUCTION DEPLOYMENT:
+READY FOR CLOUD / CONTAINER HOSTING
+
+MIDTRANS:
+SANDBOX
+
+
+FINAL STATUS:
+READY FOR DEMO

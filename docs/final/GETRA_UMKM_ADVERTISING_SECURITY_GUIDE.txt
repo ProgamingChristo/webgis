@@ -1,0 +1,32 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — SECURITY, PRIVACY & COMPLIANCE GUIDE
+================================================================================
+
+1. AUTHENTICATION & ACCESS CONTROL
+--------------------------------------------------------------------------------
+- Canonical RBAC:
+  * Strict binary model in `public.profiles.account_role`: `USER` | `ADMIN`.
+  * Stakeholder modes (`UMKM`, `INVESTOR`, `GOVERNMENT`) are context flags, NOT auth roles.
+  * Verified merchant ownership is required to manage advertising campaigns (`merchants.owner_id = user.id`).
+
+2. ROW LEVEL SECURITY (RLS) POLICIES
+--------------------------------------------------------------------------------
+- Table `merchant_submissions`: Users can only read/write their own submissions; ADMINs curate all.
+- Table `ad_campaigns`: Users can only view/mutate campaigns for merchants they own.
+- Table `ad_payment_orders`: Users can only read orders for their own campaigns.
+- Table `campaign_events`: Append-only ingestion protected against mass-mutation.
+
+3. MIDTRANS PAYMENT GATEWAY SECURITY
+--------------------------------------------------------------------------------
+- Server Key Isolation: `MIDTRANS_SERVER_KEY` is strictly confined to server-side memory.
+- Public Webhook Authentication: Enforces SHA-512 digital signature verification using constant-time comparison (`crypto.timingSafeEqual`).
+- Amount Integrity: Webhook amount must match database-recorded amount.
+- Browser Callbacks: Client-side callbacks (`onSuccess`) do NOT mark orders as PAID. Status is determined solely by verified server authority.
+
+4. PRIVACY PROTECTION & COMMUTER DATA HYGIENE
+--------------------------------------------------------------------------------
+- Zero PII Tracking: Campaign interaction events (`campaign_events`) never record commuter user IDs, names, or contact info.
+- Zero GPS Trail Recording: Commuter route requests record only the destination merchant, never commuter origin or movement paths.
+- Aggregation Shield: Analytics APIs return statistical counts only.
+================================================================================

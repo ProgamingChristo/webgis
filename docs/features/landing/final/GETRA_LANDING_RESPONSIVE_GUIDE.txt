@@ -1,0 +1,21 @@
+GETRA LANDING RESPONSIVE GUIDE
+
+Verified viewport targets:
+- 360px
+- 390px
+- 768px
+- 1024px
+- 1280px
+- 1366px
+- 1440px
+- 1920px
+
+Rules:
+- No horizontal overflow.
+- Header logo must remain readable.
+- Mobile menu must open without layout breakage.
+- Hero map preview may stack below content on small screens.
+- Cards and panels must retain readable spacing.
+
+Tool:
+- node scripts/audit-landing-browser.mjs

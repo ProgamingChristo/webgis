@@ -1,0 +1,26 @@
+GETRA LANDING PHASE 02
+COMMUNITY LANDING MODEL
+
+Community concept
+-----------------
+Community is presented as a way to keep the map alive with human context.
+
+Displayed concepts
+------------------
+- commuter findings
+- cultural map
+- local requests
+- replies
+- media
+- location context
+- moderation
+- reputation/trust mechanism
+
+Trust framing
+-------------
+Community contribution is not automatically canonical truth. Landing copy explicitly references timestamp/freshness, verification, provenance, moderation, and trust mechanisms.
+
+Data status
+-----------
+The community mini-feed is illustrative and does not claim to be live user submission data.
+

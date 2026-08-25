@@ -1,0 +1,109 @@
+GETRA APPLICATION UI/UX REDESIGN TRACK PHASE 06
+APPLICATION UI ROUTE INVENTORY
+
+Status:
+- Created before application UI edits.
+- Landing route `/` is preserved as Phase 01-05 public landing source of truth and is not part of the authenticated app redesign scope.
+
+Inventory date:
+- 24 August 2026
+
+1. Public / auth entry routes
+- `/`
+  File: frontend/app/page.tsx
+  Scope: public landing. Preserve visual system and routing.
+- `/login`
+  File: frontend/app/login/page.tsx
+  Scope: auth entry, redirects authenticated users through AuthProvider.
+- `/signup`
+  File: frontend/app/signup/page.tsx
+  Scope: public registration, must keep public signup USER-only.
+- `/onboarding`
+  File: frontend/app/onboarding/page.tsx
+  Scope: authenticated onboarding. General/Commuter is baseline only; optional DB stakeholder modes remain UMKM, INVESTOR, GOVERNMENT.
+
+2. Authenticated General WebGIS
+- `/app`
+  File: frontend/app/app/page.tsx
+  Primary component: frontend/components/getra-dashboard.tsx
+  Scope: main map workspace, route planning, MAPID/admin-imported data, user location, stakeholder switcher, account menu.
+
+3. Community application routes
+- `/community`
+  File: frontend/app/community/page.tsx
+  Primary component: frontend/src/features/community/components/community-page.tsx
+- `/community/[id]`
+  File: frontend/app/community/[id]/page.tsx
+- `/community/contributions`
+  File: frontend/app/community/contributions/page.tsx
+- `/community/friends`
+  File: frontend/app/community/friends/page.tsx
+- `/community/requests/[requestId]`
+  File: frontend/app/community/requests/[requestId]/page.tsx
+- `/community/requests/signals/[signalId]`
+  File: frontend/app/community/requests/signals/[signalId]/page.tsx
+- `/community/users/[userId]`
+  File: frontend/app/community/users/[userId]/page.tsx
+  Scope: community feed, requests, demand signals, cultural map, friends, community profiles.
+
+4. UMKM application routes
+- `/umkm`
+  File: frontend/app/umkm/page.tsx
+  Primary component: frontend/src/features/umkm-workspace/components/umkm-workspace.tsx
+- `/umkm/merchants/new`
+  File: frontend/app/umkm/merchants/new/page.tsx
+  Primary component: frontend/src/features/merchant-submission
+- `/umkm/submissions/[id]`
+  File: frontend/app/umkm/submissions/[id]/page.tsx
+  Primary component: frontend/src/features/merchant-submission
+  Scope: UMKM dashboard, owned merchants, submission flow, submission detail.
+
+5. Advertising and analytics routes
+- `/umkm/advertising`
+  File: frontend/app/umkm/advertising/page.tsx
+  Primary feature: frontend/src/features/umkm-advertising
+- `/umkm/advertising/analytics`
+  File: frontend/app/umkm/advertising/analytics/page.tsx
+  Primary component: frontend/src/features/umkm-advertising/analytics
+  Scope: campaign manager and campaign analytics.
+
+6. Profile and user directory
+- `/settings/profile`
+  File: frontend/app/settings/profile/page.tsx
+  Scope: own profile editing, avatar upload, display name, username, phone, bio.
+- `/users`
+  File: frontend/app/users/page.tsx
+  Scope: public user directory.
+- `/users/[id]`
+  File: frontend/app/users/[id]/page.tsx
+  Scope: public profile detail.
+
+7. Admin routes
+- `/admin/import`
+  File: frontend/app/admin/import/page.tsx
+  Scope: admin-only temporary map import / CRUD.
+- `/admin/community/contributions`
+  File: frontend/app/admin/community/contributions/page.tsx
+  Scope: admin-only community contribution moderation.
+
+8. Existing shared runtime providers
+- frontend/app/layout.tsx wraps all routes with AuthProvider and StakeholderProvider.
+- AuthProvider currently guards:
+  - guest protected route -> `/login`
+  - non-admin `/admin/*` -> `/app`
+  - authenticated incomplete onboarding -> `/onboarding`
+  - authenticated complete visiting `/login` or `/signup` -> `/app`
+
+9. Existing shared UI surfaces to preserve
+- `frontend/src/components/profile/account-menu.tsx`
+- `frontend/src/components/stakeholder/*`
+- `frontend/components/getra-dashboard.tsx`
+- `frontend/src/features/community/components/community-shell.tsx`
+- `frontend/src/features/umkm-workspace/components/umkm-workspace.tsx`
+
+10. Phase 06 implementation notes
+- Redesign should introduce reusable application design primitives rather than isolated one-off page styling.
+- Do not modify public landing visual direction except if needed for regression-safe shared assets.
+- Do not change account_role model.
+- Do not persist GENERAL/COMMUTER as stakeholder modes.
+- Do not expose admin controls to non-admin users.

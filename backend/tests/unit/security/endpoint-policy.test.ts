@@ -163,6 +163,7 @@ describe("API endpoint policy matrix", () => {
         "GET /api/health",
         "POST /api/auth/login",
         "POST /api/auth/register",
+        "POST /api/payments/midtrans/notification",
       ].sort(),
     );
   });
@@ -206,9 +207,13 @@ describe("API endpoint policy matrix", () => {
       [
         "DELETE /api/admin/map-import/layers/[id]",
         "GET /api/admin/community/analytics",
+        "GET /api/admin/community/contributions",
+        "GET /api/admin/community/contributions/[contributionId]",
         "GET /api/admin/community/reports",
         "PATCH /api/admin/map-import/layers/[id]",
         "PATCH /api/admin/community/reports/[reportId]",
+        "POST /api/admin/community/contributions/[contributionId]/confirm",
+        "POST /api/admin/community/contributions/[contributionId]/reject",
         "POST /api/admin/ingestion/jobs",
         "POST /api/admin/ingestion/run",
         "POST /api/admin/map-import/commit",

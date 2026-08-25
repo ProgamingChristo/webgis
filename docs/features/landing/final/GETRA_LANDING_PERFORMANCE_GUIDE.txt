@@ -1,0 +1,16 @@
+GETRA LANDING PERFORMANCE GUIDE
+
+Assets:
+- Official logo: frontend/public/brand/getra-logo.png
+- Real map screenshot: frontend/public/images/landing/getra-pedestrian-route-showcase.webp
+
+Image rules:
+- Use next/image for logo and screenshot.
+- Provide width/height to prevent layout shift.
+- Header logo may use priority.
+- Footer logo does not need priority.
+- Keep screenshot below 250 KB when possible.
+
+Runtime:
+- Avoid adding client libraries for simple landing effects.
+- Keep animation CSS scoped and lightweight.

@@ -1,0 +1,41 @@
+GETRA LANDING PHASE 03
+ACCESSIBILITY FINAL AUDIT
+
+Landmarks
+---------
+- main
+- header/nav
+- section landmarks via section elements
+- footer/nav
+
+Heading
+-------
+The landing keeps a single hero h1. Section headings use h2/h3 hierarchy.
+
+Keyboard
+--------
+- Header anchors are native links.
+- Mobile menu is a native button.
+- Feature explorer uses native buttons with role=tab and aria-selected.
+- Footer links are native links.
+
+Focus
+-----
+Focus-visible outlines are present on header, CTA, menu, screenshot links where applicable, and footer links.
+
+Skip link
+---------
+Implemented: "Lewati ke konten utama" -> #tentang.
+
+Image alt
+---------
+The GETRA map screenshot includes meaningful alt text describing the pedestrian route from start point to merchant destination.
+
+Reduced motion
+--------------
+Implemented with prefers-reduced-motion CSS and useReducedMotion hook.
+
+Known limitation
+----------------
+This is an accessibility baseline audit, not a formal WCAG certification or screen-reader matrix.
+

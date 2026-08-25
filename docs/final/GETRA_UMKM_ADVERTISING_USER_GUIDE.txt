@@ -1,0 +1,50 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — USER GUIDE (NON-TECHNICAL)
+================================================================================
+
+1. OVERVIEW
+--------------------------------------------------------------------------------
+GETRA menghubungkan jaringan transit perkotaan dengan ekosistem UMKM lokal.
+Sebagai pelaku usaha (UMKM), Anda dapat mendaftarkan usaha Anda, mengelola profil,
+menayangkan promosi bersponsor (Sponsored Pins, Banners, Posters), dan memantau
+interaksi komuter secara transparan.
+
+2. FITUR UNTUK PELAKU USAHA (UMKM)
+--------------------------------------------------------------------------------
+A. UMKM Workspace (/umkm)
+- Akses melalui tombol "UMKM" pada headbar atas setelah memilih mode UMKM.
+- Melihat daftar "Merchant Saya" yang telah diverifikasi.
+- Melihat riwayat "Pengajuan UMKM" (Draft, Menunggu Review, Disetujui, Ditolak).
+- Akses cepat ke "Kelola Iklan" dan "Buka Analytics".
+
+B. Mendaftarkan Usaha Baru (/umkm/merchants/new)
+1. Isi Nama Usaha, Kategori (Makanan & Minuman, Retail, Jasa, dll.), dan Alamat.
+2. Gunakan Peta Interaktif (MapLibre):
+   - Klik langsung pada peta untuk menaruh pin lokasi usaha Anda.
+   - Geser (drag) pin untuk menyempurnakan koordinat.
+   - Atau klik "Gunakan Lokasi Saya" untuk mendeteksi GPS perangkat.
+3. Klik "Simpan Draft" untuk menyimpan sementara, atau "Ajukan untuk Review"
+   untuk mengirimkan pengajuan ke tim kurasi GETRA.
+
+C. Memasang Iklan Promosi (/umkm/advertising)
+1. Buka Advertising Manager dan pilih merchant yang ingin dipromosikan.
+2. Klik "Buat Campaign Draft".
+3. Kelola Materi Iklan (Creative): Tulis Judul, Deskripsi singkat, dan pilih gambar.
+4. Tentukan Targeting Wilayah: Pilih radius promosi di sekitar outlet (misal: 1000 meter)
+   atau pilih koridor transit GETRA.
+5. Atur Jadwal: Tentukan tanggal mulai dan selesai promosi.
+6. Pembayaran (Midtrans Sandbox): Klik "Bayar dengan Midtrans" untuk menyelesaikan simulasi
+   pembayaran menggunakan kartu uji coba Sandbox.
+7. Setelah semua persyaratan (Merchant, Creative, Targeting, Jadwal, Pembayaran)
+   terpenuhi (centang hijau), campaign siap aktif secara otomatis sesuai jadwal.
+
+D. Memantau Hasil Iklan (/umkm/advertising/analytics)
+- Buka dashboard analytics untuk melihat 4 metrik interaksi komuter:
+  1. Penayangan (Impressions): Jumlah iklan dilihat oleh pengguna di peta/feed.
+  2. Klik Pin Bersponsor (Sponsored Pin Clicks): Jumlah klik pada pin lokasi di peta.
+  3. Buka Profil (Profile Opens): Jumlah pembukaan drawer profil toko dari iklan.
+  4. Permintaan Rute (Route Requests): Jumlah komuter yang meminta navigasi jalan kaki menuju toko Anda.
+- Catatan Penting: Analytics GETRA berfokus pada interaksi nyata pengguna pada peta transit,
+  dan tidak mencatat atau menjamin omzet/penjualan produk.
+================================================================================

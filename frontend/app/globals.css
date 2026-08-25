@@ -1,5 +1,143 @@
 @import "tailwindcss";
 
+@theme {
+  --color-getra-bg: #07111f;
+  --color-getra-surface: #0a1628;
+  --color-getra-green: #7ad43b;
+  --color-getra-cyan: #29c7d8;
+  --color-getra-blue: #2878c7;
+  --color-getra-amber: #f7c948;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.getra-landing {
+  --getra-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.getra-reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 680ms var(--getra-ease),
+    transform 680ms var(--getra-ease);
+}
+
+.getra-reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.getra-hero-step {
+  animation: getra-fade-up 720ms var(--getra-ease) both;
+}
+
+.getra-hero-step:nth-child(2) {
+  animation-delay: 80ms;
+}
+
+.getra-hero-step:nth-child(3) {
+  animation-delay: 150ms;
+}
+
+.getra-hero-step:nth-child(4) {
+  animation-delay: 220ms;
+}
+
+.getra-hero-step:nth-child(5) {
+  animation-delay: 300ms;
+}
+
+.getra-hero-map,
+.getra-map-shot {
+  animation: getra-soft-float 7s ease-in-out infinite;
+}
+
+.getra-route-draw {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  animation: getra-route-draw 3.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(41, 199, 216, 0.7));
+}
+
+.getra-marker-pulse {
+  transform-origin: center;
+  animation: getra-marker-pulse 2.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(41, 199, 216, 0.7));
+}
+
+.getra-marker-pulse--green {
+  animation-delay: 420ms;
+  filter: drop-shadow(0 0 10px rgba(122, 212, 59, 0.7));
+}
+
+.getra-layer-card,
+.getra-feature-visual,
+.getra-map-shot {
+  transition:
+    transform 420ms var(--getra-ease),
+    border-color 420ms var(--getra-ease),
+    box-shadow 420ms var(--getra-ease);
+}
+
+.getra-layer-card:hover,
+.getra-feature-visual:hover,
+.getra-map-shot:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 70px rgba(3, 12, 22, 0.35);
+}
+
+@keyframes getra-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes getra-soft-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes getra-route-draw {
+  0% {
+    stroke-dashoffset: 420;
+    opacity: 0.25;
+  }
+  42%,
+  72% {
+    stroke-dashoffset: 0;
+    opacity: 0.9;
+  }
+  100% {
+    stroke-dashoffset: -420;
+    opacity: 0.25;
+  }
+}
+
+@keyframes getra-marker-pulse {
+  0%,
+  100% {
+    opacity: 0.76;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.28);
+  }
+}
+
 /* Theme bridge for independently reusable Advertising Manager editors. */
 .advertising-theme .bg-white { background-color: rgba(9, 18, 28, 0.92); }
 .advertising-theme .bg-gray-50,
@@ -64,6 +202,10 @@
   --getra-warning: #f7c948;
   --getra-danger: #ff6577;
   --getra-sponsored: #b06cec;
+  --getra-app-glass: rgba(7, 16, 25, 0.76);
+  --getra-app-glass-strong: rgba(8, 18, 28, 0.92);
+  --getra-app-radius: 24px;
+  --getra-app-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
   color-scheme: dark;
 }
 
@@ -126,6 +268,310 @@ select:focus-visible {
   box-shadow:
     inset 0 0 0 4px rgba(34, 211, 238, 0.08),
     0 0 24px rgba(34, 211, 238, 0.16);
+}
+
+.getra-app-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(34, 211, 238, 0.16), transparent 30%),
+    radial-gradient(circle at 88% 6%, rgba(154, 242, 74, 0.12), transparent 25%),
+    linear-gradient(rgba(64, 200, 224, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(64, 200, 224, 0.04) 1px, transparent 1px),
+    #050a10;
+  background-size: auto, auto, 34px 34px, 34px 34px, auto;
+  color: var(--getra-ink);
+}
+
+.getra-app-shell--community {
+  --getra-primary-soft: rgba(34, 211, 238, 0.12);
+}
+
+.getra-app-shell--umkm {
+  --getra-primary: #9af24a;
+  --getra-primary-hover: #c7ff92;
+  --getra-primary-soft: rgba(154, 242, 74, 0.12);
+}
+
+.getra-app-shell--admin {
+  --getra-primary: #f7c948;
+  --getra-primary-hover: #ffe28a;
+  --getra-primary-soft: rgba(247, 201, 72, 0.12);
+}
+
+.getra-app-shell--profile {
+  --getra-primary: #67e8f9;
+  --getra-primary-hover: #a5f3fc;
+}
+
+.getra-app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: grid;
+  min-height: 78px;
+  grid-template-columns: 190px minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  border-bottom: 1px solid rgba(129, 211, 230, 0.14);
+  background: rgba(4, 10, 16, 0.86);
+  padding: 10px clamp(14px, 2vw, 28px);
+  backdrop-filter: blur(22px);
+}
+
+.getra-app-brand {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.getra-app-nav {
+  display: flex;
+  min-width: 0;
+  justify-content: center;
+  gap: 6px;
+}
+
+.getra-app-nav__item,
+.getra-app-rail__link,
+.getra-app-rail__home,
+.getra-app-logout,
+.getra-app-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.getra-app-nav__item {
+  min-height: 38px;
+  border-radius: 999px;
+  padding: 0 12px;
+  color: #8aa0b4;
+  font-size: 12px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.getra-app-nav__item:hover,
+.getra-app-nav__item--active {
+  border-color: rgba(34, 211, 238, 0.28);
+  background: rgba(34, 211, 238, 0.08);
+  color: #d8fbff;
+}
+
+.getra-app-actions {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 10px;
+}
+
+.getra-app-logout,
+.getra-app-menu-button {
+  min-height: 40px;
+  border-color: rgba(129, 211, 230, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #a7bdd0;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.getra-app-logout:hover:not(:disabled),
+.getra-app-menu-button:hover {
+  border-color: rgba(34, 211, 238, 0.48);
+  color: #d8fbff;
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.getra-app-logout:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.getra-app-menu-button {
+  display: none;
+}
+
+.getra-app-layout {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  gap: 22px;
+  width: min(1480px, calc(100% - 28px));
+  margin: 0 auto;
+  padding: 22px 0 34px;
+}
+
+.getra-app-rail {
+  position: sticky;
+  top: 100px;
+  align-self: start;
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(129, 211, 230, 0.14);
+  border-radius: var(--getra-app-radius);
+  background: var(--getra-app-glass);
+  padding: 14px;
+  box-shadow: var(--getra-app-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.getra-app-rail__home {
+  min-height: 46px;
+  justify-content: center;
+  border-color: rgba(154, 242, 74, 0.2);
+  border-radius: 16px;
+  background: linear-gradient(90deg, rgba(154, 242, 74, 0.14), rgba(34, 211, 238, 0.1));
+  color: #d9ffb8;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.getra-app-rail__links {
+  display: grid;
+  gap: 6px;
+}
+
+.getra-app-rail__link {
+  min-height: 42px;
+  border-radius: 15px;
+  padding: 0 12px;
+  color: #8aa0b4;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.getra-app-rail__link:hover,
+.getra-app-rail__link--active {
+  border-color: rgba(34, 211, 238, 0.28);
+  background: var(--getra-primary-soft);
+  color: var(--getra-primary-hover);
+  transform: translateX(2px);
+}
+
+.getra-app-main {
+  min-width: 0;
+}
+
+.getra-app-page-header {
+  display: flex;
+  gap: 18px;
+  align-items: end;
+  justify-content: space-between;
+  border: 1px solid rgba(129, 211, 230, 0.14);
+  border-radius: calc(var(--getra-app-radius) + 6px);
+  background:
+    linear-gradient(135deg, rgba(34, 211, 238, 0.09), transparent 36%),
+    var(--getra-app-glass-strong);
+  padding: clamp(20px, 3vw, 30px);
+  box-shadow: var(--getra-app-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.getra-app-page-header span {
+  color: var(--getra-primary);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.getra-app-page-header h1 {
+  max-width: 820px;
+  margin: 8px 0 0;
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+}
+
+.getra-app-page-header p {
+  max-width: 760px;
+  margin: 12px 0 0;
+  color: #a7bdd0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.getra-app-page-actions {
+  flex: 0 0 auto;
+}
+
+.getra-app-content {
+  margin-top: 18px;
+}
+
+.getra-app-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+}
+
+.getra-app-drawer__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(2, 6, 12, 0.72);
+  cursor: pointer;
+}
+
+.getra-app-drawer__panel {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: min(86vw, 360px);
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  border-left: 1px solid rgba(129, 211, 230, 0.16);
+  background: rgba(5, 11, 18, 0.98);
+  padding: 18px;
+  box-shadow: -30px 0 70px rgba(0, 0, 0, 0.36);
+}
+
+.getra-app-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.getra-app-drawer__header button {
+  display: inline-grid;
+  size: 40px;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid rgba(129, 211, 230, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #d8fbff;
+}
+
+.getra-app-drawer__nav {
+  display: grid;
+  gap: 8px;
+}
+
+.getra-app-drawer__nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  border: 1px solid rgba(129, 211, 230, 0.13);
+  border-radius: 16px;
+  padding: 0 14px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #d8fbff;
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration: none;
 }
 
 .workspace {
@@ -2063,6 +2509,42 @@ select:focus-visible {
 }
 
 @media (max-width: 760px) {
+  .getra-app-topbar {
+    min-height: 66px;
+    grid-template-columns: 1fr auto;
+  }
+
+  .getra-app-nav,
+  .getra-app-rail,
+  .getra-app-logout,
+  .getra-app-actions .account-menu {
+    display: none;
+  }
+
+  .getra-app-menu-button {
+    display: inline-flex;
+  }
+
+  .getra-app-layout {
+    width: min(100% - 20px, 1480px);
+    grid-template-columns: 1fr;
+    padding-top: 14px;
+  }
+
+  .getra-app-page-header {
+    border-radius: 24px;
+    padding: 20px;
+  }
+
+  .getra-app-page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .getra-app-content {
+    margin-top: 12px;
+  }
+
   .topbar {
     height: 58px;
     padding: 0 10px;
@@ -2125,5 +2607,36 @@ select:focus-visible {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  .getra-reveal,
+  .getra-hero-step,
+  .getra-hero-map,
+  .getra-map-shot,
+  .getra-route-draw,
+  .getra-marker-pulse {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1180px) {
+  .getra-app-topbar {
+    grid-template-columns: 170px minmax(0, 1fr) auto;
+  }
+
+  .getra-app-nav__item {
+    padding-inline: 10px;
+  }
+
+  .getra-app-nav__item svg {
+    display: none;
+  }
+
+  .getra-app-layout {
+    grid-template-columns: 220px minmax(0, 1fr);
   }
 }

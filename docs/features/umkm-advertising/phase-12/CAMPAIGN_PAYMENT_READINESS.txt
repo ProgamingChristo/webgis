@@ -1,0 +1,21 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — CAMPAIGN PAYMENT READINESS SPECIFICATION
+================================================================================
+
+1. PAYMENT READINESS EVALUATION
+--------------------------------------------------------------------------------
+Executed by `CampaignPaymentEligibilityService`:
+- `is_ready = true` ONLY IF `ad_payment_orders` contains a record with `status = 'PAID'`.
+- If status is `PENDING`, `CREATED`, `FAILED`, `EXPIRED`, `CANCELLED`, or no order exists:
+  `is_ready = false`.
+
+2. COMPLETE CAMPAIGN READINESS MATRIX
+--------------------------------------------------------------------------------
+To transition a campaign to `READY` / `SCHEDULED` / `ACTIVE`:
+1. Merchant Eligibility: Verified merchant ownership & active merchant profile.
+2. Creative Readiness: Valid headline, body, and promotional image asset.
+3. Targeting Readiness: Defined transit study area and pedestrian proximity buffer.
+4. Schedule Validity: `start_at < end_at` within acceptable campaign windows.
+5. Payment Readiness: Verified `PAID` payment order in Midtrans Sandbox.
+================================================================================

@@ -1,0 +1,27 @@
+LANDING AUTH REGRESSION
+=======================
+
+Login
+-----
+/login tetap route login. Setelah session sukses:
+- onboarding incomplete -> /onboarding
+- onboarding complete -> /app
+
+Signup
+------
+/signup tetap route signup. Setelah session sukses:
+- onboarding incomplete -> /onboarding
+- onboarding complete -> /app
+
+Onboarding
+----------
+Setelah submit modes, user diarahkan ke /app.
+
+Root
+----
+/ tetap public landing, termasuk untuk authenticated user. Ini sesuai Phase 01
+agar root tidak kembali menjadi private app route.
+
+Admin
+-----
+Guard admin tetap memeriksa account_role ADMIN. Non-admin diarahkan ke /app.

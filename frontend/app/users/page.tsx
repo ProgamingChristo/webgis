@@ -23,6 +23,7 @@ import {
   getExperienceBadges,
   getPrimaryExperienceLabel,
 } from "@/src/lib/user-experience";
+import { GetraAppShell } from "@/src/components/getra-ui";
 
 function labelForProfile(
   profile: PublicProfile,
@@ -80,14 +81,19 @@ export default function UsersPage() {
   }, [search]);
 
   return (
-    <main className="min-h-screen bg-[#050a10] text-slate-100">
-      <section className="mx-auto w-full max-w-6xl px-5 py-8">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-cyan-300/15 pb-6">
+    <GetraAppShell
+      description="Temukan profil publik pengguna GETRA, jenis pengalaman yang aktif, dan trust score komunitas."
+      eyebrow="GETRA Users"
+      title="Direktori profil"
+      tone="profile"
+    >
+      <section className="mx-auto w-full max-w-6xl">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-cyan-300/15 bg-slate-950/70 p-5">
           <div>
             <button
               className="mb-5 inline-flex h-10 items-center gap-2 border border-cyan-300/20 px-3 text-xs font-black uppercase tracking-[0.16em] text-cyan-200 transition hover:border-cyan-300/70"
               type="button"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/app")}
             >
               <ArrowLeft size={16} />
               Dashboard
@@ -198,6 +204,6 @@ export default function UsersPage() {
           </p>
         ) : null}
       </section>
-    </main>
+    </GetraAppShell>
   );
 }

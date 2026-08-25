@@ -1,0 +1,25 @@
+GETRA LANDING REAL MAP SCREENSHOT RESPONSIVE REPORT
+
+Asset:
+- frontend/public/images/landing/getra-pedestrian-route-showcase.webp
+
+Component:
+- frontend/src/features/landing/components/getra-map-screenshot.tsx
+
+Mobile:
+- PASS, image is readable and no page overflow.
+
+Tablet:
+- PASS.
+
+Desktop:
+- PASS.
+
+Crop/object fit:
+- Browser audit confirms rendered screenshot stays readable; no distortion detected by dimension checks.
+
+Route/start/destination:
+- Real screenshot remains large enough for the route scenario to be usable as landing evidence.
+
+Privacy:
+- Screenshot remains fixture/test context and does not expose private GPS/auth secrets.

@@ -1,0 +1,36 @@
+GETRA LANDING PHASE 03
+PERFORMANCE AUDIT
+
+New dependencies
+----------------
+None.
+
+MapLibre instances
+------------------
+No additional MapLibre instances were added. The landing continues to use the hero WebGIS map only.
+
+Screenshot
+----------
+- WebP asset
+- 860 x 600
+- 67,522 bytes
+- rendered via next/image with width/height and responsive sizes
+
+Client components
+-----------------
+Added client boundaries:
+- LandingHeader for scroll/mobile menu state
+- RevealOnScroll
+- hooks/use-reduced-motion
+- hooks/use-scroll-state
+
+Cleanup
+-------
+- IntersectionObserver disconnects.
+- requestAnimationFrame is cancelled.
+- Chrome capture temp profile cleanup hardened.
+
+Observed issues
+---------------
+No production build, lint, typecheck, or browser audit performance blocker found. Lighthouse score was not measured in Phase 03.
+

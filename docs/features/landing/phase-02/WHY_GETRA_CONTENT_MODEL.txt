@@ -1,0 +1,29 @@
+GETRA LANDING PHASE 02
+WHY GETRA CONTENT MODEL
+
+Section anchor:
+- #tentang
+
+Core headline:
+- Sebuah kota tidak berhenti di pintu stasiun.
+
+Problem model
+-------------
+The section uses real problem classes rather than an invented company founding story.
+
+1. Distance != Access
+   A point that looks nearby by straight-line distance may not be simple to reach on a pedestrian network.
+
+2. Demand & Supply Terpisah
+   Commuter demand and nearby merchant supply often live in disconnected systems.
+
+3. Popularitas != Relevansi
+   Popular or promoted places are not always the most relevant under the user's constraints.
+
+4. Data Membutuhkan Freshness
+   Prices, opening hours, pedestrian conditions, merchant status, and area context can change over time.
+
+Visual model
+------------
+The visual is intentionally spatial: transit point, walking path, merchant point, and GIS layer cards. It avoids generic white cards and does not imply live production telemetry.
+

@@ -1,0 +1,39 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — DATABASE SCHEMA & RLS MODEL
+================================================================================
+
+1. TABLE DEFINITION: public.ad_payment_orders
+--------------------------------------------------------------------------------
+- `id` (UUID, PK, default gen_random_uuid())
+- `campaign_id` (UUID, FK -> public.ad_campaigns.id, ON DELETE CASCADE)
+- `created_by` (UUID, FK -> auth.users.id, ON DELETE CASCADE)
+- `order_id` (TEXT, UNIQUE, NOT NULL, e.g. "GETRA-AD-1724490000-ABCDEF")
+- `amount` (INTEGER, CHECK (amount > 0), NOT NULL)
+- `currency` (TEXT, DEFAULT 'IDR', NOT NULL)
+- `status` (TEXT, CHECK status in ('CREATED', 'PENDING', 'PAID', 'FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'))
+- `provider` (TEXT, DEFAULT 'MIDTRANS', NOT NULL)
+- `provider_transaction_id` (TEXT, nullable)
+- `provider_transaction_status` (TEXT, nullable)
+- `payment_type` (TEXT, nullable)
+- `fraud_status` (TEXT, nullable)
+- `snap_token` (TEXT, nullable)
+- `snap_redirect_url` (TEXT, nullable)
+- `paid_at` (TIMESTAMPTZ, nullable)
+- `expired_at` (TIMESTAMPTZ, nullable)
+- `created_at` (TIMESTAMPTZ, default now())
+- `updated_at` (TIMESTAMPTZ, default now())
+
+2. ROW LEVEL SECURITY (RLS) POLICIES
+--------------------------------------------------------------------------------
+1. `ad_payment_orders_select_policy`:
+   - `auth.uid() = created_by OR profiles.account_role = 'ADMIN'`
+   - Prevents cross-user payment record inspection.
+
+2. `ad_payment_orders_insert_policy`:
+   - `auth.uid() = created_by OR profiles.account_role = 'ADMIN'`
+
+3. `ad_payment_orders_update_policy`:
+   - `auth.uid() = created_by OR profiles.account_role = 'ADMIN'`
+   - Direct client mutation to PAID is prohibited via backend service controls.
+================================================================================

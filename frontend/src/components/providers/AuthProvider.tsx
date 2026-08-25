@@ -34,13 +34,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
     
     async function loadAuth() {
+      if (pathname === "/") {
+        setContext(null);
+        setLoading(false);
+        return;
+      }
+
       const result = await getUserContext();
       if (!mounted) return;
       
       setContext(result);
       setLoading(false);
 
-      const isPublicRoute = ["/login", "/signup"].includes(pathname);
+      const isAuthEntryRoute = ["/login", "/signup"].includes(pathname);
+      const isPublicRoute = pathname === "/" || isAuthEntryRoute;
       const isApiRoute = pathname.startsWith("/api");
       const isAdminRoute = pathname.startsWith("/admin");
 
@@ -54,20 +61,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAdminRoute &&
         result.profile?.account_role !== "ADMIN"
       ) {
-        router.replace("/");
+        router.replace("/app");
         return;
       }
 
-      if (result && isPublicRoute) {
+      if (result && isAuthEntryRoute) {
         if (!result.profile?.onboarding_complete) {
           router.replace("/onboarding");
         } else {
-          router.replace("/");
+          router.replace("/app");
         }
         return;
       }
 
-      if (result && pathname !== "/onboarding" && !result.profile?.onboarding_complete && !isApiRoute) {
+      if (result && pathname !== "/onboarding" && !result.profile?.onboarding_complete && !isApiRoute && !isPublicRoute) {
         router.replace("/onboarding");
       }
     }

@@ -1,0 +1,24 @@
+GETRA LANDING LAPTOP UX VERIFICATION
+
+Viewports:
+- 1280x720: PASS
+- 1366x768: PASS
+- 1536x864: PASS
+
+1366x768 detailed:
+- Header: PASS
+- Hero: PASS
+- CTA: PASS
+- WebGIS hero: PASS
+- Real screenshot: PASS
+- Footer: PASS
+- Overflow: NONE
+- Console critical: 0
+- Network critical: 0
+
+Short height:
+- 1280x720 passes; hero content is not clipped and page scroll remains normal.
+
+Result:
+- LAPTOP READY: YES
+- 1366x768 DEMO READY: YES

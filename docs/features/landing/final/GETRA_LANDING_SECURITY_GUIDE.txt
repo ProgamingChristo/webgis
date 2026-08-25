@@ -1,0 +1,21 @@
+GETRA LANDING SECURITY GUIDE
+
+Public landing must not expose:
+- access_token
+- refresh_token
+- JWT
+- service_role
+- Supabase service role keys
+- database URLs
+- private MAPID credentials
+- user GPS coordinates
+- private admin routes as public CTAs
+
+Current Phase 04 impact:
+- No backend/database changes.
+- No auth logic changes.
+- Official logo is a static public brand asset.
+
+Verification:
+- Run repository/runtime source scan for credential terms.
+- Run browser audit and inspect same-origin 4xx/5xx failures.

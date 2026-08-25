@@ -1,0 +1,92 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — REST API SPECIFICATION MANUAL
+================================================================================
+
+1. UMKM WORKSPACE APIS
+--------------------------------------------------------------------------------
+- `GET /api/umkm/workspace`
+  * Auth: Bearer JWT (USER with UMKM mode or ADMIN)
+  * Returns summary counts, owned merchants list, and recent submissions.
+
+2. MERCHANT SUBMISSION APIS
+--------------------------------------------------------------------------------
+- `POST /api/umkm/merchant-submissions`
+  * Body: `{ name, category, description?, address?, location: { type: "Point", coordinates: [lng, lat] }, image_url? }`
+  * Creates draft submission.
+- `GET /api/umkm/merchant-submissions`
+  * Lists user's submissions.
+- `GET /api/umkm/merchant-submissions/:id`
+  * Gets submission detail.
+- `PATCH /api/umkm/merchant-submissions/:id`
+  * Updates draft submission fields.
+- `POST /api/umkm/merchant-submissions/:id/submit`
+  * Submits draft for review (`PENDING_REVIEW`).
+- `POST /api/umkm/merchant-submissions/:id/cancel`
+  * Cancels pending submission.
+- `GET /api/admin/merchant-submissions`
+  * Auth: Admin only. Lists pending submissions.
+- `POST /api/admin/merchant-submissions/:id/approve`
+  * Auth: Admin only. Atomically creates canonical merchant and establishes verified ownership.
+- `POST /api/admin/merchant-submissions/:id/reject`
+  * Auth: Admin only. Body: `{ "note": "rejection reason" }`.
+
+3. CAMPAIGN & ADVERTISING APIS
+--------------------------------------------------------------------------------
+- `GET /api/umkm/advertising/my-merchants`
+  * Lists verified owned merchants for advertising.
+- `GET /api/umkm/advertising/campaigns?merchantId=:merchantId`
+  * Lists campaigns for owned merchant.
+- `POST /api/umkm/advertising/campaigns`
+  * Creates new campaign draft.
+- `GET /api/umkm/advertising/campaigns/:id`
+  * Retrieves campaign detail with lifecycle status.
+- `POST /api/umkm/advertising/campaigns/:id/schedule`
+  * Updates start/end timestamps.
+- `POST /api/umkm/advertising/campaigns/:id/pause`
+  * Pauses active campaign.
+- `POST /api/umkm/advertising/campaigns/:id/resume`
+  * Resumes paused campaign.
+- `POST /api/umkm/advertising/campaigns/:id/cancel`
+  * Cancels campaign.
+
+4. CREATIVE & TARGETING APIS
+--------------------------------------------------------------------------------
+- `GET /api/umkm/advertising/campaigns/:id/creatives`
+  * Gets creative assets.
+- `POST /api/umkm/advertising/campaigns/:id/creatives`
+  * Upserts headline, body, and image URL.
+- `GET /api/umkm/advertising/campaigns/:id/targeting`
+  * Gets spatial targeting configuration.
+- `POST /api/umkm/advertising/campaigns/:id/targeting`
+  * Sets radius buffer (meters) and optional study area IDs.
+
+5. AD SERVING & FAIR DISCOVERY APIS
+--------------------------------------------------------------------------------
+- `GET /api/advertising/placements/sponsored-pins?lng=:lng&lat=:lat&category=:cat`
+  * Evaluates candidate campaigns and returns eligible Sponsored Pin placements.
+- `GET /api/advertising/placements/contextual-banner?lng=:lng&lat=:lat&context=:ctx`
+  * Evaluates contextual promo banner eligibility.
+- `GET /api/merchants/:id/advertising/profile-poster`
+  * Evaluates profile poster eligibility for specific merchant drawer.
+- `GET /api/discovery?query=:q&lng=:lng&lat=:lat`
+  * Fair Discovery composed search stream (Original, Hidden Gem, and Sponsored).
+
+6. EVENT TRACKING & ANALYTICS APIS
+--------------------------------------------------------------------------------
+- `POST /api/advertising/events`
+  * Ingests append-only interaction events (`IMPRESSION`, `SPONSORED_PIN_CLICK`, `PROFILE_OPEN`, `ROUTE_REQUEST`).
+- `GET /api/umkm/advertising/campaigns/:id/analytics?from=:iso&to=:iso&placement=:p`
+  * Aggregates commuter interactions, CTR, daily timeseries, and placement breakdowns.
+
+7. MIDTRANS PAYMENT APIS
+--------------------------------------------------------------------------------
+- `POST /api/umkm/advertising/campaigns/:id/payment/checkout`
+  * Generates Midtrans Sandbox Snap transaction token.
+- `GET /api/umkm/advertising/campaigns/:id/payment`
+  * Gets current payment status.
+- `POST /api/umkm/advertising/campaigns/:id/payment/refresh`
+  * Reconciles authoritative transaction status from Midtrans API.
+- `POST /api/payments/midtrans/notification`
+  * External Midtrans webhook with SHA-512 digital signature verification.
+================================================================================

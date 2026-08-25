@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -11,6 +11,31 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.15"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -163,6 +188,77 @@ export type Database = {
           },
         ]
       }
+      ad_payment_orders: {
+        Row: {
+          amount: number
+          campaign_id: string
+          created_at: string
+          created_by: string
+          currency: string
+          expired_at: string | null
+          fraud_status: string | null
+          id: string
+          order_id: string
+          paid_at: string | null
+          payment_type: string | null
+          provider: string
+          provider_transaction_id: string | null
+          provider_transaction_status: string | null
+          snap_redirect_url: string | null
+          snap_token: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          campaign_id: string
+          created_at?: string
+          created_by: string
+          currency?: string
+          expired_at?: string | null
+          fraud_status?: string | null
+          id?: string
+          order_id: string
+          paid_at?: string | null
+          payment_type?: string | null
+          provider?: string
+          provider_transaction_id?: string | null
+          provider_transaction_status?: string | null
+          snap_redirect_url?: string | null
+          snap_token?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          campaign_id?: string
+          created_at?: string
+          created_by?: string
+          currency?: string
+          expired_at?: string | null
+          fraud_status?: string | null
+          id?: string
+          order_id?: string
+          paid_at?: string | null
+          payment_type?: string | null
+          provider?: string
+          provider_transaction_id?: string | null
+          provider_transaction_status?: string | null
+          snap_redirect_url?: string | null
+          snap_token?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_payment_orders_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "ad_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_processing_runs: {
         Row: {
           analysis_run_id: string | null
@@ -300,6 +396,70 @@ export type Database = {
             columns: ["actor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_events: {
+        Row: {
+          campaign_id: string
+          context: Json | null
+          created_at: string
+          creative_id: string | null
+          dedup_key: string
+          event_type: string
+          id: string
+          merchant_id: string
+          occurred_at: string
+          placement: string
+          session_key: string
+        }
+        Insert: {
+          campaign_id: string
+          context?: Json | null
+          created_at?: string
+          creative_id?: string | null
+          dedup_key: string
+          event_type: string
+          id?: string
+          merchant_id: string
+          occurred_at?: string
+          placement: string
+          session_key: string
+        }
+        Update: {
+          campaign_id?: string
+          context?: Json | null
+          created_at?: string
+          creative_id?: string | null
+          dedup_key?: string
+          event_type?: string
+          id?: string
+          merchant_id?: string
+          occurred_at?: string
+          placement?: string
+          session_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "ad_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_events_creative_id_fkey"
+            columns: ["creative_id"]
+            isOneToOne: false
+            referencedRelation: "ad_creatives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_events_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
             referencedColumns: ["id"]
           },
         ]
@@ -465,6 +625,7 @@ export type Database = {
           created_at: string
           depth: number
           id: string
+          moderation_status: string
           parent_comment_id: string | null
           post_id: string
           updated_at: string
@@ -475,6 +636,7 @@ export type Database = {
           created_at?: string
           depth: number
           id?: string
+          moderation_status?: string
           parent_comment_id?: string | null
           post_id: string
           updated_at?: string
@@ -485,6 +647,7 @@ export type Database = {
           created_at?: string
           depth?: number
           id?: string
+          moderation_status?: string
           parent_comment_id?: string | null
           post_id?: string
           updated_at?: string
@@ -509,6 +672,214 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_contribution_moderation_events: {
+        Row: {
+          contribution_id: string
+          created_at: string
+          id: string
+          new_status: string
+          previous_status: string
+          reason: string | null
+          reviewer_id: string
+        }
+        Insert: {
+          contribution_id: string
+          created_at?: string
+          id?: string
+          new_status: string
+          previous_status: string
+          reason?: string | null
+          reviewer_id: string
+        }
+        Update: {
+          contribution_id?: string
+          created_at?: string
+          id?: string
+          new_status?: string
+          previous_status?: string
+          reason?: string | null
+          reviewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_contribution_moderation_events_contribution_id_fkey"
+            columns: ["contribution_id"]
+            isOneToOne: true
+            referencedRelation: "community_contributions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_contribution_moderation_events_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_contribution_point_events: {
+        Row: {
+          contribution_id: string
+          created_at: string
+          id: string
+          points: number
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          contribution_id: string
+          created_at?: string
+          id?: string
+          points: number
+          reason: string
+          user_id: string
+        }
+        Update: {
+          contribution_id?: string
+          created_at?: string
+          id?: string
+          points?: number
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_contribution_point_events_contribution_id_fkey"
+            columns: ["contribution_id"]
+            isOneToOne: true
+            referencedRelation: "community_contributions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_contribution_point_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_contributions: {
+        Row: {
+          author_id: string
+          created_at: string
+          id: string
+          location: unknown
+          observed_at: string
+          report_data: Json
+          report_type: string
+          reported_new_location: unknown
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string
+          target_merchant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          id?: string
+          location: unknown
+          observed_at: string
+          report_data?: Json
+          report_type: string
+          reported_new_location?: unknown
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string
+          target_merchant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          id?: string
+          location?: unknown
+          observed_at?: string
+          report_data?: Json
+          report_type?: string
+          reported_new_location?: unknown
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string
+          target_merchant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_contributions_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_contributions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_contributions_target_merchant_id_fkey"
+            columns: ["target_merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          responded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_friendships_addressee_id_fkey"
+            columns: ["addressee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_friendships_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -570,6 +941,57 @@ export type Database = {
           },
         ]
       }
+      community_notifications: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          metadata: Json
+          read_at: string | null
+          recipient_user_id: string
+          type: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          metadata?: Json
+          read_at?: string | null
+          recipient_user_id: string
+          type: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          metadata?: Json
+          read_at?: string | null
+          recipient_user_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_notifications_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_notifications_recipient_user_id_fkey"
+            columns: ["recipient_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_posts: {
         Row: {
           author_id: string
@@ -580,6 +1002,7 @@ export type Database = {
           location: unknown
           location_accuracy_m: number | null
           location_visibility: string | null
+          moderation_status: string
           post_type: string
           updated_at: string
         }
@@ -592,6 +1015,7 @@ export type Database = {
           location?: unknown
           location_accuracy_m?: number | null
           location_visibility?: string | null
+          moderation_status?: string
           post_type?: string
           updated_at?: string
         }
@@ -604,6 +1028,7 @@ export type Database = {
           location?: unknown
           location_accuracy_m?: number | null
           location_visibility?: string | null
+          moderation_status?: string
           post_type?: string
           updated_at?: string
         }
@@ -650,6 +1075,104 @@ export type Database = {
           {
             foreignKeyName: "community_reactions_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_realtime_events: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          post_id: string | null
+          recipient_user_id: string | null
+          signal_id: string | null
+          topic: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          post_id?: string | null
+          recipient_user_id?: string | null
+          signal_id?: string | null
+          topic: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          post_id?: string | null
+          recipient_user_id?: string | null
+          signal_id?: string | null
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_realtime_events_recipient_user_id_fkey"
+            columns: ["recipient_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          moderation_action: string | null
+          reason: string
+          reporter_user_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          moderation_action?: string | null
+          reason: string
+          reporter_user_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          moderation_action?: string | null
+          reason?: string
+          reporter_user_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_reports_reporter_user_id_fkey"
+            columns: ["reporter_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_reports_reviewed_by_fkey"
+            columns: ["reviewed_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1207,6 +1730,85 @@ export type Database = {
             columns: ["source_id"]
             isOneToOne: false
             referencedRelation: "spatial_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      merchant_submissions: {
+        Row: {
+          address: string | null
+          canonical_merchant_id: string | null
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          location: unknown
+          name: string
+          opening_hours: Json
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_by: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          canonical_merchant_id?: string | null
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location: unknown
+          name: string
+          opening_hours?: Json
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_by: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          canonical_merchant_id?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: unknown
+          name?: string
+          opening_hours?: Json
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_by?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_submissions_canonical_merchant_id_fkey"
+            columns: ["canonical_merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_submissions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_submissions_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2825,6 +3427,7 @@ export type Database = {
           id: string
           merchant_id: string
           message: string | null
+          moderation_status: string
           responder_user_id: string
           signal_id: string
           status: string
@@ -2835,6 +3438,7 @@ export type Database = {
           id?: string
           merchant_id: string
           message?: string | null
+          moderation_status?: string
           responder_user_id: string
           signal_id: string
           status: string
@@ -2845,6 +3449,7 @@ export type Database = {
           id?: string
           merchant_id?: string
           message?: string | null
+          moderation_status?: string
           responder_user_id?: string
           signal_id?: string
           status?: string
@@ -3510,6 +4115,10 @@ export type Database = {
         }
         Returns: Record<string, unknown>[]
       }
+      act_on_community_friendship_v1: {
+        Args: { p_action: string; p_friendship_id: string }
+        Returns: undefined
+      }
       add_community_reaction_v1: {
         Args: { p_post_id: string; p_reaction_type: string }
         Returns: {
@@ -3523,6 +4132,29 @@ export type Database = {
         Args: { claim_id: string; review_note?: string }
         Returns: string
       }
+      assert_community_contribution_admin_v1: { Args: never; Returns: string }
+      award_community_contribution_points_v1: {
+        Args: { p_contribution_id: string }
+        Returns: {
+          contribution_id: string
+          created_at: string
+          id: string
+          inserted: boolean
+          points: number
+          reason: string
+          user_id: string
+        }[]
+      }
+      calculate_community_contribution_trust_score_v1: {
+        Args: { p_user_id: string }
+        Returns: {
+          approved_contributions: number
+          rejected_contributions: number
+          reviewed_contributions: number
+          trust_score: number
+          user_id: string
+        }[]
+      }
       calculate_walking_route: {
         Args: {
           p_destination_id: number
@@ -3531,6 +4163,51 @@ export type Database = {
         }
         Returns: Json
       }
+      community_contribution_points_settings_v1: {
+        Args: never
+        Returns: {
+          approved_contribution_points: number
+        }[]
+      }
+      community_contribution_validation_settings_v1: {
+        Args: never
+        Returns: {
+          future_tolerance_minutes: number
+          max_observation_age_days: number
+          merchant_same_location_radius_meters: number
+          report_limit_count: number
+          report_limit_window_minutes: number
+          self_duplicate_radius_meters: number
+          self_duplicate_window_hours: number
+        }[]
+      }
+      community_create_notification: {
+        Args: {
+          p_actor_user_id: string
+          p_entity_id: string
+          p_entity_type: string
+          p_metadata?: Json
+          p_recipient_user_id: string
+          p_type: string
+        }
+        Returns: undefined
+      }
+      community_emit_realtime_event: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_post_id?: string
+          p_recipient_user_id?: string
+          p_signal_id?: string
+          p_topic: string
+        }
+        Returns: undefined
+      }
+      community_emit_social_event: {
+        Args: { p_friendship_id: string; p_recipient_user_id: string }
+        Returns: undefined
+      }
+      community_is_admin: { Args: never; Returns: boolean }
       community_reaction_summary: {
         Args: { p_post_id: string }
         Returns: {
@@ -3544,6 +4221,7 @@ export type Database = {
         Args: { selected_modes: string[] }
         Returns: undefined
       }
+      count_community_unread_notifications_v1: { Args: never; Returns: number }
       create_community_comment_v1: {
         Args: {
           p_content: string
@@ -3562,6 +4240,51 @@ export type Database = {
           post_id: string
           total_root_count: number
           updated_at: string
+        }[]
+      }
+      create_community_contribution_v1: {
+        Args: {
+          p_latitude: number
+          p_longitude: number
+          p_observed_at: string
+          p_report_data: Json
+          p_report_type: string
+          p_reported_new_latitude?: number
+          p_reported_new_longitude?: number
+          p_target_merchant_id?: string
+        }
+        Returns: {
+          author_id: string
+          created_at: string
+          id: string
+          location_latitude: number
+          location_longitude: number
+          observed_at: string
+          report_data: Json
+          report_type: string
+          reported_new_latitude: number
+          reported_new_longitude: number
+          review_reason: string
+          reviewed_at: string
+          status: string
+          submitted_at: string
+          target_merchant_id: string
+          updated_at: string
+        }[]
+      }
+      create_community_friend_request_v1: {
+        Args: { p_user_id: string }
+        Returns: {
+          avatar_url: string
+          confirmed_contributions: number
+          display_name: string
+          findings_count: number
+          friend_count: number
+          friendship_id: string
+          helpful_received: number
+          relationship_state: string
+          reputation_label: string
+          user_id: string
         }[]
       }
       create_community_post: {
@@ -3661,6 +4384,23 @@ export type Database = {
           media_storage_path: string
           media_width: number
           updated_at: string
+        }[]
+      }
+      create_community_report_v1: {
+        Args: {
+          p_details?: string
+          p_reason: string
+          p_target_id: string
+          p_target_type: string
+        }
+        Returns: {
+          created_at: string
+          details: string
+          id: string
+          reason: string
+          status: string
+          target_id: string
+          target_type: string
         }[]
       }
       create_commuter_request_v1: {
@@ -4023,6 +4763,78 @@ export type Database = {
         Args: { lat: number; lng: number; radius_m: number }
         Returns: Json
       }
+      get_community_analytics_v1: {
+        Args: never
+        Returns: {
+          active_findings: number
+          active_posts: number
+          active_requests: number
+          active_signals: number
+          open_reports: number
+          umkm_responses: number
+          unread_notifications: number
+        }[]
+      }
+      get_community_contribution_moderation_detail_v1: {
+        Args: { p_contribution_id: string }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          created_at: string
+          id: string
+          location_latitude: number
+          location_longitude: number
+          observed_at: string
+          points_awarded: number
+          report_data: Json
+          report_type: string
+          reported_new_latitude: number
+          reported_new_longitude: number
+          review_reason: string
+          reviewed_at: string
+          status: string
+          submitted_at: string
+          target_merchant_id: string
+          target_name: string
+          updated_at: string
+        }[]
+      }
+      get_community_contribution_summary_v1: {
+        Args: never
+        Returns: {
+          approved_count: number
+          contribution_points: number
+          pending_count: number
+          rejected_count: number
+          reviewed_contributions: number
+          total_contributions: number
+          trust_approved_contributions: number
+          trust_rejected_contributions: number
+          trust_score: number
+        }[]
+      }
+      get_community_contribution_v1: {
+        Args: { p_contribution_id: string }
+        Returns: {
+          author_id: string
+          created_at: string
+          id: string
+          location_latitude: number
+          location_longitude: number
+          observed_at: string
+          report_data: Json
+          report_type: string
+          reported_new_latitude: number
+          reported_new_longitude: number
+          review_reason: string
+          reviewed_at: string
+          status: string
+          submitted_at: string
+          target_merchant_id: string
+          updated_at: string
+        }[]
+      }
       get_community_demand_signal_detail_v1: {
         Args: { p_signal_id: string }
         Returns: {
@@ -4040,6 +4852,21 @@ export type Database = {
           total_count: number
           window_end: string
           window_start: string
+        }[]
+      }
+      get_community_friendship_profile_v1: {
+        Args: { p_user_id: string }
+        Returns: {
+          avatar_url: string
+          confirmed_contributions: number
+          display_name: string
+          findings_count: number
+          friend_count: number
+          friendship_id: string
+          helpful_received: number
+          relationship_state: string
+          reputation_label: string
+          user_id: string
         }[]
       }
       get_community_post_detail_v1: {
@@ -4098,6 +4925,16 @@ export type Database = {
           viewer_reactions: string[]
         }[]
       }
+      get_community_reputation_v1: {
+        Args: { p_user_id: string }
+        Returns: {
+          confirmed_contributions: number
+          findings_count: number
+          helpful_received: number
+          reputation_label: string
+          user_id: string
+        }[]
+      }
       get_commuter_request_detail_v1: {
         Args: { p_request_id: string }
         Returns: {
@@ -4130,9 +4967,31 @@ export type Database = {
         }[]
       }
       getra_database_health: { Args: never; Returns: string }
+      is_valid_community_contribution_payload_v1: {
+        Args: { p_report_data: Json; p_report_type: string }
+        Returns: boolean
+      }
       is_valid_wgs84_geometry: {
         Args: { allowed_types: string[]; input_geometry: unknown }
         Returns: boolean
+      }
+      list_admin_community_reports_v1: {
+        Args: { p_limit?: number; p_offset?: number; p_status?: string }
+        Returns: {
+          created_at: string
+          details: string
+          id: string
+          moderation_action: string
+          reason: string
+          reporter_display_name: string
+          reporter_user_id: string
+          reviewed_at: string
+          reviewed_by: string
+          status: string
+          target_id: string
+          target_type: string
+          total_count: number
+        }[]
       }
       list_community_comments_v1: {
         Args: { p_limit?: number; p_offset?: number; p_post_id: string }
@@ -4148,6 +5007,55 @@ export type Database = {
           post_id: string
           total_root_count: number
           updated_at: string
+        }[]
+      }
+      list_community_contribution_history_v1: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_report_type?: string
+          p_status?: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          location_summary: string
+          observed_at: string
+          points_awarded: number
+          report_type: string
+          review_reason: string
+          reviewed_at: string
+          status: string
+          submitted_at: string
+          target_merchant_id: string
+          target_name: string
+          total_count: number
+        }[]
+      }
+      list_community_contribution_moderation_queue_v1: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_report_type?: string
+          p_status?: string
+        }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          created_at: string
+          id: string
+          location_summary: string
+          observed_at: string
+          points_awarded: number
+          report_type: string
+          review_reason: string
+          reviewed_at: string
+          status: string
+          submitted_at: string
+          target_merchant_id: string
+          target_name: string
+          total_count: number
         }[]
       }
       list_community_cultural_map_v1: {
@@ -4305,6 +5213,35 @@ export type Database = {
           viewer_reactions: string[]
         }[]
       }
+      list_community_friendships_v1: {
+        Args: { p_limit?: number; p_offset?: number; p_view?: string }
+        Returns: {
+          avatar_url: string
+          direction: string
+          display_name: string
+          friendship_id: string
+          status: string
+          total_count: number
+          updated_at: string
+          user_id: string
+        }[]
+      }
+      list_community_notifications_v1: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          actor_avatar_url: string
+          actor_display_name: string
+          actor_user_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          metadata: Json
+          read_at: string
+          total_count: number
+          type: string
+        }[]
+      }
       list_community_response_merchants_v1: {
         Args: never
         Returns: {
@@ -4350,6 +5287,18 @@ export type Database = {
           min_lng: number
         }
         Returns: unknown
+      }
+      mark_all_community_notifications_read_v1: {
+        Args: never
+        Returns: undefined
+      }
+      mark_community_notification_read_v1: {
+        Args: { p_notification_id: string }
+        Returns: undefined
+      }
+      moderate_community_target_v1: {
+        Args: { p_action: string; p_report_id: string }
+        Returns: undefined
       }
       pgr_articulationpoints: { Args: { "": string }; Returns: number[] }
       pgr_biconnectedcomponents: {
@@ -4416,6 +5365,16 @@ export type Database = {
         Returns: Record<string, unknown>[]
       }
       pgr_version: { Args: never; Returns: string }
+      recalculate_community_contribution_trust_score_v1: {
+        Args: { p_user_id: string }
+        Returns: {
+          approved_contributions: number
+          rejected_contributions: number
+          reviewed_contributions: number
+          trust_score: number
+          user_id: string
+        }[]
+      }
       refresh_community_demand_signals_v1: { Args: never; Returns: undefined }
       reject_merchant_claim: {
         Args: { claim_id: string; review_note?: string }
@@ -4428,6 +5387,35 @@ export type Database = {
           helpful_count: number
           interesting_count: number
           viewer_reactions: string[]
+        }[]
+      }
+      review_community_contribution_v1: {
+        Args: {
+          p_action: string
+          p_contribution_id: string
+          p_rejection_reason?: string
+        }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          created_at: string
+          id: string
+          location_latitude: number
+          location_longitude: number
+          observed_at: string
+          points_awarded: number
+          report_data: Json
+          report_type: string
+          reported_new_latitude: number
+          reported_new_longitude: number
+          review_reason: string
+          reviewed_at: string
+          status: string
+          submitted_at: string
+          target_merchant_id: string
+          target_name: string
+          updated_at: string
         }[]
       }
       search_merchants_nearby: {
@@ -4670,6 +5658,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       account_role: ["USER", "ADMIN"],
@@ -4715,4 +5706,3 @@ export const Constants = {
     },
   },
 } as const
-

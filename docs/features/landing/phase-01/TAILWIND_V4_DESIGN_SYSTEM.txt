@@ -1,0 +1,35 @@
+TAILWIND CSS V4 DESIGN SYSTEM
+=============================
+
+Version
+-------
+tailwindcss 4.2.1.
+
+Tokens
+------
+@theme ditambahkan di frontend/app/globals.css:
+- --color-getra-bg: #07111f
+- --color-getra-surface: #0a1628
+- --color-getra-green: #7ad43b
+- --color-getra-cyan: #29c7d8
+- --color-getra-blue: #2878c7
+- --color-getra-amber: #f7c948
+
+Typography
+----------
+Tetap memakai Inter via next/font/google.
+
+Global CSS impact
+-----------------
+Penambahan bersifat additive. Existing GETRA variables tetap ada dan tidak
+diubah secara destruktif.
+
+Motion
+------
+Existing prefers-reduced-motion policy di globals.css tetap berlaku. Landing
+menggunakan transition ringan; tidak menambahkan library animasi.
+
+Responsive
+----------
+Tailwind utility digunakan untuk layout mobile, tablet/laptop, dan desktop.
+Hero memakai content-first di mobile dan split content/map di layar besar.

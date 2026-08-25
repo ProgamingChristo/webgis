@@ -1,0 +1,16 @@
+GETRA LANDING NAVIGATION GUIDE
+
+Header:
+- Fixed, glass-style header.
+- Official logo links to /.
+- Desktop shows anchor navigation.
+- Mobile uses a menu button with aria-controls="landing-mobile-menu".
+- Escape closes the mobile menu.
+
+Footer:
+- Repeats key anchors and access routes.
+- No placeholder or javascript links.
+
+Regression checks:
+- Header/footer render href="/", /login, /signup, and approved anchors.
+- Browser audit checks mobile menu opens on small viewports.

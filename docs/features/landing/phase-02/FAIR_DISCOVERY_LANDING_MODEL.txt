@@ -1,0 +1,31 @@
+GETRA LANDING PHASE 02
+FAIR DISCOVERY LANDING MODEL
+
+Section model
+-------------
+Fair Discovery explains how GETRA separates:
+- Original
+- Hidden Gem
+- Sponsored
+
+Hard constraints
+----------------
+Sponsored results must still pass contextual constraints before being shown:
+- location
+- category
+- price
+- open now
+- walking limit
+
+Sponsored disclosure
+--------------------
+Sponsored content remains visibly labeled. Payment is not described as silently replacing organic relevance.
+
+Event safety
+------------
+The landing preview does not create advertising events:
+- no IMPRESSION
+- no SPONSORED_PIN_CLICK
+- no PROFILE_OPEN
+- no ROUTE_REQUEST
+

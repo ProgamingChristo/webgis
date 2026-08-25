@@ -1,0 +1,18 @@
+GETRA LANDING MOTION RESPONSIVE REPORT
+
+Desktop motion:
+- PASS, no critical console/runtime issues.
+
+Mobile motion:
+- PASS, no automated jank/overflow indication.
+
+Landscape:
+- PASS.
+
+Reduced motion:
+- Existing prefers-reduced-motion CSS preserved.
+- Existing tests continue checking reduced-motion CSS primitives.
+
+Performance:
+- No new animation library added.
+- Motion remains CSS-scoped.

@@ -1,6 +1,6 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { CommunityShell } from "../src/features/community/components/community-shell";
 import { CommentThread } from "../src/features/community/components/comments/comment-thread";
@@ -12,6 +12,15 @@ import { PhotoPreview } from "../src/features/community/components/media/photo-p
 import { PostComposer } from "../src/features/community/components/post/post-composer";
 import { ReactionBar } from "../src/features/community/components/post/reaction-bar";
 import { insertTextAtRange } from "../src/features/community/utils/community-format";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/community",
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+    replace: vi.fn(),
+  }),
+}));
 
 describe("Community feature UI", () => {
   it("renders the Community shell, composer, navigation, and location feed item", () => {

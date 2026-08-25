@@ -1,0 +1,26 @@
+GETRA LANDING PHASE 02
+UMKM LANDING MODEL
+
+Section anchor:
+- #umkm
+
+Core message
+------------
+GETRA for UMKM is not only about appearing on a map. It supports local business context, merchant presence management, transparent commuter reach, and spatial insight.
+
+Technical accuracy
+------------------
+- UMKM is a stakeholder mode.
+- UMKM is not an authorization role.
+- Account role remains USER or ADMIN.
+- Merchant ownership is verified separately.
+- Having UMKM stakeholder mode does not automatically grant merchant ownership.
+
+Workspace preview
+-----------------
+The landing shows an illustrative workspace:
+- Merchant Saya
+- Tambah UMKM
+- Advertising
+- Analytics
+

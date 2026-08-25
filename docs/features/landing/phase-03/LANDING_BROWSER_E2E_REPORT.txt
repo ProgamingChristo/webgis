@@ -1,0 +1,54 @@
+GETRA LANDING PHASE 03
+BROWSER E2E REPORT
+
+Tooling
+-------
+Chrome headless through Chrome DevTools Protocol.
+
+Command
+-------
+node scripts/audit-landing-browser.mjs
+
+URL
+---
+http://localhost:3000/
+
+Click path / checks
+-------------------
+- open /
+- verify hero/product content
+- verify GETRA WebGIS screenshot text
+- verify Fair Discovery
+- verify Community
+- verify UMKM
+- verify Advertising
+- verify Business Space
+- verify Technology
+- verify footer
+- open mobile menu on mobile/tablet widths
+- verify no placeholder dead links
+- verify no horizontal overflow
+
+Viewport matrix
+---------------
+- 360: PASS
+- 390: PASS
+- 768: PASS
+- 1024: PASS
+- 1280: PASS
+- 1366: PASS
+- 1440: PASS
+- 1920: PASS
+
+Console
+-------
+0 critical console exceptions.
+
+Network
+-------
+0 same-origin critical 4xx/5xx responses.
+
+Result
+------
+PASS
+

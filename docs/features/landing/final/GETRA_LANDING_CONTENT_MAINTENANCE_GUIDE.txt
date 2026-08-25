@@ -1,0 +1,18 @@
+GETRA LANDING CONTENT MAINTENANCE GUIDE
+
+When editing copy:
+- Keep GETRA positioned as Geo-Enabled Transit & Retail Analytics.
+- Preserve GIS-first, AI-grounded explanation.
+- Avoid claiming live production data if the section uses fixture/demo data.
+- Keep competition context accurate.
+- Update tests if a required heading intentionally changes.
+
+Where to edit:
+- LandingHero for hero copy.
+- Why/story components for positioning.
+- Feature explorer components for product capability copy.
+- LandingFooter for final explanatory copy and navigation.
+
+Do not:
+- Add admin-only URLs to public marketing navigation.
+- Add secrets/API keys to copy or screenshots.

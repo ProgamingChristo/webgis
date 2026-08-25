@@ -46,6 +46,28 @@ describe("repository database error mapping", () => {
     expect(mapped.cause).toBe(cause);
   });
 
+  it.each([
+    ["GETRA_CONTRIBUTION_RATE_LIMITED", "CONTRIBUTION_RATE_LIMITED"],
+    ["GETRA_CONTRIBUTION_DUPLICATE", "CONTRIBUTION_DUPLICATE"],
+    ["GETRA_INVALID_OBSERVATION_TIME_FUTURE", "INVALID_OBSERVATION_TIME"],
+    ["GETRA_INVALID_OBSERVATION_TIME_TOO_OLD", "INVALID_OBSERVATION_TIME"],
+    ["GETRA_INVALID_TARGET_LOCATION_SAME_AS_CANONICAL", "INVALID_TARGET_LOCATION"],
+  ] as const)(
+    "maps deterministic contribution failure %s to %s",
+    (databaseMessage, expectedCode) => {
+      const mapped = mapDatabaseError(
+        { code: "P0001", message: databaseMessage },
+        "community_contributions.create",
+      );
+
+      expect(mapped).toMatchObject({
+        code: expectedCode,
+        operation: "community_contributions.create",
+      });
+      expect(mapped.message).not.toContain(databaseMessage);
+    },
+  );
+
   it.each([null, "database failed", { message: "missing code" }])(
     "maps an unclassified value to a sanitized database error",
     (cause) => {

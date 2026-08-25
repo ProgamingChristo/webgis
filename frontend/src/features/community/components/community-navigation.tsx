@@ -1,7 +1,13 @@
 import type { CommunityNavigationItem } from "../types/community.types";
 import styles from "./community.module.css";
 
-export type CommunityView = "home" | "findings" | "map" | "requests" | "friends";
+export type CommunityView =
+  | "home"
+  | "findings"
+  | "map"
+  | "requests"
+  | "contributions"
+  | "friends";
 
 type ActiveCommunityNavigationItem = CommunityNavigationItem & {
   value: CommunityView;
@@ -21,6 +27,7 @@ const communityNavigationItems: readonly CommunityNavigationEntry[] = [
   { label: "Temuan Komuter", status: "available", value: "findings" },
   { label: "Cultural Map", status: "available", value: "map" },
   { label: "Permintaan", status: "available", value: "requests" },
+  { label: "Laporkan Kondisi", status: "available", value: "contributions" },
   { label: "Teman", status: "available", value: "friends" },
 ];
 

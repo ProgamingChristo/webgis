@@ -1,0 +1,43 @@
+GETRA LANDING PHASE 05 RESPONSIVE TEST PLAN
+
+Objective:
+- Verify the public GETRA landing is usable across mandatory mobile, tablet, laptop, desktop, orientation, and zoom cases.
+- Fix responsive bugs only; no redesign and no backend/database changes.
+
+Environment:
+- Frontend root: D:\Getra_Production\frontend
+- URL: http://localhost:3000/
+- Browser method: Chrome headless via DevTools Protocol, emulated viewport matrix.
+- Test script: node scripts/audit-landing-browser.mjs
+
+Mandatory viewports:
+- 360x800, 390x844, 430x932, 768x1024, 1024x768, 1280x720, 1366x768, 1440x900, 1536x864, 1920x1080.
+
+Orientation:
+- 390x844, 844x390, 768x1024, 1024x768.
+
+Zoom:
+- 1366x768 at 100%, 125%, 150% simulated with equivalent effective CSS viewport.
+
+Pass criteria:
+- No page horizontal overflow.
+- No critical console/runtime errors.
+- No same-origin critical network failures.
+- Official logo visible and aspect ratio preserved.
+- Header stable and mobile menu opens/closes via Escape and anchor click.
+- Hero WebGIS panel contained.
+- Real map screenshot readable.
+- Critical touch targets not tiny.
+
+Severity model:
+- Critical: unusable route, render crash, horizontal overflow blocking content, missing primary CTA/logo.
+- High: broken mobile navigation, unusable hero/map, clipped important copy.
+- Medium: visual imbalance or minor touch target inconsistency.
+- Low: cosmetic polish/documentation follow-up.
+
+Commands:
+- npm run typecheck -w frontend
+- npm run lint -w frontend
+- npm run test -w frontend
+- npm run build -w frontend
+- node scripts/audit-landing-browser.mjs

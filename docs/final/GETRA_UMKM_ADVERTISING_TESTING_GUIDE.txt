@@ -1,0 +1,60 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — AUTOMATED TESTING & QUALITY ASSURANCE GUIDE
+================================================================================
+
+1. RUNNING TEST SUITES
+--------------------------------------------------------------------------------
+Execute backend vitest test runner:
+```bash
+cd backend
+npm run test
+```
+
+Running Typechecks:
+```bash
+# Backend typecheck
+cd backend
+npm run typecheck
+
+# Frontend typecheck
+cd frontend
+npm run typecheck
+```
+
+Running Linters:
+```bash
+# Backend lint
+cd backend
+npm run lint
+
+# Frontend lint
+cd frontend
+npm run lint
+```
+
+Building Production Bundles:
+```bash
+# Backend build
+cd backend
+npm run build
+
+# Frontend build
+cd frontend
+npm run build
+```
+
+2. TEST SUITE STRUCTURE & COVERAGE
+--------------------------------------------------------------------------------
+- Total Test Suites: 84 test files
+- Total Tests: 560 tests passed, 1 skipped
+- Coverage Highlights:
+  * Auth & Security: 46 tests (JWT, CORS, Rate Limit, Endpoint Policies)
+  * Spatial & pgRouting: 28 tests (Transit Nodes, Corridors, Walking Routing)
+  * Merchant Ownership & Submission: 8 tests (Draft, Review, Approval Atomicity)
+  * Campaign Lifecycle & Schedule: 21 tests (Readiness, State Machine, Time Bounds)
+  * Ad Serving & Fair Discovery: 11 tests (Ranking, Proximity, Sponsor Limits)
+  * Event Tracking & Dedup: 14 tests (Append-Only, Viewport Tracking, Deduplication)
+  * Analytics Engine: 6 tests (Timeseries Aggregation, Placement Breakdowns)
+  * Midtrans Payment Integration: 30 tests (Snap Tokens, Signatures, Status Mappers)
+================================================================================

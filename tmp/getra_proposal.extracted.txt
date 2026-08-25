@@ -1,0 +1,343 @@
+`
+
+-- 1 of 10 --
+
+1 Ringkasan Eksekutif
+Kawasan di sekitar transportasi massal adalah titik pertemuan strategis antara pergerakan para komuter, akses
+pedestrian, aktivitas UMKM, hingga peluang ruang usaha. Namun, banyak informasi lokasi usaha, harga, aktivitas
+transaksi, kondisi akses, kebutuhan pengguna, dan properti yang masih tersebar pada sumber yang berbeda-beda.
+Sehingga, komuter lebih sering memilih lokasi berdasarkan kedekatan visual, sedangkan UMKM dan calon pelaku
+usaha tidak mendapatkan gambaran demand yang terikat pada lokasi dan waktu.
+GETRA (Geo-Enabled Transit & Retail Analytics) adalah WebGIS dengan basis AI yang mengintegrasikan Menu
+Go, Struk Go, Property Go, titik transportasi massal, jaringan pejalan kaki, survei klaster pilot, aktivitas GETRA, dan
+kontribusi dari komunitas. Untuk para komuter, sistem telah menyediakan pencarian bahasa alami, filter harga dan
+waktu berjalan, service area, rute pedestrian, Route Switch, Smart Alternative, dan juga Fair Discovery yang
+membagi beberapa kategori seperti original, Hidden Gem, serta promosi bersponsor.
+Untuk UMKM, GETRA juga menyediakan profil usaha, Visibility Diagnosis, Demand Intelligence, Retail Gap, AI
+UMKM Copilot, Respons Permintaan Komuter, dan juga promosi spasial. Sedangkan untuk calon pelaku usaha,
+GETRA menyediakan fitur tambahan seperti Business Space Intelligence yang dapat menyaring ruang usaha
+berdasarkan akses transit, demand, supply, kompetisi, dan kesegaran data. Analisis kawasan juga dilengkapi dengan
+Transit Area Profile, Accessibility Need Map, Potential Waste Pressure Map, Access Resilience, dan Transit Time-
+Capsule.
+Perhitungan spasial dilakukan pada PostgreSQL/PostGIS dan pgRouting. AI dibatasi pada ekstraksi intent menjadi
+parameter terstruktur serta penjelasan atas hasil GIS. model tidak menghitung jarak, menentukan rute, membuat
+skor akses, atau menjamin omzet. Setiap output menyertakan sumber, cap waktu, status verifikasi, dan batas klaim.
+Target pertengahan September: prototipe satu klaster dengan alur komuter-UMKM yang berjalan end-to-
+end, sedangkan fitur yang membutuhkan critical mass atau histori panjang disiapkan sebagai prototipe
+terbatas atau fondasi data.
+
+-- 2 of 10 --
+
+2 Latar Belakang Masalah
+2.1 Permasalahan utama
+Sekarang, mobilitas perkotaan tidak hanya ditentukan oleh jarak antar lokasi, tetapi juga dari tingkat
+keterjangkauan yang sebenarnya dirasakan oleh pengguna. Akses pejalan kaki tidak dapat direpresentasikan hanya
+dari jarak garis lurus karena keadaan nyata sudah berbeda karena kondisi jaringan jalan, keberadaan
+penyeberangan, kontinuitas trotoar, hambatan fisik, fasilitas bagi penyandang disabilitas, serta posisi pintu masuk
+suatu bangunan. Akibatnya, dua lokasi yang memiliki jarak geometris yang sama ternyata memiliki waktu tempuh
+dan tingkat aksesibilitas yang berbeda secara signifikan.
+Sedangkan di sisi lain, pengambilan keputusan ekonomi masyarakat masih bersifat terpisah-pisah. Informasi
+mengenai kebutuhan konsumen, aktivitas transaksi, ketersediaan produk atau layanan, hingga akses terhadap
+transportasi belum terintegrasi dalam alur yang utuh. Kondisi ini dapat menyebabkan peluang usaha, khususnya
+UMKM, tidak dapat dioptimalkan berdasarkan kebutuhan pasar dan juga kemudahan akses secara real-time.
+Selain itu, visibilitas UMKM di platform digital sering kali dipengaruhi oleh popularitas dan jufga promosi
+berbayar sehingga hasil pencarian belum sepenuhnya merepresentasikan keinginan para pengguna. Oleh karena
+itu, diperlukan mekanisme yang dapat memisahkan hasil organik dari konten bersponsor, serta mempertimbangkan
+faktor lokasi, harga, jam operasional, dan waktu tempuh. Di sisi lain, pemanfaatan data dari komunitas yang ada
+juga perlu dilengkapi dengan cap waktu, status verifikasi, riwayat perubahan, dan masa berlaku agar informasi yang
+ada tetap akurat, kredibel, dan dapat dijadikan dasar untuk pengambilan keputusan.
+2.2 Rumusan masalah
+1. Bagaimana menghasilkan rekomendasi UMKM yang dapat memenuhi kategori, harga, waktu berjalan, jam
+operasional, serta kondisi akses dari titik transportasi massal?
+2. Bagaimana cara menghubungkan pencarian, permintaan, transaksi, supply UMKM, dan properti menjadi insight
+spasial yang dapat direalisasikan?
+3. Bagaimana membatasi AI agar membantu interpretasi tanpa menggantikan perhitungan GIS atau membuat
+klaim bisnis yang menjadi tidak akurat?
+4. Bagaimana mengelola kontribusi komunitas agar dapat memperbarui data lapangan tanpa menurunkan
+kredibilitas sistem?
+2.3 Gap analysis ringkas
+Kapabilitas Pembanding Kesenjangan yang dituju GETRA
+Pencarian & rekomendasi Google Maps, GoFood Pencarian tempat tersedia, tetapi belum menggabungkan intent, budget,
+waktu berjalan jaringan, dan Fair Discovery dalam satu alur.
+Routing pedestrian Google Maps, Komoot Routing tersedia, namun preferensi kenyamanan dari survei lokal dan
+simulasi penghindaran ruas belum menjadi fokus utama.
+Demand Intelligence Dashboard bisnis internal Sinyal pencarian, permintaan, transaksi, supply, dan Retail Gap belum
+terhubung secara spasial temporal.
+Ruang usaha Portal listing properti Listing tersedia, tetapi belum di overlay dengan akses transit, kompetisi
+UMKM, dan Retail Gap.
+Komunitas & ketahanan Google Reviews, Waze, OSM Kontribusi tersebar belum membentuk Trust Score, temporal versioning,
+dan dampak penutupan ruas terhadap akses ekonomi.
+2.4 Hipotesis kebaruan sistem
+Kebaruan GETRA tidak hanya berasal dari penggunaan satu algoritma tertentu, tetapi dari cara sistem ini
+menggabungkan berbagai komponen secara terpadu. GETRA mengintegrasikan data lokal, menghubungkan
+kebutuhan komuter dengan aktivitas UMKM dalam satu siklus yang saling mendukung, menghadirkan Fair
+Discovery berdasarkan relevansi lokasi, menyediakan simulasi ketahanan akses ekonomi, memanfaatkan AI yang
+terhubung langsung dengan hasil analisis GIS, serta mendukung kontribusi komunitas yang telah melalui proses
+verifikasi.
+
+-- 3 of 10 --
+
+3.1 Lima pilar kapabilitas
+Pilar Kapabilitas yang dikembangkan Teknologi hipotesis
+Commuter Discovery & Access Smart Search & Recommendation, Adaptive Pedestrian
+Routing, Fair Discovery Engine.
+LLM structured output, PostGIS spatial query,
+pgRouting, multi-criteria ranking.
+UMKM Intelligence & Activation
+Demand Intelligence, UMKM Profile &
+Discoverability, AI UMKM Copilot, Advertising
+Manager.
+PostGIS/TimescaleDB, FastAPI atau Route
+Handlers, Redis, RAG, Midtrans sandbox.
+Business Space Intelligence Opportunity Map, matching ruang usaha, comparison,
+dan AI Location Insight.
+Properti Go, catchment transit, spatial suitability,
+PostGIS/pgRouting.
+Community & Local Experience GETRA Community, Explore Trails, Community
+Accessibility Contribution.
+PostgreSQL/PostGIS, Storage, moderation
+workflow, Trust Score, route curation.
+Area Planning & Resilience
+Transit Area Profile, Accessibility Need Map, Potential
+Waste Pressure, Scenario Closure, Time-Capsule. Spatial aggregation, H3/HEX, raster/vector
+overlay, edge removal, temporal versioning.
+3.2 Sumber data dan transformasi
+Sumber Peran data Transformasi utama
+Menu Go Supply UMKM: kategori, menu, harga rata-rata, foto,
+kondisi pembeli, status menetap/berkeliling. Normalisasi kategori, geocoding, freshness flag.
+Struk Go Aktivitas transaksi: merchant, waktu, metode
+pembayaran, bukti, lokasi.
+Agregasi zona-waktu, nominal hanya jika
+diekstraksi dan diverifikasi.
+Properti Go Kategori properti, status sewa/jual, tanggal
+pencatatan, alamat, foto, koordinat.
+Spatial screening dan peringatan
+kesegaran/ketersediaan.
+Jaringan & survei Stasiun/halte, edge-node pedestrian, trotoar, ramp,
+hambatan, penyeberangan.
+Topologi graph, edge cost, service area, comfort
+weight.
+Aktivitas GETRA Pencarian, request, route request, respons UMKM, klik
+kampanye.
+Event agregat untuk Demand Intelligence dan
+analytics.
+Komunitas Temuan, kebutuhan, laporan akses, perubahan
+harga/jam/lokasi.
+Status pending-confirmed, Trust Score, temporal
+versioning.
+3.3 Prinsip integrasi
+• Satu sumber kebenaran untuk geometri, atribut, provenance, cap waktu, dan status verifikasi.
+• Satu graph pedestrian untuk routing, Explore Trails, dan Scenario Closure dengan fungsi biaya berbeda.
+• Pemisahan komputasi dan narasi: GIS menghitung, AI mengekstraksi intent dan menjelaskan hasil. Pemisahan
+hasil original, Hidden Gem, dan sponsor berlabel untuk menjaga transparansi ranking
+3 Solusi yang Diusulkan
+Kapabilitas, sumber data, dan hipotesis teknologi
+
+-- 4 of 10 --
+
+Gambar 1. Ringkasan teknologi, novelty, gap analysis, dan alur proses GETRA
+
+-- 5 of 10 --
+
+3B Metode Analisis dan Integrasi Endto-End
+3.4 Metode spasial dan analitik
+Domain Metode Keluaran
+Pencarian & ranking Filter atribut, spatial query, hard constraints,
+semantic retrieval, multi-criteria ranking.
+Daftar original, Hidden Gem, Smart
+Alternative, sponsor berlabel.
+Akses & routing Shortest path, network service area, edge
+exclusion/penalty, weighted comfort cost.
+Rute, waktu berjalan, catchment 5-15 menit,
+Route Switch.
+Demand & kawasan Agregasi zona-waktu, demand-supply
+comparison, Retail Gap, area profiling.
+Demand Pulse, kategori kurang, waktu
+kebutuhan, profil kawasan.
+Ruang usaha Catchment transit, competition density,
+spatial suitability, comparison.
+Penyaringan awal lokasi dan AI Location
+Insight.
+Ketahanan & waktu Edge removal comparison, before-after
+service area, temporal versioning.
+UMKM terdampak, tambahan waktu, histori
+perubahan.
+3.5 Peran AI
+Konteks Input Proses AI Output
+Komuter Pertanyaan, titik transit,
+preferensi.
+Ekstraksi intent ke JSON
+tervalidasi.
+Parameter pencarian dan
+penjelasan hasil.
+UMKM Profil, demand, Retail Gap,
+request.
+Rangkuman berbasis data dan
+template saran.
+Saran profil, paket, promosi, dan
+respons.
+Ruang usaha Properti, akses, demand-supply. Perbandingan indikator
+terstruktur.
+Kelebihan, keterbatasan, dan
+peringatan.
+AI tidak menghitung jarak, rute, service area, Accessibility Score, atau Retail Gap. Nilai tersebut dihitung oleh
+PostGIS/pgRouting dan baru kemudian disampaikan sebagai penjelasan yang dapat diaudit.
+3.6 Alur proses sistem
+Alur Urutan proses
+Komuter Pertanyaan/filter -> intent tervalidasi -> kandidat spasial -> hard constraints ->
+Fair Discovery -> service area/rute -> peta -> event anonim.
+UMKM Pembaruan profil -> Visibility Diagnosis -> Demand Intelligence/Retail Gap -> AI
+Copilot -> respons atau kampanye -> analytics agregat.
+Ruang usaha Filter Properti Go -> analisis catchment transit -> demand-supply/kompetisi ->
+comparison -> AI Location Insight.
+Pembaruan data Kontribusi -> pemeriksaan lokasi-waktu -> pending/confirmed -> pembaruan
+atribut/graph -> histori temporal.
+3.7 Visualisasi WebGIS
+MapLibre GL JS menampilkan pin original, Hidden Gem, sponsor, route line, service area polygon, cluster/grid
+demand, Retail Gap, titik properti, story pin, layer kontribusi, serta perbandingan before-after. Apache ECharts
+digunakan untuk pola waktu, distribusi harga, gap, dan analitik kampanye.
+
+-- 6 of 10 --
+
+4 Potensi WebGIS dan Manfaat
+Target pengguna, novelty, posisi produk, dan skalabilitas
+4.1 Target pengguna dan manfaat langsung
+Pengguna Manfaat
+Komuter
+Menemukan UMKM sesuai kategori, budget, jam buka, dan waktu
+berjalan, membandingkan rute, menemukan Hidden Gem,
+menyampaikan kebutuhan lokal.
+UMKM
+Memperbaiki discoverability, memahami demand dan Retail Gap,
+merespons kebutuhan, menjalankan promosi spasial yang transparan.
+Calon pelaku usaha Menyaring ruang usaha berdasarkan akses transit, demand-supply,
+kompetisi, serta kesegaran data.
+Pengelola kawasan Membaca profil area, kebutuhan akses, potensi tekanan sampah,
+dampak penutupan ruas, dan perubahan spasial-temporal.
+4.2 Nilai pembeda yang dapat dipertanggungjawabkan
+• Integrasi Menu Go, Struk Go, Properti Go, jaringan pedestrian, aktivitas GETRA, dan komunitas dalam satu model
+spasial-temporal
+• Siklus dua sisi: interaksi komuter membentuk insight agregat yang dapat direspons UMKM melalui profil, paket,
+respons permintaan, atau kampanye.
+• Fair Discovery memisahkan ranking original, Hidden Gem, dan sponsor setelah batas lokasi, harga, jam buka,
+dan waktu berjalan dipenuhi.
+• Ketahanan akses ekonomi mengukur perubahan service area, tambahan waktu, dan UMKM yang kehilangan
+akses ketika satu ruas ditutup.
+• AI terikat pada output GIS dan kontribusi komunitas terversi, sehingga hasil lebih mudah diaudit dan diperbarui.
+4.3 Posisi terhadap alternatif
+Google Maps kuat pada pencarian tempat dan rute, GoFood pada transaksi dan promosi merchant, ArcGIS
+Business Analyst pada market/site analysis, Waze pada komunitas navigasi kendaraan, OSM dan Mapillary pada
+pemetaan terbuka serta citra jalan. GETRA mengambil posisi yang lebih sempit: Spatial Decision Support System
+untuk last-mile pedestrian yang menghubungkan komuter, UMKM, ruang usaha, dan ketahanan akses di kawasan
+transit.
+4.4 Skalabilitas
+• Implementasi dimulai pada satu klaster untuk menguji topologi jaringan, kualitas data, performa query, dan alur
+pengguna. Perluasan dilakukan melalui penambahan catchment transit, edge-node, sumber data baru, serta
+materialized view per wilayah. Mesin analitik, skema event, dan temporal layer tetap digunakan ulang. Model
+bisnis berasal dari paket promosi dan analitik premium bagi UMKM, bukan biaya pencarian bagi komuter.
+
+-- 7 of 10 --
+
+5 Kelayakan Teknis
+5.1 Arsitektur teknologi
+Lapisan Teknologi
+Frontend WebGIS Next.js, React, TypeScript, Tailwind CSS, MapLibre GL JS, Apache
+ECharts.
+Backend & API Next.js Route Handlers, Zod, FastAPI/Python opsional untuk batch
+atau analitik khusus.
+Data spasial Supabase PostgreSQL, PostGIS, pgRouting, Redis/TimescaleDB
+sebagai hipotesis optimasi.
+AI & pencarian Satu provider LLM, structured output, pgvector/semantic retrieval,
+fallback filter manual.
+Operasional Supabase Auth/Storage/RLS, Midtrans sandbox, Vercel, logging dan
+backup.
+5.2 Target implementasi pertengahan September
+Status Cakupan
+Inti wajib
+Smart Search, filter manual, profil UMKM, routing dasar, service area,
+Route Switch, Fair Discovery, Sponsored Pin, GETRA Community,
+contribution form.
+Pilot terbatas Demand Intelligence, Visibility Diagnosis, AI Copilot ringan, Business
+Space Comparison, satu Explore Trail, satu Scenario Closure.
+Fondasi roadmap
+Accessibility Need Map melalui skema pengumpulan, Time-Capsule
+melalui versioning dan dua periode contoh, Potential Waste Pressure
+sebagai indeks proksi.
+5.3 Rencana pembuktian tujuh minggu
+Tahap Fokus
+Minggu 1-2 Data dan fondasi: klaster pilot, normalisasi data, skema database,
+role, graph pedestrian, profil UMKM, layer awal.
+Minggu 3-5
+Alur inti: Smart Search, service area, routing, Fair Discovery,
+Community, Demand Intelligence pilot, Visibility Diagnosis, promosi,
+AI Copilot.
+Minggu 6-7 Integrasi, prototipe tambahan, uji pengguna, validasi rute/ranking,
+perbaikan data, dokumentasi, deployment, dan freeze fitur.
+5.4 Risiko, validasi, dan kriteria penghentian
+Risiko Mitigasi / go-no-go
+Graph tidak konsisten Uji sampel rute dan topologi, hentikan comfort routing jika routing
+dasar belum stabil.
+Demand terlalu sedikit Gunakan data pilot/simulasi berlabel, jangan klaim pola populasi.
+AI salah mengekstraksi intent Validasi schema, fallback filter manual, log error dan contoh uji.
+Kontribusi tidak andal Pending status, lokasi-waktu, rate limit, Trust Score, dan pemisahan
+dari survei terverifikasi.
+Properti kedaluwarsa Tampilkan sumber/tanggal dan wajibkan konfirmasi ketersediaan.
+
+-- 8 of 10 --
+
+.
+6 Kesimpulan
+GETRA dirancang untuk menjawab persoalan yang memang dipengaruhi lokasi: keterjangkauan UMKM dari titik
+transit, kesesuaian harga dan jam operasional, kualitas jaringan pedestrian, ketimpangan demand-supply, serta
+perbandingan ruang usaha. WebGIS tidak berfungsi sebagai elemen dekoratif, tetapi sebagai mesin perhitungan
+kandidat, service area, rute, Retail Gap, spatial screening, dan dampak penutupan ruas.
+Kontribusi utama GETRA terletak pada integrasi. Data Menu Go, Struk Go, Property Go, jaringan pedestrian,
+aktivitas GETRA, survei pilot, dan kontribusi komunitas ditempatkan dalam satu model spasial-temporal. Interaksi
+komuter membentuk insight agregat, insight tersebut dapat ditindaklanjuti UMKM, perubahan lapangan kembali
+dicatat sebagai event dan histori. Siklus ini membedakan GETRA dari aplikasi pencarian tempat, layanan pemesanan,
+dashboard analytics, atau komunitas pemetaan yang berdiri sendiri.
+Rancangan teknologi menggunakan komponen yang dapat diuji bertahap: Next.js dan MapLibre GL JS pada
+antarmuka, PostgreSQL/PostGIS dan pgRouting pada analisis, Supabase pada layanan data, serta AI structured
+output pada intent dan penjelasan. Hipotesis teknologi tidak diposisikan sebagai keputusan final sebelum proof of
+concept, uji performa query, dan validasi pada klaster pilot.
+Target pertengahan September dibatasi pada satu klaster dan satu alur end-to-end yang stabil. Fitur yang
+membutuhkan critical mass, histori, atau data tambahan tidak diposisikan sebagai insight produksi. Accessibility
+Need Map dimulai dari skema pengumpulan, Time-Capsule dari versioning, Potential Waste Pressure dari indeks
+proksi, dan Business Space Intelligence dari penyaringan awal. Pembatasan tersebut menjaga validitas klaim
+proposal.
+GETRA layak dilanjutkan apabila prototipe membuktikan tiga fondasi: graph pedestrian menghasilkan rute yang
+konsisten, bahasa alami dapat dikonversi menjadi parameter tervalidasi, dan event interaksi dapat diagregasi tanpa
+mengekspos identitas individu. Keberhasilan fondasi ini memungkinkan pengembangan fitur UMKM, properti,
+komunitas, dan ketahanan kawasan tanpa mengganti arsitektur utama.
+Ringkasan komitmen implementasi
+Komitmen Isi
+Dijanjikan Alur inti komuter-UMKM satu klaster, search-routing-fairness-
+profilecommunity-promotion.
+Dibuktikan terbatas Demand pilot, AI Copilot, properti, satu trail, satu scenario closure.
+Disiapkan fondasinya Accessibility Need Map, Potential Waste Pressure, Transit
+TimeCapsule.
+Tidak diklaim Produksi penuh DKI, ROI, volume sampah aktual, properti real-time,
+prediksi keuntungan.
+
+-- 9 of 10 --
+
+A Lampiran 1 - Assessment Tim
+Nama anggota tim : Christopher Atera Putra, Allegra Aretha Putri, Revan Anthony, Azhriel Fatahillah,
+Audrey Lim.
+Pertanyaan Jawaban Tim
+1. Framework atau library frontend apa yang digunakan?
+Next.js berbasis React dan TypeScript untuk pengembangan web, Tailwind
+CSS untuk tampilan, MapLibre GL JS untuk WebGIS dengan basemap
+MAPID MAPS, dan Apache ECharts untuk grafik analitik.
+2. Bahasa pemrograman dan framework backend apa yang digunakan?
+TypeScript dengan Next.js Route Handlers dan Zod untuk validasi.
+Supabase Edge Functions digunakan untuk kebutuhan server-side ringan.
+Python FastAPI bersifat opsional untuk proses spasial khusus atau batch.
+3. Database apa yang digunakan untuk menyimpan data geospasial?
+Supabase PostgreSQL dengan ekstensi PostGIS dan pgRouting. Database
+menyimpan data transit, UMKM, edge/node pedestrian, survei, rute,
+service area, demand, community contribution, profil iklan, dan hasil
+analisis.
+
+-- 10 of 10 --
+

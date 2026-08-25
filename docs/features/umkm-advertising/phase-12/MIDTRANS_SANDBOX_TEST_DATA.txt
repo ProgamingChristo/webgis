@@ -1,0 +1,19 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — MIDTRANS SANDBOX TEST DATA SPECIFICATION
+================================================================================
+
+1. TEST CAMPAIGN FIXTURE
+--------------------------------------------------------------------------------
+- Test Merchant: "Warung Kopi Selamat" (or owned canonical merchant)
+- Test Campaign Label: "DUMMY GETRA MIDTRANS PHASE12"
+- Test Nominal: Rp 50.000 (Configurable via `MIDTRANS_SANDBOX_TEST_AMOUNT_IDR`)
+- Initial Status: `UNPAID` / `PENDING`
+
+2. OFFICIAL MIDTRANS SANDBOX CARD CREDENTIALS
+--------------------------------------------------------------------------------
+- Test Card Number: 4811 1111 1111 1114 (Visa Sandbox Success Test Card)
+- Expiry Date: Any future MM/YY (e.g. 12/28)
+- CVV: 123
+- 3D Secure OTP: 112233 (Midtrans Simulator)
+================================================================================

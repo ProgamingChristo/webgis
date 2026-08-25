@@ -1,0 +1,78 @@
+GETRA LANDING PHASE 02
+FRONTEND TEST REPORT
+
+Date
+----
+2026-08-24
+
+Environment
+-----------
+- Branch: finalmerge
+- Base commit: e53f742
+- Workspace: D:\Getra_Production
+
+Quality gates
+-------------
+Frontend typecheck:
+PASS
+Command: npm run typecheck -w frontend
+
+Frontend lint:
+PASS
+Command: npm run lint -w frontend
+
+Frontend tests:
+PASS
+Command: npm run test -w frontend
+Result: 6 test files passed, 31 tests passed.
+
+Frontend build:
+PASS
+Command: npm run build -w frontend
+
+Build blocker fixed during audit
+--------------------------------
+Production build initially failed in frontend/components/getra-dashboard.tsx because DatasetId supported admin-import:<layer_id> while older UI comparisons still used the aggregate literal "admin-import".
+
+Fix:
+- Reintroduced aggregate "admin-import" as a valid DatasetId.
+- Kept admin-import:<layer_id> support.
+- Added fallback to aggregate adminImportedLayer for base merchants, origin, labels, and teaser copy.
+
+HTTP smoke on existing local server
+-----------------------------------
+- GET http://localhost:3000/ -> 200
+- GET http://localhost:3000/login -> 200
+- GET http://localhost:3000/signup -> 200
+- GET http://localhost:3000/app -> 200 on the already-running local instance
+
+Landing response checks
+-----------------------
+PASS:
+- Why GETRA exists
+- What is GETRA?
+- GIS menghitung. AI menginterpretasikan.
+- Fair Discovery
+- GETRA Community
+- GETRA for UMKM
+- Advertising Manager
+- Business Space Intelligence
+- Trusted Spatial Data
+- Technology
+- Start using GETRA
+
+Security scan
+-------------
+PASS:
+- no private API call found in landing source
+- no Supabase service role marker
+- no Midtrans server key marker
+- no access_token / refresh_token marker
+- no production AI call
+- no payment call
+- no campaign event call
+
+Browser/manual limitation
+-------------------------
+The server already running on ports 3000 and 8080 was used. No new dev server was started. Full cross-browser matrix, final E2E, final accessibility certification, and performance profiling remain Phase 03/04 scope per brief.
+

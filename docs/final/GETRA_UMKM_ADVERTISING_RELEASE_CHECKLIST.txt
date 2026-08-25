@@ -1,0 +1,53 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — FINAL RELEASE CHECKLIST
+================================================================================
+
+[x] 1. Authentication & RBAC Model
+    [x] Strict USER / ADMIN account roles in profiles
+    [x] UMKM is a stakeholder mode, NOT an auth role
+    [x] Session persistence and token refresh verified
+
+[x] 2. Headbar & Navigation
+    [x] Dynamic UMKM link visible only for USER + UMKM mode
+    [x] Responsive layout verified across desktop and mobile
+
+[x] 3. UMKM Workspace & Add UMKM
+    [x] Workspace summary rendering real backend counts
+    [x] MapLibre interactive location picker functioning
+    [x] Draft persistence and review submission operational
+    [x] Atomic admin approval linking verified merchant ownership
+
+[x] 4. Advertising Manager & Campaign Lifecycle
+    [x] Campaign CRUD restricted to owned merchants
+    [x] Creative asset configuration with media preview
+    [x] Spatial radius targeting (250m - 10km) on PostGIS
+    [x] Schedule validation & lifecycle state transitions
+
+[x] 5. Midtrans Sandbox Payment Integration
+    [x] Sandbox badges prominently displayed
+    [x] Server-derived test amount (IDR 50.000)
+    [x] Snap popup checkout integration
+    [x] Webhook SHA-512 digital signature verification
+    [x] Authoritative backend status reconciliation
+    [x] PAID status persistence across page reload and relogin
+
+[x] 6. Ad Serving & Fair Discovery
+    [x] Spatial candidate selection using PostGIS ST_DWithin
+    [x] Fair Discovery organic search ranking preserved
+    [x] Explicit "Sponsored" badge disclosure
+    [x] Contextual promo banner serving
+    [x] Merchant drawer profile poster serving
+
+[x] 7. Event Telemetry & Analytics
+    [x] Append-only event ingestion (Impressions, Clicks, Opens, Routes)
+    [x] Viewport visibility tracking & database deduplication
+    [x] Real-time analytics dashboard with ECharts
+    [x] Zero-PII privacy guarantee (no user IDs or GPS tracks stored)
+
+[x] 8. Quality & Security
+    [x] Backend Vitest: 84 files, 560 tests passed, 1 skipped
+    [x] Typechecks & Linters: 0 errors, 0 warnings
+    [x] Production builds: Clean compilation
+    [x] Secret scanning: 0 server keys or private credentials committed
+================================================================================

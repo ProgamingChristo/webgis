@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/src/components/providers/AuthProvider";
+import { GetraAppShell } from "@/src/components/getra-ui";
 import {
   adminMapImportService,
   type AdminImportedLayer,
@@ -277,13 +278,18 @@ export default function AdminImportPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#050a10] bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_80%_10%,rgba(154,242,74,0.08),transparent_24%)] px-4 py-5 text-slate-100 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
+    <GetraAppShell
+      description="Import JSON, GeoJSON, atau API publik; validasi preview; lalu simpan/hapus/rename layer dari database GETRA."
+      eyebrow="Admin spatial data"
+      title="Map data import & CRUD"
+      tone="admin"
+    >
+      <div className="mx-auto max-w-6xl text-slate-100">
         <nav className="mb-5 flex items-center justify-between rounded-2xl border border-white/8 bg-slate-950/65 px-4 py-3 backdrop-blur-xl">
           <button
             className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-cyan-300"
             type="button"
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/app")}
           >
             <ArrowLeft size={16} />
             Dashboard
@@ -577,7 +583,7 @@ export default function AdminImportPage() {
           </aside>
         </div>
       </div>
-    </main>
+    </GetraAppShell>
   );
 }
 

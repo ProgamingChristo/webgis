@@ -1,0 +1,21 @@
+GETRA LANDING PHASE 05 REGRESSION REPORT
+
+Frontend route regression:
+- /: 200
+- /login: 200
+- /signup: 200
+- /app: 200
+- /community: 200
+- /umkm: 200
+- /settings/profile: 200
+
+Landing regression:
+- Official logo visible: PASS
+- Public anchors present: PASS
+- No dead placeholder links: PASS
+- No critical console errors: PASS
+- No same-origin critical network failures: PASS
+
+Auth note:
+- Phase 05 did not change auth code, backend, database, Supabase config, or session handling.
+- Browser route-level regression confirms auth entry/application routes still resolve.

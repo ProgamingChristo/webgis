@@ -1,0 +1,31 @@
+PUBLIC ROUTING CHANGE
+=====================
+
+Before
+------
+/ merender GetraDashboard sehingga guest diarahkan ke login oleh AuthProvider.
+
+After
+-----
+/ merender public GETRA Landing Page.
+/login tetap login page.
+/signup tetap signup page.
+/app menjadi authenticated GETRA application entry dan merender dashboard lama.
+
+Post-login
+----------
+User onboarding_complete=true diarahkan ke /app.
+User onboarding_complete=false diarahkan ke /onboarding.
+
+Post-onboarding
+---------------
+Setelah onboarding selesai, user diarahkan ke /app.
+
+Middleware
+----------
+Tidak ada middleware route baru. Perubahan guard dilakukan di AuthProvider:
+/ dibuat public dan tidak melakukan fetch user context.
+
+Admin redirect
+--------------
+Non-admin yang masuk /admin diarahkan ke /app, bukan /.

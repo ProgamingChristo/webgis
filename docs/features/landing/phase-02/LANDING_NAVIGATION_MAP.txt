@@ -1,0 +1,31 @@
+GETRA LANDING PHASE 02
+NAVIGATION MAP
+
+Header links
+------------
+- Tentang -> #tentang -> Why GETRA section
+- Cara Kerja -> #cara-kerja -> What is GETRA / relationship section
+- Fitur -> #fitur -> Interactive feature explorer
+- Untuk UMKM -> #umkm -> GETRA for UMKM
+- Teknologi -> #teknologi -> Technology section
+
+Route CTAs
+----------
+- Masuk -> /login
+- Daftar GETRA -> /signup
+
+Footer links
+------------
+- Tentang -> #tentang
+- Fitur -> #fitur
+- UMKM -> #umkm
+- Teknologi -> #teknologi
+
+Reduced motion
+--------------
+Global CSS uses smooth scroll by default and disables smooth scroll under prefers-reduced-motion: reduce.
+
+Dead links
+----------
+None identified in Phase 02 landing source/tests.
+

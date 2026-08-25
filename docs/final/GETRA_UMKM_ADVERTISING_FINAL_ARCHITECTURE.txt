@@ -1,0 +1,61 @@
+================================================================================
+GETRA — GEO-ENABLED TRANSIT & RETAIL ANALYTICS
+UMKM ADVERTISING — FINAL SYSTEM ARCHITECTURE SPECIFICATION
+================================================================================
+
+1. SUBSYSTEM TOPOLOGY & DATA FLOW
+--------------------------------------------------------------------------------
+```text
++-------------------------------------------------------------------------------+
+|                                 GETRA PLATFORM                                |
+|                                                                               |
+|   +-------------------+   +--------------------+   +----------------------+   |
+|   |   Public WebGIS   |   |   Community Feed   |   |    UMKM Workspace    |   |
+|   |   & Fair Discovery|   |   & Demand Signals |   |    & Curation Hub    |   |
+|   +-------------------+   +--------------------+   +----------------------+   |
+|             │                       │                         │               |
+|             │                       │                         │               |
+|             ▼                       ▼                         ▼               |
+|   +-----------------------------------------------------------------------+   |
+|   |                           FRONTEND LAYER                              |   |
+|   |   - MapLibre GL Interactive Point Picker & Spatial Buffers            |   |
+|   |   - ECharts Real-Time Timeseries & Placement Breakdown Visualizers    |   |
+|   |   - Midtrans Snap Sandbox Popup Payment Integration                   |   |
+|   |   - IntersectionObserver Viewport-Bound Event Telemetry               |   |
+|   +-----------------------------------------------------------------------+   |
+|                                     │                                         |
+|                                     ▼ (REST over HTTPS with Bearer JWT)       |
+|   +-----------------------------------------------------------------------+   |
+|   |                        GETRA BACKEND ENGINE                           |   |
+|   |   - Endpoint Security Policy Guard & RBAC Mode Evaluator              |   |
+|   |   - Spatial Ad Serving Engine (Proximity & Candidate Ranking)         |   |
+|   |   - Fair Discovery Engine (Organic Preservation & Sponsor Limit)      |   |
+|   |   - Campaign Lifecycle State Machine & Readiness Gate                 |   |
+|   |   - Midtrans Provider Adapter (Snap Tokens, SHA-512 Signature Check)  |   |
+|   |   - Append-Only Event Tracking & Server-Side Aggregation Engine       |   |
+|   +-----------------------------------------------------------------------+   |
+|                                     │                                         |
+|                                     ▼                                         |
+|   +-----------------------------------------------------------------------+   |
+|   |                   POSTGRESQL / POSTGIS / SUPABASE                     |   |
+|   |   - Tables: profiles, user_stakeholder_modes, merchants,              |   |
+|   |             merchant_submissions, ad_campaigns, ad_creatives,         |   |
+|   |             ad_campaign_targets, ad_payment_orders, campaign_events   |   |
+|   |   - Spatial: PostGIS EPSG:4326 (ST_DWithin, ST_Distance)              |   |
+|   |   - Security: Strict Row-Level Security (RLS) on all tables           |   |
+|   +-----------------------------------------------------------------------+   |
++-------------------------------------------------------------------------------+
+```
+
+2. ARCHITECTURAL PILLARS
+--------------------------------------------------------------------------------
+1. GIS Is Authority, AI Is Interpreter:
+   - Spatial containment, proximity radii, and pedestrian route geometries are computed
+     deterministically by PostGIS and pgRouting.
+2. Fair Discovery & Organic Preservation:
+   - Sponsored placements are strictly limited (max 1 per discovery response) and clearly labeled.
+   - Payment never alters organic ranking scores or creates artificial "Hidden Gem" badges.
+3. Commuter Privacy & Zero PII:
+   - Append-only event tracking records interaction counts only, with zero commuter user IDs
+     or GPS movement histories.
+================================================================================

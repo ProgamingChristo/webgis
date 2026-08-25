@@ -13,7 +13,8 @@ import {
   useCampaignLifecycle,
 } from "../../lifecycle";
 import { ServingPreviewPanel } from "../../ad-serving";
-import { Palette, MapPin, Calendar, Clock, Sparkles, BarChart2 } from "lucide-react";
+import { CampaignPaymentPanel } from "../../payment";
+import { Palette, MapPin, Calendar, Clock, Sparkles, BarChart2, CreditCard } from "lucide-react";
 
 export function CampaignCard({
   campaign,
@@ -26,7 +27,9 @@ export function CampaignCard({
   merchantName: string;
   onUpdated: () => void;
 }) {
-  const [activeTab, setActiveTab] = useState<"none" | "creative" | "targeting" | "schedule" | "preview">("none");
+  const [activeTab, setActiveTab] = useState<
+    "none" | "creative" | "targeting" | "schedule" | "preview" | "payment"
+  >("none");
   const [merchantLocation, setMerchantLocation] = useState<{ longitude: number; latitude: number } | null>(null);
   const [targetGeoJSON, setTargetGeoJSON] = useState<any | null>(null);
 
@@ -169,6 +172,19 @@ export function CampaignCard({
           {activeTab === "preview" ? "Tutup Uji Penayangan" : "Uji Penayangan (Preview)"}
         </button>
 
+        <button
+          type="button"
+          onClick={() => setActiveTab(activeTab === "payment" ? "none" : "payment")}
+          className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 font-medium rounded-lg border transition-colors ${
+            activeTab === "payment"
+              ? "border-emerald-400 bg-emerald-400/10 text-emerald-200"
+              : "border-slate-700 text-slate-300 hover:border-emerald-400/50 hover:text-emerald-200"
+          }`}
+        >
+          <CreditCard className="w-3.5 h-3.5" />
+          {activeTab === "payment" ? "Tutup Pembayaran" : "Pembayaran (Sandbox)"}
+        </button>
+
         <a
           href={`/umkm/advertising/analytics?campaignId=${campaign.id}`}
           className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 font-medium rounded-lg border border-blue-500/50 bg-blue-500/10 text-blue-200 hover:bg-blue-500/20 transition-colors ml-auto"
@@ -221,6 +237,16 @@ export function CampaignCard({
             campaignId={campaign.id}
             merchantLocation={merchantLocation}
             targetGeoJSON={targetGeoJSON}
+          />
+        </div>
+      )}
+
+      {activeTab === "payment" && (
+        <div className="pt-1">
+          <CampaignPaymentPanel
+            campaignId={campaign.id}
+            campaignName={campaign.name}
+            onPaymentUpdated={onUpdated}
           />
         </div>
       )}

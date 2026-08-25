@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { GetraAppShell } from "@/src/components/getra-ui";
 
 import {
   CommunityNavigation,
@@ -26,12 +27,12 @@ export function CommunityShell({
   state = defaultShellState,
 }: CommunityShellProps) {
   return (
-    <main className={styles.feature}>
-      <header className={styles.header}>
-        <div>
-          <span className={styles.eyebrow}>GETRA WebGIS</span>
-          <h1>GETRA Community</h1>
-        </div>
+    <GetraAppShell
+      description="Ruang kolaborasi berbasis lokasi untuk temuan warga, permintaan komuter, sinyal demand, dan peta budaya komunitas."
+      eyebrow="GETRA WebGIS"
+      title="GETRA Community"
+      tone="community"
+      actions={
         <dl className={styles.status} aria-label="Status Community">
           <div>
             <dt>Kontribusi</dt>
@@ -42,7 +43,8 @@ export function CommunityShell({
             <dd>{state.statusLabel}</dd>
           </div>
         </dl>
-      </header>
+      }
+    >
 
       <CommunityNavigation
         activeView={activeView}
@@ -50,6 +52,6 @@ export function CommunityShell({
       />
 
       <section className={styles.content}>{children}</section>
-    </main>
+    </GetraAppShell>
   );
 }

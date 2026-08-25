@@ -1,0 +1,36 @@
+GETRA LANDING MOBILE UX VERIFICATION
+
+Viewports:
+- 360x800: PASS
+- 390x844: PASS
+- 430x932: PASS
+
+Navigation:
+- Official logo visible.
+- Menu button usable.
+- Mobile menu opens as a right-side sidebar, not a header dropdown.
+- Escape closes menu.
+- Close button and outside click are available.
+- Anchor click closes menu.
+- Login link remains accessible.
+
+Touch:
+- tinyTouchTargets: [] after Phase 05 fix.
+- Footer links now use min-height touch area.
+
+Hero:
+- Headline readable.
+- CTAs stack safely.
+- GIS/AI principle remains visible.
+- WebGIS hero is contained and does not create page overflow.
+
+Real map screenshot:
+- Readable at mobile widths.
+- Screenshot alt preserved.
+
+Footer:
+- Logo and links stack cleanly.
+- No horizontal overflow.
+
+Result:
+- MOBILE READY: YES
