@@ -1,0 +1,24 @@
+GETRA APPLICATION DESIGN SYSTEM
+
+Scope:
+- Authenticated application UI after login.
+- Public landing `/` remains the visual source of truth and is not redesigned in this phase.
+
+Implementation:
+- Added shared app primitives:
+  - frontend/src/components/getra-ui/getra-logo.tsx
+  - frontend/src/components/getra-ui/getra-app-shell.tsx
+  - frontend/src/components/getra-ui/index.ts
+- Added app-level semantic CSS tokens in frontend/app/globals.css.
+- The shared shell uses GETRA logo asset from `/brand/getra-logo.png`.
+
+Visual standard:
+- Dark spatial canvas with subtle grid and radial cyan/lime highlights.
+- Rounded glass panels, restrained motion, high-contrast text.
+- Primary accent: cyan for General/Profile/Community, lime for UMKM, amber for Admin.
+- Navigation: topbar on desktop, app drawer on mobile.
+
+Accessibility:
+- Semantic navigation labels are present.
+- Mobile menu uses dialog semantics.
+- Buttons and links preserve focus states from global CSS.

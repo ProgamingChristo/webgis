@@ -1,0 +1,19 @@
+GETRA MAP UI STANDARD
+
+Map UI rules:
+- /app remains a full-height WebGIS workspace.
+- Map must prioritize:
+  - visible basemap
+  - simple professional point styling
+  - user location marker
+  - start and destination points
+  - persistent route line after route creation
+  - clear "show all points" recovery action after selecting one point
+- Boundary overlays must avoid large bounding boxes; use actual region polygons when available.
+
+Phase 06 status:
+- No map business logic was changed in this phase.
+- Existing /app passed browser responsive checks.
+
+Validation:
+- Browser audit /app PASS at 390x844, 768x1024, 1366x768, 1920x1080.

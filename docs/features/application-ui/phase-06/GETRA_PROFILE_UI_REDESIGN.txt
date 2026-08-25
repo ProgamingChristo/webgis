@@ -1,0 +1,24 @@
+GETRA PROFILE UI REDESIGN
+
+Routes:
+- /settings/profile
+- /users
+- /users/[id]
+
+Changes:
+- /settings/profile wrapped with GetraAppShell using Profile tone.
+- /users wrapped with GetraAppShell using Profile tone.
+- Existing profile capabilities preserved:
+  - circular avatar preview
+  - local file avatar selection
+  - crop/zoom/position controls
+  - display name
+  - username
+  - phone number
+  - bio
+  - public profile navigation
+  - success modal saying "Welcome to GETRA, {name}"
+
+Validation:
+- Browser audit /settings/profile and /users PASS across mobile/tablet/desktop/wide.
+- Frontend typecheck/lint/test/build PASS.

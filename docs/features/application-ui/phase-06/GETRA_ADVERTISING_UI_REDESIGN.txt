@@ -1,0 +1,18 @@
+GETRA ADVERTISING UI REDESIGN
+
+Route:
+- /umkm/advertising
+
+Changes:
+- Wrapped advertising manager with GetraAppShell using UMKM tone.
+- Preserved:
+  - owned merchant selection
+  - recommended merchant claim
+  - manual merchant UUID option
+  - campaign list
+  - advertising eligibility gate
+- Back navigation adjusted to /app.
+
+Validation:
+- Browser audit /umkm/advertising PASS across mobile/tablet/desktop/wide.
+- Frontend build PASS.

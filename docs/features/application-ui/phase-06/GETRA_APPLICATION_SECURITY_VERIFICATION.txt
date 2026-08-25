@@ -1,0 +1,18 @@
+GETRA APPLICATION SECURITY VERIFICATION
+
+Security constraints preserved:
+- Public signup remains USER-only.
+- ADMIN navigation appears only when profile.account_role is ADMIN.
+- Non-admin /admin route guard remains in AuthProvider.
+- GENERAL/COMMUTER remains baseline UI concept, not persisted stakeholder mode.
+- Optional stakeholder values remain UMKM, INVESTOR, GOVERNMENT.
+- No access token, refresh token, JWT, or password was written to docs.
+- Browser audit credentials were supplied via process environment only and not persisted.
+
+Files checked/relied on:
+- frontend/src/components/providers/AuthProvider.tsx
+- frontend/src/lib/auth-client.ts
+- frontend/src/components/getra-ui/getra-app-shell.tsx
+
+Result:
+- PASS for frontend UI/security guard preservation.

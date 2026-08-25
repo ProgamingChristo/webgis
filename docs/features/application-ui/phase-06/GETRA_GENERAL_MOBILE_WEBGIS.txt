@@ -1,0 +1,11 @@
+GETRA GENERAL MOBILE WEBGIS
+
+Mobile behavior checked:
+- /app retains map-first ordering.
+- Map panel appears before filters on small screens.
+- Right detail panel is hidden on narrow screens to reduce clutter.
+- Basemap switcher compacts to a smaller grid.
+
+Browser evidence:
+- scripts/audit-application-ui-browser.mjs checked /app at 390x844, 768x1024, 1366x768, and 1920x1080.
+- Result: PASS, 0 failures.

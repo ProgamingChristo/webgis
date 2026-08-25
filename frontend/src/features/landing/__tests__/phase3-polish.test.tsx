@@ -20,9 +20,9 @@ describe("Landing Phase 03 polish", () => {
     expect(fs.existsSync(assetPath)).toBe(true);
     expect(fs.statSync(assetPath).size).toBeLessThan(250_000);
     expect(html).toContain("getra-pedestrian-route-showcase.webp");
-    expect(html).toContain("Peta GETRA yang menampilkan rute pedestrian");
-    expect(html).toContain("GETRA WebGIS");
-    expect(html).toContain("Test route scenario");
+    expect(html).toContain("Foto penuh peta GETRA");
+    expect(html).not.toContain("Test route scenario");
+    expect(html).not.toContain("Start point");
   });
 
   it("renders the final public footer with working routes and anchors", () => {

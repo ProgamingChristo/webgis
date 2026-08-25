@@ -1,0 +1,20 @@
+GETRA AUTH UI REDESIGN
+
+Files touched:
+- frontend/app/login/page.tsx
+- frontend/app/signup/page.tsx
+- frontend/app/auth.module.css
+
+Changes:
+- Replaced placeholder "G" mark on auth pages with the real GETRA logo asset.
+- Preserved existing auth behavior:
+  - login persists Supabase browser session
+  - signup requires session response and redirects to onboarding/app
+  - no email-confirmation success copy is shown
+  - public signup remains USER-only
+
+Validation:
+- Frontend typecheck PASS.
+- Frontend lint PASS.
+- Frontend test PASS.
+- Frontend build PASS.

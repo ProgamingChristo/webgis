@@ -1,0 +1,21 @@
+GETRA FUNCTIONAL REGRESSION REPORT
+
+Frontend gates:
+- `npm run typecheck -w frontend`: PASS
+- `npm run lint -w frontend`: PASS
+- `npm run test -w frontend`: PASS
+- `npm run build -w frontend`: PASS
+
+Browser gate:
+- `node scripts/audit-application-ui-browser.mjs` with authenticated admin fixture: PASS
+- Routes checked: /login, /signup, /onboarding, /app, /community, /umkm, /umkm/advertising, /umkm/advertising/analytics, /settings/profile, /users, /admin/import
+- Viewports checked: 390x844, 768x1024, 1366x768, 1920x1080
+- Total checks: 44
+- Failures: 0
+
+Functional preservation:
+- AuthProvider guard preserved.
+- account_role USER/ADMIN model preserved.
+- stakeholder modes UMKM/INVESTOR/GOVERNMENT preserved.
+- Admin import CRUD preserved.
+- Profile avatar upload/crop UI preserved.

@@ -1,0 +1,16 @@
+GETRA ACCESSIBILITY APPLICATION AUDIT
+
+Checks performed:
+- Navigation has aria-labels.
+- Active navigation items use aria-current.
+- Mobile drawer uses dialog semantics.
+- Icon-only buttons include aria-label or visible label in implemented shell.
+- Global focus-visible styles remain available.
+- Color contrast improved on shell buttons and profile save/edit areas.
+
+Known note:
+- Full WCAG manual screen-reader pass was not performed in this phase.
+
+Automated evidence:
+- Frontend lint PASS with Next/React rules.
+- Browser audit found no critical console errors.

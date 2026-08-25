@@ -1,0 +1,30 @@
+GETRA APPLICATION SHELL ARCHITECTURE
+
+Implemented shell:
+- Component: frontend/src/components/getra-ui/getra-app-shell.tsx
+- Reused account menu: frontend/src/components/profile/account-menu.tsx
+- Reused auth state: frontend/src/components/providers/AuthProvider.tsx
+
+Routes integrated:
+- /community via CommunityShell
+- /umkm
+- /umkm/advertising
+- /umkm/advertising/analytics
+- /admin/import
+- /settings/profile
+- /users
+
+Map exception:
+- /app keeps its dedicated WebGIS layout because it has map-specific split panes, MapLibre lifecycle, route planning controls, basemap controls, and map performance constraints.
+
+Navigation:
+- General WebGIS: /app
+- Community: /community
+- UMKM: /umkm
+- Advertising: /umkm/advertising
+- Analytics: /umkm/advertising/analytics
+- Profile: /settings/profile
+- Admin Import: /admin/import only appears for account_role ADMIN.
+
+Logout:
+- Shell performs backend logout when available and always clears browser session locally.

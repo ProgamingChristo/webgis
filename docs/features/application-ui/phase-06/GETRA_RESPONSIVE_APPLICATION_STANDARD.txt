@@ -1,0 +1,18 @@
+GETRA RESPONSIVE APPLICATION STANDARD
+
+Viewport standard:
+- Mobile: 360-430 px
+- Tablet: 768-1024 px
+- Desktop: 1280-1536 px
+- Wide: 1920 px
+
+Implemented:
+- Shared app shell top navigation on desktop.
+- Sticky left rail on desktop/tablet.
+- Off-canvas app drawer on mobile.
+- Page header stacks on mobile.
+- App content uses fluid max-width containers.
+
+Evidence:
+- Browser audit checked 44 route/viewport combinations.
+- Result: PASS, 0 failures.

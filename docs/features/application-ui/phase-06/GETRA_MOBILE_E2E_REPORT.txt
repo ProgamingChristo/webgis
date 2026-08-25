@@ -1,0 +1,26 @@
+GETRA MOBILE E2E REPORT
+
+Tool:
+- scripts/audit-application-ui-browser.mjs
+
+Mobile viewport:
+- 390x844
+
+Routes checked:
+- /login
+- /signup
+- /onboarding
+- /app
+- /community
+- /umkm
+- /umkm/advertising
+- /umkm/advertising/analytics
+- /settings/profile
+- /users
+- /admin/import
+
+Result:
+- PASS
+- No horizontal overflow.
+- App shell/drawer available where applicable.
+- Authenticated login succeeded before route sweep.

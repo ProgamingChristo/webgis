@@ -1,0 +1,23 @@
+GETRA UI TEST DATA
+
+Browser audit account:
+- Email fixture name: getra.admin.test@example.com
+- Password value is not stored in this report.
+
+Audit environment:
+- Frontend: http://localhost:3000
+- Backend health: http://localhost:8080/api/health returned success and database connected during validation.
+
+Automated checks:
+- Frontend typecheck
+- Frontend lint
+- Frontend Vitest suite
+- Frontend production build
+- Authenticated browser route sweep
+
+Browser route sweep:
+- Login attempted: true
+- Login result: PASS
+- Final login URL: http://localhost:3000/app
+- Total route/viewport checks: 44
+- Failures: 0

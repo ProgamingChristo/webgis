@@ -1,0 +1,23 @@
+GETRA COMMUNITY UI REDESIGN
+
+Routes:
+- /community
+- /community/[id]
+- /community/contributions
+- /community/friends
+- /community/requests/[requestId]
+- /community/requests/signals/[signalId]
+- /community/users/[userId]
+
+Primary shell:
+- frontend/src/features/community/components/community-shell.tsx
+
+Changes:
+- CommunityShell now uses GetraAppShell.
+- Community header content moved into reusable app header.
+- Community navigation and content panels received rounded modern surface treatment.
+- Contribution and status summary remain visible as shell actions.
+
+Validation:
+- Community unit test updated to mock Next App Router for server-render UI testing.
+- Frontend test PASS: 8 files, 39 tests.

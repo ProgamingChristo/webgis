@@ -1,0 +1,45 @@
+GETRA APPLICATION PHASE 06 TOTAL UI/UX REDESIGN CHANGES
+
+Date:
+- 25 August 2026
+
+Summary:
+- Implemented a shared GETRA application shell for authenticated product areas.
+- Preserved public landing route `/`.
+- Preserved dedicated General WebGIS `/app` map layout.
+- Upgraded auth pages to use the real GETRA logo asset.
+- Added responsive route browser audit.
+- Added complete Phase 06 documentation set.
+
+Changed files:
+- frontend/src/components/getra-ui/getra-logo.tsx
+- frontend/src/components/getra-ui/getra-app-shell.tsx
+- frontend/src/components/getra-ui/index.ts
+- frontend/app/globals.css
+- frontend/app/login/page.tsx
+- frontend/app/signup/page.tsx
+- frontend/app/auth.module.css
+- frontend/src/features/community/components/community-shell.tsx
+- frontend/src/features/community/components/community.module.css
+- frontend/app/umkm/page.tsx
+- frontend/src/features/umkm-workspace/components/umkm-workspace.tsx
+- frontend/app/umkm/advertising/page.tsx
+- frontend/app/umkm/advertising/analytics/page.tsx
+- frontend/app/admin/import/page.tsx
+- frontend/app/settings/profile/page.tsx
+- frontend/app/users/page.tsx
+- frontend/tests/community-page.test.ts
+- scripts/audit-application-ui-browser.mjs
+- docs/features/application-ui/phase-06/*
+
+Quality:
+- Frontend typecheck: PASS
+- Frontend lint: PASS
+- Frontend test: PASS
+- Frontend build: PASS
+- Browser responsive audit: PASS
+
+Security:
+- No secrets added.
+- Admin navigation remains account_role ADMIN gated.
+- account_role and stakeholder mode architecture unchanged.

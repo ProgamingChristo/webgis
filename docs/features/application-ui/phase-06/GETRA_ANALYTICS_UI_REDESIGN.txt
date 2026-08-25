@@ -1,0 +1,12 @@
+GETRA ANALYTICS UI REDESIGN
+
+Route:
+- /umkm/advertising/analytics
+
+Changes:
+- Wrapped campaign analytics page with GetraAppShell using UMKM tone.
+- Suspense fallback and AnalyticsDashboard logic preserved.
+
+Validation:
+- Browser audit /umkm/advertising/analytics PASS across mobile/tablet/desktop/wide.
+- Frontend build PASS.

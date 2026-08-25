@@ -1,0 +1,15 @@
+GETRA APPLICATION PERFORMANCE REPORT
+
+Build result:
+- `npm run build -w frontend`: PASS
+- Next.js 16.3.1 with Turbopack compiled successfully.
+- Static pages generated: 18/18.
+
+Performance-oriented decisions:
+- /app WebGIS map was not wrapped in the new shell to avoid extra layout nesting around MapLibre.
+- Shared shell avoids heavy animation and external assets except existing GETRA logo.
+- Mobile drawer is client-side only and mounted only when open.
+
+Browser audit:
+- 44 route/viewport checks.
+- 0 failures.

@@ -1,0 +1,32 @@
+GETRA APPLICATION UI HANDOVER
+
+What changed:
+- Added reusable GETRA application shell and logo primitives.
+- Connected shell to Community, UMKM, Advertising, Analytics, Admin Import, Profile Settings, and User Directory.
+- Preserved the dedicated General WebGIS map layout.
+- Auth pages now use the real GETRA logo asset.
+- App navigation returns authenticated users to /app instead of public landing where appropriate.
+- Added browser audit script for responsive application routes.
+
+Key files:
+- frontend/src/components/getra-ui/getra-app-shell.tsx
+- frontend/src/components/getra-ui/getra-logo.tsx
+- frontend/app/globals.css
+- frontend/app/login/page.tsx
+- frontend/app/signup/page.tsx
+- frontend/src/features/community/components/community-shell.tsx
+- frontend/app/umkm/page.tsx
+- frontend/app/umkm/advertising/page.tsx
+- frontend/app/umkm/advertising/analytics/page.tsx
+- frontend/app/admin/import/page.tsx
+- frontend/app/settings/profile/page.tsx
+- frontend/app/users/page.tsx
+- scripts/audit-application-ui-browser.mjs
+
+Validation:
+- Frontend gates all PASS.
+- Browser audit PASS.
+
+Next recommended work:
+- Perform human visual QA screenshots for every app route if pixel-perfect handoff is required.
+- Add deeper interaction E2E for profile upload and admin CRUD flows.

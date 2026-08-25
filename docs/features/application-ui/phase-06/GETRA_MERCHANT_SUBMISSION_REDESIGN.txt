@@ -1,0 +1,15 @@
+GETRA MERCHANT SUBMISSION REDESIGN
+
+Routes:
+- /umkm/merchants/new
+- /umkm/submissions/[id]
+
+Status:
+- Routes remain included in application build.
+- Phase 06 did not change submission business logic or database behavior.
+- These routes are still covered by production build route generation.
+
+Validation:
+- Next build includes:
+  - /umkm/merchants/new
+  - /umkm/submissions/[id]

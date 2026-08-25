@@ -1,0 +1,28 @@
+GETRA DESKTOP E2E REPORT
+
+Tool:
+- scripts/audit-application-ui-browser.mjs
+
+Desktop viewports:
+- 1366x768
+- 1920x1080
+
+Routes checked:
+- /login
+- /signup
+- /onboarding
+- /app
+- /community
+- /umkm
+- /umkm/advertising
+- /umkm/advertising/analytics
+- /settings/profile
+- /users
+- /admin/import
+
+Result:
+- PASS
+- No horizontal overflow.
+- No critical console errors.
+- No 5xx network responses.
+- Authenticated login succeeded before route sweep.

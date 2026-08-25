@@ -11,11 +11,8 @@ export function WhyGetraSection() {
       description="Perjalanan setelah turun dari transportasi massal sering kali justru menjadi bagian yang paling sulit dinilai. GETRA membaca akses, demand, relevance, dan freshness sebagai layer spasial yang saling terkait."
     >
       <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-[2rem] border border-getra-cyan/20 bg-[radial-gradient(circle_at_28%_20%,rgba(41,199,216,0.18),transparent_28%),linear-gradient(145deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-3 sm:p-5">
+        <div className="rounded-[2.4rem] border border-getra-cyan/20 bg-[radial-gradient(circle_at_28%_20%,rgba(41,199,216,0.14),transparent_28%),linear-gradient(145deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-3 sm:p-5">
           <GetraMapScreenshot />
-          <p className="mt-4 rounded-2xl border border-getra-green/20 bg-getra-green/10 p-4 text-sm leading-7 text-lime-100">
-            Jarak dekat secara garis lurus belum tentu berarti rute berjalan yang sederhana atau mudah diakses.
-          </p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">

@@ -1,0 +1,18 @@
+GETRA UMKM WORKSPACE REDESIGN
+
+Route:
+- /umkm
+
+Changes:
+- /umkm now uses GetraAppShell with UMKM tone.
+- Existing workspace logic preserved:
+  - UMKM access check
+  - workspace summary loading
+  - owned merchant list
+  - submission summary
+  - quick actions
+- Back navigation adjusted to /app for authenticated workspace consistency.
+
+Validation:
+- Browser audit /umkm PASS across mobile/tablet/desktop/wide.
+- Build PASS.

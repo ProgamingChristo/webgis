@@ -1,0 +1,17 @@
+GETRA GENERAL WEBGIS REDESIGN
+
+Route:
+- /app
+
+Primary component:
+- frontend/components/getra-dashboard.tsx
+
+Status:
+- Existing map-first WebGIS workspace preserved.
+- Existing account menu, admin button, UMKM advertising button, notifications, logout, basemap controls, location controls, layer filters, route controls, and detail panel remain available.
+- The shared application shell was not wrapped around /app to avoid breaking the map lifecycle and full-height split-panel layout.
+
+Validation:
+- Browser audit route /app passed on mobile, tablet, desktop, and wide viewports.
+- No horizontal overflow detected.
+- No console/network 5xx errors detected.
