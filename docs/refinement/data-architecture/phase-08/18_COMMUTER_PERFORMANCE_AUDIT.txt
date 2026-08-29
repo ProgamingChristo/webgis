@@ -1,0 +1,8 @@
+GETRA PHASE 08 - PERFORMANCE AUDIT
+
+Candidate routing is bounded to 30 and occurs server-side; GETRA does not route every
+merchant in Jakarta or apply giant browser-side filtering. Component metadata avoids
+cross-component route attempts. Final browser measurements: constrained search 5,333 ms,
+route 2,421 ms, and Route Switch 2,327 ms. Graph health was
+approximately 4,365 ms. All completed within the endpoint/runtime budgets in the test
+environment. Status: PASS, with continued monitoring recommended as coverage grows.

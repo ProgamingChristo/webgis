@@ -1,0 +1,18 @@
+GETRA PHASE 06 - ADMINISTRATIVE DATA SOURCE
+
+Active source
+- Persisted table: public.administrative_regions.
+- Original project asset: data/jakarta-admin-boundaries.ts.
+- Upstream repository: https://github.com/mahendrayudha/indonesia-geojson
+- Upstream data: GADM v4.0, extracted by that repository on 6 March 2022.
+- Level: CITY / Kota Administrasi used by Phase 05.
+- SRID: EPSG:4326.
+- Actual DB geometry: MultiPolygon.
+- Current records: Jakarta Barat, Pusat, Selatan, Timur, and Utara.
+
+License limitation
+The current GADM license states academic and other non-commercial use is free, while redistribution or commercial use requires prior permission: https://gadm.org/license.html
+
+Therefore Phase 06 is technically verified, but commercial production deployment of these boundary coordinates requires GADM permission or replacement with a suitably licensed official source. An official DKI ArcGIS FeatureServer supporting GeoJSON was identified for future source review: https://gis-dpmptsp.jakarta.go.id/arcgis/rest/services/Hosted/ECCI_RT_Final/FeatureServer/layers
+
+No geometry was drawn or approximated for Phase 06.

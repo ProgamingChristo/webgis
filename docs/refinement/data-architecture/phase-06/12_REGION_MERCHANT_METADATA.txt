@@ -1,0 +1,13 @@
+GETRA PHASE 06 - MERCHANT REGION METADATA
+
+Source
+Region metadata is derived server-side by search_canonical_merchants_v1 using PostGIS intersection against administrative_regions. The browser does not perform point-in-polygon.
+
+Surfaces
+- result card: district and canonical city/region, deduplicated when equal
+- MapLibre merchant popup: brand, canonical region, and address
+- detail panel: explicit Wilayah administrasi section
+- result grouping: canonical regionIds
+
+Border predicate
+The existing Phase 05 RPC uses ST_Intersects. Canonical merchant IDs and SQL DISTINCT prevent duplicate user-facing merchants if source evidence or region geometry overlaps.

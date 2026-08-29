@@ -1,0 +1,5 @@
+CONTEXTUAL LAYER VIEWPORT LOADING
+
+Requests require source, west, south, east, north, limit, and offset. The API validates ordering, a maximum 10-degree span, limit <= 250, and offset <= 10000.
+
+The hook debounces viewport changes by 300 ms, aborts stale requests, and keeps an LRU cache of 30 successful source+bbox results. Phase 07 E2E proved zero requests while layers were off and zero new request on same-viewport re-enable.

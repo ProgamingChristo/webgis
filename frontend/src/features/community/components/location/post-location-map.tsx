@@ -15,7 +15,7 @@ import {
   formatExactLocationCoordinate,
   formatLocationCoordinate,
 } from "../../utils/community-format";
-import { getBasemapOption, getDefaultBasemapId } from "../../../../../lib/mapid";
+import { getBasemapOption, getPreferredBasemapId } from "../../../../../lib/mapid";
 import styles from "../community.module.css";
 
 type PostLocationMapProps = {
@@ -68,7 +68,7 @@ export function PostLocationMap({
       ];
       const map = new maplibre.Map({
         container: containerRef.current,
-        style: getBasemapOption(getDefaultBasemapId()).style,
+        style: getBasemapOption(getPreferredBasemapId()).style,
         center,
         zoom: 15,
       });

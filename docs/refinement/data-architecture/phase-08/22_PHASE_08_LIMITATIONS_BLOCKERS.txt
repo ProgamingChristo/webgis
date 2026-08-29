@@ -1,0 +1,12 @@
+GETRA PHASE 08 - LIMITATIONS AND BLOCKERS
+
+BLOCKERS: NONE.
+
+Limitations:
+- Pedestrian graph is a labelled bounded Jakarta pilot, not citywide coverage.
+- It contains 570 components; component-aware routing rejects disconnected paths.
+- Production opening-hours provenance lacks weekly schedules, so strict open-now
+  safely excludes UNKNOWN rows until better source data is ingested.
+- AI provider was unavailable during E2E; deterministic grounded fallback passed.
+- Route/search latency should be monitored as graph and merchant coverage expand.
+- Rotate the formerly browser-exposed basemap/Mission credential operationally.

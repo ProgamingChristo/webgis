@@ -1,0 +1,71 @@
+{
+  "browser": "Chrome headless via puppeteer-core",
+  "generated_at": "2026-08-28T02:45:59.829Z",
+  "requests": [
+    {
+      "bbox": {
+        "west": 106.6752582713421,
+        "south": -6.37471210157949,
+        "east": 106.98053872866006,
+        "north": -6.031847590790221
+      },
+      "has_more": true,
+      "limit": 100,
+      "marker_contract_valid": true,
+      "offset": 0,
+      "safe_body": true,
+      "status": 200,
+      "total_available": 715,
+      "total_features": 100,
+      "url_has_bbox": true
+    },
+    {
+      "bbox": {
+        "west": 106.78525468122314,
+        "south": -6.374712101589694,
+        "east": 107.09053513854104,
+        "north": -6.031847590800467
+      },
+      "has_more": true,
+      "limit": 100,
+      "marker_contract_valid": true,
+      "offset": 0,
+      "safe_body": true,
+      "status": 200,
+      "total_available": 601,
+      "total_features": 100,
+      "url_has_bbox": true
+    }
+  ],
+  "browser_errors": [],
+  "pagination": {
+    "first": {
+      "id": "df0298cb-8246-4044-a054-9be344d272e7",
+      "offset": 0,
+      "status": 200,
+      "total_available": 715
+    },
+    "second": {
+      "id": "8c4bfa28-a183-442b-9441-825e8de14c1e",
+      "offset": 1,
+      "status": 200,
+      "total_available": 715
+    },
+    "stable_total": true,
+    "distinct_pages": true
+  },
+  "aborted_or_empty_responses": 2,
+  "map": {
+    "canvas_pixels_present": true,
+    "merchant_count": 100,
+    "marker_count": 100,
+    "render_mode": "markers",
+    "rendered_cluster_features": 0,
+    "cluster_source_features": 0,
+    "path": "/app"
+  },
+  "security": {
+    "browser_called_mapid_mission": false,
+    "safe_urls": true
+  }
+}

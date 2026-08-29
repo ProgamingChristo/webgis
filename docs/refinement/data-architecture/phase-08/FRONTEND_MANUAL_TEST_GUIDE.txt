@@ -1,0 +1,19 @@
+GETRA PHASE 08 - FRONTEND MANUAL TEST GUIDE
+
+1. Login as USER and open the GETRA base map.
+2. Search MIRA KANTIN and choose it as route/search origin.
+3. Search bakso Jakarta Pusat with maximum walking 10 minutes.
+4. Verify results show network minutes only when routable.
+5. Verify the green service area follows network edges and is not a circle.
+6. Select a result, create a route, and verify the cyan LineString and duration.
+7. Use Route Switch; verify origin/filter state stays and old route is replaced.
+8. Use Smart Alternative; verify it selects only an existing eligible result.
+9. Ask AI about route distance; compare the answer with the route facts.
+10. Apply budget 30000 plus open-now plus walking 10. Verify no silent relaxation.
+11. Use each explicit remove-filter control and verify only that filter changes.
+12. Inspect Network: GIS calls must target GETRA; no Mission credential is visible.
+13. Inspect Console: no errors should occur.
+14. Repeat at 390x844, 768x1024, 1366x768, and 1440x900.
+
+Disconnected/out-of-coverage check: select points outside graph coverage and verify
+NO_NETWORK_ACCESS or UNROUTABLE with no straight-line route geometry.

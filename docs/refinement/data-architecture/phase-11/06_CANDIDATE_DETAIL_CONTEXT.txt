@@ -1,0 +1,21 @@
+GETRA PHASE 11 - CANDIDATE DETAIL CONTEXT
+
+Endpoint:
+- GET /api/business-space/candidates/[candidateId]
+
+Detail includes:
+- property observation identity
+- geometry
+- administrative context
+- market context
+- supply context
+- transit context
+- walking context
+- data quality indicators
+- limitations
+
+Claim policy:
+- The detail response does not claim property availability.
+- The detail response does not calculate ROI, revenue, profit, or rent affordability.
+- The detail response reports insufficient context as null or explicit unavailable states.
+

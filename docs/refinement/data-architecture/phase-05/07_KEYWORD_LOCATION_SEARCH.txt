@@ -1,0 +1,9 @@
+GETRA PHASE 05 - KEYWORD + LOCATION SEARCH
+
+The resolver removes a recognized location phrase from the keyword while retaining the original query for audit-safe response metadata.
+
+Observed browser evidence
+- bakso Jakarta Selatan -> keyword bakso, region jakarta-selatan, 3 results.
+- soto Jakarta Barat -> keyword soto, region jakarta-barat, 1 result.
+
+Counts are runtime observations from 2026-08-28 and may change as canonical data changes. They are not hard-coded acceptance values.

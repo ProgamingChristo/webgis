@@ -1,0 +1,8 @@
+GETRA PHASE 10 MERCHANT INTELLIGENCE AUTHORIZATION
+
+Account roles remain USER and ADMIN through profiles.account_role.
+Private intelligence grants are separate: merchants.owner_id, an APPROVED merchant_claim, or ADMIN inspection.
+Stakeholder mode UMKM never grants ownership. Email, name similarity, and location never grant access.
+Anonymous requests return 401. Existing non-owner requests return 403.
+Workspace selectors include canonical owners and approved claims, deduplicated by merchant ID.
+Claim requests remain PENDING until reviewed; public routes cannot set owner_id or self-approve.

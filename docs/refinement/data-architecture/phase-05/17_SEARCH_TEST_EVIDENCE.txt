@@ -1,0 +1,28 @@
+GETRA PHASE 05 - TEST EVIDENCE
+
+Focused backend
+- 4 files PASS
+- 18 tests PASS
+- intent precedence, aliases, schema strictness, route contract, migration safety/security
+
+Focused frontend
+- 2 files PASS
+- 2 tests PASS
+- controls and canonical search service request contract
+
+Full suites
+- Frontend: 11 files, 46 tests PASS
+- Backend: 100 files PASS, 2 files skipped; 676 tests PASS, 3 skipped; 679 total
+
+Quality gates
+- root typecheck: PASS
+- root lint with zero warnings: PASS
+- frontend production build: PASS
+- backend production build: PASS
+- Phase 04 canonical viewport browser regression: PASS
+- Phase 05 browser E2E: PASS
+
+Database
+- migration list records local/remote 20260828090000
+- db push --dry-run: upToDate=true, no pending migrations
+- generated linked database TypeScript types: PASS

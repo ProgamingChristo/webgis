@@ -1,0 +1,24 @@
+GETRA PHASE 11 - BROWSER E2E
+
+Script:
+- scripts/verify-phase11-business-space-browser.mjs
+
+Evidence:
+- docs/refinement/data-architecture/phase-11/browser-evidence/phase11-browser-evidence.json
+- docs/refinement/data-architecture/phase-11/browser-evidence/business-space-initial-1440x900.png
+- docs/refinement/data-architecture/phase-11/browser-evidence/business-space-comparison-1440x900.png
+
+Verified flow:
+- Open /business-space.
+- Load Properti Go candidates.
+- Select candidate detail.
+- Add two candidates.
+- Run comparison.
+- Render ECharts.
+- Request AI Location Insight.
+- Confirm browser calls GETRA Business Space APIs only.
+- Confirm no provider secret in response text.
+
+Result:
+- PASS.
+

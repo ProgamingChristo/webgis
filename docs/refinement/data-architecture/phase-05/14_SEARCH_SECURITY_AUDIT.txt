@@ -1,0 +1,16 @@
+GETRA PHASE 05 - SEARCH SECURITY AUDIT
+
+PASS
+- Endpoint requires authenticated GETRA user.
+- Strict query parser rejects unknown properties and malformed values.
+- Region IDs are allow-listed from trusted persisted records.
+- No raw SQL or dynamic RPC/path selection from browser input.
+- Query length, region count, page size, and coordinate ranges are bounded.
+- Postgres search is parameterized.
+- RLS keeps administrative region table service-side; safe metadata is returned through a controlled RPC.
+- Browser called only GETRA APIs.
+- Browser did not call MAPID Mission endpoints.
+- Runtime response scans found no API key, x-api-key, service role, authorization header, or environment leakage.
+- Invalid Atlantis location returned a safe HTTP 400 response.
+
+Mission and Premium credentials remain unchanged and server-side only.

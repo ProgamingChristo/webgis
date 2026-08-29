@@ -1,0 +1,20 @@
+GETRA PHASE 11 - API CONTRACTS
+
+Endpoints:
+- GET /api/business-space/candidates
+- GET /api/business-space/candidates/[candidateId]
+- POST /api/business-space/compare
+- POST /api/business-space/insight
+
+Validation:
+- Zod strict schemas.
+- Unknown categories rejected.
+- Invalid bbox rejected.
+- Comparison requires 2 to 4 unique candidate IDs.
+
+Response contract:
+- Safe normalized property observations.
+- Context objects for admin, market, supply, transit, and walking.
+- Limitations included in responses.
+- No raw provider credential.
+

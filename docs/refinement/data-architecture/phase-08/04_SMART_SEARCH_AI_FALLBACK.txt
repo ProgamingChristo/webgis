@@ -1,0 +1,7 @@
+GETRA PHASE 08 - SMART SEARCH AI FALLBACK
+
+Structured search does not depend on an AI provider. Deterministic parsing is the
+canonical fallback and remains usable when AI is absent or fails. AI is restricted
+to grounded explanation of already verified GIS output. During browser verification
+the provider was unavailable, so GETRA returned a safe deterministic explanation:
+the values came from the pgRouting result, not from model estimation.

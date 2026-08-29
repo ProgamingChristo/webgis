@@ -1,0 +1,695 @@
+{
+  "generated_at": "2026-08-28T05:08:15.918Z",
+  "browser": "Chrome headless via puppeteer-core",
+  "flows": {
+    "origin_lookup": {
+      "status": 200,
+      "duration_ms": 2818,
+      "payload_bytes": 3291,
+      "safe": true,
+      "total": 1,
+      "returned": 1,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "MIRA KANTIN",
+        "keyword": "mira kantin",
+        "location_text": null,
+        "scope": {
+          "type": "CURRENT_VIEWPORT",
+          "region_ids": [],
+          "bounds": {
+            "west": 106.68418551219526,
+            "south": -6.254937148470006,
+            "east": 106.83217648780459,
+            "north": -6.088716443930409
+          }
+        },
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": null
+        },
+        "origin": {
+          "longitude": 106.8278985,
+          "latitude": -6.2033015,
+          "source": "SELECTED_POINT"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
+      },
+      "commuter": {
+        "candidate_count": 1,
+        "constrained_count": 1,
+        "excluded": {
+          "budget": 0,
+          "unknown_price": 0,
+          "closed": 0,
+          "unknown_hours": 0,
+          "walking_time": 0,
+          "unroutable": 0
+        },
+        "hard_constraints_applied": [],
+        "constraints_relaxed": false,
+        "regions": []
+      }
+    },
+    "network_walking_search": {
+      "status": 200,
+      "duration_ms": 5333,
+      "payload_bytes": 5926,
+      "safe": true,
+      "total": 2,
+      "returned": 2,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "bakso Jakarta Pusat",
+        "keyword": "bakso",
+        "location_text": "Jakarta Pusat",
+        "scope": {
+          "type": "REGION",
+          "region_ids": [
+            "jakarta-pusat"
+          ],
+          "bounds": {
+            "west": 106.791801,
+            "south": -6.229305,
+            "east": 106.881416,
+            "north": -6.135321
+          }
+        },
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": {
+            "max_minutes": 10
+          }
+        },
+        "origin": {
+          "longitude": 106.81138,
+          "latitude": -6.18531,
+          "source": "EXPLICIT_ORIGIN"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
+      },
+      "commuter": {
+        "candidate_count": 2,
+        "constrained_count": 2,
+        "excluded": {
+          "budget": 0,
+          "unknown_price": 0,
+          "closed": 0,
+          "unknown_hours": 0,
+          "walking_time": 0,
+          "unroutable": 0
+        },
+        "hard_constraints_applied": [
+          "MAX_NETWORK_WALKING_MINUTES"
+        ],
+        "constraints_relaxed": false,
+        "regions": [
+          {
+            "id": "jakarta-pusat",
+            "name": "Jakarta Pusat",
+            "aliases": [
+              "jakarta pusat",
+              "jakpus"
+            ],
+            "bounds": {
+              "west": 106.791801,
+              "south": -6.229305,
+              "east": 106.881416,
+              "north": -6.135321
+            },
+            "geometry_source": "mahendrayudha/indonesia-geojson; GADM v4.0"
+          }
+        ]
+      }
+    },
+    "service_area": {
+      "status": 200,
+      "payload_bytes": 53389,
+      "safe": true,
+      "result": {
+        "status": "READY",
+        "type": "REACHABLE_NETWORK_EDGES",
+        "threshold_minutes": 10,
+        "reachable_nodes": 561,
+        "reachable_edges": 673,
+        "geometry_type": "MultiLineString"
+      }
+    },
+    "route": {
+      "status": 200,
+      "duration_ms": 2421,
+      "payload_bytes": 1114,
+      "safe": true,
+      "result": {
+        "route_status": "ROUTABLE",
+        "analysis_method": "pgrouting_network_route",
+        "distance_meters": 309.827686921856,
+        "network_distance_meters": 283.674032391856,
+        "access_distance_meters": 26.15365453,
+        "duration_seconds": 222,
+        "geometry": {
+          "type": "LineString",
+          "coordinate_count": 26
+        },
+        "limitation_flags": [
+          "BOUNDED_NETWORK_SNAP"
+        ],
+        "route_source": "pgr_dijkstra",
+        "source": "GETRA_PEDESTRIAN_NETWORK",
+        "walking_speed_mps": 1.4
+      }
+    },
+    "route_switch": {
+      "status": 200,
+      "duration_ms": 2327,
+      "payload_bytes": 1162,
+      "safe": true,
+      "result": {
+        "route_status": "ROUTABLE",
+        "analysis_method": "pgrouting_network_route",
+        "distance_meters": 330.168970199575,
+        "network_distance_meters": 304.646021579575,
+        "access_distance_meters": 25.52294862,
+        "duration_seconds": 236,
+        "geometry": {
+          "type": "LineString",
+          "coordinate_count": 28
+        },
+        "limitation_flags": [
+          "BOUNDED_NETWORK_SNAP"
+        ],
+        "route_source": "pgr_dijkstra",
+        "source": "GETRA_PEDESTRIAN_NETWORK",
+        "walking_speed_mps": 1.4
+      },
+      "selected_destination": "Tahu Bakso Semarang"
+    },
+    "smart_alternative": {
+      "status": 200,
+      "duration_ms": 1460,
+      "payload_bytes": 1114,
+      "safe": true,
+      "result": {
+        "route_status": "ROUTABLE",
+        "analysis_method": "pgrouting_network_route",
+        "distance_meters": 309.827686921856,
+        "network_distance_meters": 283.674032391856,
+        "access_distance_meters": 26.15365453,
+        "duration_seconds": 222,
+        "geometry": {
+          "type": "LineString",
+          "coordinate_count": 26
+        },
+        "limitation_flags": [
+          "BOUNDED_NETWORK_SNAP"
+        ],
+        "route_source": "pgr_dijkstra",
+        "source": "GETRA_PEDESTRIAN_NETWORK",
+        "walking_speed_mps": 1.4
+      }
+    },
+    "grounded_ai": {
+      "status": 200,
+      "payload_bytes": 362,
+      "safe": true,
+      "intent": "WALKING_ROUTE",
+      "answer": "Rute pedestrian terverifikasi memiliki jarak 310 meter dengan estimasi 4 menit.",
+      "limitations": [
+        "Penjelasan AI tidak tersedia; jawaban ini dibuat langsung dari fakta terverifikasi."
+      ],
+      "evidence": [
+        {
+          "source": "pgRouting",
+          "dataset": "Pedestrian Network"
+        }
+      ]
+    },
+    "strict_no_result": {
+      "status": 200,
+      "duration_ms": 2453,
+      "payload_bytes": 2920,
+      "safe": true,
+      "total": 0,
+      "returned": 0,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "bakso Jakarta Pusat di bawah 30 ribu buka sekarang maksimal 10 menit jalan kaki",
+        "keyword": "bakso",
+        "location_text": "Jakarta Pusat",
+        "scope": {
+          "type": "REGION",
+          "region_ids": [
+            "jakarta-pusat"
+          ],
+          "bounds": {
+            "west": 106.791801,
+            "south": -6.229305,
+            "east": 106.881416,
+            "north": -6.135321
+          }
+        },
+        "category": null,
+        "constraints": {
+          "budget": {
+            "max_idr": 30000
+          },
+          "opening": {
+            "open_now": true,
+            "timezone": "Asia/Jakarta"
+          },
+          "walking": {
+            "max_minutes": 10
+          }
+        },
+        "origin": {
+          "longitude": 106.81138,
+          "latitude": -6.18531,
+          "source": "EXPLICIT_ORIGIN"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
+      },
+      "commuter": {
+        "candidate_count": 2,
+        "constrained_count": 0,
+        "excluded": {
+          "budget": 0,
+          "unknown_price": 0,
+          "closed": 0,
+          "unknown_hours": 2,
+          "walking_time": 0,
+          "unroutable": 0
+        },
+        "hard_constraints_applied": [
+          "MAX_BUDGET_IDR",
+          "OPEN_NOW_ASIA_JAKARTA",
+          "MAX_NETWORK_WALKING_MINUTES"
+        ],
+        "constraints_relaxed": false,
+        "regions": [
+          {
+            "id": "jakarta-pusat",
+            "name": "Jakarta Pusat",
+            "aliases": [
+              "jakarta pusat",
+              "jakpus"
+            ],
+            "bounds": {
+              "west": 106.791801,
+              "south": -6.229305,
+              "east": 106.881416,
+              "north": -6.135321
+            },
+            "geometry_source": "mahendrayudha/indonesia-geojson; GADM v4.0"
+          }
+        ]
+      },
+      "message": "Tidak ada merchant yang memenuhi semua batas.GETRA tidak melonggarkan budget, status buka, atau waktu berjalan secara otomatis.Hapus budgetAbaikan status bukaHapus batas berjalan"
+    }
+  },
+  "responsive": {
+    "390x844": {
+      "body_scroll_width": 390,
+      "viewport_width": 390,
+      "search_visible": true,
+      "map_visible": true,
+      "route_control_visible": true,
+      "no_horizontal_overflow": true
+    },
+    "768x1024": {
+      "body_scroll_width": 768,
+      "viewport_width": 768,
+      "search_visible": true,
+      "map_visible": true,
+      "route_control_visible": true,
+      "no_horizontal_overflow": true
+    },
+    "1366x768": {
+      "body_scroll_width": 1366,
+      "viewport_width": 1366,
+      "search_visible": true,
+      "map_visible": true,
+      "route_control_visible": true,
+      "no_horizontal_overflow": true
+    },
+    "1440x900": {
+      "body_scroll_width": 1440,
+      "viewport_width": 1440,
+      "search_visible": true,
+      "map_visible": true,
+      "route_control_visible": true,
+      "no_horizontal_overflow": true
+    }
+  },
+  "network": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "http://localhost:8080/api/auth/login"
+      },
+      {
+        "method": "GET",
+        "url": "https://sesakxnjaphrxqxllqjm.supabase.co/auth/v1/user"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:3000/app?_rsc=Yaku0SukotyQAzL7"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:3000/app?_rsc=HcuIdjAOlPmjl1qE"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/styles/liberty"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/styles/liberty"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/map-import/layers"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/auth/me"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/map-import/layers"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.json"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.png"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3262/2118.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3263/2118.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3262/2117.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3262/2119.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3261/2118.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3263/2117.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3263/2119.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3261/2117.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3261/2119.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/community/notifications?page=1&limit=10"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Italic/0-255.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Regular/0-255.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Bold/0-255.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/canonical?west=106.68418551219526&south=-6.254937148470006&east=106.83217648780459&north=-6.088716443930409&limit=100&offset=0&q=&scope=CURRENT_VIEWPORT&origin_longitude=106.75818100000001&origin_latitude=-6.171831&origin_source=SELECTED_POINT"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/11/1631/1059.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/11/1631/1058.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/11/1630/1059.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/11/1630/1058.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/canonical?west=106.68418551219526&south=-6.254937148470006&east=106.83217648780459&north=-6.088716443930409&limit=100&offset=0&q=MIRA+KANTIN&scope=CURRENT_VIEWPORT&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/canonical?west=106.68418551219526&south=-6.254937148470006&east=106.83217648780459&north=-6.088716443930409&limit=100&offset=0&q=bakso+Jakarta+Pusat&scope=CURRENT_VIEWPORT&max_walking_minutes=10&origin_longitude=106.81138&origin_latitude=-6.18531&origin_source=EXPLICIT_ORIGIN"
+      },
+      {
+        "method": "POST",
+        "url": "http://localhost:8080/api/spatial/service-area"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/regions?ids=jakarta-pusat"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/11/1632/1059.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/11/1632/1058.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3264/2118.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3264/2117.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3264/2119.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/4c1a6645-d27e-4858-8081-412eb9cb5188/advertising/profile-poster"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6526/4236.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6526/4237.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6527/4236.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6527/4237.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8474.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13054/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13054/8474.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8474.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8474.pbf"
+      },
+      {
+        "method": "POST",
+        "url": "http://localhost:8080/api/routing"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8474.pbf"
+      },
+      {
+        "method": "POST",
+        "url": "http://localhost:8080/api/routing"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/ba9cd9ab-eec0-4a6f-98fc-b980806fcc9c/advertising/profile-poster"
+      },
+      {
+        "method": "POST",
+        "url": "http://localhost:8080/api/routing"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/4c1a6645-d27e-4858-8081-412eb9cb5188/advertising/profile-poster"
+      },
+      {
+        "method": "POST",
+        "url": "http://localhost:8080/api/ai/ask"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/canonical?west=106.80756623065776&south=-6.188813386720611&east=106.81550556934161&north=-6.179896277408361&limit=100&offset=0&q=bakso+Jakarta+Pusat+di+bawah+30+ribu+buka+sekarang+maksimal+10+menit+jalan+kaki&scope=REGION&region_ids=jakarta-pusat&max_budget=30000&open_now=true&max_walking_minutes=10&origin_longitude=106.81138&origin_latitude=-6.18531&origin_source=EXPLICIT_ORIGIN"
+      },
+      {
+        "method": "POST",
+        "url": "http://localhost:8080/api/spatial/service-area"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8474.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6526/4236.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6526/4237.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6527/4236.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6527/4237.pbf"
+      }
+    ]
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "http_errors": [],
+  "accessibility": {
+    "standard": "WCAG 2 A/AA and WCAG 2.1 A/AA via axe-core",
+    "violations": [],
+    "critical_or_serious": 0
+  },
+  "security": {
+    "browser_calls_getra_only": true,
+    "no_provider_mission_request": true,
+    "no_secret_in_urls": true
+  }
+}

@@ -1,0 +1,9 @@
+STRUK GO MAP LAYER
+
+Source identifier: STRUK_GO
+Domain: TRANSACTION OBSERVATION
+Default: OFF
+Rendering: yellow source-specific points and clusters.
+
+Runtime initial viewport: HTTP 200, 148 of 148 observations.
+Records are not converted into merchants and are not used as revenue facts.

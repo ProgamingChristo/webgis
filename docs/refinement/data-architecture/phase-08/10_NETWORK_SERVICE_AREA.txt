@@ -1,0 +1,7 @@
+GETRA PHASE 08 - NETWORK SERVICE AREA
+
+POST /api/spatial/service-area accepts a validated origin and 5/10/15/20/30-minute
+threshold. It returns reachable pedestrian edges as a MultiLineString plus node and
+edge counts. The browser renders those edges as the reachable area. It is not a circle
+and is never labelled as a radius. Browser evidence at 10 minutes returned 561 nodes,
+673 edges, MultiLineString, and a 53,389-byte safe response.

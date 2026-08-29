@@ -1,0 +1,7 @@
+GETRA PHASE 08 - BUDGET CONSTRAINT
+
+Budget is a hard constraint. Only a numeric price observed in Menu Go provenance is
+eligible for comparison. Missing, malformed, inferred, or category-average prices
+are UNKNOWN and excluded when a maximum budget is active. No synthetic price is
+created. The no-result UI preserves the constraint and offers an explicit user action
+to remove it; GETRA never silently relaxes it.

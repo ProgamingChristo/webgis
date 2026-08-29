@@ -1,0 +1,32 @@
+GETRA PHASE 02 - FRONTEND TEST DATA
+
+Accounts
+- ADMIN test account is required for positive Mission synchronization tests.
+- USER test account is required for the negative authorization test.
+- Use credentials provided through the authorized local/runtime environment.
+- Do not place passwords, MAPID credentials, or service-role credentials in this file.
+
+Expected sources
+- Menu Go (MENU_GO)
+- Struk Go (STRUK_GO)
+- Properti Go (PROPERTI_GO)
+- Activities (ACTIVITIES)
+
+Expected button states
+- Idle: Sync <source label>
+- Active: Menyinkronkan; the active source button is disabled.
+- Finished: button returns to the idle label and the actual result is displayed.
+
+Safe expected result patterns
+- COMPLETED: fetched/inserted/updated/skipped/invalid/failed counters from the backend run.
+- PARTIAL: warning state with actual counters.
+- FAILED or BLOCKED: short safe error summary without stack traces, request headers, provider paths, or credentials.
+- NEVER_SYNCED: no fabricated counters; UI reports that no prior result exists.
+
+Historical Phase 01 baseline only
+- Menu Go: 87
+- Struk Go: 164
+- Properti Go: 99
+- Activities: 60
+
+Provider data may change. Phase 02 test results must use observed runtime counts and must not be forced to match the historical baseline.

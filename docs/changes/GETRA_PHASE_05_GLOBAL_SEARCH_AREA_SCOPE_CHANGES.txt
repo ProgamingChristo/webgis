@@ -1,0 +1,89 @@
+GETRA PHASE 05 - GLOBAL SEARCH + AREA SCOPE CHANGES
+
+Objective
+Expose bounded canonical merchant search for keyword, current viewport, trusted region, and multi-region intent while keeping list and MapLibre state synchronized.
+
+Added
+- Trusted Jakarta administrative-region source and migration generator.
+- Additive administrative_regions table, spatial index, safe list RPC, and canonical search RPC.
+- Typed global-search schemas, intent resolver, region resolver, and service.
+- Keyword/current viewport/region/multi-region support on the existing canonical merchant endpoint.
+- Global search frontend controls, region controls, map focus, Search This Area, cancellation, and honest states.
+- Focused backend/frontend tests and live Chrome E2E automation.
+- Phase 05 evidence, test data, and manual test guide.
+
+Files created
+- backend/src/features/global-search/global-search-regions.ts
+- backend/src/features/global-search/global-search.schema.ts
+- backend/src/features/global-search/global-search.service.ts
+- backend/src/features/global-search/global-search.types.ts
+- backend/supabase/migrations/20260828090000_phase05_global_search_regions.sql
+- backend/tests/unit/global-search/global-search-intent.test.ts
+- backend/tests/unit/global-search/global-search-schema.test.ts
+- backend/tests/unit/security/migration-phase05-global-search.test.ts
+- frontend/src/features/global-search/components/global-search-controls.tsx
+- frontend/tests/global-search/global-search-controls.test.tsx
+- scripts/generate-phase05-region-migration.mjs
+- scripts/verify-phase05-global-search-browser.mjs
+- docs/refinement/data-architecture/phase-05/*
+
+Files modified
+- data/jakarta-admin-boundaries.ts
+- backend/app/api/merchants/canonical/route.ts
+- backend/src/features/merchant-reconciliation/canonical-merchant-read.service.ts
+- backend/src/types/database.types.ts (generated from linked DB)
+- backend/tests/integration/canonical-merchant-route.test.ts
+- frontend/app/globals.css
+- frontend/components/getra-dashboard.tsx
+- frontend/components/getra-map.tsx
+- frontend/src/services/mapid-layer.service.ts
+- frontend/tests/services/mapid-layer.service.test.ts
+- frontend/vitest.config.mts
+- scripts/verify-phase04-canonical-viewport-browser.mjs
+- types/getra.ts
+
+Files removed
+NONE.
+
+Changed
+- Canonical merchant DTO now carries safe region attribution and explicit known/unknown status flags.
+- Phase 04 canonical read service now delegates bounded search to the Phase 05 PostGIS RPC.
+- Active search uses one canonical result set for both map and list.
+
+Unchanged
+- Premium MAPID integration.
+- Mission ingestion and server-side credentials.
+- Canonical merchant reconciliation identity.
+- Phase 04 clustering and pagination architecture.
+
+Migration
+20260828090000_phase05_global_search_regions.sql was pushed and verified remotely. No destructive operation was used.
+
+API and contracts
+- Existing GET /api/merchants/canonical now accepts bounded q, scope, region_ids, location_text, category, bbox, limit, and offset parameters.
+- Scope precedence is query location, selected region(s), then current viewport.
+- Region and multi-region geometry is server-resolved; arbitrary polygons/paths are not accepted.
+- Results retain the canonical merchant DTO, provenance, cap, pagination, intent, bounds, and safe region metadata.
+
+AI and GIS
+- AI changes: NONE. AI is not required for simple search and deterministic fallback is always available.
+- GIS changes: trusted MultiPolygon regions, GiST index, PostGIS intersection, and map fitBounds from returned bounds.
+
+Verification
+- Typecheck: PASS.
+- Lint: PASS with zero warnings.
+- Focused Phase 05: 18 tests PASS.
+- Full frontend: 46 tests PASS.
+- Full backend: 676 PASS, 3 skipped.
+- Production frontend/backend build: PASS.
+- Phase 04 regression: PASS.
+- Runtime API and Chrome E2E: PASS.
+- Responsive 390x844, 768x1024, 1366x768, 1440x900: PASS.
+- Security/network response scan: PASS; no browser Mission call or secret response.
+
+Limitations
+- Five trusted DKI mainland city regions are available; Kepulauan Seribu awaits a reviewed trusted asset.
+- No fuzzy-search infrastructure or Phase 06 boundary rendering was added.
+
+Rollback
+Revert client/API orchestration if required. Remove DB objects only through a new reviewed migration after dependency inspection; do not remove canonical merchant records.

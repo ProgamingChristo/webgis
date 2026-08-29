@@ -1,0 +1,8 @@
+DEMAND MAP VISUALIZATION
+
+MapLibre reuses exact Phase 06 MultiPolygon geometry. Demand mode uses a sequential scale:
+0-34 low, 35-69 medium, 70-100 high. Selected region receives a stronger outline.
+Labels display region name and Demand Score. The panel provides an explicit accessible legend.
+
+Analytics is OFF on initial load and adds at most five polygons. It does not replace the base map,
+merchant layer, route, search, or contextual source layers.

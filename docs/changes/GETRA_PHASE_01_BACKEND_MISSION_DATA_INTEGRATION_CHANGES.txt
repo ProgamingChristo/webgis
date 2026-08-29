@@ -1,0 +1,199 @@
+GETRA PHASE 01 BACKEND MISSION DATA INTEGRATION CHANGES
+
+Date:
+- 2026-08-27
+
+Objective:
+- Implement backend-to-backend MAPID Mission integration for Menu Go, Struk Go, Properti Go, and Activities with validation, normalization, idempotent persistence, provenance, and GETRA-owned API.
+
+Files created:
+- backend/app/api/admin/mapid/mission-sync/route.ts
+- backend/app/api/mapid/mission-observations/route.ts
+- backend/src/integrations/mapid/mission.client.ts
+- backend/src/integrations/mapid/mission.repository.ts
+- backend/src/integrations/mapid/mission.schema.ts
+- backend/src/integrations/mapid/mission.service.ts
+- backend/src/integrations/mapid/mission.types.ts
+- backend/supabase/migrations/20260827090000_mapid_mission_observations.sql
+- backend/tests/unit/integrations/mapid/mission-schema.test.ts
+- backend/tests/unit/integrations/mapid/mission-service.test.ts
+- docs/refinement/data-architecture/phase-01/01_PHASE_01_IMPLEMENTATION_PLAN.txt
+- docs/refinement/data-architecture/phase-01/02_MAPID_MISSION_ADAPTER_ARCHITECTURE.txt
+- docs/refinement/data-architecture/phase-01/03_MENU_GO_INTEGRATION.txt
+- docs/refinement/data-architecture/phase-01/04_STRUK_GO_INTEGRATION.txt
+- docs/refinement/data-architecture/phase-01/05_PROPERTI_GO_INTEGRATION.txt
+- docs/refinement/data-architecture/phase-01/06_ACTIVITIES_INTEGRATION.txt
+- docs/refinement/data-architecture/phase-01/07_MISSION_RESPONSE_CONTRACTS.txt
+- docs/refinement/data-architecture/phase-01/08_MISSION_NORMALIZATION_RULES.txt
+- docs/refinement/data-architecture/phase-01/09_MISSION_DATABASE_MODEL.txt
+- docs/refinement/data-architecture/phase-01/10_MISSION_IDEMPOTENCY_STRATEGY.txt
+- docs/refinement/data-architecture/phase-01/11_MISSION_PAGINATION_BEHAVIOR.txt
+- docs/refinement/data-architecture/phase-01/12_MISSION_PROVENANCE_MODEL.txt
+- docs/refinement/data-architecture/phase-01/13_MISSION_SECURITY_VERIFICATION.txt
+- docs/refinement/data-architecture/phase-01/14_MISSION_API_CONTRACT.txt
+- docs/refinement/data-architecture/phase-01/15_MISSION_TEST_EVIDENCE.txt
+- docs/refinement/data-architecture/phase-01/16_MISSION_RUNTIME_VERIFICATION.txt
+- docs/refinement/data-architecture/phase-01/17_MISSION_LIMITATIONS_BLOCKERS.txt
+- docs/refinement/data-architecture/phase-01/18_PHASE_01_IMPLEMENTATION_SUMMARY.txt
+
+Files modified:
+- .env.example
+- backend/src/integrations/mapid/index.ts
+- backend/src/integrations/mapid/mapid.client.ts
+- backend/src/integrations/mapid/mapid.schema.ts
+- backend/src/integrations/mapid/mapid.types.ts
+- backend/src/lib/api-security/endpoint-policy.ts
+- backend/tests/unit/integrations/mapid/mapid-client.test.ts
+
+Files deleted:
+- None by Phase 01.
+
+DB migration:
+- Added mapid_mission_sync_runs.
+- Added mapid_mission_observations.
+- Added source-scoped unique identity.
+- Added geometry, source, and observed_at indexes.
+- Added RLS policies.
+- Added list_mapid_mission_observations_v1 RPC.
+
+API changes:
+- Added POST /api/admin/mapid/mission-sync.
+- Added GET /api/mapid/mission-observations.
+
+Environment variable names:
+- Existing: MAPID_BASE_URL.
+- Existing: MAPID_API_KEY.
+- Existing: MAPID_TIMEOUT_MS.
+- Added optional server-only: MAPID_ACTIVITIES_PATH.
+
+Dependencies:
+- No dependency added.
+
+Commands run:
+- npm run typecheck: PASS.
+- npm run test -w backend -- --run tests/unit/integrations/mapid: PASS, 5 files, 43 tests.
+- npm run test -w backend -- --run tests/unit/security/endpoint-policy.test.ts tests/unit/integrations/mapid: PASS, 6 files, 50 tests.
+- npm run test -w backend: FAIL, unrelated docker-config expectation mismatch.
+- npm run lint: FAIL, unrelated frontend unused import warning.
+- npm run build -w backend: PASS.
+- npm run build: PASS.
+- npm run db:migrations: BLOCKED, Supabase failed to parse .env.local.
+- npx supabase db push --dry-run: BLOCKED, Supabase failed to parse .env.local.
+
+Security:
+- Mission credential injection remains server-side.
+- No NEXT_PUBLIC Mission credential was added.
+- Admin sync route is ADMIN-only.
+- Read route returns normalized DTOs, not raw provider headers or credentials.
+
+Migration dry-run:
+- BLOCKED by Supabase environment parsing.
+
+Migration push:
+- NOT RUN.
+
+Remote verify:
+- Remote DB: BLOCKED.
+- Remote MAPID: BLOCKED.
+
+Runtime evidence:
+- Local build includes both new backend routes.
+- Real MAPID retrieval was not executed.
+
+Limitations:
+- Activities actual endpoint remains unknown.
+- Phase 01 does not include admin UI, map layer, viewport loading, search, Premium reconciliation, merchant matching, or routing mutation.
+
+Rollback:
+- Application rollback: remove the Phase 01 route, integration, repository, service, schema, and test files.
+- API rollback: remove /api/admin/mapid/mission-sync and /api/mapid/mission-observations.
+- Migration rollback: after explicit approval, drop list_mapid_mission_observations_v1 and the two new mapid_mission_* tables if no production data must be preserved.
+- Data rollback: do not delete synced observations automatically; archive/export first if remote sync has been used.
+
+VERIFICATION CLOSURE - 2026-08-27
+
+Changes:
+- package.json: db:migrations now targets the actual backend Supabase workdir.
+- Migration 20260827090000: qualified PostGIS functions with the extensions schema after a transactional remote apply failure exposed the issue.
+- backend/src/types/database.types.ts: regenerated from linked public/private schemas.
+- Added opt-in linked runtime verification test for remote DB, RLS, idempotency, real MAPID sync, and normalized read route checks.
+
+Remote evidence:
+- Migration 20260827090000 pushed and recorded remotely.
+- Unique source identity PASS with PostgreSQL 23505 on duplicate.
+- Point geometry constraint PASS; non-Point rejected.
+- Anonymous RLS read returned zero rows.
+- Authenticated admin read route returned HTTP 200.
+- Temporary verification data cleaned up.
+
+Quality gates:
+- Focused MAPID/security: PASS, 50 tests.
+- Full backend: PASS, 610 tests passed, 3 skipped.
+- Typecheck: PASS.
+- Lint: PASS.
+- Build: PASS.
+
+Remaining blockers:
+- Real MAPID Mission base URL/key pair is not configured in the available authorized environment; current backend URL is localhost fixture infrastructure.
+- MAPID_ACTIVITIES_PATH is absent and no actual Activities endpoint was found.
+- Real Menu Go, Struk Go, Properti Go, Activities, real-source idempotency, and real-data API verification remain BLOCKED.
+
+Gate:
+- STATUS: BLOCKED.
+- READY FOR PHASE 02: NO.
+
+FINAL VERIFICATION CLOSURE - 2026-08-27
+
+Contract corrections:
+- Corrected Struck Go endpoint mission type from `strukgo` to official `struckgo`.
+- Configured official Activities endpoint /web/competition/activities.
+- Added data.activities response extraction.
+- Added Activities medias/author normalization aliases.
+- Added provider pagination extraction and hasMore/offset/limit progression.
+
+Final runtime evidence:
+- Menu Go: 87 rows, idempotency PASS, read API PASS.
+- Struck Go: 164 rows over 2 pages, idempotency PASS, read API PASS.
+- Properti Go: 99 rows, idempotency PASS, read API PASS.
+- Activities: 60 rows, idempotency PASS, read API PASS.
+
+Final quality gates:
+- Focused MAPID/security: PASS, 53 tests.
+- Full backend: PASS, 613 tests passed and 3 skipped.
+- Typecheck: PASS.
+- Lint: PASS.
+- Build: PASS.
+- Security: PASS; no Mission credential in tracked files or API responses.
+
+Final gate:
+- STATUS: VERIFIED.
+- READY FOR PHASE 02: YES.
+- STOP: Phase 02 not started.
+
+REAL MAPID CREDENTIAL CLOSURE - 2026-08-27
+
+Runtime configuration:
+- Configured real MAPID base URL and API key in ignored backend/.env.local.
+- No credential value was added to source control or documentation.
+
+Verified:
+- Menu Go: 87 real records, idempotent rerun, normalized read API HTTP 200.
+- Properti Go: 99 real records, idempotent rerun, normalized read API HTTP 200.
+- Typecheck, lint, focused tests, full backend tests, and build remain PASS.
+
+Blocked:
+- Struk Go handoff path returned HTTP 404; actual endpoint is required.
+- Activities endpoint/contract remains unknown.
+
+Gate remains:
+- REAL MAPID: PARTIAL.
+- STATUS: BLOCKED.
+- READY FOR PHASE 02: NO.
+
+AUTHORITATIVE FINAL STATUS - 2026-08-27
+
+- The PARTIAL/BLOCKED gate immediately above is retained as historical pre-correction evidence.
+- REAL MAPID: VERIFIED.
+- STATUS: VERIFIED.
+- READY FOR PHASE 02: YES.
+- Phase 02 was not started.

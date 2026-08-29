@@ -1,0 +1,51 @@
+
+> getra-frontend@0.1.0 predev
+> node ./scripts/copy-maplibre-worker.mjs
+
+[GETRA] MapLibre worker copied to public/maplibre
+
+> getra-frontend@0.1.0 dev
+> node ../scripts/dev-next.mjs frontend 3000
+
+[GETRA] frontend dev server using http://localhost:3000
+▲ Next.js 16.3.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.5.1:3000
+- Environments: .env.local
+✓ Ready in 907ms
+✓ Running next.config.ts took 58ms
+Creating turbopack project { dir: 'D:\\Getra_Production\\frontend', testMode: true }
+
+ GET / 200 in 898ms (next.js: 308ms, application-code: 589ms)
+ GET /login 200 in 115ms (next.js: 49ms, application-code: 66ms)
+ GET /app 200 in 79ms (next.js: 49ms, application-code: 31ms)
+ GET /app 200 in 55ms (next.js: 12ms, application-code: 43ms)
+ GET /business-space 200 in 112ms (next.js: 62ms, application-code: 50ms)
+ GET /login 200 in 213ms (next.js: 13ms, application-code: 200ms)
+ GET /login 200 in 35ms (next.js: 9ms, application-code: 26ms)
+ GET /app 200 in 35ms (next.js: 11ms, application-code: 24ms)
+ GET /app 200 in 56ms (next.js: 12ms, application-code: 44ms)
+ GET /app 200 in 45ms (next.js: 10ms, application-code: 35ms)
+ GET /business-space 200 in 192ms (next.js: 9ms, application-code: 183ms)
+ GET /business-space 200 in 28ms (next.js: 9ms, application-code: 19ms)
+ GET /business-space 200 in 34ms (next.js: 13ms, application-code: 21ms)
+ GET /business-space 200 in 36ms (next.js: 8ms, application-code: 28ms)
+ GET /business-space 200 in 30ms (next.js: 7ms, application-code: 23ms)
+ GET /business-space 200 in 45ms (next.js: 14ms, application-code: 31ms)
+ GET /business-space 200 in 54ms (next.js: 11ms, application-code: 43ms)
+ GET /business-space 200 in 33ms (next.js: 8ms, application-code: 25ms)
+ GET /business-space 200 in 158ms (next.js: 34ms, application-code: 124ms)
+ GET /business-space 200 in 37ms (next.js: 7ms, application-code: 30ms)
+ GET /business-space 200 in 40ms (next.js: 10ms, application-code: 29ms)
+ GET /business-space 200 in 147ms (next.js: 33ms, application-code: 114ms)
+ GET /business-space 200 in 86ms (next.js: 8ms, application-code: 77ms)
+✓ Compiled in 795ms
+▲ Next.js 16.3.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.5.1:3000
+- Environments: .env.local
+✓ Ready in 1052ms
+✓ Running next.config.ts took 112ms
+Creating turbopack project { dir: 'D:\\Getra_Production\\frontend', testMode: true }
+
+[?25h

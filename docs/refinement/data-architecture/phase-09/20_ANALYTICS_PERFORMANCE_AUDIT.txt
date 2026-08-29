@@ -1,0 +1,13 @@
+ANALYTICS PERFORMANCE AUDIT - 2026-08-28
+
+Measured browser GET /api/analytics/demand: HTTP 200, 1207 ms, 31010 bytes, five regions.
+Earlier authenticated three-region runtime: HTTP 200, 1203 ms, 14203 bytes.
+API is bounded to five regions and 90 days; UI defaults to 30 days. Stale requests are aborted/ignored.
+
+Remote index audit confirmed active spatial indexes on administrative_regions and merchants,
+active Mission source/time and identity indexes, plus commuter/campaign indexes. Phase 09 adds
+category-time, event-type-time, region GIN, and unique dedup indexes. New event indexes have low/zero
+cumulative scans because the table was newly created with one deduplicated runtime event.
+
+PostgREST EXPLAIN media type returned HTTP 406 because remote plan output is disabled.
+Therefore QUERY PLAN is PARTIAL; measured runtime and remote index-stat audit passed.

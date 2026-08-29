@@ -218,6 +218,14 @@ describe("API endpoint policy matrix", () => {
         "POST /api/admin/ingestion/run",
         "POST /api/admin/map-import/commit",
         "POST /api/admin/map-import/preview",
+        "GET /api/admin/merchant-reconciliation",
+        "GET /api/admin/merchant-submissions",
+        "GET /api/admin/mission/sync",
+        "POST /api/admin/merchant-submissions/[id]/approve",
+        "POST /api/admin/merchant-submissions/[id]/reject",
+        "POST /api/admin/mapid/mission-sync",
+        "POST /api/admin/merchant-reconciliation",
+        "POST /api/admin/mission/sync",
       ].sort(),
     );
 

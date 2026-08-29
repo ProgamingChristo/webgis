@@ -1,0 +1,9 @@
+GETRA PHASE 08 - COMMUTER FLOW ARCHITECTURE
+
+User input and explicit origin are parsed into a structured commuter intent.
+The GETRA canonical merchant API obtains bounded candidates from PostGIS, then
+applies strict observed-price, opening-hours, and pgRouting walking constraints.
+The browser receives normalized merchant facts and safe exclusion metadata.
+Service area and route requests go to GETRA APIs; the browser never runs GIS math.
+MapLibre renders canonical merchants, reachable network edges, and route geometry.
+AI may explain returned GIS facts, but cannot calculate distance or eligibility.

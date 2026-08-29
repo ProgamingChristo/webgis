@@ -1,0 +1,20 @@
+GETRA PHASE 04 - SAFE FRONTEND TEST DATA
+
+Required account:
+- Authenticated GETRA USER or ADMIN fixture.
+- Do not place passwords or provider credentials in this file.
+
+Expected behavior:
+- Login opens /app.
+- Initial map viewport calls GETRA /api/merchants/canonical with bbox parameters.
+- Dragging or zooming the map sends a new bbox after moveend.
+- Every page contains no more than 250 canonical merchants.
+- Large combined result sets use MapLibre cluster circles.
+- Clicking a cluster zooms toward its members.
+- Clicking an individual merchant preserves the existing detail selection.
+
+Negative cases:
+- Missing or inverted bbox returns validation error.
+- limit above 250 is rejected.
+- unknown or duplicate query keys are rejected.
+- anonymous request is rejected.

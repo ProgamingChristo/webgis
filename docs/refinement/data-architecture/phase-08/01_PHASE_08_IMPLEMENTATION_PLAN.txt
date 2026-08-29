@@ -1,0 +1,11 @@
+GETRA PHASE 08 - IMPLEMENTATION PLAN
+
+Objective: close the core commuter flow without starting Phase 09.
+1. Audit Phase 07, canonical merchant data, opening hours, and routing behavior.
+2. Define strict structured intent and unknown-data policies.
+3. Install and verify a bounded pedestrian graph and pgRouting RPCs.
+4. Connect search, service area, route, Route Switch, and Smart Alternative.
+5. Regress Fair Discovery, Mission/context layers, and canonical merchants.
+6. Run database, API, automated, browser, responsive, security, and performance checks.
+
+Status: completed. Phase 07 remained unchanged and compatible.

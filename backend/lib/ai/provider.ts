@@ -9,13 +9,17 @@ const providers: Record<ModelProvider, AiProviderAdapter> = {
 
 function preferredProvider(): ModelProvider | undefined {
   const configured = process.env.AI_PROVIDER?.toLowerCase();
-  return configured === "openai" || configured === "claude" ? configured : undefined;
+  if (!configured) return undefined;
+  if (configured === "openai" || configured === "claude") return configured;
+  throw new Error(`Unsupported AI_PROVIDER: ${configured}`);
 }
 
 function providerOrder(): AiProviderAdapter[] {
   const preferred = preferredProvider();
   if (!preferred) return [providers.openai, providers.claude];
-  return [providers[preferred], ...Object.values(providers).filter((provider) => provider.id !== preferred)];
+  // An explicitly selected provider is a deployment contract. Never route a
+  // Claude failure or missing Claude credential to a different paid provider.
+  return [providers[preferred]];
 }
 
 export async function generateStructured<T>(

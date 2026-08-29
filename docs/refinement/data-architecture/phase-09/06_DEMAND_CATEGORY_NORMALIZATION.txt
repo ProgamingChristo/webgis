@@ -1,0 +1,9 @@
+DEMAND CATEGORY NORMALIZATION
+
+Phase 09 uses explicit server-owned slugs and aliases. Client input is strict and cannot inject SQL.
+Supported UI categories: bakso, coffee, nasi-goreng, restaurant, warung, street-food,
+fast-food, minimarket, and pharmacy. Backend taxonomy also supports parent categories.
+
+Bakso and nasi-goreng are additive food child categories. Matching uses normalized category evidence
+from event categories, canonical merchant metadata/description/name, and Struk observation payloads.
+Struk Go remains a transaction observation; it is never converted into a merchant or sales value.

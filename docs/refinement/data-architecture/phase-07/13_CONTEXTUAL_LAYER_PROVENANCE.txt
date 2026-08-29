@@ -1,0 +1,5 @@
+CONTEXTUAL LAYER PROVENANCE
+
+Client-safe provenance contains provider label, source identifier, and imported_at. observed_at is returned only when valid and available.
+
+Raw payloads, checksums, request headers, credentials, and internal metadata are excluded. Missing observed_at is represented honestly as unknown rather than inferred from imported_at.

@@ -1,0 +1,21 @@
+GETRA PHASE 11 - RESPONSIVE AUDIT
+
+Verified viewports:
+- 390x844
+- 768x1024
+- 1366x768
+- 1440x900
+
+Evidence directory:
+- docs/refinement/data-architecture/phase-11/browser-evidence
+
+Checks:
+- No horizontal overflow.
+- Map renders.
+- Candidate list remains usable.
+- Detail and comparison sections remain reachable.
+- ECharts rendered marker present.
+
+Result:
+- PASS.
+

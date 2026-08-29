@@ -1,0 +1,17 @@
+GETRA PHASE 05 - GLOBAL SEARCH ARCHITECTURE
+
+Flow
+USER browser -> GETRA frontend -> GETRA /api/merchants/canonical -> GlobalSearchService -> existing CanonicalMerchantReadService -> parameterized PostGIS RPC -> canonical merchant results -> MapLibre and result list.
+
+Reused components
+- Phase 03 canonical merchant identity and source links.
+- Phase 04 canonical DTO, authenticated read endpoint, viewport loading, pagination, and clustering.
+- Existing GETRA auth and Supabase server client.
+
+New components
+- Typed global-search schema, intent resolver, region resolver, and orchestration service.
+- Trusted administrative_regions catalog.
+- search_canonical_merchants_v1 and list_administrative_regions_v1 RPCs.
+- GlobalSearchControls and map focus-bounds synchronization.
+
+The browser never submits SQL, RPC names, arbitrary provider paths, or provider credentials.

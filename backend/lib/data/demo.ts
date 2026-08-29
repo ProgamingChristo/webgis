@@ -1,4 +1,5 @@
 import type { Merchant } from "@/lib/contracts/search";
+import type * as GeoJSON from "geojson";
 
 export type DemoMerchant = Omit<Merchant, "score" | "explanation">;
 

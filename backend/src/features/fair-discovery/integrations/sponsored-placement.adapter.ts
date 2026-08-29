@@ -3,9 +3,9 @@ import { Database } from "@/src/types/database.types";
 import { AdServingService, SponsoredPinDTO } from "@/src/features/umkm-advertising";
 import { DiscoveryQuery } from "../types/fair-discovery.types";
 import {
-  AVERAGE_WALKING_SPEED_METERS_PER_MINUTE,
   MAX_SPONSORED_RESULTS_PER_DISCOVERY,
 } from "../constants/fair-discovery.constants";
+import { CommuterNetworkRepository, evaluateOpeningHours } from "@/src/features/commuter";
 
 export class SponsoredPlacementAdapter {
   private readonly adServingService: AdServingService;
@@ -37,6 +37,32 @@ export class SponsoredPlacementAdapter {
 
       if (!rawCandidates || rawCandidates.length === 0) {
         return [];
+      }
+
+      const merchantIds = rawCandidates.map((candidate) => candidate.merchant_id);
+      const scheduleByMerchant = new Map<string, unknown>();
+      if (query.openNow) {
+        const { data, error } = await this.supabase
+          .from("merchants")
+          .select("id, opening_hours")
+          .in("id", merchantIds);
+        if (error) throw error;
+        for (const row of data ?? []) scheduleByMerchant.set(row.id, row.opening_hours);
+      }
+
+      const walkingByMerchant = new Map();
+      if (query.maxWalkingMinutes && query.maxWalkingMinutes > 0) {
+        const walking = await new CommuterNetworkRepository(this.supabase).walkingCosts(
+          { ...query.origin, source: "EXPLICIT_ORIGIN" },
+          rawCandidates.map((candidate) => ({
+            candidate_id: candidate.merchant_id,
+            longitude: candidate.geometry.coordinates[0],
+            latitude: candidate.geometry.coordinates[1],
+          })),
+        );
+        for (const evidence of walking.candidates) {
+          walkingByMerchant.set(evidence.candidate_id, evidence);
+        }
       }
 
       const filtered: SponsoredPinDTO[] = [];
@@ -74,18 +100,18 @@ export class SponsoredPlacementAdapter {
           }
         }
 
+        if (query.openNow && evaluateOpeningHours(scheduleByMerchant.get(candidate.merchant_id), now) !== "OPEN") {
+          continue;
+        }
+
         // 2.3. Walking Time Constraint
         if (query.maxWalkingMinutes && query.maxWalkingMinutes > 0) {
-          const [candLng, candLat] = candidate.geometry.coordinates;
-          const distanceMeters = this.calculateDistanceMeters(
-            query.origin.longitude,
-            query.origin.latitude,
-            candLng,
-            candLat
-          );
-          const walkingMinutes = Math.round(distanceMeters / AVERAGE_WALKING_SPEED_METERS_PER_MINUTE);
-
-          if (walkingMinutes > query.maxWalkingMinutes) {
+          const route = walkingByMerchant.get(candidate.merchant_id);
+          if (
+            route?.status !== "ROUTABLE" ||
+            route.duration_seconds === null ||
+            route.duration_seconds > query.maxWalkingMinutes * 60
+          ) {
             continue;
           }
         }
@@ -118,22 +144,4 @@ export class SponsoredPlacementAdapter {
     return targetSynonyms.some((syn) => merchantCat.includes(syn));
   }
 
-  /**
-   * Calculates geodesic distance in meters (Haversine formula).
-   */
-  private calculateDistanceMeters(lng1: number, lat1: number, lng2: number, lat2: number): number {
-    const R = 6371000;
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLng = ((lng2 - lng1) * Math.PI) / 180;
-
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLng / 2) *
-        Math.sin(dLng / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return Math.round(R * c);
-  }
 }

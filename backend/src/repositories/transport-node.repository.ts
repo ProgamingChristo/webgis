@@ -162,9 +162,18 @@ export class TransportNodeRepository
       query = query.eq("validation_status", options.validation_status);
     }
 
-    const { data, error, count } = await query
-      .order(options.sort, { ascending: options.order === "asc" })
-      .range(pagination.offset, pagination.offset + pagination.limit - 1);
+    // For "near" queries the RPC already orders by ST_Distance(origin);
+    // applying an arbitrary secondary .order() would override that spatial
+    // ordering and break "nearest" semantics, so we keep the RPC order.
+    const orderedQuery =
+      source.kind === "near"
+        ? query
+        : query.order(options.sort, { ascending: options.order === "asc" });
+
+    const { data, error, count } = await orderedQuery.range(
+      pagination.offset,
+      pagination.offset + pagination.limit - 1,
+    );
 
     if (error) {
       const operation = source.kind === "bbox"

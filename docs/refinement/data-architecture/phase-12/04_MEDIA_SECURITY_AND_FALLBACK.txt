@@ -1,0 +1,26 @@
+GETRA PHASE 12 - MEDIA SECURITY AND FALLBACK
+
+Allowed media:
+- HTTPS only.
+- mapidstorage.cdn.mapid.io.
+- mapid-app-chat.cdn.mapid.io.
+
+Frontend:
+- SafeMediaImage validates URL protocol and host before rendering.
+- next/image is used with unoptimized external media rendering to avoid local optimizer timeout against provider images.
+- Broken image requests switch to a no-photo fallback.
+- Alt text is generic and non-hallucinated:
+  - Foto tempat merchant.
+  - Foto menu merchant.
+  - Foto tampak depan properti.
+  - Foto spanduk properti.
+
+Not allowed:
+- javascript: URLs.
+- data: URLs.
+- arbitrary remote hosts.
+- raw source payload display.
+
+Status:
+- PASS.
+

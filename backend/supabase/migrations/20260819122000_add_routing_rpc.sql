@@ -9,16 +9,24 @@ CREATE OR REPLACE FUNCTION public.calculate_walking_route(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = pg_catalog, public, extensions
 AS $$
 DECLARE
     route_result JSONB;
+    v_sql TEXT;
 BEGIN
     -- Ensure pgrouting extension is available (should be from previous migration)
-    -- This function wraps pgr_dijkstra
+    -- This function wraps pgr_dijkstra. p_environment is passed as a bound
+    -- parameter via format() %L (string-literal quoting) to prevent SQL injection
+    -- inside the SECURITY DEFINER function.
+    v_sql := format(
+        'SELECT routing_id AS id, source, target, cost, reverse_cost FROM public.pedestrian_edges WHERE environment = %L',
+        p_environment
+    );
 
     WITH route AS (
         SELECT * FROM pgr_dijkstra(
-            'SELECT routing_id AS id, source, target, cost, reverse_cost FROM public.pedestrian_edges WHERE environment = ''' || p_environment || '''',
+            v_sql,
             p_origin_id,
             p_destination_id,
             directed := true
@@ -43,8 +51,10 @@ BEGIN
     ) INTO route_result
     FROM route_geom rg;
 
-    IF route_result IS NULL THEN
-        RETURN jsonb_build_object('error', 'No route found');
+    IF route_result IS NULL
+       OR route_result->>'total_distance_meters' IS NULL
+       OR route_result->>'geometry' IS NULL THEN
+      RETURN jsonb_build_object('error', 'No route found');
     END IF;
 
     RETURN route_result;
@@ -65,6 +75,7 @@ CREATE OR REPLACE FUNCTION public.snap_transport_node_to_pedestrian_network(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = pg_catalog, public, extensions
 AS $$
 DECLARE
     nearest_pedestrian_node RECORD;

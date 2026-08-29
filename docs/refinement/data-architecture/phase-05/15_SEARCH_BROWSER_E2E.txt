@@ -1,0 +1,27 @@
+GETRA PHASE 05 - BROWSER E2E
+
+Automation
+scripts/verify-phase05-global-search-browser.mjs using headless Chrome against live frontend :3000, backend :8080, and linked remote DB.
+
+PASS flows
+- authenticated initial viewport load
+- keyword search
+- location-only search
+- keyword + location search
+- a second location
+- three-region search
+- pan and Search This Area
+- zero-result state
+- rapid request cancellation/stale-result protection
+- keyboard Enter submit
+- manual filter remains available
+- clear search
+- safe invalid-location failure
+- no provider secret or direct Mission request
+
+Evidence
+- browser-evidence/runtime-evidence.json
+- browser-evidence/global-search-390x844.png
+- browser-evidence/global-search-768x1024.png
+- browser-evidence/global-search-1366x768.png
+- browser-evidence/global-search-1440x900.png

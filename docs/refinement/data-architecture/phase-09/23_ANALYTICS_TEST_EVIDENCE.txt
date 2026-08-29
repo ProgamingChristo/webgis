@@ -1,0 +1,15 @@
+ANALYTICS TEST EVIDENCE - 2026-08-28
+
+Focused backend: 9 files, 38 tests PASS.
+Focused frontend: 1 file, 4 tests PASS.
+Full frontend: 20 files, 65 tests PASS.
+Full backend: 116 files PASS, 2 skipped; 753 tests PASS, 3 skipped.
+Total full passing tests: 818.
+Lint: frontend/backend PASS with zero warnings.
+Typecheck: frontend/backend/root PASS.
+Production build: frontend/backend PASS (Next.js 16.3.1).
+Remote runtime: search HTTP 200; route HTTP 200 ROUTABLE; analytics HTTP 200; route dedup PASS.
+Bakso Jakarta Selatan runtime aggregate: search2, route1, Struk1, sample4, Retail Gap computed.
+
+Coverage includes formula fixtures, category normalization, strict schema, event dedup/privacy,
+search/route instrumentation, API auth/safety, AI grounding, migration RLS/indexes, and UI contract.

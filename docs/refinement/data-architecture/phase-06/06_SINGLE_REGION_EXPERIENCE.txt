@@ -1,0 +1,13 @@
+GETRA PHASE 06 - SINGLE REGION EXPERIENCE
+
+Observed Jakarta Selatan flow
+- merchant API HTTP 200, 100 returned from a total of 237 at the observed time
+- boundary API HTTP 200
+- one MultiPolygon feature
+- one selected chip and textual state
+- map camera fit key advanced to 1
+- exact focus bounds: 106.737373,-6.365514,106.866821,-6.202663
+- boundary and collision-aware label visible
+- merchant cards/popups/detail use server-returned administrative metadata where available
+
+Location-only and keyword + location both retained the same canonical region identity.

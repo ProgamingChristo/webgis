@@ -5,19 +5,42 @@ export class UmkmWorkspaceService {
   constructor(private readonly supabase: SupabaseClient<any>) {}
 
   async getWorkspaceSummary(userId: string): Promise<UmkmWorkspaceSummary> {
-    // 1. Fetch Owned Merchants
-    const { data: merchants, error: mError } = await this.supabase
+    // Canonical ownership and approved claims are the only private-workspace grants.
+    const { data: ownedMerchants, error: ownedError } = await this.supabase
       .from("merchants")
-      .select("id, name, address, publish_status, verification_status")
+      .select("id, name, address, description, metadata, publish_status, verification_status")
       .eq("owner_id", userId);
 
-    if (mError) {
-      console.error("[UmkmWorkspaceService] Error fetching merchants:", mError);
+    if (ownedError) {
+      console.error("[UmkmWorkspaceService] Error fetching merchants:", ownedError);
       throw new Error("Gagal mengambil data merchant.");
     }
 
-    const ownedMerchantsList = merchants || [];
-    const merchantIds = ownedMerchantsList.map((m: any) => m.id);
+    const { data: approvedClaims, error: claimError } = await this.supabase
+      .from("merchant_claims")
+      .select("merchant_id")
+      .eq("user_id", userId)
+      .eq("status", "APPROVED");
+    if (claimError) {
+      console.error("[UmkmWorkspaceService] Error fetching approved claims:", claimError);
+      throw new Error("Gagal memverifikasi akses merchant.");
+    }
+
+    const claimIds = [...new Set((approvedClaims ?? []).map((claim: any) => claim.merchant_id))];
+    let claimedMerchants: any[] = [];
+    if (claimIds.length > 0) {
+      const { data, error } = await this.supabase
+        .from("merchants")
+        .select("id, name, address, description, metadata, publish_status, verification_status")
+        .in("id", claimIds);
+      if (error) throw new Error("Gagal mengambil merchant dengan klaim disetujui.");
+      claimedMerchants = data ?? [];
+    }
+
+    const authorizedMerchants = [...new Map(
+      [...(ownedMerchants ?? []), ...claimedMerchants].map((merchant: any) => [merchant.id, merchant]),
+    ).values()];
+    const merchantIds = authorizedMerchants.map((merchant: any) => merchant.id);
 
     // 2. Fetch Active Campaigns Count
     let activeCampaignsCount = 0;
@@ -40,11 +63,11 @@ export class UmkmWorkspaceService {
       }
     }
 
-    const mappedOwnedMerchants: OwnedMerchantBrief[] = ownedMerchantsList.map((m: any) => ({
+    const mappedOwnedMerchants: OwnedMerchantBrief[] = authorizedMerchants.map((m: any) => ({
       id: m.id,
       name: m.name,
       address: m.address || null,
-      category: "UMKM",
+      category: readCategory(m.metadata, m.description),
       publish_status: m.publish_status,
       verification_status: m.verification_status,
       campaigns_count: campaignCountByMerchant[m.id] || 0,
@@ -75,4 +98,14 @@ export class UmkmWorkspaceService {
       recent_submissions: submissionsList,
     };
   }
+}
+
+function readCategory(metadata: unknown, description: unknown) {
+  if (typeof metadata === "object" && metadata !== null && !Array.isArray(metadata)) {
+    const category = (metadata as Record<string, unknown>).category;
+    if (typeof category === "string" && category.trim()) return category.trim();
+  }
+  return typeof description === "string" && description.trim()
+    ? description.split("·")[0]!.trim()
+    : "Kategori belum tersedia";
 }

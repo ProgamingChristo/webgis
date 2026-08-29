@@ -2,37 +2,20 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Store, Sparkles, CheckCircle2, ChevronRight } from "lucide-react";
+import { Store, CheckCircle2, ChevronRight } from "lucide-react";
 import { GetraAppShell } from "@/src/components/getra-ui";
 import { AdvertisingEligibilityGate, CampaignList } from "@/src/features/umkm-advertising";
 import { useUserMerchants } from "@/src/features/umkm-advertising/hooks/use-user-merchants";
 
 export default function AdvertisingPage() {
-  const initialMerchantId = () => {
-    if (typeof window !== "undefined") {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get("merchantId") ?? "";
-    }
-    return "";
-  };
+  const [activeMerchantId, setActiveMerchantId] = useState<string | null>(null);
 
-  const [merchantIdInput, setMerchantIdInput] = useState<string>(initialMerchantId);
-  const [activeMerchantId, setActiveMerchantId] = useState<string | null>(
-    initialMerchantId() || null
-  );
-
-  const {
-    ownedMerchants,
-    recommendedMerchants,
-    claiming,
-    claimMerchant,
-    refetch,
-  } = useUserMerchants();
+  const { ownedMerchants, refetch } = useUserMerchants();
 
   // If user has owned merchants and no activeMerchantId is set yet, auto-select first one
   useEffect(() => {
     const timeout = window.setTimeout(() => {
-      if (!activeMerchantId && ownedMerchants.length > 0 && !initialMerchantId()) {
+      if (!activeMerchantId && ownedMerchants.length > 0) {
         setActiveMerchantId(ownedMerchants[0].id);
       }
     }, 0);
@@ -40,21 +23,7 @@ export default function AdvertisingPage() {
     return () => window.clearTimeout(timeout);
   }, [ownedMerchants, activeMerchantId]);
 
-  const handleManualSelect = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (merchantIdInput.trim()) {
-      setActiveMerchantId(merchantIdInput.trim());
-    }
-  };
-
-  const handleClaimAndSelect = async (mId: string) => {
-    const success = await claimMerchant(mId);
-    if (success) {
-      setActiveMerchantId(mId);
-    }
-  };
-
-  const activeMerchant = [...ownedMerchants, ...recommendedMerchants].find(
+  const activeMerchant = ownedMerchants.find(
     (m) => m.id === activeMerchantId
   );
 
@@ -136,77 +105,22 @@ export default function AdvertisingPage() {
               </section>
             )}
 
-            {/* Quick Claim Recommended Demo Merchants */}
-            <section className="rounded-2xl border border-cyan-400/20 bg-slate-950/80 p-5 shadow-xl sm:p-6">
-              <div className="flex items-center gap-2">
-                <Sparkles className="size-4 text-cyan-400" />
-                <h2 className="text-sm font-black uppercase tracking-wider text-cyan-300">
-                  Pilih & Klaim Toko Demo (1-Click)
-                </h2>
-              </div>
-              <p className="mt-1 text-xs text-slate-400">
-                Pilih salah satu toko contoh berikut untuk langsung menghubungkannya ke akun UMKM Anda:
-              </p>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {recommendedMerchants.map((m) => (
-                  <div
-                    key={m.id}
-                    className="flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-4"
-                  >
-                    <div>
-                      <strong className="text-sm font-bold text-slate-100">{m.name}</strong>
-                      {m.address && (
-                        <p className="mt-1 text-xs text-slate-400 line-clamp-1">{m.address}</p>
-                      )}
-                      <p className="mt-2 font-mono text-[10px] text-slate-500">{m.id}</p>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={claiming}
-                      onClick={() => handleClaimAndSelect(m.id)}
-                      className="mt-4 flex min-h-9 items-center justify-center rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 px-3 text-xs font-black text-slate-950 transition hover:brightness-110 disabled:opacity-50"
-                    >
-                      {claiming ? "Mengklaim..." : "Pilih & Kelola Toko Ini"}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Manual UUID Input */}
-            <form
-              onSubmit={handleManualSelect}
-              className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5 sm:p-6"
-            >
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
-                Opsi Lanjutan
-              </p>
-              <label htmlFor="merchant-id" className="mt-1 block text-sm font-bold text-slate-200">
-                Gunakan UUID Merchant Kustom
-              </label>
-              <p className="mt-1 text-xs text-slate-400">
-                Masukkan ID merchant secara manual jika Anda memiliki merchant khusus.
-              </p>
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-                <input
-                  id="merchant-id"
-                  type="text"
-                  value={merchantIdInput}
-                  onChange={(e) => setMerchantIdInput(e.target.value)}
-                  placeholder="UUID Merchant Anda"
-                  className="min-h-11 flex-1 rounded-xl border border-slate-700 bg-slate-900/80 px-4 font-mono text-sm text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/15"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="min-h-11 rounded-xl bg-gradient-to-r from-lime-400 to-cyan-400 px-6 text-sm font-black text-slate-950 transition hover:brightness-110"
-                >
-                  Gunakan merchant
-                </button>
-              </div>
-            </form>
+            {ownedMerchants.length === 0 ? (
+              <section className="rounded-2xl border border-cyan-400/20 bg-slate-950/80 p-5 shadow-xl sm:p-6">
+                <div className="flex items-center gap-2">
+                  <Store className="size-4 text-cyan-400" />
+                  <h2 className="text-sm font-black uppercase tracking-wider text-cyan-300">
+                    Merchant terverifikasi diperlukan
+                  </h2>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-slate-400">
+                  Campaign hanya dapat dikelola untuk merchant yang terhubung melalui ownership canonical atau klaim yang telah disetujui.
+                </p>
+                <Link href="/umkm/merchants/new" className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-cyan-400/30 px-4 text-xs font-bold text-cyan-200">
+                  Ajukan merchant
+                </Link>
+              </section>
+            ) : null}
           </div>
         ) : (
           <div className="space-y-4">

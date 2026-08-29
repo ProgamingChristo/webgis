@@ -1,0 +1,14 @@
+GETRA PHASE 11 - AUTHORIZATION AND ACCESS
+
+Business Space UX:
+- Implemented as a logged-in user decision-support page.
+
+Backend:
+- Uses existing authentication-aware API response/error conventions.
+- Does not expose admin-only ingestion controls.
+
+Important separation:
+- Phase 11 reads already verified analytical and observation data.
+- It does not trigger Mission sync.
+- Admin Mission sync remains Phase 02 scope.
+

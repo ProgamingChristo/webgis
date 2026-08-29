@@ -32,7 +32,18 @@ export class RoutingService {
     }
 
     const routeData = data as any;
-    
+
+    if (!routeData || routeData.error) {
+      throw new Error("No route found between the specified nodes.");
+    }
+
+    if (
+      routeData.total_distance_meters == null ||
+      routeData.geometry == null
+    ) {
+      throw new Error("No route found between the specified nodes.");
+    }
+
     return {
       originNodeId: routeData.origin_node_id,
       destinationNodeId: routeData.destination_node_id,

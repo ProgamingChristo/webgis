@@ -1,0 +1,13 @@
+GETRA PHASE 05 - SEARCH RESULT CONTRACT
+
+The authenticated endpoint returns:
+- data: canonical merchant DTOs only
+- intent: normalized domain, query, keyword, location, category, and scope
+- regions: resolved regions participating in this result scope
+- available_regions: safe selectable region metadata
+- bbox: effective search bounds
+- pagination: limit, offset, returned, and total
+
+Canonical merchant fields preserve provenance, canonical source identity, geometry, display attributes, region attribution, and honest availability flags. Missing opening-hour or price data is represented as unknown/N/A, not guessed.
+
+No MAPID key, Mission header, service-role value, raw provider header, or environment value is returned.

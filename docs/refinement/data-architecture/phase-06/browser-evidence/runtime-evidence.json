@@ -1,0 +1,213 @@
+{
+  "generated_at": "2026-08-28T02:47:58.097Z",
+  "browser": "Chrome headless via puppeteer-core",
+  "flows": {
+    "initial": {
+      "feature_count": 0,
+      "region_ids": [],
+      "layers_ready": true,
+      "camera_fit_key": 0,
+      "camera_focus_bounds": [
+        0
+      ]
+    },
+    "single_region": {
+      "boundary": {
+        "feature_count": 1,
+        "region_ids": [
+          "jakarta-selatan"
+        ],
+        "layers_ready": true,
+        "camera_fit_key": 1,
+        "camera_focus_bounds": [
+          106.737373,
+          -6.365514,
+          106.866821,
+          -6.202663
+        ]
+      },
+      "merchant_status": 200,
+      "merchant_count": 100,
+      "boundary_status": 200,
+      "boundary_feature_count": 1,
+      "geometry_types": [
+        "MultiPolygon"
+      ]
+    },
+    "keyword_region": {
+      "merchant_status": 200,
+      "keyword": "bakso",
+      "regions": [
+        "jakarta-selatan"
+      ],
+      "boundary": {
+        "feature_count": 1,
+        "region_ids": [
+          "jakarta-selatan"
+        ],
+        "layers_ready": true,
+        "camera_fit_key": 2,
+        "camera_focus_bounds": [
+          106.737373,
+          -6.365514,
+          106.866821,
+          -6.202663
+        ]
+      }
+    },
+    "multi_region": {
+      "boundary": {
+        "feature_count": 3,
+        "region_ids": [
+          "jakarta-selatan",
+          "jakarta-barat",
+          "jakarta-timur"
+        ],
+        "layers_ready": true,
+        "camera_fit_key": 4,
+        "camera_focus_bounds": [
+          106.686211,
+          -6.370783,
+          106.971893,
+          -6.095124
+        ]
+      },
+      "merchant_status": 200,
+      "scope": "MULTI_REGION",
+      "groups": [
+        "Jakarta Selatan",
+        "Jakarta Barat",
+        "Jakarta Timur"
+      ],
+      "chips": [
+        "Jakarta Selatan",
+        "Jakarta Barat",
+        "Jakarta Timur"
+      ],
+      "new_boundary_payloads": [
+        3128,
+        9427
+      ]
+    },
+    "remove_region": {
+      "merchant_status": 200,
+      "boundary": {
+        "feature_count": 2,
+        "region_ids": [
+          "jakarta-selatan",
+          "jakarta-barat"
+        ],
+        "layers_ready": true,
+        "camera_fit_key": 5,
+        "camera_focus_bounds": [
+          106.686211,
+          -6.365514,
+          106.866821,
+          -6.095124
+        ]
+      },
+      "groups": [
+        "Jakarta Selatan",
+        "Jakarta Barat"
+      ],
+      "removed_chip_absent": true
+    },
+    "search_this_area": {
+      "status": 200,
+      "keyword": "bakso",
+      "scope": "CURRENT_VIEWPORT",
+      "boundary": {
+        "feature_count": 0,
+        "region_ids": [],
+        "layers_ready": true,
+        "camera_fit_key": 5,
+        "camera_focus_bounds": [
+          106.686211,
+          -6.365514,
+          106.866821,
+          -6.095124
+        ]
+      }
+    },
+    "boundary_failure": {
+      "boundary_status": 503,
+      "merchant_status": 200,
+      "merchant_results_remain": true,
+      "safe_error_visible": "Boundary wilayah tidak dapat dimuat."
+    },
+    "invalid_region": {
+      "status": 400,
+      "safe_body": true
+    }
+  },
+  "network": {
+    "boundary_requests": [
+      {
+        "url": "http://localhost:8080/api/regions?ids=jakarta-selatan",
+        "status": 200,
+        "payload_bytes": 7352,
+        "safe_body": true
+      },
+      {
+        "url": "http://localhost:8080/api/regions?ids=jakarta-barat",
+        "status": 200,
+        "payload_bytes": 3128,
+        "safe_body": true
+      },
+      {
+        "url": "http://localhost:8080/api/regions?ids=jakarta-timur",
+        "status": 200,
+        "payload_bytes": 9427,
+        "safe_body": true
+      }
+    ],
+    "merchant_requests": 10
+  },
+  "responsive": {
+    "390x844": {
+      "horizontal_overflow": false,
+      "chips_visible": true,
+      "groups_visible": true,
+      "map_canvas_present": true,
+      "boundary_count": 3
+    },
+    "768x1024": {
+      "horizontal_overflow": false,
+      "chips_visible": true,
+      "groups_visible": true,
+      "map_canvas_present": true,
+      "boundary_count": 3
+    },
+    "1366x768": {
+      "horizontal_overflow": false,
+      "chips_visible": true,
+      "groups_visible": true,
+      "map_canvas_present": true,
+      "boundary_count": 3
+    },
+    "1440x900": {
+      "horizontal_overflow": false,
+      "chips_visible": true,
+      "groups_visible": true,
+      "map_canvas_present": true,
+      "boundary_count": 3
+    }
+  },
+  "accessibility": {
+    "textual_region_state": true,
+    "labeled_remove_buttons": true,
+    "semantic_group_headings": true,
+    "search_label": true
+  },
+  "console_errors": [
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+  ],
+  "failed_requests": [],
+  "security": {
+    "browser_called_mapid_mission": false,
+    "all_successful_boundary_responses_safe": true,
+    "invalid_region_safe": true,
+    "duplicate_boundary_requests": false
+  }
+}

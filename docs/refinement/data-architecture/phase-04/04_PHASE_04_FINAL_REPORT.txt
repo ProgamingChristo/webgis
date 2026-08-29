@@ -1,0 +1,54 @@
+GETRA PHASE 04 - VIEWPORT CANONICAL MERCHANT LOADING
+
+FINAL STATUS: VERIFIED
+READY FOR NEXT APPROVED PHASE: YES
+
+IMPLEMENTATION:
+PASS - USER authenticated map flow
+PASS - initial viewport bbox request
+PASS - moveend viewport reload
+PASS - GETRA-owned authenticated backend API
+PASS - PostGIS spatial filtering
+PASS - canonical merchant Phase 03 enrichment reused
+PASS - bounded limit and offset pagination
+PASS - stale frontend requests aborted
+PASS - MapLibre native clustering above 250 visible merchants
+PASS - provider credentials remain server-side
+
+REMOTE DATABASE:
+PASS - additive migration pushed and recorded remotely
+PASS - GiST location index present by migration contract
+PASS - service-role-only bbox RPC
+PASS - linked database types regenerated
+
+AUTOMATED VERIFICATION:
+Focused backend: 25 PASS
+Focused frontend: 1 PASS
+Frontend full suite: 45 PASS
+Backend full suite: 661 PASS, 3 SKIPPED
+Typecheck: PASS
+Lint: PASS
+Frontend build: PASS
+Backend build: PASS
+Browser runtime: PASS
+
+RUNTIME OBSERVATIONS:
+Initial bbox: 250 of 715 available.
+Moved bbox: 250 of 595 available.
+Pagination offsets 0 and 1: stable total, distinct merchant IDs.
+Large map set: cluster mode, 12 rendered cluster/point features observed.
+
+MIGRATION:
+backend/supabase/migrations/20260827150000_phase04_canonical_merchant_viewport.sql
+
+BLOCKERS:
+NONE.
+
+OUT OF SCOPE / UNCHANGED:
+- Premium ingestion
+- Mission ingestion
+- Phase 03 reconciliation decisions
+- Search redesign
+- Phase 05+ capabilities
+
+STOP: No later phase was implemented automatically.

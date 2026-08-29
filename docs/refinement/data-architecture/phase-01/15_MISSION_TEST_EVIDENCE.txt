@@ -1,0 +1,90 @@
+MISSION TEST EVIDENCE
+
+Commands run:
+- npm run typecheck
+  Result: PASS.
+
+- npm run test -w backend -- --run tests/unit/integrations/mapid
+  Result: PASS, 5 files, 43 tests.
+
+- npm run test -w backend -- --run tests/unit/security/endpoint-policy.test.ts tests/unit/integrations/mapid
+  Result: PASS, 6 files, 50 tests.
+
+- npm run test -w backend
+  Result: FAIL because tests/unit/docker-config.test.ts expects /app/.next/standalone while current Dockerfile contains /app/backend/.next/standalone.
+  Scope note: failure is outside Phase 01 MAPID Mission implementation.
+
+- npm run lint
+  Result: FAIL because frontend/components/getra-dashboard.tsx has an existing unused GeoJSON warning and lint uses --max-warnings=0.
+  Scope note: failure is outside Phase 01 MAPID Mission implementation.
+
+- npm run build
+  Result: PASS.
+
+Coverage added:
+- POST MAPID request body.
+- Mission record extraction.
+- Source-specific normalization.
+- Invalid source id/geometry rejection.
+- Source separation.
+- Idempotent sync behavior.
+- Pagination termination.
+- Activities blocked behavior.
+- Endpoint security policy registration.
+
+VERIFICATION CLOSURE UPDATE - 2026-08-27
+
+- npm run test -w backend -- --run tests/unit/integrations/mapid tests/unit/security/endpoint-policy.test.ts
+  Result: PASS, 6 files, 50 tests.
+
+- RUN_MAPID_MISSION_RUNTIME_VERIFICATION=1, remote DB test only
+  Result: PASS, 1 test; real MAPID test skipped by name selection.
+  Evidence: unique violation 23505, invalid geometry rejected, anonymous rows 0, admin read API HTTP 200.
+
+- RUN_MAPID_MISSION_RUNTIME_VERIFICATION=1, complete runtime test file
+  Result: PARTIAL, remote DB test PASS and real MAPID test FAIL before request because configured MAPID_BASE_URL is a localhost fixture URL rather than an HTTPS Mission endpoint.
+
+- npm run typecheck
+  Result: PASS.
+
+- npm run lint
+  Result: PASS.
+
+- npm run test -w backend
+  Result: PASS, 89 files passed, 2 skipped; 610 tests passed, 3 skipped.
+
+- npm run build
+  Result: PASS for frontend and backend.
+
+Previous lint and Docker test debt did not reproduce in the closure run. No Phase 01 closure change was made to those unrelated files.
+
+REAL MAPID CREDENTIAL CLOSURE UPDATE - 2026-08-27
+
+- Menu Go isolated runtime verification: PASS.
+  Evidence: 87 retrieved, 0 invalid, final rows 87, rerun 0 insert/87 update, read API HTTP 200.
+
+- Properti Go isolated runtime verification: PASS.
+  Evidence: 99 retrieved, 0 invalid, first run 99 insert, rerun 0 insert/99 update, final rows 99, read API HTTP 200.
+
+- Struk Go real provider probe: BLOCKED.
+  Evidence: configured /web/competition/strukgo path returned HTTP 404.
+
+- Activities real provider verification: BLOCKED.
+  Evidence: no confirmed endpoint/path configuration exists.
+
+- Post-change npm run typecheck: PASS.
+- Post-change focused MAPID/security tests: PASS, 50 tests.
+- Post-change full backend tests: PASS, 610 passed and 3 skipped.
+- Post-change npm run lint: PASS.
+- Post-change npm run build: PASS.
+
+FINAL VERIFICATION CLOSURE - 2026-08-27
+
+- Official MAPID docs and supplied sanitized response captures validated all four response contracts.
+- Struck Go isolated runtime: PASS, 164 records over 2 pages; rerun 0 insert/164 update; read API HTTP 200.
+- Activities isolated runtime: PASS, 60 records; rerun 0 insert/60 update; read API HTTP 200.
+- Focused MAPID/security after contract refinements: PASS, 53 tests.
+- Canonical typecheck: PASS.
+- Canonical lint: PASS.
+- Full backend: PASS, 613 tests passed and 3 skipped.
+- Canonical build: PASS.

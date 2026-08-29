@@ -1,0 +1,18 @@
+GETRA PHASE 11 - SUPPLY CONTEXT MODEL
+
+Reused source:
+- Canonical merchant read service.
+
+Supply meaning:
+- Nearby supply is represented by canonical merchants matching the selected business category.
+- It is not raw Menu Go duplication.
+- It is not a prediction of future competition.
+
+Spatial behavior:
+- Supply context is bounded around the candidate with a region filter when available.
+- It is reported as business-location context, not a definitive catchment monopoly claim.
+
+Claim safety:
+- Counts and scores are contextual indicators.
+- They are not financial projections.
+

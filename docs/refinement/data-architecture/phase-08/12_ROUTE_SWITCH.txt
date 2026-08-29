@@ -1,0 +1,7 @@
+GETRA PHASE 08 - ROUTE SWITCH
+
+Route Switch preserves the explicit origin and active search/filter result set while
+changing the destination. The previous geometry is replaced only by the current
+request. AbortController and monotonically increasing request IDs prevent stale A/B/C
+responses from winning. Browser evidence switched to Tahu Bakso Semarang and returned
+a 28-coordinate route of 330.17 meters and 236 seconds.

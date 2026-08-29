@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 
 import type { NextRequest, NextResponse } from "next/server";
+import type * as GeoJSON from "geojson";
 import { z } from "zod";
 
 import { withApiLogger } from "@/src/lib/api-logger";
@@ -13,6 +14,7 @@ import { getRequestId } from "@/src/lib/request-id";
 import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
 import { validateBody } from "@/src/lib/validation";
 import { logger } from "@/src/lib/logger";
+import { JAKARTA_ADMIN_BOUNDARY_REGISTRY } from "@/data/jakarta-admin-boundaries";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -291,71 +293,6 @@ export const OPTIONS = createOptionsHandler(
   "/api/admin/map-import/commit",
 );
 
-type JakartaAdminBoundaryDefinition = {
-  id: string;
-  name: string;
-  geometry: GeoJSON.MultiPolygon;
-};
-
-const JAKARTA_ADMIN_BOUNDARY_REGISTRY: Record<
-  string,
-  JakartaAdminBoundaryDefinition
-> = {
-  "jakarta-timur": {
-    id: "jakarta-timur",
-    name: "Jakarta Timur",
-    geometry: {
-      type: "MultiPolygon",
-      coordinates: [[[
-        [106.875034, -6.192381],
-        [106.865675, -6.192632],
-        [106.860992, -6.194471],
-        [106.851038, -6.201599],
-        [106.85164, -6.202475],
-        [106.852944, -6.201876],
-        [106.855478, -6.202718],
-        [106.855758, -6.204476],
-        [106.854365, -6.206329],
-        [106.849981, -6.20553],
-        [106.847696, -6.209144],
-        [106.837462, -6.205528],
-        [106.822776, -6.202678],
-        [106.821575, -6.209323],
-        [106.818395, -6.214599],
-        [106.799785, -6.228819],
-        [106.797595, -6.22926],
-        [106.795831, -6.229259],
-        [106.796632, -6.236997],
-        [106.803047, -6.244704],
-        [106.807975, -6.252929],
-        [106.813541, -6.261923],
-        [106.822105, -6.272249],
-        [106.829483, -6.287115],
-        [106.84076, -6.301083],
-        [106.858192, -6.31426],
-        [106.881615, -6.315438],
-        [106.901006, -6.306754],
-        [106.914409, -6.293014],
-        [106.930533, -6.278245],
-        [106.944767, -6.260246],
-        [106.953369, -6.235431],
-        [106.960334, -6.213105],
-        [106.966587, -6.190106],
-        [106.971893, -6.166302],
-        [106.969082, -6.152824],
-        [106.957915, -6.139855],
-        [106.942537, -6.12818],
-        [106.919871, -6.120886],
-        [106.899748, -6.12347],
-        [106.882039, -6.162307],
-        [106.878417, -6.167263],
-        [106.876357, -6.17464],
-        [106.875034, -6.192381],
-      ]]],
-    },
-  },
-};
-
 function getMerchantRegionName(
   merchant: ImportMerchant,
   layerName?: string,
@@ -447,8 +384,16 @@ function detectJakartaAdminRegionName(
     return "Jakarta Pusat";
   }
 
+  if (/\bjakarta\s*selatan\b|\bjakarta\s*sel\b|\bjaksel\b/.test(combined)) {
+    return "Jakarta Selatan";
+  }
+
   if (/\bjakarta\s*barat\b|\bjakarta\s*bar\b|\bjakbar\b/.test(combined)) {
     return "Jakarta Barat";
+  }
+
+  if (/\bjakarta\s*utara\b|\bjakarta\s*ut\b|\bjakut\b/.test(combined)) {
+    return "Jakarta Utara";
   }
 
   return null;

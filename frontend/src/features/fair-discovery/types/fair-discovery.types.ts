@@ -28,8 +28,9 @@ export interface OriginalMerchantDTO {
     coordinates: [number, number]; // [longitude, latitude]
   };
   distance_meters: number;
-  walking_minutes: number;
-  open_now: boolean;
+  walking_minutes: number | null;
+  open_now: boolean | null;
+  route_status: "ROUTABLE" | "UNROUTABLE" | "NO_NETWORK_ACCESS" | null;
   data_quality_score?: number | null;
   price_level?: string | null;
 }
@@ -60,4 +61,3 @@ export interface FairDiscoveryResult {
   contextual_banner?: ContextualBannerDTO | null;
   metadata: FairDiscoveryMetadata;
 }
-

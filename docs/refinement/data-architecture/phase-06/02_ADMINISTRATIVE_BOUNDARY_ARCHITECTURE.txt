@@ -1,0 +1,11 @@
+GETRA PHASE 06 - ADMINISTRATIVE BOUNDARY ARCHITECTURE
+
+Flow
+Phase 05 selected region IDs -> GETRA frontend boundary cache -> authenticated GET /api/regions -> service-role database read -> safe GeoJSON -> getra-administrative-regions MapLibre source -> fill/line/symbol layers.
+
+The merchant path remains separate:
+search intent -> /api/merchants/canonical -> PostGIS merchant query -> canonical DTO -> one map/list result state.
+
+The boundary API can fail independently. Browser verification proved a synthetic boundary HTTP 503 leaves the merchant request at HTTP 200 and displays a bounded error.
+
+One existing MapLibre instance is used. No second map or browser point-in-polygon implementation exists.

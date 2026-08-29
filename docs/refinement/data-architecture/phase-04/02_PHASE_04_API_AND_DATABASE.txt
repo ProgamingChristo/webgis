@@ -1,0 +1,35 @@
+GETRA PHASE 04 - API AND DATABASE
+
+API:
+GET /api/merchants/canonical
+
+Authentication:
+Required.
+
+Query contract:
+west, south, east, north: required WGS84 bbox
+limit: optional, default 100, maximum 250
+offset: optional, default 0
+
+Response pagination:
+total_features, total_available, limit, offset, has_more, next_offset, bbox,
+merchants.
+
+Database migration:
+20260827150000_phase04_canonical_merchant_viewport.sql
+
+Database objects:
+- idx_merchants_location_gist on merchants.location.
+- list_canonical_merchant_ids_in_bbox_v1(...).
+
+The RPC performs ST_Intersects against ST_MakeEnvelope and returns only stable,
+paginated canonical merchant IDs plus total_count. Existing Phase 03 enrichment
+then loads only those IDs. This avoids loading all canonical records before
+spatial filtering.
+
+Remote evidence:
+- supabase db push --dry-run: only the Phase 04 migration pending.
+- supabase db push: PASS.
+- migration list: local and remote 20260827150000 match.
+- linked public/private database TypeScript types regenerated.
+- generated types contain list_canonical_merchant_ids_in_bbox_v1.

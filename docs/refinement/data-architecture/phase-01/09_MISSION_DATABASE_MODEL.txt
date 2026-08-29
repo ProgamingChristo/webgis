@@ -1,0 +1,25 @@
+MISSION DATABASE MODEL
+
+Migration:
+- backend/supabase/migrations/20260827090000_mapid_mission_observations.sql
+
+Tables:
+- public.mapid_mission_sync_runs
+- public.mapid_mission_observations
+
+Core constraints:
+- source_type check for MENU_GO, STRUK_GO, PROPERTI_GO, ACTIVITIES.
+- sync status check for RUNNING, COMPLETED, PARTIAL, FAILED, BLOCKED.
+- unique source identity on source_type + source_record_id.
+- Point geometry with SRID 4326.
+
+Indexes:
+- source and started_at sync run index.
+- source and last_seen_at observation index.
+- GIST geometry index.
+- observed_at index when observed_at is present.
+
+RLS:
+- service_role full access.
+- authenticated admin SELECT policies on raw tables.
+- read API uses a controlled RPC contract.

@@ -1,0 +1,11 @@
+GETRA PHASE 07 IMPLEMENTATION PLAN
+
+Status: EXECUTED
+
+1. Audit the Phase 06 map, Mission repository, API policy, and real persisted payloads.
+2. Add one authenticated, source-enum-only contextual viewport API.
+3. Add independent map controls, source layers, clusters, popups, media, and provenance.
+4. Verify failure isolation, caching, stale-request cancellation, responsiveness, and security.
+5. Run Phase 04-07 browser regressions and all repository quality gates.
+
+Phase 08 work was not started.

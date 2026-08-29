@@ -1,0 +1,7 @@
+GETRA PHASE 10 UMKM INTELLIGENCE ARCHITECTURE
+
+Browser /umkm -> GETRA /api/umkm/intelligence -> owner authorization -> canonical merchant evidence.
+The service composes Phase 09 aggregate analytics, canonical comparable supply, Phase 06 region geometry, and Phase 08 pgRouting evidence.
+Scores and recommendations are deterministic and versioned. The Copilot receives only a minimized safe fact object and interprets it.
+Raw Premium/Menu Go rows remain provenance and are never separate user-facing merchants.
+No Phase 10 persistence or migration is required; results are computed per authorized request.

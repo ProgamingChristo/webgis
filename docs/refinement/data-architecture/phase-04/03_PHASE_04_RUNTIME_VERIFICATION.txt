@@ -1,0 +1,43 @@
+GETRA PHASE 04 - RUNTIME AND BROWSER VERIFICATION
+
+STATUS: PASS
+BROWSER: Chrome headless through puppeteer-core
+USER PATH: /login -> /app
+
+Initial viewport:
+- HTTP 200
+- bbox sent by frontend
+- limit 250, offset 0
+- 250 returned from 715 available
+- every returned coordinate inside response bbox
+
+Viewport after map drag:
+- HTTP 200
+- bbox changed
+- limit 250, offset 0
+- 250 returned from 595 available
+- every returned coordinate inside response bbox
+
+Pagination runtime:
+- same bbox, limit 1
+- offset 0 and offset 1 both HTTP 200
+- total_available stable at 715
+- page IDs are distinct
+
+MapLibre runtime:
+- canvas rendered
+- combined visible merchant count: 1,170
+- render mode: cluster
+- rendered cluster/point features observed: 12
+- cluster source features observed: 19
+
+Security runtime:
+- browser called GETRA /api/merchants/canonical only
+- no browser request to /web/competition/*
+- no x-api-key, MAPID Mission key, or service-role key in URLs/responses
+
+Evidence:
+- browser-evidence/runtime-evidence.json
+- browser-evidence/canonical-initial-viewport.png
+- browser-evidence/canonical-moved-viewport.png
+- scripts/verify-phase04-canonical-viewport-browser.mjs

@@ -1,0 +1,47 @@
+GETRA PHASE 02 - FRONTEND MANUAL TEST GUIDE
+
+ADMIN path
+1. Start the GETRA frontend and backend with the authorized local environment.
+2. Login as an ADMIN account.
+3. Open /admin/mission-data.
+4. Confirm Menu Go, Struk Go, Properti Go, and Activities are visible.
+5. Select Sync Menu Go.
+6. Confirm the button changes to Menyinkronkan and is disabled for that source.
+7. Confirm the final status and actual result counters.
+8. Repeat steps 5-7 for Struk Go.
+9. Repeat steps 5-7 for Properti Go.
+10. Repeat steps 5-7 for Activities.
+11. Refresh the browser.
+12. Confirm each last-sync/result is restored from persisted sync-run history.
+
+USER negative path
+1. Login as a USER account.
+2. Attempt to open /admin/mission-data.
+3. Confirm the frontend redirects away from the Admin route.
+4. Call POST /api/admin/mission/sync with { "source": "MENU_GO" } using the USER session.
+5. Confirm the backend returns the canonical forbidden response.
+
+Anonymous negative path
+1. End the authenticated session.
+2. Attempt to open /admin/mission-data.
+3. Confirm redirect to /login.
+4. Call POST /api/admin/mission/sync without Authorization.
+5. Confirm the backend returns the canonical unauthorized response.
+
+Validation path
+1. As ADMIN, call POST /api/admin/mission/sync with an unknown source.
+2. Confirm HTTP 400 VALIDATION_ERROR.
+3. Repeat with an arbitrary URL, provider path, traversal string, and unknown property.
+4. Confirm none reaches the Mission synchronization service.
+
+Security path
+1. Open browser developer tools and select Network.
+2. Trigger each source synchronization.
+3. Confirm the browser calls only the GETRA /api/admin/mission/sync endpoint.
+4. Inspect request and response headers/body.
+5. Confirm there is no x-api-key, MAPID credential, SUPABASE_SERVICE_ROLE_KEY, provider request header, raw stack trace, or provider path.
+
+Responsive path
+1. Verify the page at desktop width around 1440x900.
+2. Verify the page at mobile width around 390x844.
+3. Confirm source titles, statuses, counters, and buttons do not overlap or overflow.

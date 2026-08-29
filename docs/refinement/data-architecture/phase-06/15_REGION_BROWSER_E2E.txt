@@ -1,0 +1,19 @@
+GETRA PHASE 06 - BROWSER E2E
+
+Runner
+scripts/verify-phase06-administrative-boundaries-browser.mjs using actual Chrome, frontend :3000, backend :8080, and linked remote Supabase.
+
+PASS flows
+- login and default zero-boundary state
+- Jakarta Selatan boundary, label, exact fit, and merchant context
+- bakso Jakarta Selatan
+- three-region selection and grouping
+- remove Jakarta Timur with no stale chip/group/polygon
+- pan and Search This Area clears region while preserving bakso
+- synthetic boundary 503 while merchant API remains 200
+- invalid region returns safe 400
+- cached network behavior
+- accessibility assertions
+- four responsive screenshots
+
+Expected console resource messages were produced only by the intentional HTTP 503 and HTTP 400 negative cases. There were no uncaught errors, failed successful requests, duplicate source/layer warnings, key warnings, or direct MAPID Mission calls.

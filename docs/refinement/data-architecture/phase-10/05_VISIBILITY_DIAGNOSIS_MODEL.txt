@@ -1,0 +1,7 @@
+GETRA_VISIBILITY_READINESS_V1
+
+Weights: published 20, category eligibility 20, spatial location 15, opening-hours eligibility 15, price eligibility 15, pedestrian network reachability 15.
+The model measures GETRA discovery eligibility, not popularity, revenue, sales, or business quality.
+Missing hours means open-now cannot be confirmed. Missing price means hard-budget eligibility cannot be confirmed.
+Unroutable or uncovered locations are reported as unavailable network evidence, not visual guesses.
+Range and labels use READY >= 80, DEVELOPING >= 50, otherwise INCOMPLETE.

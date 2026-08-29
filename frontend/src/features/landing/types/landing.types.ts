@@ -1,3 +1,5 @@
+import type * as GeoJSON from "geojson";
+
 export type LandingMetric = {
   label: string;
   value: string;

@@ -1,0 +1,17 @@
+GETRA PHASE 11 - DEMAND AND RETAIL GAP REUSE
+
+Reused source:
+- Phase 09 Demand Intelligence and Retail Gap repository.
+
+Models:
+- GETRA_DEMAND_V1
+- GETRA_RETAIL_GAP_V1
+
+Business Space usage:
+- Candidate detail asks demand and retail gap for the selected category and time window.
+- Comparison keeps all candidates on the same category/window/model basis.
+
+Limit:
+- Phase 11 does not redefine demand or retail gap formulas.
+- If demand data is unavailable, the response reports insufficient data.
+

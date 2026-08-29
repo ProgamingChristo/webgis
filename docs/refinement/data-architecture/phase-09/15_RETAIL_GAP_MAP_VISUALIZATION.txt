@@ -1,0 +1,7 @@
+RETAIL GAP MAP VISUALIZATION
+
+Retail Gap uses a diverging scale: negative rose, zero neutral, positive green.
+INSUFFICIENT_DATA uses a separate neutral state and a null value, never a fabricated zero gap.
+The legend states that comparison is relative demand evidence versus represented GETRA supply.
+
+Map clicks select the same region used by cards, evidence text, charts, table, and interpretation.

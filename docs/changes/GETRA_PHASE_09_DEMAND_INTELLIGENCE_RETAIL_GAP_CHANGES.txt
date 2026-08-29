@@ -1,0 +1,19 @@
+GETRA PHASE 09 DEMAND INTELLIGENCE + RETAIL GAP CHANGES
+
+CREATED
+- Additive Phase 09 Supabase migration, aggregate event table, category helpers, and analytics RPC.
+- Demand-intelligence backend constants, schema, repository, services, interpretation, and model fixtures.
+- Authenticated demand, retail-gap, and interpretation API routes with endpoint-policy registration.
+- Demand Intelligence frontend service/hook/types, panel, ECharts, map layers, legends, and evidence UI.
+- Focused backend/frontend tests and Chrome browser verification script.
+- Phase 09 documentation set, test data, manual guide, JSON evidence, and screenshots.
+
+MODIFIED
+- Canonical search and routing endpoints to record privacy-minimized aggregate events server-side.
+- Routing request contract/frontend call to include optional canonical destination merchant ID.
+- Existing dashboard and map to add an opt-in Analytics mode; default mode remains unchanged.
+- Frontend dependencies to add ECharts 6; generated database TypeScript types refreshed from remote.
+
+UNCHANGED
+- Premium ingestion, Mission ingestion, canonical reconciliation semantics, and Phase 08 route engine.
+- No Phase 10 implementation.

@@ -1,0 +1,64 @@
+GETRA PHASE 08 - CORE COMMUTER CLOSURE CHANGES
+
+OBJECTIVE
+Close the trustworthy commuter flow using canonical merchants and real network GIS.
+
+CREATED
+- backend commuter intent, opening-hours, and network repository modules.
+- GETRA service-area and graph-health API routes.
+- Four additive Phase 08 Supabase migrations.
+- OSM pedestrian graph import tool and Phase 08 browser verifier.
+- Unit/integration/frontend tests and the Phase 08 documentation set.
+
+MODIFIED
+- Canonical merchant search and API to apply explicit hard constraints.
+- Routing API and frontend route hook to use pgRouting and reject fabricated fallback.
+- Dashboard/map to render network service area, route, filters, alternatives, and safe unknowns.
+- Fair Discovery to enforce the same opening/network constraints for organic and sponsored.
+- AI routing explanation to consume verified GIS facts.
+- Endpoint policy, generated database types, and browser basemap credential handling.
+
+DELETED
+No Phase 08 file deletion. No canonical merchant data was deleted.
+
+API AND DATABASE
+- POST /api/spatial/service-area added.
+- GET /api/internal/routing/graph-health added.
+- POST /api/routing now exposes truthful nullable network-route status.
+- Canonical merchant API accepts budget, open-now, walking, and validated origin inputs.
+- Migrations: 20260828110000, 20260828111500, 20260828113000, 20260828114000.
+- Remote graph: 67,708 nodes, 81,346 valid walkable edges; component snapshot enabled.
+
+AI AND GIS
+AI explains only returned pgRouting facts. Graph snap is bounded and component-aware.
+Walking costs use 1.4 m/s. Service area is reachable MultiLineString network edges.
+No straight-line fallback is presented as walking, route, or service area.
+
+BEHAVIOR
+Budget and opening are strict and unknown values are safely excluded. Route Switch
+preserves origin and filters with stale-response protection. Smart Alternative is
+deterministic and cannot relax constraints. Sponsored results cannot bypass filters.
+
+VERIFICATION
+Typecheck PASS. Lint PASS. Focused backend 53 PASS. Focused frontend 5 PASS.
+Full frontend 61 PASS. Full backend 723 PASS and 3 SKIPPED. Build PASS.
+Browser main/no-result/route/service-area/responsive PASS. axe-core WCAG violations 0.
+Console/network errors 0.
+Performance is bounded and passed in the test environment. Security PASS after removal
+of the old browser credential; operational key rotation remains recommended.
+
+LIMITATIONS
+Graph coverage is a bounded Jakarta pilot. Weekly opening schedules are not yet present
+for production canonical rows. AI E2E used the deterministic grounded fallback.
+
+ROLLBACK
+Revert Phase 08 application modules and endpoint registrations together to restore the
+prior UI contract. Disable Phase 08 service-area/route controls before rolling back RPC
+usage. The additive graph/RPC migrations may remain harmlessly installed; if database
+rollback is mandatory, revoke new RPC access and drop only Phase 08 RPCs, component
+snapshot, graph indexes, and imported graph records after dependency review. Never
+delete or rewrite canonical merchant, Mission, Premium, or contextual observation data.
+Intent, budget, opening, walking, Route Switch, and Smart Alternative can be disabled
+at their integration points without modifying canonical source records.
+
+READY FOR PHASE 09: YES

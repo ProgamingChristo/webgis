@@ -1,0 +1,7 @@
+GETRA PHASE 10 TRANSIT AND WALKABILITY CONTEXT
+
+Transit candidates are bounded to 10 nodes within 2,000 meters through TransportNodeRepository.
+Walking costs are calculated by the existing Phase 08 CommuterNetworkRepository and pgRouting graph.
+Only ROUTABLE candidates may expose network distance and walking seconds.
+The verified owner fixture currently returns NO_NETWORK_ACCESS and no transit route; UI says evidence is unavailable.
+No straight-line distance is presented as walking distance or time.

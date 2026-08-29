@@ -1,0 +1,23 @@
+GETRA PHASE 11 - COMPARISON MODEL
+
+Endpoint:
+- POST /api/business-space/compare
+
+Request:
+- 2 to 4 candidate IDs.
+- Canonical category.
+- 7 or 30 day window.
+- Strict request schema.
+
+Response:
+- candidates
+- metric_rows
+- trade_off_summary
+- model_version
+- limitations
+
+Rules:
+- Candidates are compared with the same category and demand window.
+- Comparison does not rank by expected profit.
+- Comparison exposes trade-offs only.
+

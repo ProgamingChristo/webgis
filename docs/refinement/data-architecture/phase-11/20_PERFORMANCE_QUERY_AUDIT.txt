@@ -1,0 +1,22 @@
+GETRA PHASE 11 - PERFORMANCE AND QUERY AUDIT
+
+Controls:
+- Candidate limit is bounded.
+- Comparison is bounded to 2 to 4 candidates.
+- Category and time window are explicit.
+- Browser payloads remain bounded.
+
+Observed browser API payloads:
+- candidates: HTTP 200, approximately 11 KB.
+- detail: HTTP 200, approximately 2.8 KB per candidate.
+- compare: HTTP 200, approximately 7.7 KB.
+- insight: HTTP 200, approximately 1.2 KB.
+
+Database:
+- No Phase 11 migration required.
+- Existing spatial/provenance storage is reused.
+
+Limitation:
+- Direct SQL EXPLAIN output was not added as a committed artifact.
+- Runtime browser evidence and bounded API behavior were verified.
+

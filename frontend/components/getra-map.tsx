@@ -1,5 +1,7 @@
 "use client";
 
+import type * as GeoJSON from "geojson";
+
 import {
   useEffect,
   useRef,
@@ -9,6 +11,8 @@ import {
 import {
   LngLatBounds,
   Map as MapLibreMap,
+  type GeoJSONSource,
+  type MapLayerMouseEvent,
   Marker,
   NavigationControl,
   Popup,
@@ -16,15 +20,38 @@ import {
   setWorkerUrl,
 } from "maplibre-gl";
 
+import { buildSponsoredPopupContent } from "@/src/lib/maplibre-popup";
 import type { Merchant, UserLocation } from "@/types/getra";
-
-import { JAKARTA_ADMIN_BOUNDARIES } from "@/data/jakarta-admin-boundaries";
+import type { BusinessSpaceCandidate } from "@/src/features/business-space/types/business-space.types";
+import type { MapViewportBounds } from "@/src/services/mapid-layer.service";
+import { syncAdministrativeBoundaryLayers } from "@/src/features/administrative-boundaries/map/administrative-boundary-layers";
+import type { AdministrativeBoundaryCollection } from "@/src/features/administrative-boundaries/types/administrative-boundary.types";
+import { ContextualLayerControl } from "@/src/features/mission-context-layers/components/contextual-layer-control";
+import {
+  bindContextualObservationInteractions,
+  syncContextualObservationLayers,
+} from "@/src/features/mission-context-layers/map/contextual-observation-layers";
+import type {
+  ContextualLayerData,
+  ContextualLayerKey,
+  ContextualLayerVisibility,
+} from "@/src/features/mission-context-layers/types/contextual-layer.types";
+import {
+  ANALYTICS_FILL_LAYER_ID,
+  syncDemandIntelligenceLayers,
+} from "@/src/features/demand-intelligence/map/demand-intelligence-layers";
+import type {
+  AnalyticsMapCollection,
+  AnalyticsMode,
+} from "@/src/features/demand-intelligence/types/demand-intelligence.types";
 import {
   BASEMAP_OPTIONS,
   type BasemapId,
   FALLBACK_MAP_STYLE,
   getBasemapOption,
   getDefaultBasemapId,
+  getPreferredBasemapId,
+  persistBasemapPreference,
 } from "@/lib/mapid";
 
 setWorkerUrl(
@@ -36,18 +63,32 @@ import { CampaignEventService, type SponsoredPinDTO } from "@/src/features/umkm-
 type GetraMapProps = {
   merchants: Merchant[];
   selectedId: string | null;
+  propertyCandidates?: BusinessSpaceCandidate[];
+  selectedPropertyId?: string | null;
   userLocation: UserLocation | null;
   onSelect: (merchant: Merchant) => void;
+  onSelectProperty?: (candidate: BusinessSpaceCandidate) => void;
   onClearSelection: () => void;
   datasetBounds: DatasetBounds;
   datasetOrigin: DatasetOrigin;
   routeOriginPoint?: RoutePoint | null;
   routeDestinationPoint?: RoutePoint | null;
   routeGeometry?: GeoJSON.LineString | null;
-  routeIsFallback?: boolean;
+  serviceAreaGeometry?: GeoJSON.MultiLineString | null;
   importBoundaries?: GeoJSON.FeatureCollection<GeoJSON.MultiPolygon> | null;
+  administrativeBoundaries?: AdministrativeBoundaryCollection;
+  contextualLayerData: ContextualLayerData;
+  contextualLayerVisibility: ContextualLayerVisibility;
+  onContextualLayerChange: (layer: ContextualLayerKey, visible: boolean) => void;
   sponsoredPlacements?: SponsoredPinDTO[];
   onSelectSponsored?: (placement: SponsoredPinDTO) => void;
+  onViewportChange?: (bounds: MapViewportBounds) => void;
+  datasetKey: string;
+  focusBounds?: MapViewportBounds | null;
+  focusKey?: number;
+  analyticsCollection?: AnalyticsMapCollection | null;
+  analyticsMode?: AnalyticsMode;
+  onSelectAnalyticsRegion?: (regionId: string) => void;
 };
 
 type DatasetBounds = {
@@ -68,6 +109,23 @@ type RoutePoint = {
   latitude: number;
   longitude: number;
 };
+
+const MERCHANT_CLUSTER_THRESHOLD = 250;
+const MERCHANT_SOURCE_ID = "getra-merchants";
+const MERCHANT_CLUSTER_LAYER_ID = "getra-merchant-clusters";
+const MERCHANT_CLUSTER_COUNT_LAYER_ID = "getra-merchant-cluster-count";
+const MERCHANT_POINT_LAYER_ID = "getra-merchant-points";
+
+function removeMerchantClusterLayers(map: MapLibreMap) {
+  for (const layerId of [
+    MERCHANT_CLUSTER_COUNT_LAYER_ID,
+    MERCHANT_CLUSTER_LAYER_ID,
+    MERCHANT_POINT_LAYER_ID,
+  ]) {
+    if (map.getLayer(layerId)) map.removeLayer(layerId);
+  }
+  if (map.getSource(MERCHANT_SOURCE_ID)) map.removeSource(MERCHANT_SOURCE_ID);
+}
 
 function createMerchantMarker(
   selected: boolean,
@@ -102,6 +160,26 @@ function createMerchantMarker(
     element,
     button,
   };
+}
+
+function createPropertyMarker(
+  selected: boolean,
+  candidate: BusinessSpaceCandidate,
+) {
+  const element = document.createElement("div");
+  element.className = "property-marker-anchor";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = selected
+    ? "property-marker property-marker--selected"
+    : "property-marker";
+  button.setAttribute(
+    "aria-label",
+    `Pilih observasi properti ${candidate.property_category ?? candidate.source_id}`,
+  );
+  button.dataset.source = "PROPERTI_GO";
+  element.append(button);
+  return { element, button };
 }
 
 function createPopupContent(
@@ -208,15 +286,6 @@ function addJakartaAdminBoundaries(
     GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon>
   >();
 
-  JAKARTA_ADMIN_BOUNDARIES.features.forEach((feature, index) => {
-    const id =
-      typeof feature.properties?.id === "string"
-        ? feature.properties.id
-        : `static-${index}`;
-
-    boundaryFeatures.set(id, feature);
-  });
-
   (importBoundaries?.features ?? []).forEach((feature, index) => {
     const boundaryMethod =
       typeof feature.properties?.boundary_method === "string"
@@ -291,8 +360,12 @@ function addJakartaAdminBoundaries(
           "#22d3ee",
           "jakarta-pusat",
           "#9af24a",
+          "jakarta-selatan",
+          "#38bdf8",
           "jakarta-timur",
           "#f59e0b",
+          "jakarta-utara",
+          "#e879f9",
           "#22d3ee",
         ],
         "fill-opacity": [
@@ -349,8 +422,12 @@ function addJakartaAdminBoundaries(
           "#22d3ee",
           "jakarta-pusat",
           "#9af24a",
+          "jakarta-selatan",
+          "#38bdf8",
           "jakarta-timur",
           "#f59e0b",
+          "jakarta-utara",
+          "#e879f9",
           "#22d3ee",
         ],
         "line-width": [
@@ -404,6 +481,7 @@ function addJakartaAdminBoundaries(
           15,
         ],
         "text-transform": "uppercase",
+        "text-font": ["Noto Sans Regular"],
         "text-letter-spacing": 0.08,
         "text-allow-overlap": false,
         "symbol-placement": "point",
@@ -439,7 +517,6 @@ function toRouteFeatureCollection(
 function syncWalkingRoute(
   map: MapLibreMap,
   routeGeometry?: GeoJSON.LineString | null,
-  routeIsFallback = false,
 ) {
   if (!map.isStyleLoaded()) {
     return;
@@ -519,22 +596,10 @@ function syncWalkingRoute(
         "line-cap": "round",
       },
       paint: {
-        "line-color": routeIsFallback
-          ? "#f7c948"
-          : "#22d3ee",
-        "line-width": routeIsFallback
-          ? 4
-          : 5,
+        "line-color": "#22d3ee",
+        "line-width": 5,
         "line-opacity": 0.92,
-        "line-dasharray": routeIsFallback
-          ? [
-              1.2,
-              1.4,
-            ]
-          : [
-              1,
-              0,
-            ],
+        "line-dasharray": [1, 0],
       },
     });
   }
@@ -547,50 +612,79 @@ function syncWalkingRoute(
     map.setPaintProperty(
       "walking-route-line",
       "line-color",
-      routeIsFallback
-        ? "#f7c948"
-        : "#22d3ee",
+      "#22d3ee",
     );
 
     map.setPaintProperty(
       "walking-route-line",
       "line-width",
-      routeIsFallback
-        ? 4
-        : 5,
+      5,
     );
 
     map.setPaintProperty(
       "walking-route-line",
       "line-dasharray",
-      routeIsFallback
-        ? [
-            1.2,
-            1.4,
-          ]
-        : [
-            1,
-            0,
-          ],
+      [1, 0],
     );
   }
+}
+
+function syncWalkingServiceArea(
+  map: MapLibreMap,
+  geometry?: GeoJSON.MultiLineString | null,
+) {
+  if (!map.isStyleLoaded()) return;
+  const data: GeoJSON.FeatureCollection = {
+    type: "FeatureCollection",
+    features: geometry ? [{ type: "Feature", properties: {}, geometry }] : [],
+  };
+  const source = map.getSource("walking-service-area");
+  if (source) {
+    (source as unknown as { setData: (next: GeoJSON.FeatureCollection) => void }).setData(data);
+    return;
+  }
+  map.addSource("walking-service-area", { type: "geojson", data });
+  map.addLayer({
+    id: "walking-service-area-lines",
+    type: "line",
+    source: "walking-service-area",
+    paint: {
+      "line-color": "#34d399",
+      "line-width": 3,
+      "line-opacity": 0.42,
+    },
+  });
 }
 
 export function GetraMap({
   merchants,
   selectedId,
+  propertyCandidates = [],
+  selectedPropertyId = null,
   userLocation,
   onSelect,
+  onSelectProperty,
   onClearSelection,
   datasetBounds,
   datasetOrigin,
   routeOriginPoint,
   routeDestinationPoint,
   routeGeometry,
-  routeIsFallback,
+  serviceAreaGeometry,
   importBoundaries,
+  administrativeBoundaries = { type: "FeatureCollection", features: [] },
+  contextualLayerData,
+  contextualLayerVisibility,
+  onContextualLayerChange,
   sponsoredPlacements,
   onSelectSponsored,
+  onViewportChange,
+  datasetKey,
+  focusBounds,
+  focusKey = 0,
+  analyticsCollection = null,
+  analyticsMode = "DEMAND",
+  onSelectAnalyticsRegion,
 }: GetraMapProps) {
   const [
     activeBasemapId,
@@ -600,6 +694,22 @@ export function GetraMap({
       getDefaultBasemapId(),
     );
 
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => setActiveBasemapId(getPreferredBasemapId()), 0);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  const [styleRevision, setStyleRevision] = useState(0);
+  const [renderedClusterFeatureCount, setRenderedClusterFeatureCount] = useState(0);
+  const [clusterSourceFeatureCount, setClusterSourceFeatureCount] = useState(0);
+  const [boundaryLayersReady, setBoundaryLayersReady] = useState(false);
+  const [cameraFitKey, setCameraFitKey] = useState(0);
+
+  const hasVisibleContextualLayer =
+    contextualLayerVisibility.property ||
+    contextualLayerVisibility.transaction ||
+    contextualLayerVisibility.activities;
+
   const containerRef =
     useRef<HTMLDivElement | null>(null);
 
@@ -607,6 +717,11 @@ export function GetraMap({
     useRef<MapLibreMap | null>(null);
 
   const merchantMarkersRef =
+    useRef<Map<string, Marker>>(
+      new Map(),
+    );
+
+  const propertyMarkersRef =
     useRef<Map<string, Marker>>(
       new Map(),
     );
@@ -641,36 +756,119 @@ export function GetraMap({
       null,
     );
 
-  const routeIsFallbackRef =
-    useRef(false);
+  const serviceAreaGeometryRef =
+    useRef<GeoJSON.MultiLineString | null>(
+      serviceAreaGeometry ?? null,
+    );
 
   const datasetBoundsRef =
     useRef<DatasetBounds>(
       datasetBounds,
     );
 
+  const datasetOriginRef = useRef(datasetOrigin);
+  const onViewportChangeRef = useRef(onViewportChange);
+  const lastFittedDatasetKeyRef = useRef(datasetKey);
+
   const importBoundariesRef =
     useRef<GeoJSON.FeatureCollection<GeoJSON.MultiPolygon> | null>(
       importBoundaries ?? null,
     );
 
+  const administrativeBoundariesRef = useRef(administrativeBoundaries);
+  const contextualLayerDataRef = useRef(contextualLayerData);
+  const contextualLayerVisibilityRef = useRef(contextualLayerVisibility);
+  const onSelectAnalyticsRegionRef = useRef(onSelectAnalyticsRegion);
+
+  useEffect(() => {
+    onSelectAnalyticsRegionRef.current = onSelectAnalyticsRegion;
+  }, [onSelectAnalyticsRegion]);
+
   useEffect(() => {
     routeGeometryRef.current =
       routeGeometry ?? null;
-
-    routeIsFallbackRef.current =
-      routeIsFallback ?? false;
+    serviceAreaGeometryRef.current =
+      serviceAreaGeometry ?? null;
   }, [
     routeGeometry,
-    routeIsFallback,
+    serviceAreaGeometry,
   ]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !focusBounds || focusKey === 0) return;
+    const compact = window.innerWidth <= 768;
+    map.fitBounds(
+      [
+        [focusBounds.west, focusBounds.south],
+        [focusBounds.east, focusBounds.north],
+      ],
+      {
+        padding: compact
+          ? { top: 36, right: 28, bottom: 190, left: 28 }
+          : { top: 52, right: 52, bottom: 52, left: 52 },
+        maxZoom: 14,
+        duration: 500,
+      },
+    );
+    setCameraFitKey(focusKey);
+  }, [focusBounds, focusKey]);
+
+  useEffect(() => {
+    administrativeBoundariesRef.current = administrativeBoundaries;
+    const map = mapRef.current;
+    if (map?.isStyleLoaded()) {
+      syncAdministrativeBoundaryLayers(map, administrativeBoundaries);
+      setBoundaryLayersReady(true);
+    }
+  }, [administrativeBoundaries]);
+
+  useEffect(() => {
+    contextualLayerDataRef.current = contextualLayerData;
+    contextualLayerVisibilityRef.current = contextualLayerVisibility;
+    const map = mapRef.current;
+    if (!map?.isStyleLoaded()) return;
+    syncContextualObservationLayers(map, contextualLayerData, contextualLayerVisibility);
+    return bindContextualObservationInteractions(
+      map,
+      contextualLayerData,
+      contextualLayerVisibility,
+    );
+  }, [contextualLayerData, contextualLayerVisibility, styleRevision]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map?.isStyleLoaded()) return;
+    syncDemandIntelligenceLayers(map, analyticsCollection, analyticsMode);
+    if (!map.getLayer(ANALYTICS_FILL_LAYER_ID)) return;
+    const selectRegion = (event: MapLayerMouseEvent) => {
+      const regionId = event.features?.[0]?.properties?.region_id;
+      if (typeof regionId === "string") onSelectAnalyticsRegionRef.current?.(regionId);
+    };
+    const enter = () => { map.getCanvas().style.cursor = "pointer"; };
+    const leave = () => { map.getCanvas().style.cursor = ""; };
+    map.on("click", ANALYTICS_FILL_LAYER_ID, selectRegion);
+    map.on("mouseenter", ANALYTICS_FILL_LAYER_ID, enter);
+    map.on("mouseleave", ANALYTICS_FILL_LAYER_ID, leave);
+    return () => {
+      map.off("click", ANALYTICS_FILL_LAYER_ID, selectRegion);
+      map.off("mouseenter", ANALYTICS_FILL_LAYER_ID, enter);
+      map.off("mouseleave", ANALYTICS_FILL_LAYER_ID, leave);
+    };
+  }, [analyticsCollection, analyticsMode, styleRevision]);
 
   useEffect(() => {
     datasetBoundsRef.current =
       datasetBounds;
+    datasetOriginRef.current = datasetOrigin;
   }, [
     datasetBounds,
+    datasetOrigin,
   ]);
+
+  useEffect(() => {
+    onViewportChangeRef.current = onViewportChange;
+  }, [onViewportChange]);
 
   useEffect(() => {
     importBoundariesRef.current =
@@ -683,6 +881,13 @@ export function GetraMap({
         map,
         importBoundariesRef.current,
       );
+      syncAdministrativeBoundaryLayers(map, administrativeBoundariesRef.current);
+      syncContextualObservationLayers(
+        map,
+        contextualLayerDataRef.current,
+        contextualLayerVisibilityRef.current,
+      );
+      setBoundaryLayersReady(true);
     }
   }, [importBoundaries]);
 
@@ -706,8 +911,8 @@ export function GetraMap({
           FALLBACK_MAP_STYLE,
 
         center: [
-          datasetOrigin.longitude,
-          datasetOrigin.latitude,
+          datasetOriginRef.current.longitude,
+          datasetOriginRef.current.latitude,
         ],
 
         zoom: 12,
@@ -743,25 +948,34 @@ export function GetraMap({
     );
 
     map.on("load", () => {
+      const initialBounds = datasetBoundsRef.current;
       addJakartaAdminBoundaries(
         map,
         importBoundariesRef.current,
       );
+      syncAdministrativeBoundaryLayers(map, administrativeBoundariesRef.current);
+      syncContextualObservationLayers(
+        map,
+        contextualLayerDataRef.current,
+        contextualLayerVisibilityRef.current,
+      );
+      setBoundaryLayersReady(true);
+      setStyleRevision((revision) => revision + 1);
 
       addDatasetExtent(
         map,
-        datasetBounds,
+        initialBounds,
       );
 
       map.fitBounds(
         [
           [
-            datasetBounds.west,
-            datasetBounds.south,
+            initialBounds.west,
+            initialBounds.south,
           ],
           [
-            datasetBounds.east,
-            datasetBounds.north,
+            initialBounds.east,
+            initialBounds.north,
           ],
         ],
         {
@@ -770,6 +984,26 @@ export function GetraMap({
         },
       );
     });
+
+    const emitViewport = () => {
+      const bounds = map.getBounds();
+      if (containerRef.current?.parentElement) {
+        containerRef.current.parentElement.dataset.mapViewportBounds = [
+          bounds.getWest(),
+          bounds.getSouth(),
+          bounds.getEast(),
+          bounds.getNorth(),
+        ].join(",");
+      }
+      onViewportChangeRef.current?.({
+        west: bounds.getWest(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        north: bounds.getNorth(),
+      });
+    };
+
+    map.on("moveend", emitViewport);
 
     map.on(
       "error",
@@ -813,10 +1047,7 @@ export function GetraMap({
 
       mapRef.current = null;
     };
-  }, [
-    datasetBounds,
-    datasetOrigin,
-  ]);
+  }, []);
 
   /*
    * Basemap switcher
@@ -852,6 +1083,13 @@ export function GetraMap({
           map,
           importBoundariesRef.current,
         );
+        syncAdministrativeBoundaryLayers(map, administrativeBoundariesRef.current);
+        syncContextualObservationLayers(
+          map,
+          contextualLayerDataRef.current,
+          contextualLayerVisibilityRef.current,
+        );
+        setBoundaryLayersReady(true);
 
         addDatasetExtent(
           map,
@@ -860,8 +1098,9 @@ export function GetraMap({
         syncWalkingRoute(
           map,
           routeGeometryRef.current,
-          routeIsFallbackRef.current,
         );
+        syncWalkingServiceArea(map, serviceAreaGeometryRef.current);
+        setStyleRevision((revision) => revision + 1);
       } catch (error) {
         console.error(
           "[GETRA MAP ERROR] Failed to sync map overlays.",
@@ -919,6 +1158,12 @@ export function GetraMap({
         map,
         importBoundariesRef.current,
       );
+      syncAdministrativeBoundaryLayers(map, administrativeBoundariesRef.current);
+      syncContextualObservationLayers(
+        map,
+        contextualLayerDataRef.current,
+        contextualLayerVisibilityRef.current,
+      );
 
       addDatasetExtent(
         map,
@@ -968,7 +1213,11 @@ export function GetraMap({
       );
     }
 
+    const shouldFitDataset = lastFittedDatasetKeyRef.current !== datasetKey;
+    lastFittedDatasetKeyRef.current = datasetKey;
+
     if (
+      shouldFitDataset &&
       !selectedId &&
       !routeGeometry
     ) {
@@ -992,6 +1241,7 @@ export function GetraMap({
   }, [
     datasetBounds,
     datasetOrigin,
+    datasetKey,
     routeGeometry,
     selectedId,
   ]);
@@ -1013,6 +1263,10 @@ export function GetraMap({
     );
 
     merchantMarkersRef.current.clear();
+    setRenderedClusterFeatureCount(0);
+    setClusterSourceFeatureCount(0);
+
+    if (map.isStyleLoaded()) removeMerchantClusterLayers(map);
 
     const selectedMerchant =
       selectedId
@@ -1024,9 +1278,144 @@ export function GetraMap({
         : undefined;
 
     const visibleMerchants =
-      selectedMerchant
+      !contextualLayerVisibility.merchant
+        ? []
+        : selectedMerchant
         ? [selectedMerchant]
         : merchants;
+
+    if (
+      visibleMerchants.length > MERCHANT_CLUSTER_THRESHOLD ||
+      (hasVisibleContextualLayer && visibleMerchants.length > 0)
+    ) {
+      if (!map.isStyleLoaded()) {
+        const retryAfterStyleLoad = () => {
+          setStyleRevision((revision) => revision + 1);
+        };
+        map.once("style.load", retryAfterStyleLoad);
+        map.once("idle", retryAfterStyleLoad);
+        return () => {
+          map.off("style.load", retryAfterStyleLoad);
+          map.off("idle", retryAfterStyleLoad);
+        };
+      }
+
+      const merchantById = new Map(
+        visibleMerchants.map((merchant) => [merchant.id, merchant]),
+      );
+      map.addSource(MERCHANT_SOURCE_ID, {
+        type: "geojson",
+        cluster: true,
+        clusterMaxZoom: 15,
+        clusterRadius: 48,
+        data: {
+          type: "FeatureCollection",
+          features: visibleMerchants.map((merchant) => ({
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [merchant.longitude, merchant.latitude],
+            },
+            properties: { merchantId: merchant.id },
+          })),
+        },
+      });
+      map.addLayer({
+        id: MERCHANT_CLUSTER_LAYER_ID,
+        type: "circle",
+        source: MERCHANT_SOURCE_ID,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": [
+            "step", ["get", "point_count"],
+            "#0f766e", 100, "#0369a1", 500, "#7c3aed",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 18, 100, 24, 500, 30],
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 2,
+        },
+      });
+      map.addLayer({
+        id: MERCHANT_CLUSTER_COUNT_LAYER_ID,
+        type: "symbol",
+        source: MERCHANT_SOURCE_ID,
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": "{point_count_abbreviated}",
+          "text-size": 12,
+          "text-font": ["Noto Sans Regular"],
+        },
+        paint: { "text-color": "#ffffff" },
+      });
+      map.addLayer({
+        id: MERCHANT_POINT_LAYER_ID,
+        type: "circle",
+        source: MERCHANT_SOURCE_ID,
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-color": "#ef4444",
+          "circle-radius": 7,
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 2,
+        },
+      });
+
+      const expandCluster = async (event: MapLayerMouseEvent) => {
+        const feature = event.features?.[0];
+        const clusterId = Number(feature?.properties?.cluster_id);
+        if (!feature || !Number.isFinite(clusterId) || feature.geometry.type !== "Point") return;
+        const source = map.getSource(MERCHANT_SOURCE_ID) as GeoJSONSource;
+        const zoom = await source.getClusterExpansionZoom(clusterId);
+        map.easeTo({ center: feature.geometry.coordinates as [number, number], zoom });
+      };
+      const selectPoint = (event: MapLayerMouseEvent) => {
+        const merchantId = String(event.features?.[0]?.properties?.merchantId ?? "");
+        const merchant = merchantById.get(merchantId);
+        if (merchant) onSelect(merchant);
+      };
+      const showPointer = () => { map.getCanvas().style.cursor = "pointer"; };
+      const hidePointer = () => { map.getCanvas().style.cursor = ""; };
+
+      map.on("click", MERCHANT_CLUSTER_LAYER_ID, expandCluster);
+      map.on("click", MERCHANT_POINT_LAYER_ID, selectPoint);
+      map.on("mouseenter", MERCHANT_CLUSTER_LAYER_ID, showPointer);
+      map.on("mouseleave", MERCHANT_CLUSTER_LAYER_ID, hidePointer);
+      map.on("mouseenter", MERCHANT_POINT_LAYER_ID, showPointer);
+      map.on("mouseleave", MERCHANT_POINT_LAYER_ID, hidePointer);
+
+      const reportRenderedClusters = () => {
+        if (!map.getLayer(MERCHANT_CLUSTER_LAYER_ID)) return;
+        setClusterSourceFeatureCount(
+          map.querySourceFeatures(MERCHANT_SOURCE_ID).length,
+        );
+        setRenderedClusterFeatureCount(
+          map.queryRenderedFeatures({
+            layers: [MERCHANT_CLUSTER_LAYER_ID, MERCHANT_POINT_LAYER_ID],
+          }).length,
+        );
+      };
+      const reportLoadedSource = (event: { sourceId?: string; isSourceLoaded?: boolean }) => {
+        if (event.sourceId === MERCHANT_SOURCE_ID && event.isSourceLoaded) {
+          reportRenderedClusters();
+        }
+      };
+      map.on("sourcedata", reportLoadedSource);
+      map.once("idle", reportRenderedClusters);
+      const reportTimeout = window.setTimeout(reportRenderedClusters, 1_000);
+
+      return () => {
+        window.clearTimeout(reportTimeout);
+        map.off("sourcedata", reportLoadedSource);
+        map.off("idle", reportRenderedClusters);
+        map.off("click", MERCHANT_CLUSTER_LAYER_ID, expandCluster);
+        map.off("click", MERCHANT_POINT_LAYER_ID, selectPoint);
+        map.off("mouseenter", MERCHANT_CLUSTER_LAYER_ID, showPointer);
+        map.off("mouseleave", MERCHANT_CLUSTER_LAYER_ID, hidePointer);
+        map.off("mouseenter", MERCHANT_POINT_LAYER_ID, showPointer);
+        map.off("mouseleave", MERCHANT_POINT_LAYER_ID, hidePointer);
+        if (map.isStyleLoaded()) removeMerchantClusterLayers(map);
+      };
+    }
 
     for (
       const merchant
@@ -1061,7 +1450,11 @@ export function GetraMap({
             }).setDOMContent(
               createPopupContent(
                 merchant.name,
-                `${merchant.brand} · ${merchant.address ?? "Alamat tidak tersedia"}`,
+                [
+                  merchant.brand,
+                  merchant.city ?? merchant.regions?.[0],
+                  merchant.address ?? "Alamat tidak tersedia",
+                ].filter(Boolean).join(" - "),
               ),
             ),
           )
@@ -1076,7 +1469,49 @@ export function GetraMap({
     merchants,
     selectedId,
     onSelect,
+    styleRevision,
+    contextualLayerVisibility.merchant,
+    hasVisibleContextualLayer,
   ]);
+
+  /*
+   * Properti Go property observation markers. These are separate from canonical
+   * merchants so one-place-one-merchant semantics stay intact.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    propertyMarkersRef.current.forEach((marker) => marker.remove());
+    propertyMarkersRef.current.clear();
+
+    for (const candidate of propertyCandidates) {
+      const markerElements = createPropertyMarker(
+        candidate.id === selectedPropertyId,
+        candidate,
+      );
+      markerElements.button.onclick = () => {
+        onSelectProperty?.(candidate);
+      };
+      const detail = [
+        candidate.property_transaction_type,
+        candidate.address ?? "Alamat tidak tersedia",
+        "Sumber: Properti Go",
+      ].filter(Boolean).join(" - ");
+      const marker = new Marker({ element: markerElements.element, anchor: "center" })
+        .setLngLat([candidate.longitude, candidate.latitude])
+        .setPopup(
+          new Popup({ offset: 16 }).setDOMContent(
+            createPopupContent(
+              candidate.property_category ?? "Property observation",
+              detail,
+            ),
+          ),
+        )
+        .addTo(map);
+      propertyMarkersRef.current.set(candidate.id, marker);
+    }
+  }, [propertyCandidates, selectedPropertyId, onSelectProperty, styleRevision]);
 
   /*
    * Sponsored Pin markers
@@ -1131,13 +1566,9 @@ export function GetraMap({
         onSelectSponsored?.(placement);
       };
 
-      const popup = new Popup({ offset: 20 }).setHTML(`
-        <div style="padding: 6px; font-family: sans-serif; max-width: 200px;">
-          <span style="background: #fef3c7; color: #92400e; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase;">✨ Sponsored</span>
-          <h5 style="margin: 4px 0 2px 0; font-size: 12px; font-weight: 700; color: #0f172a;">${placement.headline}</h5>
-          <p style="margin: 0; font-size: 10px; color: #64748b;">${placement.merchant_name} (${placement.merchant_category})</p>
-        </div>
-      `);
+      const popup = new Popup({ offset: 20 }).setDOMContent(
+        buildSponsoredPopupContent(placement),
+      );
 
       const marker = new Marker({ element: el, anchor: "bottom" })
         .setLngLat([lng, lat])
@@ -1353,6 +1784,21 @@ export function GetraMap({
   ]);
 
   /*
+   * Focus selected property observation
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !selectedPropertyId) return;
+    const property = propertyCandidates.find((item) => item.id === selectedPropertyId);
+    if (!property) return;
+    map.easeTo({
+      center: [property.longitude, property.latitude],
+      zoom: Math.max(map.getZoom(), 16),
+      duration: 500,
+    });
+  }, [propertyCandidates, selectedPropertyId]);
+
+  /*
    * Draw Route Line
    */
   useEffect(() => {
@@ -1367,8 +1813,8 @@ export function GetraMap({
       syncWalkingRoute(
         map,
         routeGeometry,
-        routeIsFallback,
       );
+      syncWalkingServiceArea(map, serviceAreaGeometry);
     };
 
     if (map.isStyleLoaded()) {
@@ -1408,11 +1854,39 @@ export function GetraMap({
     }
   }, [
     routeGeometry,
-    routeIsFallback,
+    serviceAreaGeometry,
   ]);
 
   return (
-    <div className="map-shell">
+    <div
+      className="map-shell"
+      data-merchant-count={merchants.length}
+      data-property-count={propertyCandidates.length}
+      data-selected-property-id={selectedPropertyId ?? ""}
+      data-merchant-layer-visible={contextualLayerVisibility.merchant ? "true" : "false"}
+      data-merchant-render-mode={
+        merchants.length > MERCHANT_CLUSTER_THRESHOLD ||
+        (hasVisibleContextualLayer && merchants.length > 0)
+          ? "cluster"
+          : "markers"
+      }
+      data-rendered-cluster-features={renderedClusterFeatureCount}
+      data-cluster-source-features={clusterSourceFeatureCount}
+      data-boundary-feature-count={administrativeBoundaries.features.length}
+      data-boundary-region-ids={administrativeBoundaries.features
+        .map((feature) => feature.properties.id)
+        .join(",")}
+      data-boundary-layers-ready={boundaryLayersReady ? "true" : "false"}
+      data-camera-fit-key={cameraFitKey}
+      data-analytics-feature-count={analyticsCollection?.features.length ?? 0}
+      data-analytics-mode={analyticsCollection ? analyticsMode : "OFF"}
+      data-camera-focus-bounds={focusBounds
+        ? [focusBounds.west, focusBounds.south, focusBounds.east, focusBounds.north].join(",")
+        : ""}
+      data-context-property-count={contextualLayerData.PROPERTI_GO.collection.features.length}
+      data-context-transaction-count={contextualLayerData.STRUK_GO.collection.features.length}
+      data-context-activities-count={contextualLayerData.ACTIVITIES.collection.features.length}
+    >
 
       <div
         ref={containerRef}
@@ -1451,6 +1925,12 @@ export function GetraMap({
         </button>
       ) : null}
 
+      <ContextualLayerControl
+        data={contextualLayerData}
+        visibility={contextualLayerVisibility}
+        onChange={onContextualLayerChange}
+      />
+
       <div
         className="basemap-switcher"
         aria-label="Pilih basemap"
@@ -1466,11 +1946,12 @@ export function GetraMap({
                   ? "basemap-button basemap-button--active"
                   : "basemap-button"
               }
-              onClick={() =>
-                setActiveBasemapId(
-                  option.id,
-                )
-              }
+              aria-pressed={option.id === activeBasemapId}
+              title={option.description}
+              onClick={() => {
+                persistBasemapPreference(option.id);
+                setActiveBasemapId(option.id);
+              }}
             >
               <span>
                 {option.label}

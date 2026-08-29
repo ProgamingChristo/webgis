@@ -1,0 +1,7 @@
+GETRA PHASE 10 MERCHANT DEMAND CONTEXT
+
+Source: existing get_demand_intelligence_v1 orchestration through DemandIntelligenceRepository.
+Windows: strict 7 or 30 days, ending at request time.
+Runtime owner fixture: Demand Score 49, confidence INSUFFICIENT_DATA for 30 days.
+Phase 10 and direct Phase 09 values/model versions matched exactly at runtime.
+Raw counts are aggregate source composition only; no user query, route history, or identity is returned.

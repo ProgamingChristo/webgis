@@ -1,0 +1,26 @@
+MISSION RESPONSE CONTRACTS
+
+Response extraction supports conservative MAPID envelope shapes:
+- raw array
+- records array
+- data array
+- data.records array
+- data.activities array
+- features array
+
+Record validation:
+- Object shape with passthrough raw fields.
+- Stable source id from id, key, _id, or objectid.
+- Geometry from GeoJSON Point or longitude/lng/lon plus latitude/lat fields.
+
+Rejected records:
+- Missing stable source id.
+- Missing or invalid point geometry.
+- Non-JSON-safe raw payload.
+
+External JSON is not trusted as a TypeScript type without runtime validation.
+
+Final official contract verification - 2026-08-27:
+- Menu Go, Struck Go, Properti Go: success + features + pagination.
+- Activities: success + data.activities + meta.
+- Mission pagination metadata: offset, limit, hasMore, total.

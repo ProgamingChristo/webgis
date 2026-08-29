@@ -1,0 +1,11 @@
+PHASE 07 LIMITATIONS AND BLOCKERS
+
+Phase 07 blockers: NONE.
+
+Limitations:
+- Actual Activities records currently lack a reliable category, so the honest runtime category is UNCLASSIFIED.
+- Properti and Struk records lack observed_at; UI reports observation time unavailable.
+- Pagination is exposed by the API, while the current map requests the first bounded page capped at 250 and clusters it.
+- Performance evidence covers the current Jakarta dataset, not nationwide scale.
+
+No Phase 08 feature was implemented.

@@ -1,33 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+
+import { withApiLogger } from "@/src/lib/api-logger";
+import { requireAuthenticatedUser } from "@/src/lib/auth";
+import { ApplicationError } from "@/src/lib/errors";
+import { rateLimiter } from "@/src/lib/rate-limit";
+import { getRequestId } from "@/src/lib/request-id";
+import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
 import { UmkmService } from "@/src/modules/umkm/umkm.service";
 import { UmkmRepository } from "@/src/repositories/umkm.repository";
 import { EntityAccessService } from "@/src/modules/accessibility/entity-access.service";
 import { EntityNetworkAccessRepository } from "@/src/repositories/entity-network-access.repository";
+import { createOptionsHandler } from "@/src/lib/api-security";
 
-export async function GET(req: NextRequest) {
-  try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    );
-    
-    // Optional: Check auth
-    // const { data: { user } } = await supabase.auth.getUser();
-    // if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const runtime = "nodejs";
+
+export async function GET(req: NextRequest): Promise<NextResponse> {
+  const requestId = getRequestId(req);
+  return withApiLogger(req, requestId, async () => {
+    const authorization = req.headers.get("authorization");
+    if (!authorization) {
+      throw new ApplicationError("UNAUTHORIZED");
+    }
+
+    const userId = await requireAuthenticatedUser(req);
+    await rateLimiter.checkLimit(req, `${userId}:api:internal-umkm-nearby`);
 
     const searchParams = req.nextUrl.searchParams;
     const lat = parseFloat(searchParams.get("lat") || "");
     const lng = parseFloat(searchParams.get("lng") || "");
-    const radiusMeters = parseFloat(searchParams.get("radiusMeters") || "1000");
+    const radiusMeters = parseFloat(
+      searchParams.get("radiusMeters") || "1000",
+    );
     const category = searchParams.get("category") || undefined;
     const limit = parseInt(searchParams.get("limit") || "20", 10);
     const environment = searchParams.get("environment") || "DUMMY";
 
     if (isNaN(lat) || isNaN(lng)) {
-      return NextResponse.json({ error: "Invalid coordinates" }, { status: 400 });
+      throw new ApplicationError(
+        "VALIDATION_ERROR",
+        "Invalid coordinates",
+      );
     }
 
+    const supabase = getRequestSupabaseClient(authorization);
     const umkmRepo = new UmkmRepository(supabase);
     const accessRepo = new EntityNetworkAccessRepository(supabase);
     const accessService = new EntityAccessService(supabase, accessRepo);
@@ -39,15 +54,11 @@ export async function GET(req: NextRequest) {
       radiusMeters,
       category,
       limit,
-      environment
+      environment,
     });
 
     return NextResponse.json({ data: results });
-  } catch (err: any) {
-    console.error("Error in /api/internal/umkm/nearby:", err);
-    return NextResponse.json(
-      { error: err.message || "Internal Server Error" },
-      { status: 500 }
-    );
-  }
+  });
 }
+
+export const OPTIONS = createOptionsHandler("/api/internal/umkm/nearby");

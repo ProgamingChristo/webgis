@@ -1,0 +1,13 @@
+GETRA PHASE 06 - ACCESSIBILITY AUDIT
+
+PASS
+- region checkboxes remain keyboard-native
+- every selected chip has an accessible "Hapus wilayah NAME" button
+- selected state is announced as text, for example "3 wilayah dipilih"
+- selected identity is communicated by chips, labels, and headings, not color only
+- groups use semantic H3 headings
+- boundary loading/error uses status text
+- search retains an explicit label and keyboard submit
+- focus-visible chip removal has a high-contrast outline
+
+Map polygons are not treated as the only screen-reader representation. No region click/hover behavior was introduced, avoiding conflict with merchant markers on touch and keyboard input.

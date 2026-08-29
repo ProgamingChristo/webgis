@@ -1,0 +1,17 @@
+GETRA PHASE 07 FRONTEND TEST DATA
+
+Prerequisite: a valid GETRA USER login. Do not place passwords or provider credentials in this file.
+
+Expected controls and defaults:
+- Merchant: checked
+- Properti: unchecked
+- Observasi transaksi: unchecked
+- Observasi lapangan: unchecked
+- Batas administrasi: checked
+
+Safe runtime baseline observed 28 Aug 2026:
+- Properti initial viewport: 130
+- Struk initial viewport: 148
+- Activities initial viewport: 60
+
+Counts may change as persisted provider data changes. Activities currently uses UNCLASSIFIED because no reliable source category exists. A valid result is an authenticated GETRA response with bounded GeoJSON and no raw payload or secret.

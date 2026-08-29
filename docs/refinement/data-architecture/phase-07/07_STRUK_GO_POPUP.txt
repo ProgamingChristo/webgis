@@ -1,0 +1,5 @@
+STRUK GO POPUP
+
+Safe fields are observed place name, place category, payment method, observed/import time, provenance, and allowlisted receipt media.
+
+Runtime evidence rendered Warung makan bang Andi, Warung/kaki lima, QRIS, MAPID Struk Go, and receipt image alt text. Amount and revenue claims are intentionally absent.

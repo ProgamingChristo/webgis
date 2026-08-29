@@ -1,0 +1,17 @@
+GETRA PHASE 05 - SEARCH PERFORMANCE AUDIT
+
+Database controls
+- GiST indexes on canonical merchant and administrative region geometry.
+- Parameterized PostGIS intersection.
+- deterministic ORDER BY.
+- limit capped at 100 and offset pagination.
+- no whole-Jakarta fetch by default.
+
+Observed local-to-remote runtime samples
+- keyword bakso/current viewport: 5 results, 903 ms.
+- location Jakarta Selatan: 100 of 237, 1412 ms.
+- keyword/location: 3 results, 1386 ms.
+- multi-region: 3 results, 868 ms.
+- Search This Area: 5 results, 856 ms.
+
+Durations include browser, frontend, local backend, and linked remote database latency. Initial load included login/bootstrap and took 8082 ms. No performance threshold is fabricated; these values are baseline evidence for later profiling.

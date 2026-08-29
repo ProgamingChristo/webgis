@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import type * as GeoJSON from "geojson";
 import type { GeoJSONSource, Map as MapLibreMap, Marker } from "maplibre-gl";
 import { GeoJSONFeature, TargetType } from "../types/targeting.types";
-import { getBasemapOption, getDefaultBasemapId } from "@/lib/mapid";
+import { getBasemapOption, getPreferredBasemapId } from "@/lib/mapid";
 
 interface TargetingMapProps {
   merchantLocation: { longitude: number; latitude: number } | null;
@@ -44,7 +45,7 @@ export function TargetingMap({
 
       const map = new maplibre.Map({
         container: containerRef.current,
-        style: getBasemapOption(getDefaultBasemapId()).style,
+        style: getBasemapOption(getPreferredBasemapId()).style,
         center: defaultCenter,
         zoom: initialMerchantLocation ? 14 : 11,
       });

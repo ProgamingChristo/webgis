@@ -12,8 +12,13 @@ const chromePath =
   "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 
 // Seed an unpaid test campaign
-const supabaseUrl = "https://sesakxnjaphrxqxllqjm.supabase.co";
-const serviceRoleKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlc2FreG5qYXBocnhxeGxscWptIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjUzOTk0OCwiZXhwIjoyMTAyMTE1OTQ4fQ.iCkUIPqX-VcYIkIi3M4n89voeTkG0NUy7HRGz6zD80U";
+const supabaseUrl = process.env.SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!supabaseUrl || !serviceRoleKey) {
+  throw new Error(
+    "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be provided via environment (never hardcode credentials).",
+  );
+}
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 
 console.log("[E2E Payment Audit] 1. Preparing fresh test merchant and campaign...");

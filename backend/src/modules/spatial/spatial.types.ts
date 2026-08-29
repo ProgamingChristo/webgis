@@ -147,6 +147,7 @@ export interface RoutingConstraints {
 export interface RoutingRequest {
   constraints?: RoutingConstraints;
   destination: Coordinate;
+  destination_merchant_id?: string;
   mode: "walking";
   origin: Coordinate;
 }
@@ -160,4 +161,3 @@ export interface RoutingResult {
   route_source: string;
   source: typeof SPATIAL_ENGINE_SOURCE;
 }
-

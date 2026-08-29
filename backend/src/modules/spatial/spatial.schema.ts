@@ -171,6 +171,7 @@ export const routingRequestSchema = z
       .strict()
       .optional(),
     destination: coordinateSchema,
+    destination_merchant_id: z.string().uuid().optional(),
     mode: z.literal("walking"),
     origin: coordinateSchema,
   })

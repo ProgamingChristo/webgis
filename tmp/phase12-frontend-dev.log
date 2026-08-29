@@ -1,0 +1,28 @@
+
+> getra-frontend@0.1.0 predev
+> node ./scripts/copy-maplibre-worker.mjs
+
+[GETRA] MapLibre worker copied to public/maplibre
+
+> getra-frontend@0.1.0 dev
+> node ../scripts/dev-next.mjs frontend 3000
+
+[GETRA] frontend dev server using http://localhost:3000
+▲ Next.js 16.3.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.5.1:3000
+- Environments: .env.local
+✓ Ready in 838ms
+✓ Running next.config.ts took 49ms
+Creating turbopack project { dir: 'D:\\Getra_Production\\frontend', testMode: true }
+
+ GET /login 200 in 577ms (next.js: 308ms, application-code: 269ms)
+ GET /login 200 in 64ms (next.js: 10ms, application-code: 54ms)
+ GET /app 200 in 86ms (next.js: 46ms, application-code: 40ms)
+ GET /app 200 in 52ms (next.js: 11ms, application-code: 41ms)
+ GET /login 200 in 58ms (next.js: 11ms, application-code: 47ms)
+ GET /app 200 in 38ms (next.js: 11ms, application-code: 28ms)
+ GET /app 200 in 69ms (next.js: 21ms, application-code: 47ms)
+ GET /login 200 in 49ms (next.js: 7ms, application-code: 42ms)
+ GET /app 200 in 34ms (next.js: 9ms, application-code: 26ms)
+ GET /app 200 in 44ms (next.js: 9ms, application-code: 35ms)

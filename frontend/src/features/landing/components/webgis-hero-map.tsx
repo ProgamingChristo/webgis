@@ -10,7 +10,7 @@ import {
   LANDING_MAP_FIXTURE,
   toPointFeatureCollection,
 } from "../utils/landing-map.utils";
-import { getBasemapOption, getDefaultBasemapId } from "../../../../lib/mapid";
+import { getBasemapOption, getPreferredBasemapId } from "../../../../lib/mapid";
 
 setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
@@ -131,7 +131,7 @@ export function WebgisHeroMap() {
     let disposed = false;
 
     try {
-      const basemap = getBasemapOption(getDefaultBasemapId());
+      const basemap = getBasemapOption(getPreferredBasemapId());
       const map = new MapLibreMap({
         container: containerRef.current,
         style: basemap.style,

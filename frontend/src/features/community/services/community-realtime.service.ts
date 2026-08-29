@@ -18,6 +18,8 @@ type CommunityRealtimeFilter =
       recipientUserId: string;
     };
 
+let realtimeSubscriptionSequence = 0;
+
 function resolveRealtimeFilter(filter: CommunityRealtimeFilter): string {
   if ("postId" in filter) {
     return `post_id=eq.${filter.postId}`;
@@ -42,6 +44,16 @@ function resolveChannelName(filter: CommunityRealtimeFilter): string {
   return `community-notifications-${filter.recipientUserId}`;
 }
 
+function resolveUniqueChannelName(filter: CommunityRealtimeFilter): string {
+  realtimeSubscriptionSequence += 1;
+
+  return [
+    resolveChannelName(filter),
+    Date.now().toString(36),
+    realtimeSubscriptionSequence.toString(36),
+  ].join("-");
+}
+
 export async function subscribeToCommunityRealtimeEvents(
   filter: CommunityRealtimeFilter,
   onChange: () => void,
@@ -54,7 +66,7 @@ export async function subscribeToCommunityRealtimeEvents(
   }
 
   const channel = supabase
-    .channel(resolveChannelName(filter))
+    .channel(resolveUniqueChannelName(filter))
     .on(
       "postgres_changes",
       {

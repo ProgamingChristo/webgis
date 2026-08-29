@@ -1,4 +1,5 @@
 import type { Merchant } from "@/types/getra";
+import type * as GeoJSON from "geojson";
 
 export const COFFEE_SHOP_SOURCE_NAME =
   "Brand Coffee Shop Kota Adm. Jakarta Barat 2026";

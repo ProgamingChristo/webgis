@@ -1,0 +1,16 @@
+GETRA PHASE 06 - RESPONSIVE AUDIT
+
+Actual Chrome viewports
+- 390x844 PASS
+- 768x1024 PASS
+- 1366x768 PASS
+- 1440x900 PASS
+
+Every viewport had:
+- no horizontal overflow
+- three selected chips visible
+- three semantic result groups visible
+- MapLibre canvas present
+- three selected boundary features
+
+Mobile keeps the map usable as its own layout band. Region controls remain compact inside the existing panel and fit-bounds reserves 190px bottom padding. Full-page screenshots are stored under browser-evidence.

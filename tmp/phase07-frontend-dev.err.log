@@ -1,0 +1,24 @@
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Unable to load glyph range 0, 0-255. Rendering codepoint U+0050 locally instead. Error: AJAXError:  (400): https://basemap.mapid.io/fonts/Open Sans Bold/0-255.pbf?key=6a808f2a610fe054a12df0a9
+[browser] Unable to load glyph range 0, 0-255. Rendering codepoint U+0054 locally instead. Error: AJAXError:  (400): https://basemap.mapid.io/fonts/Open Sans Bold/0-255.pbf?key=6a808f2a610fe054a12df0a9
+[browser] Unable to load glyph range 0, 0-255. Rendering codepoint U+004F locally instead. Error: AJAXError:  (400): https://basemap.mapid.io/fonts/Open Sans Bold/0-255.pbf?key=6a808f2a610fe054a12df0a9
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Unable to load glyph range 0, 0-255. Rendering codepoint U+0050 locally instead. Error: AJAXError:  (400): https://basemap.mapid.io/fonts/Open Sans Bold/0-255.pbf?key=6a808f2a610fe054a12df0a9
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Unable to load glyph range 0, 0-255. Rendering codepoint U+0050 locally instead. Error: AJAXError:  (400): https://basemap.mapid.io/fonts/Open Sans Bold/0-255.pbf?key=6a808f2a610fe054a12df0a9
+npm error Lifecycle script `dev` failed with error:
+npm error code 4294967295
+npm error path D:\Getra_Production\frontend
+npm error workspace getra-frontend@0.1.0
+npm error location D:\Getra_Production\frontend
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c node ../scripts/dev-next.mjs frontend 3000

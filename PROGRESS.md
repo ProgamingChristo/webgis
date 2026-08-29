@@ -1,6 +1,15 @@
 # GETRA Production Progress
 
-Terakhir diperbarui: 16 Agustus 2026
+Terakhir diperbarui: 27 Agustus 2026
+
+## Phase 2 Independent Verification
+
+- [x] Clean `npm ci`, typecheck, lint, automated tests, production builds, runtime dependency audit, and client bundle secret-name scan verified.
+- [x] Invalid migration quoting, legacy recursive admin policies, stale admin endpoint policy, AI error leakage/provider failover, MAPID response contract, spatial input bounds, and Docker standalone path repaired.
+- [ ] `BLOCKED`: fresh Supabase reset, pgTAP/RLS actor matrix, and PostGIS query-plan verification require a running Docker Linux daemon.
+- [ ] `BLOCKED`: live Claude, MAPID, backup/restore, monitoring, and deployed health verification require external credentials/infrastructure.
+- [ ] `NOT READY`: production multi-instance deployment requires a shared rate-limit store or an explicit single-instance operational constraint.
+- [ ] Regenerate database types after the reconciled schema passes a fresh reset; current generated types retain legacy stakeholder enum values.
 
 ## Arti Status
 

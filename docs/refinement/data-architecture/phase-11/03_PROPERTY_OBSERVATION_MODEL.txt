@@ -1,0 +1,19 @@
+GETRA PHASE 11 - PROPERTY OBSERVATION MODEL
+
+Source:
+- Properti Go observations stored in mapid_mission_observations.
+
+Semantics:
+- A candidate is a property observation.
+- A candidate is not a confirmed listing.
+- A candidate is not guaranteed available.
+- A candidate is not a transaction object.
+
+Freshness:
+- Freshness is derived from observed_at/imported_at age where available.
+- FRESH, AGING, STALE, and UNKNOWN are decision-support states only.
+
+Availability:
+- Client-visible availability is explicitly marked as unconfirmed or needs reconfirmation.
+- The application does not show "available now".
+

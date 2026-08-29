@@ -1,0 +1,12 @@
+ANALYTICS API CONTRACT
+
+GET /api/analytics/demand
+GET /api/analytics/retail-gap
+POST /api/analytics/interpretation
+
+All endpoints require an authenticated GETRA user and are endpoint-policy registered.
+GET query: strict category; days 7/30 or bounded dates; region_ids or bbox; limit <= 5.
+Output: model versions, window, weights, claim scope, aggregate spatial rows, raw aggregate counts,
+scores, confidence, exact polygon geometry, and limitations.
+
+No actor, personal history, event rows, credential, service role, or provider header is returned.

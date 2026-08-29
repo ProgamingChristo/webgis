@@ -27,7 +27,6 @@ export function getServerSupabaseClient() {
     },
   );
 }
-
 export function getRequestSupabaseClient(authorization: string) {
   const environment = getEnvironment();
   const security = loadApiSecurityConfig();
@@ -48,10 +47,20 @@ export function getRequestSupabaseClient(authorization: string) {
 export function getServiceRoleSupabaseClient() {
   const environment = getEnvironment();
   const security = loadApiSecurityConfig();
+  const serviceKey =
+    environment.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SECRET_KEY;
+
+  if (!serviceKey) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY belum dikonfigurasi pada environment server.",
+    );
+  }
 
   return createSupabaseClient(
     environment.NEXT_PUBLIC_SUPABASE_URL,
-    environment.SUPABASE_SERVICE_ROLE_KEY!,
+    serviceKey,
     {
       auth: serverAuthOptions,
       global: {

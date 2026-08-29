@@ -1,0 +1,21 @@
+GETRA PHASE 01 IMPLEMENTATION PLAN
+
+Scope:
+- Backend-to-backend MAPID Mission integration only.
+- Sources: MENU_GO, STRUK_GO, PROPERTI_GO, ACTIVITIES.
+- No admin UI, no map layer, no Premium reconciliation, no viewport/search work.
+
+Prerequisite:
+- Phase 00 audit result read.
+- READY FOR PHASE 01: YES.
+
+Implementation approach:
+- Reuse existing MAPID integration ownership and HTTP client.
+- Extend HTTP client for POST JSON requests.
+- Add source-scoped Mission normalization and persistence.
+- Add GETRA-owned read API for normalized observations.
+- Add admin-only sync API with source-level result.
+
+Status:
+- Local implementation complete for backend architecture.
+- Remote DB and remote MAPID verification blocked by environment/credential availability.

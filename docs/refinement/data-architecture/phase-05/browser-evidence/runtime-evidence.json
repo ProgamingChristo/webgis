@@ -1,0 +1,400 @@
+{
+  "generated_at": "2026-08-28T02:46:25.435Z",
+  "browser": "Chrome headless via puppeteer-core",
+  "console_errors": [],
+  "failed_requests": [],
+  "flows": {
+    "initial_viewport": {
+      "duration_ms": 7081,
+      "status": 200,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=&scope=CURRENT_VIEWPORT",
+      "payload_bytes": 105366,
+      "safe_body": true,
+      "total": 715,
+      "returned": 100,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "",
+        "keyword": null,
+        "location_text": null,
+        "scope": {
+          "type": "CURRENT_VIEWPORT",
+          "region_ids": [],
+          "bounds": {
+            "west": 106.6752582713421,
+            "south": -6.37471210157949,
+            "east": 106.98053872866006,
+            "north": -6.031847590790221
+          }
+        },
+        "category": null
+      },
+      "unique_merchant_count": 100,
+      "result_region_ids": [
+        "jakarta-selatan",
+        "jakarta-pusat",
+        "jakarta-timur",
+        "jakarta-barat"
+      ]
+    },
+    "keyword_current_viewport": {
+      "duration_ms": 1086,
+      "status": 200,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=bakso&scope=CURRENT_VIEWPORT",
+      "payload_bytes": 9032,
+      "safe_body": true,
+      "total": 5,
+      "returned": 5,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "bakso",
+        "keyword": "bakso",
+        "location_text": null,
+        "scope": {
+          "type": "CURRENT_VIEWPORT",
+          "region_ids": [],
+          "bounds": {
+            "west": 106.6752582713421,
+            "south": -6.37471210157949,
+            "east": 106.98053872866006,
+            "north": -6.031847590790221
+          }
+        },
+        "category": null
+      },
+      "unique_merchant_count": 5,
+      "result_region_ids": [
+        "jakarta-pusat",
+        "jakarta-selatan"
+      ]
+    },
+    "location_only": {
+      "duration_ms": 1374,
+      "status": 200,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=Jakarta+Selatan&scope=CURRENT_VIEWPORT",
+      "payload_bytes": 101863,
+      "safe_body": true,
+      "total": 237,
+      "returned": 100,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "Jakarta Selatan",
+        "keyword": null,
+        "location_text": "Jakarta Selatan",
+        "scope": {
+          "type": "REGION",
+          "region_ids": [
+            "jakarta-selatan"
+          ],
+          "bounds": {
+            "west": 106.737373,
+            "south": -6.365514,
+            "east": 106.866821,
+            "north": -6.202663
+          }
+        },
+        "category": null
+      },
+      "unique_merchant_count": 100,
+      "result_region_ids": [
+        "jakarta-selatan"
+      ]
+    },
+    "keyword_location": {
+      "duration_ms": 998,
+      "status": 200,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.71928398443077&south=-6.377080701803095&east=106.88491001556315&north=-6.191092420078462&limit=100&offset=0&q=bakso+Jakarta+Selatan&scope=REGION&region_ids=jakarta-selatan",
+      "payload_bytes": 6391,
+      "safe_body": true,
+      "total": 3,
+      "returned": 3,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "bakso Jakarta Selatan",
+        "keyword": "bakso",
+        "location_text": "Jakarta Selatan",
+        "scope": {
+          "type": "REGION",
+          "region_ids": [
+            "jakarta-selatan"
+          ],
+          "bounds": {
+            "west": 106.737373,
+            "south": -6.365514,
+            "east": 106.866821,
+            "north": -6.202663
+          }
+        },
+        "category": null
+      },
+      "unique_merchant_count": 3,
+      "result_region_ids": [
+        "jakarta-selatan"
+      ]
+    },
+    "keyword_other_location": {
+      "duration_ms": 976,
+      "status": 200,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.71928398443151&south=-6.377080701801262&east=106.88491001556395&north=-6.191092420076615&limit=100&offset=0&q=soto+Jakarta+Barat&scope=REGION&region_ids=jakarta-selatan",
+      "payload_bytes": 3497,
+      "safe_body": true,
+      "total": 1,
+      "returned": 1,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "soto Jakarta Barat",
+        "keyword": "soto",
+        "location_text": "Jakarta Barat",
+        "scope": {
+          "type": "REGION",
+          "region_ids": [
+            "jakarta-barat"
+          ],
+          "bounds": {
+            "west": 106.686211,
+            "south": -6.225178,
+            "east": 106.828293,
+            "north": -6.095124
+          }
+        },
+        "category": null
+      },
+      "unique_merchant_count": 1,
+      "result_region_ids": [
+        "jakarta-barat"
+      ]
+    },
+    "multi_region": {
+      "duration_ms": 924,
+      "status": 200,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.67459423270174&south=-6.252988563625834&east=106.8399097672924&north=-6.067305164681002&limit=100&offset=0&q=bakso&scope=MULTI_REGION&region_ids=jakarta-barat%2Cjakarta-selatan%2Cjakarta-timur",
+      "payload_bytes": 6858,
+      "safe_body": true,
+      "total": 3,
+      "returned": 3,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "bakso",
+        "keyword": "bakso",
+        "location_text": null,
+        "scope": {
+          "type": "MULTI_REGION",
+          "region_ids": [
+            "jakarta-barat",
+            "jakarta-selatan",
+            "jakarta-timur"
+          ],
+          "bounds": {
+            "west": 106.686211,
+            "south": -6.370783,
+            "east": 106.971893,
+            "north": -6.095124
+          }
+        },
+        "category": null
+      },
+      "unique_merchant_count": 3,
+      "result_region_ids": [
+        "jakarta-selatan"
+      ]
+    },
+    "search_this_area": {
+      "duration_ms": 874,
+      "status": 200,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75144223371137&south=-6.4154238209122525&east=107.07717121312027&north=-6.049613721862585&limit=100&offset=0&q=bakso&scope=CURRENT_VIEWPORT",
+      "payload_bytes": 9038,
+      "safe_body": true,
+      "total": 5,
+      "returned": 5,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "bakso",
+        "keyword": "bakso",
+        "location_text": null,
+        "scope": {
+          "type": "CURRENT_VIEWPORT",
+          "region_ids": [],
+          "bounds": {
+            "west": 106.75144223371137,
+            "south": -6.4154238209122525,
+            "east": 107.07717121312027,
+            "north": -6.049613721862585
+          }
+        },
+        "category": null
+      },
+      "unique_merchant_count": 5,
+      "result_region_ids": [
+        "jakarta-pusat",
+        "jakarta-selatan"
+      ]
+    },
+    "empty_result": {
+      "duration_ms": 898,
+      "status": 200,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75144223371137&south=-6.4154238209122525&east=107.07717121312027&north=-6.049613721862585&limit=100&offset=0&q=nonexistentmerchantxyz&scope=CURRENT_VIEWPORT",
+      "payload_bytes": 1928,
+      "safe_body": true,
+      "total": 0,
+      "returned": 0,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "nonexistentmerchantxyz",
+        "keyword": "nonexistentmerchantxyz",
+        "location_text": null,
+        "scope": {
+          "type": "CURRENT_VIEWPORT",
+          "region_ids": [],
+          "bounds": {
+            "west": 106.75144223371137,
+            "south": -6.4154238209122525,
+            "east": 107.07717121312027,
+            "north": -6.049613721862585
+          }
+        },
+        "category": null
+      },
+      "unique_merchant_count": 0,
+      "result_region_ids": []
+    },
+    "stale_aborted_response_observed": true,
+    "stale_final": {
+      "duration_ms": 757,
+      "status": 200,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75144223371137&south=-6.4154238209122525&east=107.07717121312027&north=-6.049613721862585&limit=100&offset=0&q=soto&scope=CURRENT_VIEWPORT",
+      "payload_bytes": 7562,
+      "safe_body": true,
+      "total": 4,
+      "returned": 4,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "soto",
+        "keyword": "soto",
+        "location_text": null,
+        "scope": {
+          "type": "CURRENT_VIEWPORT",
+          "region_ids": [],
+          "bounds": {
+            "west": 106.75144223371137,
+            "south": -6.4154238209122525,
+            "east": 107.07717121312027,
+            "north": -6.049613721862585
+          }
+        },
+        "category": null
+      },
+      "unique_merchant_count": 4,
+      "result_region_ids": [
+        "jakarta-selatan",
+        "jakarta-pusat",
+        "jakarta-barat"
+      ]
+    },
+    "stale_visible_query": "soto",
+    "keyboard_submit": {
+      "duration_ms": 986,
+      "status": 200,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75144223371137&south=-6.4154238209122525&east=107.07717121312027&north=-6.049613721862585&limit=100&offset=0&q=bakso&scope=CURRENT_VIEWPORT",
+      "payload_bytes": 9038,
+      "safe_body": true,
+      "total": 5,
+      "returned": 5,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "bakso",
+        "keyword": "bakso",
+        "location_text": null,
+        "scope": {
+          "type": "CURRENT_VIEWPORT",
+          "region_ids": [],
+          "bounds": {
+            "west": 106.75144223371137,
+            "south": -6.4154238209122525,
+            "east": 107.07717121312027,
+            "north": -6.049613721862585
+          }
+        },
+        "category": null
+      },
+      "unique_merchant_count": 5,
+      "result_region_ids": [
+        "jakarta-pusat",
+        "jakarta-selatan"
+      ]
+    },
+    "manual_filter": {
+      "available": true,
+      "type": "checkbox"
+    },
+    "clear_search": {
+      "duration_ms": 1409,
+      "status": 200,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75144223371137&south=-6.4154238209122525&east=107.07717121312027&north=-6.049613721862585&limit=100&offset=0&q=&scope=CURRENT_VIEWPORT",
+      "payload_bytes": 105737,
+      "safe_body": true,
+      "total": 714,
+      "returned": 100,
+      "intent": {
+        "domain": "MERCHANT",
+        "original_query": "",
+        "keyword": null,
+        "location_text": null,
+        "scope": {
+          "type": "CURRENT_VIEWPORT",
+          "region_ids": [],
+          "bounds": {
+            "west": 106.75144223371137,
+            "south": -6.4154238209122525,
+            "east": 107.07717121312027,
+            "north": -6.049613721862585
+          }
+        },
+        "category": null
+      },
+      "unique_merchant_count": 100,
+      "result_region_ids": [
+        "jakarta-selatan",
+        "jakarta-pusat",
+        "jakarta-timur",
+        "jakarta-barat"
+      ]
+    },
+    "invalid_location": {
+      "status": 400,
+      "safe_body": true
+    }
+  },
+  "responsive": {
+    "390x844": {
+      "horizontal_overflow": false,
+      "search_visible": true,
+      "search_within_viewport_width": true,
+      "map_canvas_present": true
+    },
+    "768x1024": {
+      "horizontal_overflow": false,
+      "search_visible": true,
+      "search_within_viewport_width": true,
+      "map_canvas_present": true
+    },
+    "1366x768": {
+      "horizontal_overflow": false,
+      "search_visible": true,
+      "search_within_viewport_width": true,
+      "map_canvas_present": true
+    },
+    "1440x900": {
+      "horizontal_overflow": false,
+      "search_visible": true,
+      "search_within_viewport_width": true,
+      "map_canvas_present": true
+    }
+  },
+  "security": {
+    "all_responses_safe": true,
+    "browser_called_mapid_mission": false,
+    "whole_jakarta_default_found": false,
+    "canonical_ids_deduplicated": true
+  },
+  "expected_validation_console_errors": 1
+}

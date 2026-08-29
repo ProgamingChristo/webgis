@@ -1,0 +1,5 @@
+CONTEXTUAL LAYER CLUSTERING
+
+Properti, Struk, and Activities each own a separate clustered GeoJSON source. Each uses clusterMaxZoom 14 and clusterRadius 42, source-specific colors, count labels, click expansion, and unclustered point interaction.
+
+Layers are inserted before merchant layers. Merchant rendering also uses its MapLibre cluster source while contextual layers are active to keep clicks on one event surface.

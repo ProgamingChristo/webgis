@@ -1,0 +1,16 @@
+GETRA PHASE 06 - LIMITATIONS AND BLOCKERS
+
+Technical Phase 06 blockers
+NONE.
+
+Deployment/legal limitation
+The persisted geometry is derived from GADM v4.0. GADM allows academic/non-commercial use but requires prior permission for redistribution or commercial use. Commercial GETRA deployment must obtain permission or migrate to a suitably licensed official boundary source. This limitation does not invalidate the technical Phase 06 behavior but must be resolved before commercial boundary publication.
+
+Data limitations
+- five mainland DKI cities only; Kepulauan Seribu is absent from the trusted Phase 05 asset
+- city level only; no district/village hierarchy in this contract
+- group counts describe only the current globally paginated page
+- labels may be collision-hidden on small screens
+
+Rollback
+Remove the region summary/grouping wiring and stop passing administrativeBoundaries to GetraMap. Remove the Phase 06 source/layer module and /api/regions route/policy. Existing Phase 05 administrative_regions and canonical merchant data remain untouched. No DB rollback is required.

@@ -1,0 +1,7 @@
+GETRA PHASE 08 - GRAPH SNAP STRATEGY
+
+Routing, batch cost, and service-area RPCs validate coordinates and snap within a
+bounded distance. Application default is 75 meters; the SQL contract rejects values
+above 200 meters. Route endpoints are selected from the same accessible component,
+preferring the largest component when multiple nodes are nearby. Access distance is
+reported separately from network distance. Snap failure produces NO_NETWORK_ACCESS.

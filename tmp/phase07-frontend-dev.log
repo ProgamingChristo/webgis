@@ -1,0 +1,58 @@
+
+> getra-frontend@0.1.0 predev
+> node ./scripts/copy-maplibre-worker.mjs
+
+[GETRA] MapLibre worker copied to public/maplibre
+
+> getra-frontend@0.1.0 dev
+> node ../scripts/dev-next.mjs frontend 3000
+
+[GETRA] frontend dev server using http://localhost:3000
+▲ Next.js 16.3.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.5.1:3000
+- Environments: .env.local
+✓ Ready in 1129ms
+✓ Running next.config.ts took 69ms
+Creating turbopack project { dir: 'D:\\Getra_Production\\frontend', testMode: true }
+
+ GET /login 200 in 634ms (next.js: 322ms, application-code: 311ms)
+ GET /login 200 in 112ms (next.js: 16ms, application-code: 96ms)
+ GET /app 200 in 90ms (next.js: 47ms, application-code: 43ms)
+ GET /app 200 in 64ms (next.js: 11ms, application-code: 53ms)
+ GET /login 200 in 82ms (next.js: 14ms, application-code: 68ms)
+ GET /app 200 in 40ms (next.js: 10ms, application-code: 31ms)
+ GET /app 200 in 76ms (next.js: 16ms, application-code: 60ms)
+ GET /login 200 in 65ms (next.js: 9ms, application-code: 56ms)
+ GET /app 200 in 40ms (next.js: 8ms, application-code: 32ms)
+ GET /app 200 in 80ms (next.js: 19ms, application-code: 61ms)
+ GET /login 200 in 80ms (next.js: 13ms, application-code: 67ms)
+ GET /app 200 in 39ms (next.js: 11ms, application-code: 29ms)
+ GET /app 200 in 57ms (next.js: 13ms, application-code: 44ms)
+ GET /login 200 in 57ms (next.js: 9ms, application-code: 48ms)
+ GET /app 200 in 35ms (next.js: 9ms, application-code: 26ms)
+ GET /app 200 in 76ms (next.js: 19ms, application-code: 57ms)
+ GET /login 200 in 53ms (next.js: 9ms, application-code: 44ms)
+ GET /app 200 in 38ms (next.js: 10ms, application-code: 28ms)
+ GET /app 200 in 61ms (next.js: 15ms, application-code: 46ms)
+ GET /login 200 in 67ms (next.js: 11ms, application-code: 56ms)
+ GET /app 200 in 54ms (next.js: 23ms, application-code: 31ms)
+ GET /app 200 in 80ms (next.js: 14ms, application-code: 65ms)
+ GET /login 200 in 58ms (next.js: 7ms, application-code: 51ms)
+ GET /app 200 in 37ms (next.js: 9ms, application-code: 29ms)
+ GET /app 200 in 45ms (next.js: 12ms, application-code: 33ms)
+ GET /app 200 in 542ms (next.js: 16ms, application-code: 526ms)
+ GET /app 200 in 107ms (next.js: 11ms, application-code: 96ms)
+ GET /login 200 in 64ms (next.js: 10ms, application-code: 55ms)
+ GET /app 200 in 32ms (next.js: 8ms, application-code: 24ms)
+ GET /app 200 in 55ms (next.js: 19ms, application-code: 36ms)
+ GET /login 200 in 56ms (next.js: 10ms, application-code: 46ms)
+ GET /app 200 in 32ms (next.js: 11ms, application-code: 21ms)
+ GET /app 200 in 59ms (next.js: 10ms, application-code: 50ms)
+ GET /login 200 in 48ms (next.js: 8ms, application-code: 41ms)
+ GET /app 200 in 32ms (next.js: 6ms, application-code: 25ms)
+ GET /app 200 in 82ms (next.js: 11ms, application-code: 71ms)
+ GET /login 200 in 85ms (next.js: 15ms, application-code: 70ms)
+ GET /app 200 in 89ms (next.js: 21ms, application-code: 68ms)
+ GET /app 200 in 218ms (next.js: 56ms, application-code: 162ms)
+[?25h

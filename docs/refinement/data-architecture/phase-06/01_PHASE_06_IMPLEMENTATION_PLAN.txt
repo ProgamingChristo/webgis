@@ -1,0 +1,15 @@
+GETRA PHASE 06 - IMPLEMENTATION PLAN
+
+Objective
+Make a selected administrative search scope visible and understandable through boundaries, labels, fit-bounds, selected chips, merchant area context, and current-page result grouping.
+
+Completed sequence
+1. Verified Phase 05 READY FOR PHASE 06 = YES and audited map/search lifecycle.
+2. Reused the Phase 05 administrative_regions PostGIS table; no migration was added.
+3. Added an authenticated, strict, selected-ID GeoJSON API.
+4. Added one cached frontend boundary feature owner and one MapLibre source with fill, line, and symbol layers.
+5. Connected Phase 05 scope state to boundaries, chips, fit-bounds, grouping, cards, popups, and detail.
+6. Added focused tests and actual Chrome E2E, then ran full gates and regressions.
+
+Scope guard
+No Phase 07 contextual source layer, Mission/Admin sync change, routing change, or merchant reconciliation rewrite was introduced.

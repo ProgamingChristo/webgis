@@ -1,0 +1,7 @@
+GETRA PHASE 08 - GROUNDED AI EXPLANATION
+
+The AI endpoint obtains distance and duration from CommuterNetworkRepository. It does
+not use Haversine to claim walking facts. Prompts receive verified route facts and
+evidence labels only. If the provider is unavailable, GETRA generates a deterministic
+Indonesian explanation directly from those facts. Browser evidence cited pgRouting /
+Pedestrian Network and exactly matched the 310-meter, 4-minute rounded route result.

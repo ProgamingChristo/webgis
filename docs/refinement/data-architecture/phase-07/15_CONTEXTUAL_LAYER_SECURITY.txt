@@ -1,0 +1,10 @@
+CONTEXTUAL LAYER SECURITY
+
+PASS
+
+- Endpoint requires authenticated GETRA access.
+- Source is a strict enum; arbitrary URL/path injection is rejected.
+- Browser calls only the GETRA API.
+- Response DTO excludes raw payload and credentials.
+- Source and production-bundle scans found no Mission API key name, x-api-key, service-role name, or Mission provider host.
+- Existing NEXT_PUBLIC_MAPID_BASEMAP_KEY is limited to public basemap rendering and is not the Mission credential.

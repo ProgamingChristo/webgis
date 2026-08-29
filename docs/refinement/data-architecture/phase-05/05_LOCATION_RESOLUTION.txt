@@ -1,0 +1,18 @@
+GETRA PHASE 05 - LOCATION RESOLUTION
+
+Resolution is deterministic and server-owned. It matches the five trusted DKI Jakarta city records and their controlled aliases, including Jakbar, Jakpus, Jaksel, Jaktim, and Jakut.
+
+Region source
+The boundary data in data/jakarta-admin-boundaries.ts is derived from the public Indonesia administrative GeoJSON collection by mahendrayudha, sourced from GADM v4.0. The Phase 05 migration is generated from that repository asset and stores exact MultiPolygon geometry plus provenance.
+
+Current catalog
+- jakarta-barat
+- jakarta-pusat
+- jakarta-selatan
+- jakarta-timur
+- jakarta-utara
+
+Kepulauan Seribu is not fabricated because it is absent from the current trusted project asset. Expanding the catalog requires another reviewed migration.
+
+AI status
+AI is NOT REQUIRED. The deterministic resolver is the production fallback and sole Phase 05 location parser.

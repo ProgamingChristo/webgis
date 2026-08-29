@@ -1,0 +1,11 @@
+DEMAND INTELLIGENCE ARCHITECTURE
+
+Browser -> authenticated GETRA analytics API -> AnalyticsService -> AnalyticsRepository
+-> get_demand_intelligence_v1 RPC -> aggregate result -> map/chart/table.
+
+Search and route interactions enter a separate server-only AnalyticsEventService.
+The browser cannot submit category paths, weights, scores, actor identities, or provider endpoints.
+Struk Go, commuter requests, campaign events, canonical merchants, and exact Phase 06 polygons
+are aggregated in PostgreSQL. Event-level records are never returned by analytics APIs.
+
+The feature is OFF by default and selected through the existing Analytics view mode.

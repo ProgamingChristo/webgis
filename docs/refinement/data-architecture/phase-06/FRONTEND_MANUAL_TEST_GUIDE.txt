@@ -1,0 +1,24 @@
+GETRA PHASE 06 - FRONTEND MANUAL TEST GUIDE
+
+Main flow
+1. Login as an authorized USER and open /app.
+2. Confirm no prominent canonical boundary is shown before selecting a region.
+3. Search Jakarta Selatan; verify one outline/fill, label, chip, fit, and merchant context.
+4. Search bakso Jakarta Selatan; verify keyword and region remain active.
+5. Select Jakarta Barat and Jakarta Timur while retaining Jakarta Selatan.
+6. Verify three boundaries, combined fit, three chips, and three result headings.
+7. Verify group counts say "hasil pada halaman ini".
+8. Remove Jakarta Timur using its chip button.
+9. Verify its boundary, chip, and group disappear and fit updates.
+10. Pan the map and click Cari di area ini.
+11. Verify bakso remains, scope becomes current viewport, and selected boundaries clear.
+
+Context and safety
+1. Select a merchant and verify city/region appears in the result card, popup, and detail when available.
+2. Inspect DevTools Network: only GETRA /api/regions and /api/merchants/canonical are used.
+3. Re-select cached regions and verify geometry is not fetched repeatedly.
+4. Request /api/regions?ids=invalid-region and verify safe HTTP 400.
+5. Confirm no API key, service-role value, Mission path, duplicate layer warning, or uncaught exception.
+
+Responsive
+Repeat at 390x844, 768x1024, 1366x768, and 1440x900. Verify map, chips, labels where collision permits, groups, and controls remain usable without horizontal overflow.

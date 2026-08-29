@@ -1,0 +1,27 @@
+GETRA PHASE 12 - PROPERTI GO DIRECT DISCOVERY
+
+Entry:
+- Business Space is exposed as a primary mode beside Merchant on the main GETRA map.
+- It is not hidden only inside Layers.
+
+Search:
+- Direct search control is available.
+- Placeholder: Cari properti atau area...
+- Search does not require AI.
+
+Filters:
+- Wilayah / Area.
+- Kategori Properti.
+- Jenis: Dijual / Disewa.
+
+Viewport:
+- Business Space off: Properti Go fetch is not repeated.
+- Business Space on: Properti Go fetch uses active viewport or selected region.
+- No all-Jakarta property dump is used from the browser.
+
+Browser evidence:
+- result_rows: 9.
+- map_property_count: 9.
+- detail_source_specific: true.
+- no_availability_overclaim: true.
+

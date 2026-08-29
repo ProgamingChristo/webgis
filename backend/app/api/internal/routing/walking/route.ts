@@ -1,41 +1,51 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+import { withApiLogger } from "@/src/lib/api-logger";
+import { createOptionsHandler } from "@/src/lib/api-security";
+import { requireAuthenticatedUser } from "@/src/lib/auth";
+import { ApplicationError } from "@/src/lib/errors";
+import { rateLimiter } from "@/src/lib/rate-limit";
+import { getRequestId } from "@/src/lib/request-id";
+import { readBoundedJsonBody } from "@/src/lib/spatial/request";
+import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
 import { RoutingService } from "@/src/modules/pedestrian-network/routing.service";
 
-export async function POST(req: Request) {
-  try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    );
+export const runtime = "nodejs";
 
-    // Usually we would check if user is internal/admin here
-    // For Phase 11, we assume authentication is enough for the dummy network testing
+const WalkingRouteRequestSchema = z.object({
+  originRoutingId: z.coerce.number().int().nonnegative(),
+  destinationRoutingId: z.coerce.number().int().nonnegative(),
+  environment: z.string().trim().min(1).max(64).optional().default("DUMMY"),
+}).strict();
 
-    const body = await req.json();
-    const { originRoutingId, destinationRoutingId, environment = "DUMMY" } = body;
-
-    if (!originRoutingId || !destinationRoutingId) {
-      return NextResponse.json(
-        { error: "originRoutingId and destinationRoutingId are required" },
-        { status: 400 }
-      );
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  const requestId = getRequestId(req);
+  return withApiLogger(req, requestId, async () => {
+    const authorization = req.headers.get("authorization");
+    if (!authorization) {
+      throw new ApplicationError("UNAUTHORIZED");
     }
 
-    const routingService = new RoutingService(supabase as any);
-    
+    const userId = await requireAuthenticatedUser(req);
+    await rateLimiter.checkLimit(req, `${userId}:spatial:internal-routing-walking`);
+
+    const body = await readBoundedJsonBody(req, 4_096);
+    const parsed = WalkingRouteRequestSchema.safeParse(body);
+    if (!parsed.success) throw new ApplicationError("VALIDATION_ERROR");
+    const { originRoutingId, destinationRoutingId, environment } = parsed.data;
+
+    const supabase = getRequestSupabaseClient(authorization);
+    const routingService = new RoutingService(supabase);
+
     const result = await routingService.getShortestPath(
-      Number(originRoutingId),
-      Number(destinationRoutingId),
-      environment
+      originRoutingId,
+      destinationRoutingId,
+      environment,
     );
 
     return NextResponse.json({ data: result }, { status: 200 });
-  } catch (error: any) {
-    console.error("Walking routing error:", error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 }
-    );
-  }
+  });
 }
+
+export const OPTIONS = createOptionsHandler("/api/internal/routing/walking");

@@ -1,0 +1,15 @@
+GETRA PHASE 11 - TRANSIT AND WALKING CONTEXT
+
+Reused sources:
+- Phase 08 commuter network repository.
+- Transport node repository.
+
+Context:
+- Nearest transit node is used where available.
+- Walking/network context is reported only when the routing service can resolve it.
+- Unavailable routing returns UNAVAILABLE or UNROUTABLE states.
+
+No fabrication:
+- The UI does not invent walking times.
+- The backend returns explicit fallback states when network calculation cannot be completed.
+

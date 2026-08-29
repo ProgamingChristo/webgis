@@ -1,0 +1,12 @@
+ANALYTICS BROWSER E2E - CHROME HEADLESS 2026-08-28
+
+PASS: authenticated Analytics mode loaded coffee Demand, HTTP 200, five rows/features.
+PASS: Demand and Retail Gap modes, explicit legends, exact scores, confidence, and raw evidence.
+PASS: pharmacy insufficient-data state returned null gap and visible explanation.
+PASS: injected transport failure displayed an error; subsequent request recovered with HTTP 200.
+PASS: rapid category changes ended on nasi-goreng without stale response overwrite.
+PASS: deterministic grounded interpretation matched server evidence.
+PASS: three ECharts canvases rendered; no unexpected console/network errors.
+PASS: scoped axe WCAG 2/2.1 A/AA reported zero violations after keyboard-scroll fix.
+
+Evidence: browser-evidence/phase09-browser-evidence.json and PNG captures in the same directory.

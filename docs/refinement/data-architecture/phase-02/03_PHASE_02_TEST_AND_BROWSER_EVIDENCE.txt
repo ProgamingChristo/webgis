@@ -1,0 +1,66 @@
+GETRA PHASE 02 - TEST AND BROWSER EVIDENCE
+Date: 2026-08-27
+
+Automated focused evidence
+- Phase 01 MAPID/security regression set: 53 PASS.
+- Backend Phase 02 route/service/policy: 26 PASS.
+- Frontend Mission service: 5 PASS.
+- Authentication: anonymous rejection covered.
+- Authorization: USER rejection and ADMIN success covered.
+- Validation: canonical values accepted; unknown value, URL, provider path, traversal, and unknown property rejected.
+- Routing: MENU_GO, STRUK_GO, PROPERTI_GO, ACTIVITIES each invoke the reusable service.
+- Security: response contract excludes provider and service credentials.
+- Concurrency: same-source duplicate request guard covered.
+
+Full automated evidence
+- Backend: 632 PASS, 3 SKIPPED.
+- Frontend: 44 PASS.
+- Backend typecheck: PASS.
+- Frontend typecheck: PASS.
+- Backend lint: PASS.
+- Frontend lint: PASS.
+- Backend build: PASS.
+- Frontend build: PASS.
+
+Actual browser flow
+- Browser: Chrome headless through puppeteer-core.
+- Frontend: http://localhost:3000/admin/mission-data
+- Backend browser request: http://localhost:8080/api/admin/mission/sync
+- ADMIN login: PASS.
+- Four source controls visible: PASS.
+- Syncing disabled state observed for every real source run: PASS.
+- Success state observed for every real source run: PASS.
+- Persisted results restored after navigation/reload: PASS.
+- Simulated safe failure state: PASS.
+- Desktop horizontal overflow: NONE.
+- Mobile 390x844 horizontal overflow: NONE.
+- USER admin-page redirect: PASS, redirected to /app.
+- USER direct sync API: HTTP 403.
+- Anonymous direct sync API: HTTP 401.
+- Browser network body security scan: PASS.
+- Browser called GETRA API; no browser call to /web/competition paths was observed.
+- Frontend source and final bundle scan found no provider host/path, x-api-key marker, MAPID_API_KEY marker, or SUPABASE_SERVICE_ROLE_KEY marker.
+
+First Phase 02 real sync evidence
+- Menu Go: COMPLETED, fetched 130, inserted 43, updated 87.
+- Struk Go: COMPLETED, fetched 164, inserted 0, updated 164.
+- Properti Go: COMPLETED, fetched 135, inserted 36, updated 99.
+- Activities: COMPLETED, fetched 60, inserted 0, updated 60.
+
+Idempotent real browser rerun evidence
+- Menu Go: COMPLETED, fetched 130, inserted 0, updated 130, invalid 0, failed 0.
+- Struk Go: COMPLETED, fetched 164, inserted 0, updated 164, invalid 0, failed 0.
+- Properti Go: COMPLETED, fetched 135, inserted 0, updated 135, invalid 0, failed 0.
+- Activities: COMPLETED, fetched 60, inserted 0, updated 60, invalid 0, failed 0.
+
+The fetched counts are actual Phase 02 observations. They are not forced to equal the historical Phase 01 baseline.
+
+Evidence artifacts
+- browser-evidence/admin-mission-data-desktop.png
+- browser-evidence/admin-mission-data-success.png
+- browser-evidence/admin-mission-data-failure.png
+- browser-evidence/admin-mission-data-mobile.png
+- browser-evidence/browser-verification.json
+- scripts/verify-phase02-admin-mission-browser.mjs
+
+Browser evidence result: PASS.

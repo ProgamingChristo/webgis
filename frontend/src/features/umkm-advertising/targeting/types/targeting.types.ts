@@ -1,3 +1,5 @@
+import type * as GeoJSON from "geojson";
+
 export type TargetType = "RADIUS" | "STUDY_AREA";
 
 export type TargetingReadiness = "CONFIGURED" | "NOT_CONFIGURED" | "INVALID";

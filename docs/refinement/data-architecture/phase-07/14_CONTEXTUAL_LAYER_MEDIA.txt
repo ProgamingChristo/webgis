@@ -1,0 +1,5 @@
+CONTEXTUAL LAYER MEDIA
+
+Only valid HTTPS URLs from known MAPID CDN hosts are accepted. The API selects source-specific media and never forwards arbitrary payload fields.
+
+Images use descriptive alt text, lazy loading, no-referrer behavior, bounded dimensions, and object-fit. Missing or invalid media is omitted without breaking the popup.

@@ -20,7 +20,7 @@ export const discoveryQuerySchema = z
     category: z.string().trim().optional(),
     query: z.string().trim().optional(),
     open_now: z.coerce.boolean().optional(),
-    max_walking_minutes: z.coerce.number().positive().max(120).optional(),
+    max_walking_minutes: z.coerce.number().int().min(5).max(30).optional(),
     limit: z.coerce.number().int().min(1).max(50).default(20),
   });
 

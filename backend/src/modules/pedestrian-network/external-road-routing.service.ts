@@ -1,3 +1,5 @@
+import type * as GeoJSON from "geojson";
+
 type OsrmRouteResponse = {
   code?: string;
   message?: string;
@@ -30,7 +32,7 @@ export class ExternalRoadRoutingService {
       DEFAULT_OSRM_BASE_URL,
     private readonly profile =
       process.env.OSRM_PROFILE ??
-      "driving",
+      "foot",
   ) {}
 
   async getRoute(

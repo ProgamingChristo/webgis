@@ -1,0 +1,12 @@
+GETRA PHASE 08 - SAFE FRONTEND TEST DATA
+
+Account: use an existing USER test account; no password is stored here.
+Origin lookup: MIRA KANTIN, then select the returned merchant as explicit origin.
+Network search: bakso Jakarta Pusat, max walking 10 minutes.
+Combined no-result: bakso Jakarta Pusat di bawah 30 ribu buka sekarang maksimal
+10 menit jalan kaki.
+
+Expected: two results may be observed for the dated network search, but provider and
+canonical data can change. Assert contracts and safety, not a permanent row count.
+Expected route: ROUTABLE with pgRouting LineString inside pilot coverage.
+Expected strict result: constraints_relaxed=false; UNKNOWN hours are not admitted.

@@ -1,0 +1,7 @@
+GETRA PHASE 10 MERCHANT RETAIL GAP CONTEXT
+
+Formula and guards are not recomputed in Phase 10; values come from GETRA_RETAIL_GAP_V1.
+Runtime owner fixture returned Supply Score 100 and null Retail Gap because evidence was INSUFFICIENT_DATA.
+The UI preserves null as unavailable instead of substituting zero.
+Positive gaps describe observed demand relatively exceeding represented supply, never guaranteed profitability.
+Negative or low gaps do not imply closure or relocation advice.

@@ -16,6 +16,7 @@ import { UmkmWorkspaceSummaryView } from "./umkm-workspace-summary";
 import { OwnedMerchantList } from "./owned-merchant-list";
 import { SubmissionSummary } from "./submission-summary";
 import { UmkmQuickActions } from "./umkm-quick-actions";
+import { UmkmIntelligenceDashboard } from "@/src/features/umkm-intelligence";
 
 export function UmkmWorkspace() {
   const { context: authContext, loading: authLoading } = useAuth();
@@ -24,10 +25,6 @@ export function UmkmWorkspace() {
   const [summary, setSummary] = useState<UmkmWorkspaceSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const hasUmkmAccess =
-    authContext?.stakeholder_modes?.includes("UMKM") ||
-    authContext?.profile?.account_role === "ADMIN";
-  const accessDenied = !authLoading && !hasUmkmAccess;
 
   // Set experience mode to UMKM on mount
   useEffect(() => {
@@ -49,7 +46,7 @@ export function UmkmWorkspace() {
   }, []);
 
   useEffect(() => {
-    if (authLoading || accessDenied) {
+    if (authLoading || !authContext) {
       return;
     }
 
@@ -58,9 +55,9 @@ export function UmkmWorkspace() {
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
-  }, [accessDenied, authLoading, loadWorkspace]);
+  }, [authContext, authLoading, loadWorkspace]);
 
-  if (authLoading || (!accessDenied && loading && !summary)) {
+  if (authLoading || (loading && !summary)) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
         <div className="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
@@ -69,10 +66,9 @@ export function UmkmWorkspace() {
     );
   }
 
-  if ((accessDenied || error) && !summary) {
+  if (error && !summary) {
     const displayError =
-      error ||
-      "Akses ditolak: Akun Anda belum mengaktifkan Stakeholder Mode UMKM.";
+      error;
 
     return (
       <div className="max-w-4xl mx-auto p-6 py-12">
@@ -148,6 +144,12 @@ export function UmkmWorkspace() {
 
       {/* Metrics Summary */}
       {summary ? <UmkmWorkspaceSummaryView summary={summary} /> : null}
+
+      {summary ? <UmkmIntelligenceDashboard merchants={summary.owned_merchants.map((merchant) => ({
+        id: merchant.id,
+        name: merchant.name,
+        category: merchant.category,
+      }))} /> : null}
 
       {/* Quick Action Navigation Cards */}
       <div>

@@ -1,0 +1,15 @@
+GETRA PHASE 11 - LIMITATIONS AND BLOCKERS
+
+Phase 11 blockers:
+- None remaining after verification.
+
+Known limitations:
+- Properti Go candidates are observations, not confirmed active property listings.
+- Availability is unconfirmed and must be reconfirmed outside this system.
+- Business Space does not calculate ROI, revenue, profit, rent affordability, or investment return.
+- Supply context uses canonical merchant context and bounded local search; it is not a definitive monopoly or market-share model.
+- Walking/network context may be unavailable for candidates outside routable network coverage.
+
+Out-of-scope debt:
+- None introduced by Phase 11.
+

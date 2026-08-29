@@ -1,0 +1,20 @@
+GETRA PHASE 11 - CATEGORY CONTEXT RULES
+
+Canonical categories:
+- bakso
+- coffee
+- nasi-goreng
+- restaurant
+- warung
+- minimarket
+
+Rules:
+- Category is required for Business Space candidate discovery.
+- Comparison uses the same category and demand window for every candidate.
+- Backend validation rejects unknown categories.
+- Frontend does not send arbitrary provider paths or category-specific MAPID URLs.
+
+Reason:
+- Business Space evaluates a property location for a business category context.
+- Category is not inferred from a property name.
+

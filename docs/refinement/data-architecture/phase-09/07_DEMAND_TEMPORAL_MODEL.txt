@@ -1,0 +1,8 @@
+DEMAND TEMPORAL MODEL
+
+Default window: trailing 30 days. Safe UI presets: 7 and 30 days.
+Backend schema additionally supports a bounded custom interval up to 90 days for future trusted clients.
+All event sources are filtered by their actual observation/occurrence/import timestamp.
+Supply is a current represented-supply snapshot and is labeled accordingly.
+
+No whole-history query is the default. Window start/end are returned in every result and interpretation.

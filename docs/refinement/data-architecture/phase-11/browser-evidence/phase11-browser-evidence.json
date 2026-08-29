@@ -1,0 +1,138 @@
+{
+  "generated_at": "2026-08-28T12:33:20.680Z",
+  "browser": "Chrome headless via puppeteer-core",
+  "api": [
+    {
+      "endpoint": "/api/business-space/candidates?[redacted]",
+      "method": "OPTIONS",
+      "status": 204,
+      "bytes": 0,
+      "safe": true
+    },
+    {
+      "endpoint": "/api/business-space/candidates?[redacted]",
+      "method": "GET",
+      "status": 200,
+      "bytes": 11133,
+      "safe": true
+    },
+    {
+      "endpoint": "/api/business-space/candidates/764ebc55-139b-4a60-883d-1658d0230f27?[redacted]",
+      "method": "OPTIONS",
+      "status": 204,
+      "bytes": 0,
+      "safe": true
+    },
+    {
+      "endpoint": "/api/business-space/candidates/764ebc55-139b-4a60-883d-1658d0230f27?[redacted]",
+      "method": "GET",
+      "status": 200,
+      "bytes": 2853,
+      "safe": true
+    },
+    {
+      "endpoint": "/api/business-space/candidates/deb245e4-85d0-42b5-bfc9-3be734dddcb8?[redacted]",
+      "method": "OPTIONS",
+      "status": 204,
+      "bytes": 0,
+      "safe": true
+    },
+    {
+      "endpoint": "/api/business-space/candidates/deb245e4-85d0-42b5-bfc9-3be734dddcb8?[redacted]",
+      "method": "GET",
+      "status": 200,
+      "bytes": 2870,
+      "safe": true
+    },
+    {
+      "endpoint": "/api/business-space/compare",
+      "method": "OPTIONS",
+      "status": 204,
+      "bytes": 0,
+      "safe": true
+    },
+    {
+      "endpoint": "/api/business-space/compare",
+      "method": "POST",
+      "status": 200,
+      "bytes": 7754,
+      "safe": true
+    },
+    {
+      "endpoint": "/api/business-space/insight",
+      "method": "OPTIONS",
+      "status": 204,
+      "bytes": 0,
+      "safe": true
+    },
+    {
+      "endpoint": "/api/business-space/insight",
+      "method": "POST",
+      "status": 200,
+      "bytes": 1251,
+      "safe": true
+    }
+  ],
+  "flow": {
+    "initial": {
+      "candidates": 12,
+      "selected": "P1TanahDekat Terminal Pondok Cabe, Pamulang, 12, IndonesiaFresh / Availability unconfirmed",
+      "detail": "TanahDijualDekat Terminal Pondok Cabe, Pamulang, 12, IndonesiaFreshnessFreshAvailabilityAvailability unconfirmedAdmin areaJakarta SelatanTransitUnavailableWalking catchmentWalking network access unavailableDemand100Supply100Retail Gap0FreshnessFRESHTransit AccessUnavailableDemand Context100Supply Context0 canonical merchantsRetail Gap Context0Add comparisonGETRA_BUSINESS_SPACE_CONTEXT_V1 / GETRA_DEMAND_V1 / GETRA_RETAIL_GAP_V1",
+      "comparison_rows": 0,
+      "chart_rendered": false,
+      "map_ready": true
+    },
+    "comparison": {
+      "candidates": 12,
+      "selected": "P2RumahJalan Kemiri, Pondok Cabe Udik, Pamulang, Tangerang Selatan, IndonesiaFresh / Availability unconfirmed",
+      "detail": "RumahDijualJalan Kemiri, Pondok Cabe Udik, Pamulang, Tangerang Selatan, IndonesiaFreshnessFreshAvailabilityAvailability unconfirmedAdmin areaJakarta SelatanTransitUnavailableWalking catchmentWalking network access unavailableDemand100Supply100Retail Gap0FreshnessFRESHTransit AccessUnavailableDemand Context100Supply Context0 canonical merchantsRetail Gap Context0Remove comparisonGETRA_BUSINESS_SPACE_CONTEXT_V1 / GETRA_DEMAND_V1 / GETRA_RETAIL_GAP_V1",
+      "comparison_rows": 5,
+      "chart_rendered": true,
+      "insight": "DeterministicTransit network evidence is unavailable for the compared candidates. Dekat Terminal Pondok Cabe, Pamulang, 12, Indonesia has the highest Demand Score (100). Dekat Terminal Pondok Cabe, Pamulang, 12, Indonesia has the highest Retail Gap (0), based on the unchanged Phase 09 model. This is a contextual trade-off, not a revenue, profit, ROI, or availability claim. Semua kandidat memakai kategori bakso, window 30 hari, dan model GETRA_BUSINESS_SPACE_CONTEXT_V1.",
+      "map_ready": true
+    }
+  },
+  "responsive": {
+    "390x844": {
+      "body_scroll_width": 390,
+      "viewport_width": 390,
+      "map_ready": true,
+      "chart_rendered": true,
+      "no_horizontal_overflow": true
+    },
+    "768x1024": {
+      "body_scroll_width": 768,
+      "viewport_width": 768,
+      "map_ready": true,
+      "chart_rendered": true,
+      "no_horizontal_overflow": true
+    },
+    "1366x768": {
+      "body_scroll_width": 1366,
+      "viewport_width": 1366,
+      "map_ready": true,
+      "chart_rendered": true,
+      "no_horizontal_overflow": true
+    },
+    "1440x900": {
+      "body_scroll_width": 1440,
+      "viewport_width": 1440,
+      "map_ready": true,
+      "chart_rendered": true,
+      "no_horizontal_overflow": true
+    }
+  },
+  "accessibility": {
+    "violations": [],
+    "critical_or_serious": 0
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "network_safe": true,
+  "claim_safety": {
+    "no_available_now": true,
+    "no_financial_overclaim": true,
+    "has_availability_unconfirmed": true,
+    "has_no_roi_caveat": true
+  }
+}

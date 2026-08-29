@@ -1,0 +1,14 @@
+DEMAND EVENT MODEL
+
+Stored event types: SEARCH and ROUTE_REQUEST.
+Stored dimensions: category slug, administrative region IDs, timestamp, result count/outcome,
+and minimal operational metadata. No actor ID, email, query text, or precise origin is stored.
+
+A SHA-256 dedup key includes actor identity only inside the irreversible hash, event type,
+category, sorted region IDs, and a five-minute bucket. The unique key makes rapid retries idempotent.
+The table has RLS enabled and service-role-only read/write policies.
+
+Runtime dedup: the same canonical merchant route was requested twice in one five-minute bucket;
+the final ROUTE_REQUEST count remained 1. Earlier repeated-search verification also did not double.
+
+Struk, commuter, and campaign inputs retain their existing source tables and provenance.

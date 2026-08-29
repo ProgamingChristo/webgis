@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -10,9 +10,9 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.17"
   }
-  graphql_public: {
+  private: {
     Tables: {
       [_ in never]: never
     }
@@ -20,14 +20,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
+      is_admin: { Args: never; Returns: boolean }
+      is_merchant_owner: {
+        Args: { target_merchant_id: string }
+        Returns: boolean
       }
     }
     Enums: {
@@ -259,6 +255,39 @@ export type Database = {
           },
         ]
       }
+      administrative_regions: {
+        Row: {
+          aliases: string[]
+          created_at: string
+          geometry: unknown
+          geometry_source: string
+          id: string
+          name: string
+          region_type: string
+          updated_at: string
+        }
+        Insert: {
+          aliases?: string[]
+          created_at?: string
+          geometry: unknown
+          geometry_source: string
+          id: string
+          name: string
+          region_type?: string
+          updated_at?: string
+        }
+        Update: {
+          aliases?: string[]
+          created_at?: string
+          geometry?: unknown
+          geometry_source?: string
+          id?: string
+          name?: string
+          region_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_processing_runs: {
         Row: {
           analysis_run_id: string | null
@@ -356,6 +385,53 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "study_areas"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      analytics_events: {
+        Row: {
+          category_slug: string
+          created_at: string
+          dedup_key: string
+          event_type: string
+          id: string
+          metadata: Json
+          occurred_at: string
+          outcome: string | null
+          region_ids: string[]
+          result_count: number | null
+        }
+        Insert: {
+          category_slug: string
+          created_at?: string
+          dedup_key: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          outcome?: string | null
+          region_ids?: string[]
+          result_count?: number | null
+        }
+        Update: {
+          category_slug?: string
+          created_at?: string
+          dedup_key?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          outcome?: string | null
+          region_ids?: string[]
+          result_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_category_slug_fkey"
+            columns: ["category_slug"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["slug"]
           },
         ]
       }
@@ -1583,6 +1659,145 @@ export type Database = {
           },
         ]
       }
+      mapid_mission_observations: {
+        Row: {
+          created_at: string
+          freshness_status: string
+          geometry: unknown
+          id: string
+          imported_at: string
+          last_seen_at: string
+          latest_sync_run_id: string | null
+          mission_name: string | null
+          normalized_properties: Json
+          observed_at: string | null
+          provenance: Json
+          provider_updated_at: string | null
+          raw_payload: Json
+          raw_payload_checksum: string
+          source_record_id: string
+          source_type: string
+          updated_at: string
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          freshness_status?: string
+          geometry: unknown
+          id?: string
+          imported_at?: string
+          last_seen_at?: string
+          latest_sync_run_id?: string | null
+          mission_name?: string | null
+          normalized_properties?: Json
+          observed_at?: string | null
+          provenance?: Json
+          provider_updated_at?: string | null
+          raw_payload: Json
+          raw_payload_checksum: string
+          source_record_id: string
+          source_type: string
+          updated_at?: string
+          verification_status?: string
+        }
+        Update: {
+          created_at?: string
+          freshness_status?: string
+          geometry?: unknown
+          id?: string
+          imported_at?: string
+          last_seen_at?: string
+          latest_sync_run_id?: string | null
+          mission_name?: string | null
+          normalized_properties?: Json
+          observed_at?: string | null
+          provenance?: Json
+          provider_updated_at?: string | null
+          raw_payload?: Json
+          raw_payload_checksum?: string
+          source_record_id?: string
+          source_type?: string
+          updated_at?: string
+          verification_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mapid_mission_observations_latest_sync_run_id_fkey"
+            columns: ["latest_sync_run_id"]
+            isOneToOne: false
+            referencedRelation: "mapid_mission_sync_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mapid_mission_sync_runs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          error_log: Json | null
+          failed_records: number
+          finished_at: string | null
+          id: string
+          inserted_records: number
+          invalid_records: number
+          pages_fetched: number
+          records_fetched: number
+          request_context: Json
+          skipped_records: number
+          source_type: string
+          started_at: string
+          status: string
+          updated_at: string
+          updated_records: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          error_log?: Json | null
+          failed_records?: number
+          finished_at?: string | null
+          id?: string
+          inserted_records?: number
+          invalid_records?: number
+          pages_fetched?: number
+          records_fetched?: number
+          request_context?: Json
+          skipped_records?: number
+          source_type: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          updated_records?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          error_log?: Json | null
+          failed_records?: number
+          finished_at?: string | null
+          id?: string
+          inserted_records?: number
+          invalid_records?: number
+          pages_fetched?: number
+          records_fetched?: number
+          request_context?: Json
+          skipped_records?: number
+          source_type?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          updated_records?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mapid_mission_sync_runs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       merchant_categories: {
         Row: {
           category_id: string
@@ -1673,6 +1888,88 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      merchant_reconciliation_decisions: {
+        Row: {
+          address_match: boolean | null
+          algorithm_version: string
+          category_match: boolean | null
+          created_at: string
+          decision_reason: string
+          distance_meters: number | null
+          evidence: Json
+          id: string
+          match_score: number
+          match_status: string
+          menu_go_mobile: boolean
+          menu_observation_id: string
+          name_score: number
+          phone_match: boolean | null
+          premium_merchant_id: string | null
+          resolved_merchant_id: string
+          updated_at: string
+        }
+        Insert: {
+          address_match?: boolean | null
+          algorithm_version: string
+          category_match?: boolean | null
+          created_at?: string
+          decision_reason: string
+          distance_meters?: number | null
+          evidence?: Json
+          id?: string
+          match_score: number
+          match_status: string
+          menu_go_mobile?: boolean
+          menu_observation_id: string
+          name_score: number
+          phone_match?: boolean | null
+          premium_merchant_id?: string | null
+          resolved_merchant_id: string
+          updated_at?: string
+        }
+        Update: {
+          address_match?: boolean | null
+          algorithm_version?: string
+          category_match?: boolean | null
+          created_at?: string
+          decision_reason?: string
+          distance_meters?: number | null
+          evidence?: Json
+          id?: string
+          match_score?: number
+          match_status?: string
+          menu_go_mobile?: boolean
+          menu_observation_id?: string
+          name_score?: number
+          phone_match?: boolean | null
+          premium_merchant_id?: string | null
+          resolved_merchant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_reconciliation_decisions_menu_observation_id_fkey"
+            columns: ["menu_observation_id"]
+            isOneToOne: true
+            referencedRelation: "mapid_mission_observations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_reconciliation_decisions_premium_merchant_id_fkey"
+            columns: ["premium_merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_reconciliation_decisions_resolved_merchant_id_fkey"
+            columns: ["resolved_merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
             referencedColumns: ["id"]
           },
         ]
@@ -2274,6 +2571,38 @@ export type Database = {
           {
             foreignKeyName: "pedestrian_edges_target_fkey"
             columns: ["target"]
+            isOneToOne: false
+            referencedRelation: "pedestrian_nodes"
+            referencedColumns: ["routing_id"]
+          },
+        ]
+      }
+      pedestrian_graph_components: {
+        Row: {
+          component_id: number
+          component_size: number
+          environment: string
+          refreshed_at: string
+          routing_id: number
+        }
+        Insert: {
+          component_id: number
+          component_size: number
+          environment: string
+          refreshed_at?: string
+          routing_id: number
+        }
+        Update: {
+          component_id?: number
+          component_size?: number
+          environment?: string
+          refreshed_at?: string
+          routing_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedestrian_graph_components_routing_id_fkey"
+            columns: ["routing_id"]
             isOneToOne: false
             referencedRelation: "pedestrian_nodes"
             referencedColumns: ["routing_id"]
@@ -4128,6 +4457,11 @@ export type Database = {
           viewer_reactions: string[]
         }[]
       }
+      analytics_category_matches_v1: {
+        Args: { p_actual_slug: string; p_requested_slug: string }
+        Returns: boolean
+      }
+      analytics_category_slug_v1: { Args: { p_text: string }; Returns: string }
       approve_merchant_claim: {
         Args: { claim_id: string; review_note?: string }
         Returns: string
@@ -4155,11 +4489,42 @@ export type Database = {
           user_id: string
         }[]
       }
+      calculate_walking_costs_v1: {
+        Args: {
+          p_candidates: Json
+          p_environment?: string
+          p_max_snap_meters?: number
+          p_origin_latitude: number
+          p_origin_longitude: number
+        }
+        Returns: Json
+      }
       calculate_walking_route: {
         Args: {
           p_destination_id: number
           p_environment?: string
           p_origin_id: number
+        }
+        Returns: Json
+      }
+      calculate_walking_route_v2: {
+        Args: {
+          p_destination_latitude: number
+          p_destination_longitude: number
+          p_environment?: string
+          p_max_snap_meters?: number
+          p_origin_latitude: number
+          p_origin_longitude: number
+        }
+        Returns: Json
+      }
+      calculate_walking_service_area_v1: {
+        Args: {
+          p_environment?: string
+          p_max_minutes: number
+          p_max_snap_meters?: number
+          p_origin_latitude: number
+          p_origin_longitude: number
         }
         Returns: Json
       }
@@ -4763,6 +5128,13 @@ export type Database = {
         Args: { lat: number; lng: number; radius_m: number }
         Returns: Json
       }
+      get_analytics_merchant_context_v1: {
+        Args: { p_merchant_id: string }
+        Returns: {
+          category_slug: string
+          region_ids: string[]
+        }[]
+      }
       get_community_analytics_v1: {
         Args: never
         Returns: {
@@ -4958,6 +5330,20 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_demand_intelligence_v1: {
+        Args: {
+          p_category_slug?: string
+          p_east?: number
+          p_end_at?: string
+          p_limit?: number
+          p_north?: number
+          p_region_ids?: string[]
+          p_south?: number
+          p_start_at?: string
+          p_west?: number
+        }
+        Returns: Json
+      }
       get_merchant_network_access: {
         Args: { target_merchant_id: string }
         Returns: {
@@ -4965,6 +5351,10 @@ export type Database = {
           pedestrian_node_id: string
           snap_distance_meters: number
         }[]
+      }
+      get_pedestrian_graph_health_v1: {
+        Args: { p_environment?: string }
+        Returns: Json
       }
       getra_database_health: { Args: never; Returns: string }
       is_valid_community_contribution_payload_v1: {
@@ -4990,6 +5380,33 @@ export type Database = {
           status: string
           target_id: string
           target_type: string
+          total_count: number
+        }[]
+      }
+      list_administrative_regions_v1: {
+        Args: never
+        Returns: {
+          aliases: string[]
+          east: number
+          geometry_source: string
+          id: string
+          name: string
+          north: number
+          south: number
+          west: number
+        }[]
+      }
+      list_canonical_merchant_ids_in_bbox_v1: {
+        Args: {
+          p_east: number
+          p_limit?: number
+          p_north: number
+          p_offset?: number
+          p_south: number
+          p_west: number
+        }
+        Returns: {
+          merchant_id: string
           total_count: number
         }[]
       }
@@ -5030,6 +5447,26 @@ export type Database = {
           target_merchant_id: string
           target_name: string
           total_count: number
+        }[]
+      }
+      list_community_contribution_map_features_v1: {
+        Args: {
+          p_limit?: number
+          p_max_lat: number
+          p_max_lng: number
+          p_min_lat: number
+          p_min_lng: number
+        }
+        Returns: {
+          id: string
+          observed_at: string
+          projection_source: string
+          public_latitude: number
+          public_longitude: number
+          report_type: string
+          reviewed_at: string
+          target_merchant_id: string
+          target_name: string
         }[]
       }
       list_community_contribution_moderation_queue_v1: {
@@ -5279,6 +5716,53 @@ export type Database = {
           updated_at: string
         }[]
       }
+      list_mapid_mission_observations_v1: {
+        Args: {
+          p_limit?: number
+          p_max_lat?: number
+          p_max_lng?: number
+          p_min_lat?: number
+          p_min_lng?: number
+          p_offset?: number
+          p_source_type?: string
+        }
+        Returns: {
+          freshness_status: string
+          geometry: Json
+          id: string
+          normalized_properties: Json
+          observed_at: string
+          provenance: Json
+          source_record_id: string
+          source_type: string
+          total_count: number
+          verification_status: string
+        }[]
+      }
+      list_premium_menu_go_candidates_v1: {
+        Args: { p_radius_meters?: number }
+        Returns: {
+          distance_meters: number
+          menu_category: string
+          menu_latitude: number
+          menu_longitude: number
+          menu_mobility: string
+          menu_name: string
+          menu_observation_id: string
+          menu_observed_at: string
+          menu_properties: Json
+          menu_source_record_id: string
+          premium_address: string
+          premium_category: string
+          premium_latitude: number
+          premium_longitude: number
+          premium_merchant_id: string
+          premium_metadata: Json
+          premium_name: string
+          premium_phone: string
+          premium_source_record_id: string
+        }[]
+      }
       make_wgs84_bbox: {
         Args: {
           max_lat: number
@@ -5376,6 +5860,10 @@ export type Database = {
         }[]
       }
       refresh_community_demand_signals_v1: { Args: never; Returns: undefined }
+      refresh_pedestrian_graph_components_v1: {
+        Args: { p_environment?: string }
+        Returns: Json
+      }
       reject_merchant_claim: {
         Args: { claim_id: string; review_note?: string }
         Returns: string
@@ -5416,6 +5904,26 @@ export type Database = {
           target_merchant_id: string
           target_name: string
           updated_at: string
+        }[]
+      }
+      search_canonical_merchants_v1: {
+        Args: {
+          p_category?: string
+          p_east?: number
+          p_keyword?: string
+          p_limit?: number
+          p_north?: number
+          p_offset?: number
+          p_region_ids?: string[]
+          p_south?: number
+          p_west?: number
+        }
+        Returns: {
+          merchant_id: string
+          region_ids: string[]
+          region_names: string[]
+          relevance_score: number
+          total_count: number
         }[]
       }
       search_merchants_nearby: {
@@ -5658,7 +6166,7 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
+  private: {
     Enums: {},
   },
   public: {

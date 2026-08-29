@@ -1,0 +1,24 @@
+GETRA PHASE 11 - CANDIDATE DISCOVERY API
+
+Endpoint:
+- GET /api/business-space/candidates
+
+Request:
+- region_id or bbox is required.
+- category is required.
+- days supports 7 or 30.
+- limit and offset are bounded.
+
+Response:
+- candidates
+- total
+- limit
+- offset
+- model_version
+- limitations
+
+Safety:
+- Only GETRA-owned APIs are called by the browser.
+- No MAPID Mission credential or x-api-key is returned.
+- Candidate records include safe normalized fields only.
+

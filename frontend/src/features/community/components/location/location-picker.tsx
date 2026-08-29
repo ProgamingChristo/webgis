@@ -22,7 +22,7 @@ import type {
   CommunityLocationVisibility,
 } from "../../types/community.types";
 import { formatLocationCoordinate } from "../../utils/community-format";
-import { getBasemapOption, getDefaultBasemapId } from "../../../../../lib/mapid";
+import { getBasemapOption, getPreferredBasemapId } from "../../../../../lib/mapid";
 import styles from "../community.module.css";
 import { LocationPrivacyControl } from "./location-privacy-control";
 
@@ -113,7 +113,7 @@ export function LocationPicker({
       const center = initialCenterRef.current;
       const map = new maplibre.Map({
         container: containerRef.current,
-        style: getBasemapOption(getDefaultBasemapId()).style,
+        style: getBasemapOption(getPreferredBasemapId()).style,
         center: [center.longitude, center.latitude],
         zoom: initialZoomRef.current,
       });

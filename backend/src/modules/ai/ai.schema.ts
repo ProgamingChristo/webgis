@@ -16,14 +16,20 @@ export const AiAskRequestSchema = z.object({
     study_area_id: z.string().optional(),
     selected_entity_id: z.string().optional(),
     origin: z.object({
-      latitude: z.number(),
-      longitude: z.number(),
+      latitude: z.number().finite().min(-90).max(90),
+      longitude: z.number().finite().min(-180).max(180),
     }).optional(),
     destination: z.object({
-      latitude: z.number(),
-      longitude: z.number(),
+      latitude: z.number().finite().min(-90).max(90),
+      longitude: z.number().finite().min(-180).max(180),
     }).optional(),
   }).optional(),
+  history: z.array(
+    z.object({
+      role: z.enum(["user", "assistant"]),
+      content: z.string().max(1000),
+    })
+  ).max(10).optional(),
 });
 export type AiAskRequest = z.infer<typeof AiAskRequestSchema>;
 

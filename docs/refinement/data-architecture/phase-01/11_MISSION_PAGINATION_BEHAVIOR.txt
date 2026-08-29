@@ -1,0 +1,30 @@
+MISSION PAGINATION BEHAVIOR
+
+Request pagination:
+- offset based.
+- page_size controls local loop increment.
+- max_pages provides hard safety cap.
+
+Termination:
+- Stop when a page returns zero records.
+- Stop when records returned are fewer than page_size.
+- Stop when max_pages is reached.
+
+Provider pagination refinement - 2026-08-27:
+- When MAPID returns pagination metadata, provider offset + limit + hasMore takes precedence over local page_size.
+- Stop when hasMore is false.
+- Advance to provider offset + limit when hasMore is true.
+- Stop defensively if the provider next offset does not advance.
+- Local page_size/short-page behavior remains the fallback for envelopes without pagination metadata, including current Activities responses.
+
+Rate behavior:
+- Sequential paging only.
+- No concurrent burst.
+
+Partial failure:
+- Source-level sync report returns FAILED or BLOCKED.
+- Successful page counters remain visible in the report.
+
+Test evidence:
+- Unit test verifies offset increments and short-page termination.
+- Unit and real runtime tests verify provider limit 100 pagination even when local page_size is 500.

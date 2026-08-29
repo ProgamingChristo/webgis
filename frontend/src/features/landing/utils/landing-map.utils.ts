@@ -1,4 +1,5 @@
 import type { LandingMapFixture } from "../types/landing.types";
+import type * as GeoJSON from "geojson";
 
 /*
  * ILLUSTRATIVE LANDING DATA.

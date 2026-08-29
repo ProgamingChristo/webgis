@@ -4,7 +4,7 @@ import { MapPinned, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Map as MapLibreMap, Marker } from "maplibre-gl";
 
-import { getBasemapOption, getDefaultBasemapId } from "../../../../lib/mapid";
+import { getBasemapOption, getPreferredBasemapId } from "../../../../lib/mapid";
 import { getCommunityContributionMapFeatures } from "../api/community-contributions.api";
 import {
   CONTRIBUTION_REPORT_LABELS,
@@ -121,7 +121,7 @@ export function CommunityContributionMapLayer() {
 
         const map = new maplibre.Map({
           container: containerRef.current,
-          style: getBasemapOption(getDefaultBasemapId()).style,
+          style: getBasemapOption(getPreferredBasemapId()).style,
           center: [
             DEFAULT_CONTRIBUTION_LOCATION.longitude,
             DEFAULT_CONTRIBUTION_LOCATION.latitude,

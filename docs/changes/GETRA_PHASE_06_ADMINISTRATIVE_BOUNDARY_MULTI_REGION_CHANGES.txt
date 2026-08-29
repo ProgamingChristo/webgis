@@ -1,0 +1,60 @@
+GETRA PHASE 06 - ADMINISTRATIVE BOUNDARY + MULTI-REGION CHANGES
+
+Phase and objective
+Phase 06 visualizes the trusted Phase 05 city scope and exposes the same region identity through map boundaries, labels, selected chips, grouping, fit-bounds, and merchant context.
+
+Region data source
+public.administrative_regions, seeded in Phase 05 from mahendrayudha/indonesia-geojson / GADM v4.0. EPSG:4326 MultiPolygon. GADM commercial redistribution requires permission; see Phase 06 source/limitation docs.
+
+Files created
+- backend/app/api/regions/route.ts
+- backend/src/features/administrative-boundaries/*
+- backend/tests/integration/administrative-boundary-route.test.ts
+- backend/tests/unit/administrative-boundaries/*
+- frontend/src/features/administrative-boundaries/*
+- frontend/tests/administrative-boundaries/*
+- scripts/verify-phase06-administrative-boundaries-browser.mjs
+- docs/refinement/data-architecture/phase-06/*
+
+Files modified
+- backend/src/lib/api-security/endpoint-policy.ts
+- frontend/components/getra-map.tsx
+- frontend/components/getra-dashboard.tsx
+- frontend/app/globals.css
+
+Files deleted
+NONE.
+
+API changes
+Added authenticated GET /api/regions with strict selected IDs, cap five, safe FeatureCollection, Polygon/MultiPolygon validation, bounds, and no arbitrary geometry/SQL input.
+
+DB and migration
+No Phase 06 DB change or migration. Existing Phase 05 table/index reused. Remote dry-run up to date.
+
+MapLibre
+- source getra-administrative-regions
+- fill, line, and symbol label layers
+- setData updates, duplicate guards, style-reload restoration
+- empty by default; selected boundaries only
+- merchant layers remain above fill
+
+UX
+- single/multi fitBounds with desktop/mobile padding and maxZoom 14
+- selected chips with labeled remove controls
+- selected-order current-page result grouping, including zero-result selected regions
+- city/region in card, popup, and detail
+- Search This Area clears selected regions and keeps keyword
+
+Verification
+- focused backend 9 PASS; focused frontend 5 PASS
+- full backend 685 PASS, 3 skipped
+- full frontend 51 PASS
+- typecheck, zero-warning lint, frontend/backend build PASS
+- Phase 04 and Phase 05 browser regressions PASS
+- Phase 06 E2E, responsive, accessibility, network, console, performance, security PASS
+
+Limitations
+GADM commercial license clearance/replacement; no Kepulauan Seribu; city-level only; collision-aware labels may hide; current-page group counts.
+
+Rollback
+Remove API/policy and frontend Phase 06 wiring/source/layers through a normal code revert. Do not remove Phase 05 region or merchant data. No database rollback is needed.

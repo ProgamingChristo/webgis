@@ -1,0 +1,8 @@
+CONTEXTUAL LAYER ARCHITECTURE
+
+Flow:
+authenticated browser -> GETRA /api/contextual-observations -> existing Mission repository -> PostGIS bbox query -> safe GeoJSON DTO -> MapLibre source/layers.
+
+The implementation reuses mapid_mission_observations and its spatial query. It does not call MAPID from the browser, duplicate ingestion, or create another base map.
+
+Canonical merchant, administrative boundaries, Properti Go, Struk Go, and Activities remain separate sources on one MapLibre instance.

@@ -1,5 +1,6 @@
 import { apiClient } from "@/src/lib/api-client";
 import type { Merchant } from "@/types/getra";
+import type * as GeoJSON from "geojson";
 
 export type AdminMapImportSourceType =
   | "PUBLIC_API_URL"

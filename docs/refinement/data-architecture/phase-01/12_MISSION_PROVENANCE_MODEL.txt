@@ -1,0 +1,22 @@
+MISSION PROVENANCE MODEL
+
+Each observation preserves:
+- provider: MAPID
+- source_type
+- source_record_id
+- imported_at
+
+Additional trace:
+- raw_payload JSONB
+- raw_payload_checksum SHA-256
+- mission_name when available
+- observed_at when available
+- provider_updated_at when available
+- latest_sync_run_id
+
+Claim boundary:
+- SOURCE_OBSERVED does not mean verified truth.
+- Menu Go remains merchant observation.
+- Struk Go remains transaction observation.
+- Properti Go remains property observation.
+- Activities remains field observation.

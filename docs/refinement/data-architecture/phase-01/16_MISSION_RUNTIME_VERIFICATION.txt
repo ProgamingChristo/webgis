@@ -1,0 +1,128 @@
+MISSION RUNTIME VERIFICATION
+
+Local runtime/build:
+- npm run build: PASS.
+- New backend routes appear in Next.js route manifest:
+  - /api/admin/mapid/mission-sync
+  - /api/mapid/mission-observations
+
+Migration checks:
+- npm run db:migrations: BLOCKED.
+- Reason: Supabase failed to parse .env.local.
+
+- npx supabase db push --dry-run: BLOCKED.
+- Reason: Supabase failed to parse .env.local.
+
+Remote DB:
+- BLOCKED.
+- Migration was not pushed or verified remotely in this session.
+
+Remote MAPID:
+- BLOCKED.
+- Real source retrieval was not executed because no safe runtime credential verification was available.
+
+Activities:
+- BLOCKED until actual Activities endpoint path is confirmed and configured.
+
+VERIFICATION CLOSURE UPDATE - 2026-08-27
+
+Supabase env diagnosis:
+- Root .env.local contains two malformed duplicate Supabase lines with embedded NUL bytes from mixed encoding.
+- Secret values were not printed or copied into evidence.
+- The valid Supabase project is rooted at backend/supabase and backend/.env.local parses normally.
+- package.json db:migrations now uses --workdir backend; root .env.local was not rewritten.
+- npm run db:migrations: PASS and connects to linked remote.
+
+Migration:
+- Canonical dry-run initially identified an unrelated pending 20260824103000 profile/role migration plus Phase 01.
+- Phase 01 was isolated so the unrelated migration was not pushed.
+- First isolated push failed transactionally because PostGIS constraint functions lacked extensions schema qualification.
+- Migration SQL was corrected and isolated dry-run then listed only 20260827090000.
+- Isolated push: PASS.
+- Remote migration history records 20260827090000.
+- The unrelated 20260824103000 migration remains local-only and unchanged.
+
+Remote DB runtime:
+- Generated database.types.ts from linked public/private schemas includes both mapid_mission tables and list_mapid_mission_observations_v1.
+- Unique (source_type, source_record_id): PASS; duplicate insert returned PostgreSQL 23505.
+- Point geometry constraint: PASS; LineString insert was rejected.
+- Anonymous table read under RLS: PASS; zero rows returned.
+- Authenticated admin normalized GET route: PASS; HTTP 200 with Point geometry, source_id, source_type, and provenance.
+- Verification fixture was deleted after the checks.
+- Schema dump was unavailable because local Docker Desktop was not running. Successful transactional DDL, generated linked types, and behavioral checks provide the closure evidence used here.
+
+Real MAPID runtime:
+- BLOCKED before remote request.
+- Available backend MAPID_BASE_URL points to the localhost fixture service over HTTP.
+- Root and process environment do not contain an authorized real Mission base URL/key pair.
+- No real Menu Go, Struk Go, or Properti Go retrieval or persistence is claimed.
+
+Activities:
+- No MAPID_ACTIVITIES_PATH is configured.
+- No actual Activities endpoint was found in project config, handoff documents, previous request samples, or adapters.
+- ACTIVITIES remains BLOCKED - ACTUAL ENDPOINT REQUIRED.
+
+Runtime gate:
+- REMOTE DB: VERIFIED.
+- MIGRATION: VERIFIED.
+- REAL MAPID: BLOCKED.
+- IDEMPOTENCY RUNTIME WITH REAL MAPID DATA: BLOCKED.
+- GETRA READ API CONTRACT/DB RUNTIME: PASS.
+- GETRA READ API AGAINST REAL MAPID DATA: BLOCKED.
+
+REAL MAPID CREDENTIAL CLOSURE UPDATE - 2026-08-27
+
+Configuration:
+- Real HTTPS MAPID base URL and API credential configured in backend/.env.local.
+- Credential value was not logged, documented, committed, or exposed through NEXT_PUBLIC variables.
+
+Menu Go:
+- HTTP/provider schema: PASS.
+- Retrieved/persisted: 87 valid records.
+- Idempotency: PASS, rerun inserted 0 and final count stayed 87.
+- GETRA read API: PASS, HTTP 200.
+
+Properti Go:
+- HTTP/provider schema: PASS.
+- Retrieved/persisted: 99 valid records.
+- Idempotency: PASS, rerun inserted 0 and final count stayed 99.
+- GETRA read API: PASS, HTTP 200.
+
+Struk Go:
+- POST /web/competition/strukgo returned HTTP 404.
+- Credential failure is ruled out because Menu Go and Properti Go succeeded with the same server-side credential.
+- BLOCKED until actual current Struk Go path is confirmed.
+
+Activities:
+- No actual endpoint/path is configured or documented.
+- BLOCKED until actual endpoint contract is supplied.
+
+Updated runtime gate:
+- REAL MAPID: PARTIAL.
+- MENU GO: VERIFIED.
+- STRUK GO: BLOCKED.
+- PROPERTI GO: VERIFIED.
+- ACTIVITIES: BLOCKED.
+- IDEMPOTENCY RUNTIME: PASS for Menu Go and Properti Go; BLOCKED for unavailable sources.
+- GETRA READ API: PASS for Menu Go and Properti Go persisted real data; BLOCKED for unavailable sources.
+
+FINAL VERIFICATION CLOSURE - 2026-08-27
+
+Official contract correction:
+- Struck Go official mission type is `struckgo`, not the earlier handoff spelling `strukgo`.
+- Activities official endpoint is POST /web/competition/activities with server-side x-api-key.
+
+Final real runtime evidence:
+- MENU_GO: 87 persisted rows; idempotent rerun PASS; read API HTTP 200.
+- STRUK_GO: 164 persisted rows across 2 pages; idempotent rerun PASS; read API HTTP 200.
+- PROPERTI_GO: 99 persisted rows; idempotent rerun PASS; read API HTTP 200.
+- ACTIVITIES: 60 persisted rows; idempotent rerun PASS; read API HTTP 200.
+- Invalid normalized records across final source runs: 0.
+
+Final runtime gate:
+- REMOTE DB: VERIFIED.
+- MIGRATION: VERIFIED.
+- REAL MAPID: VERIFIED.
+- IDEMPOTENCY RUNTIME: PASS.
+- GETRA READ API: PASS.
+- SECURITY: PASS.

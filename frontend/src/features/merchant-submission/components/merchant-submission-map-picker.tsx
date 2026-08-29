@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { Map as MapLibreMap, Marker } from "maplibre-gl";
 import { MapPin, Locate, AlertCircle } from "lucide-react";
-import { getBasemapOption, getDefaultBasemapId } from "@/lib/mapid";
+import { getBasemapOption, getPreferredBasemapId } from "@/lib/mapid";
 
 interface MerchantMapPickerProps {
   initialCoordinates?: [number, number]; // [longitude, latitude]
@@ -38,7 +38,7 @@ export function MerchantMapPicker({
       const maplibre = await import("maplibre-gl");
       maplibre.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
-      const defaultBasemap = getBasemapOption(getDefaultBasemapId());
+      const defaultBasemap = getBasemapOption(getPreferredBasemapId());
 
       const map = new maplibre.Map({
         container: containerRef.current,

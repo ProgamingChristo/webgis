@@ -1,0 +1,9 @@
+RETAIL GAP FORMULA
+
+Model version: GETRA_RETAIL_GAP_V1.
+retail_gap = demand_score - supply_score, bounded -100..100.
+Positive means observed demand evidence is relatively higher than represented supply.
+Negative means represented supply is relatively higher than observed demand evidence.
+
+Retail Gap is null when raw demand sample size is below 3. It is not a revenue, profit,
+ROI, guaranteed opportunity, investment recommendation, or property forecast.

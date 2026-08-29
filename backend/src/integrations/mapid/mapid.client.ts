@@ -18,8 +18,9 @@ export type MapidHttpTransport = (
 export type MapidRetryDelay = (milliseconds: number) => Promise<void>;
 
 export interface BuiltMapidRequest {
+  body?: string;
   headers: Headers;
-  method: "GET";
+  method: "GET" | "POST";
   url: string;
 }
 
@@ -57,7 +58,18 @@ export function buildMapidRequest(
     throw new MapidError("MAPID_CONFIGURATION_ERROR");
   }
 
-  return { headers, method: "GET", url: url.toString() };
+  let body: string | undefined;
+  if (parsed.data.method === "POST") {
+    headers.set("Content-Type", "application/json");
+    body = JSON.stringify(parsed.data.body ?? {});
+  }
+
+  return {
+    body,
+    headers,
+    method: parsed.data.method,
+    url: url.toString(),
+  };
 }
 
 export class MapidClient implements MapidClientPort {
@@ -125,6 +137,7 @@ export class MapidClient implements MapidClientPort {
 
     try {
       return await this.transport(request.url, {
+        body: request.body,
         headers: request.headers,
         method: request.method,
         signal: controller.signal,

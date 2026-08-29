@@ -1,0 +1,13 @@
+GETRA PHASE 06 - SEARCH STATE SYNCHRONIZATION
+
+Authoritative scope remains the Phase 05 selectedRegionIds and resolved intent. Boundary fetch, selected chips, result grouping, and map GeoJSON derive from that state.
+
+Transitions verified
+- region query -> selected boundary and fit
+- location override -> replaces prior region
+- add region -> new merchant query, boundary, group, chip, and combined fit
+- remove chip -> same five surfaces update
+- Search This Area -> keyword retained, scope CURRENT_VIEWPORT, boundary list cleared
+- boundary fetch failure -> merchant scope/result remains usable
+
+No URL scope persistence existed in Phase 05, so Phase 06 did not invent it.

@@ -1,0 +1,7 @@
+GETRA PHASE 10 UMKM COPILOT ARCHITECTURE
+
+POST /api/umkm/intelligence/copilot accepts strict merchant_id, days, and bounded question.
+The server recomputes authorized intelligence; client-provided scores are never trusted.
+Only minimized merchant facts, diagnostics, aggregate analytics, network evidence, and rule IDs enter the model.
+The provider output is schema validated, claim filtered, and number checked.
+AI outage or unsafe output returns a deterministic explanation while the dashboard remains functional.

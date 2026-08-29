@@ -2,7 +2,10 @@
   "name": "getra-platform",
   "version": "0.1.0",
   "private": true,
-  "workspaces": ["frontend", "backend"],
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "displayName": "GETRA",
   "type": "module",
   "engines": {
@@ -16,32 +19,25 @@
     "dev": "node scripts/dev-getra.mjs",
     "dev:frontend": "npm run dev -w frontend",
     "dev:backend": "npm run dev -w backend",
-    "build": "next build",
-    "start": "next start",
-
-    "lint": "eslint . --max-warnings=0",
-    "typecheck": "tsc --noEmit",
-
-    "test": "vitest run",
+    "build": "npm run build -w frontend && npm run build -w backend",
+    "start": "npm run start -w frontend",
+    "lint": "npm run lint -w frontend && npm run lint -w backend",
+    "typecheck": "npm run typecheck -w frontend && npm run typecheck -w backend && tsc --noEmit",
+    "test": "npm run test -w frontend && npm run test -w backend",
     "test:watch": "vitest",
-
     "preprocess:start": "npm run build",
     "process:start": "pm2 start ecosystem.config.cjs --only getra-backend --update-env",
-
     "preprocess:restart": "npm run build",
     "process:restart": "pm2 restart ecosystem.config.cjs --only getra-backend --update-env",
-
     "process:stop": "pm2 stop getra-backend",
     "process:status": "pm2 status getra-backend",
     "process:logs": "pm2 logs getra-backend",
-
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
     "db:lint": "supabase db lint --local",
-    "db:migrations": "supabase migration list --local",
-
+    "db:migrations": "supabase migration list --workdir backend",
     "docker:build": "docker compose --env-file .env.local build",
     "docker:start": "docker compose --env-file .env.local up -d",
     "docker:stop": "docker compose --env-file .env.local down",
@@ -64,6 +60,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.2.1",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",

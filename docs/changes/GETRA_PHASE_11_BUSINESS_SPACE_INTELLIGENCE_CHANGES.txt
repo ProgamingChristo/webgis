@@ -1,0 +1,36 @@
+GETRA PHASE 11 - BUSINESS SPACE INTELLIGENCE CHANGES
+
+Status:
+- VERIFIED.
+
+Backend:
+- Added Business Space constants, schema, types, repository, service, and insight service.
+- Added GETRA Business Space APIs for candidates, detail, comparison, and insight.
+- Registered Business Space endpoints in endpoint policy.
+- Reused Properti Go Mission observations, administrative context, demand/retail gap, canonical merchant supply, and commuter/transit context.
+
+Frontend:
+- Added /business-space page.
+- Added Business Space workspace, map, ECharts chart, service, and types.
+- Added dashboard navigation entry.
+- Added MAPID GL basemap catalog and persistent basemap selector support.
+- Updated existing map surfaces to respect the selected MAPID basemap.
+
+Tests:
+- Added backend Business Space focused tests.
+- Added frontend Business Space and MAPID basemap contract tests.
+- Added browser verification scripts for Business Space and MAPID basemaps.
+
+Documentation:
+- Added Phase 11 documentation under docs/refinement/data-architecture/phase-11.
+- Added FRONTEND_TEST_DATA.txt.
+- Added FRONTEND_MANUAL_TEST_GUIDE.txt.
+
+Database:
+- No Phase 11 migration required.
+
+Security:
+- Browser calls GETRA Business Space APIs only.
+- Server-side Mission credentials remain outside frontend responses.
+- No arbitrary provider path injection added.
+

@@ -1,0 +1,30 @@
+GETRA PHASE 11 - TEST EVIDENCE
+
+Focused backend:
+- Command: npm run test -w backend -- tests/unit/business-space/business-space-intelligence.test.ts tests/unit/umkm-intelligence tests/integration/demand-intelligence-routes.test.ts
+- Result: PASS, 5 files, 18 tests.
+
+Focused frontend:
+- Command: npm run test -w frontend -- tests/business-space/business-space-contract.test.ts tests/basemap/mapid-gl-style.test.ts tests/umkm-intelligence tests/demand-intelligence
+- Result: PASS, 23 files, 77 tests.
+
+Full backend:
+- Command: npm run test -w backend
+- Result: PASS, 122 files passed, 2 skipped; 778 tests passed, 3 skipped.
+
+Full frontend:
+- Command: npm run test -w frontend
+- Result: PASS, 23 files, 77 tests.
+
+Typecheck:
+- backend PASS.
+- frontend PASS.
+
+Lint:
+- backend PASS.
+- frontend PASS.
+
+Build:
+- backend PASS.
+- frontend PASS.
+

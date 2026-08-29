@@ -1,0 +1,39 @@
+STRUK GO INTEGRATION
+
+Remote endpoint:
+- POST /web/competition/struckgo through configured MAPID base URL.
+- Header: x-api-key, injected server-side.
+
+Normalization:
+- Source type: STRUK_GO.
+- Semantics: TRANSACTION_OBSERVATION.
+- Not persisted as merchant, discovery entity, hidden gem, or canonical UMKM.
+
+Allowed normalized fields:
+- nama_tempat
+- kategori_tempat
+- metode_pembayaran
+- foto_struk
+
+Status:
+- Implemented locally.
+- Remote runtime verification blocked until MAPID credentials/endpoint access are available.
+
+RUNTIME VERIFICATION - 2026-08-27
+
+- Credential was accepted by other Mission sources in the same verification session.
+- POST /web/competition/strukgo returned HTTP 404 from the real provider.
+- No response schema, source records, persistence, idempotency, or read API data can be claimed for Struk Go.
+- Actual current Struk Go endpoint/path is required from MAPID/team documentation.
+- STATUS: BLOCKED - ACTUAL ENDPOINT REQUIRED.
+
+FINAL RUNTIME VERIFICATION - 2026-08-27
+
+- Official MAPID documentation confirmed mission type `struckgo`.
+- Previous 404 was caused by the handoff typo `strukgo`; historical evidence above is preserved.
+- Real provider request: HTTP 200.
+- Provider pagination followed offset 0 then 100 using limit/hasMore metadata.
+- First sync: 164 records inserted across 2 pages, 0 invalid.
+- Idempotent rerun: 0 insert, 164 update, final count remained 164.
+- GETRA normalized read API: HTTP 200, 10 sampled items returned.
+- STATUS: VERIFIED.

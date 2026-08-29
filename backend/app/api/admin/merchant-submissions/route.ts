@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSuccessResponse } from "@/src/lib/api-response";
 import { getRequestId } from "@/src/lib/request-id";
 import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
-import { requireAuthenticatedUser } from "@/src/lib/auth";
+import { requireRole } from "@/src/lib/auth";
 import { withApiLogger } from "@/src/lib/api-logger";
 import { createOptionsHandler } from "@/src/lib/api-security";
 import { MerchantSubmissionService } from "@/src/features/merchant-submission";
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const reqId = getRequestId(req);
 
   return withApiLogger(req, reqId, async () => {
-    const adminId = await requireAuthenticatedUser(req);
+    const { userId: adminId } = await requireRole(req, "ADMIN");
     const authHeader = req.headers.get("Authorization")!;
     const supabase = getRequestSupabaseClient(authHeader);
 

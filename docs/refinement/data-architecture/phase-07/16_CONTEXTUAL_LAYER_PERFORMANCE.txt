@@ -1,0 +1,13 @@
+CONTEXTUAL LAYER PERFORMANCE
+
+PASS for the verified Jakarta viewport dataset.
+
+- Off-layer fetches: 0.
+- API cap: 250 features per request.
+- Debounce: 300 ms.
+- Stale request protection: AbortController.
+- Cache: 30 successful source+bbox entries.
+- Initial payloads: Properti 117158 bytes, Struk 101702 bytes, Activities 82757 bytes.
+- Independent clustering prevents DOM marker growth for contextual sources.
+
+No claim is made for untested nationwide density.

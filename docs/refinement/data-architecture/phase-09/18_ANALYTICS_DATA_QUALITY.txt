@@ -1,0 +1,9 @@
+ANALYTICS DATA QUALITY
+
+Remote baseline at verification: Struk 164; canonical merchants 1001; commuter requests 0;
+campaign interactions 4; prospective analytics event dedup verified.
+Struk has no monetary field and observed_at is absent, so imported_at is the available temporal evidence.
+Canonical merchant primary_category_id is sparsely populated; V1 therefore uses deterministic metadata,
+description/name, category aliases, and Menu Go evidence rather than pretending the field is complete.
+
+Zero, null, limited evidence, and unavailable histories are surfaced rather than silently omitted.

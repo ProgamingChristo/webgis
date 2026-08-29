@@ -1,0 +1,17 @@
+GETRA PHASE 11 - SECURITY AND PRIVACY
+
+Verified rules:
+- Browser calls GETRA APIs only for Business Space data.
+- MAPID Mission credentials stay server-side.
+- x-api-key is not present in Business Space API responses.
+- Service role credentials are not exposed to frontend code.
+- AI output does not include secrets.
+
+Basemap note:
+- MAPID basemap GL style key is browser-visible because it is required by public map style URLs.
+- This is separate from server-side MAPID Mission credentials.
+
+Browser evidence:
+- Network requests were captured for /api/business-space/*.
+- No direct browser request to MAPID Mission endpoints was observed.
+

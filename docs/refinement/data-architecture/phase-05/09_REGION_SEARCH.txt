@@ -1,0 +1,12 @@
+GETRA PHASE 05 - REGION SEARCH
+
+The backend resolves region IDs to database-owned geometry; the client cannot provide substitute region polygons. Region-only search is allowed and returns canonical merchants intersecting that geometry.
+
+Observed Jakarta Selatan run
+- HTTP 200
+- total: 237
+- returned: 100 due to page cap
+- every returned record was attributed to jakarta-selatan
+- map focus synchronized to returned region bounds
+
+Phase 05 does not draw the administrative polygon. Boundary visualization remains Phase 06 scope.

@@ -1,0 +1,31 @@
+GETRA PHASE 11 - FRONTEND MANUAL TEST GUIDE
+
+Business Space path:
+1. Login as a normal GETRA user.
+2. Open /business-space.
+3. Confirm the page title is Business Space Intelligence.
+4. Confirm category, region, and window filters are visible.
+5. Select Jakarta Selatan, Bakso, and 30 hari.
+6. Confirm Properti Go candidates load.
+7. Select a candidate.
+8. Confirm detail panel shows freshness and Availability unconfirmed.
+9. Confirm map renders with MAPID basemap.
+10. Add two candidates to comparison.
+11. Click Compare.
+12. Confirm comparison table appears.
+13. Confirm ECharts chart renders.
+14. Click AI Location Insight.
+15. Confirm the answer is grounded and contains caveats.
+
+Responsive path:
+1. Repeat the page load at mobile width.
+2. Confirm no horizontal overflow.
+3. Confirm candidate list, map, detail, and comparison remain reachable.
+
+Security path:
+1. Open browser developer tools.
+2. Inspect network traffic while loading and comparing candidates.
+3. Confirm browser calls /api/business-space/*.
+4. Confirm browser does not call MAPID Mission endpoints.
+5. Confirm no x-api-key, MAPID Mission credential, or service role key appears in responses.
+

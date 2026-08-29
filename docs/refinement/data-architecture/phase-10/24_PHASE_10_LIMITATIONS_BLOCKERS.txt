@@ -1,0 +1,8 @@
+GETRA PHASE 10 LIMITATIONS AND BLOCKERS
+
+BLOCKERS: NONE.
+The current owner fixture has one merchant, so multi-merchant switching is covered structurally/unit-side rather than with a two-merchant remote fixture.
+The current fixture has INSUFFICIENT_DATA Retail Gap and NO_NETWORK_ACCESS; UI behavior is verified without fabricated values.
+No intelligence history/snapshot is persisted; Phase 10 computes current evidence on request by design.
+Copilot may use deterministic fallback when the provider is unavailable or output is unsafe.
+No financial forecasting, campaign automation, or Phase 11 Business Space Intelligence is included.

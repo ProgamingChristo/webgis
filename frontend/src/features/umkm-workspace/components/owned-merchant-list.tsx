@@ -61,6 +61,12 @@ export function OwnedMerchantList({ merchants }: OwnedMerchantListProps) {
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+            <a
+              href="#umkm-intelligence-title"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/40 text-emerald-300 text-xs font-semibold transition-colors hover:bg-emerald-500/10"
+            >
+              Insight
+            </a>
             <Link
               href={`/umkm/advertising?merchantId=${merchant.id}`}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/90 hover:bg-blue-600 text-white text-xs font-semibold shadow-sm transition-colors"

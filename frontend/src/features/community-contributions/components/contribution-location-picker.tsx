@@ -11,7 +11,7 @@ import type {
   Marker,
 } from "maplibre-gl";
 
-import { getBasemapOption, getDefaultBasemapId } from "../../../../lib/mapid";
+import { getBasemapOption, getPreferredBasemapId } from "../../../../lib/mapid";
 import { DEFAULT_CONTRIBUTION_LOCATION } from "../constants";
 import type {
   CommunityContributionPoint,
@@ -83,7 +83,7 @@ export function ContributionLocationPicker({
         const center = initialCenterRef.current;
         const map = new maplibre.Map({
           container: containerRef.current,
-          style: getBasemapOption(getDefaultBasemapId()).style,
+          style: getBasemapOption(getPreferredBasemapId()).style,
           center: [center.longitude, center.latitude],
           zoom: initialZoomRef.current,
           attributionControl: false,

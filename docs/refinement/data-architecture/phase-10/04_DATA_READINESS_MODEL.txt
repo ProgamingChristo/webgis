@@ -1,0 +1,7 @@
+GETRA_DATA_READINESS_V1
+
+Weights: name 15, category 15, location 20, address 10, opening hours 10, price 10, photo 5, menu 5, phone 5, verified status 5.
+Range: 0..100. READY >= 80; DEVELOPING >= 50; otherwise INCOMPLETE.
+Missing data earns zero component points and is shown as MISSING, never as poor business performance.
+Mobile observed geometry counts as available data but retains explicit mobile semantics elsewhere.
+Each component returns points, maximum points, status, and evidence text.

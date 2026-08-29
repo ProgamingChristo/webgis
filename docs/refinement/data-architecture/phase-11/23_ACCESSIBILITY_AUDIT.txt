@@ -1,0 +1,18 @@
+GETRA PHASE 11 - ACCESSIBILITY AUDIT
+
+Tool:
+- Playwright browser verification with axe-core.
+
+Checks:
+- Critical/serious accessibility violations.
+- Candidate controls are buttons.
+- Comparison table is present.
+- Loading states use role=status where applicable.
+- Error region uses role=alert where applicable.
+
+Observed result:
+- Critical or serious axe violations: 0.
+
+Result:
+- PASS.
+

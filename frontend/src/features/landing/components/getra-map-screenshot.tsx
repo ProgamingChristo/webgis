@@ -22,7 +22,7 @@ export function GetraMapScreenshot() {
       />
 
       <figcaption className="sr-only">
-        Screenshot berasal dari frontend GETRA berjalan, memakai data fixture/test yang aman dan tidak memakai lokasi GPS pribadi.
+        GETRA WebGIS full map screenshot berasal dari frontend GETRA berjalan, memakai data fixture/test yang aman dan tidak memakai lokasi GPS pribadi.
       </figcaption>
     </figure>
   );

@@ -1,0 +1,11 @@
+GETRA PHASE 05 - CURRENT VIEWPORT SEARCH
+
+Initial authenticated map load requests canonical merchants for the actual MapLibre bounds. The server validates longitude/latitude ordering and applies a maximum limit of 100 with offset pagination.
+
+Observed initial run
+- HTTP 200
+- total in initial viewport: 715
+- returned: 100
+- response payload: about 105 KB
+
+During active search, map movement sets a pending area state. Search This Area explicitly reissues the retained keyword using the new viewport and changes the intent to CURRENT_VIEWPORT.

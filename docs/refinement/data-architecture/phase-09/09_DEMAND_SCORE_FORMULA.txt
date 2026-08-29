@@ -1,0 +1,10 @@
+DEMAND SCORE FORMULA
+
+Model version: GETRA_DEMAND_V1.
+weighted_demand = search*1 + route*2 + commuter*1.5 + transaction_observation*2.
+demand_score = round(100 * ln(1 + region_weighted_demand) /
+                     ln(1 + maximum_weighted_demand_across_5_regions)).
+When the denominator is zero, score is zero. Output is bounded 0..100.
+
+The score is relative observed GETRA/platform demand evidence. It is not total population demand,
+market size, sales, revenue, profit, ROI, or a forecast.

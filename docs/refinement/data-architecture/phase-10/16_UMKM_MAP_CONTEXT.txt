@@ -1,0 +1,7 @@
+GETRA PHASE 10 MAP CONTEXT
+
+MapLibre renders the exact owned merchant, its exact administrative polygon, up to 20 similar canonical merchants, and a transit point only when network-routable.
+The owned merchant uses a distinct highlighted marker. Region, similar supply, and transit have separate legend semantics.
+Browser canvas verification: nonblank at 390, 768, 1366, and 1440 pixel viewports.
+The browser calls GETRA APIs only; it never fetches MAPID Mission endpoints.
+Basemap reuse does not expose Mission credentials.

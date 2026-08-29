@@ -1,0 +1,19 @@
+GETRA PHASE 06 - PERFORMANCE AUDIT
+
+Observed successful boundary network payloads
+- Jakarta Selatan: 7,352 bytes
+- Jakarta Barat: 3,128 bytes
+- Jakarta Timur: 9,427 bytes
+- selected feature count: 3
+- combined unique payload: 19,907 bytes
+
+Behavior
+- initial page state loads zero boundary features
+- browser cache fetches each selected region only once
+- revisiting and removing cached regions causes no repeated geometry request
+- boundary does not refetch on map movement or every search keystroke
+- one GeoJSON source uses setData
+- no browser point-in-polygon
+- Phase 04 regression rendered 11 merchant cluster features after Phase 06
+
+These are observed local-browser/remote-DB values, not a fabricated latency guarantee.

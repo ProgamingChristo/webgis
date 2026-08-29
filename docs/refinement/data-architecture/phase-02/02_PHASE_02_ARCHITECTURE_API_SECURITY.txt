@@ -1,0 +1,77 @@
+GETRA PHASE 02 - ARCHITECTURE, API, AND SECURITY
+
+Architecture
+Admin UI
+-> GETRA POST /api/admin/mission/sync
+-> AdminMissionSyncService
+-> verified Phase 01 MapidMissionSyncService.syncSource
+-> existing MAPID client, pagination, schema validation, normalization
+-> existing idempotent repository and Supabase tables
+-> frontend-safe sync summary
+
+No provider client, pagination, normalization, provenance, or persistence implementation was duplicated.
+The original POST /api/admin/mapid/mission-sync contract remains available and unchanged for Phase 01 compatibility.
+Premium integration remains unchanged.
+
+Admin API
+Path: /api/admin/mission/sync
+
+GET
+- Authorization: ADMIN only.
+- Returns one latest safe summary per canonical source.
+- Derives history from mapid_mission_sync_runs.
+
+POST
+- Authorization: ADMIN only.
+- Strict request body: { "source": "MENU_GO" }
+- Allowed source values: MENU_GO, STRUK_GO, PROPERTI_GO, ACTIVITIES.
+- Unknown properties, URLs, traversal strings, and provider paths are rejected.
+- Provider path and verified synchronization polygon are owned by the backend.
+
+Safe result fields
+- source
+- status
+- started_at
+- finished_at
+- duration_ms
+- pages_fetched
+- fetched
+- inserted
+- updated
+- skipped
+- invalid
+- failed
+- error_summary
+
+Not returned
+- provider URL/path
+- provider headers
+- x-api-key
+- MAPID credential
+- service-role credential
+- request_context
+- error_log
+- raw stack trace
+
+Authorization
+- Backend uses requireRole(request, "ADMIN").
+- Canonical field remains profiles.account_role.
+- ADMIN is allowed.
+- USER is forbidden.
+- Anonymous callers are unauthorized.
+- Stakeholder mode is not consulted as authorization.
+
+Concurrency and idempotency
+- UI disables the source button while its request is active.
+- Backend uses a module-level same-source active-run guard and returns canonical conflict behavior for an obvious duplicate in the same process.
+- Existing source_type + source_record_id persistence identity remains the logical idempotency guarantee.
+- The active-run guard is not a distributed lock across separate server instances. A distributed queue/lock was intentionally not introduced in Phase 02.
+
+Database
+- Existing mapid_mission_sync_runs provides run-level auditability and last-sync data.
+- Existing mapid_mission_observations provides idempotent observation persistence.
+- No Phase 02 DB migration required.
+
+Endpoint policy
+- GET /api/admin/mission/sync: ADMIN, api rate-limit profile, allowlist CORS.
+- POST /api/admin/mission/sync: ADMIN, mutation rate-limit profile, allowlist CORS.

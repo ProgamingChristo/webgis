@@ -87,13 +87,13 @@ CREATE POLICY "Allow Admins full access on data_sources"
     ON public.data_sources
     FOR ALL
     TO authenticated
-    USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'ADMIN'))
-    WITH CHECK (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'ADMIN'));
+    USING ((SELECT private.is_admin()))
+    WITH CHECK ((SELECT private.is_admin()));
 
 -- Admins can view/manage import_jobs
 CREATE POLICY "Allow Admins full access on import_jobs"
     ON public.import_jobs
     FOR ALL
     TO authenticated
-    USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'ADMIN'))
-    WITH CHECK (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'ADMIN'));
+    USING ((SELECT private.is_admin()))
+    WITH CHECK ((SELECT private.is_admin()));

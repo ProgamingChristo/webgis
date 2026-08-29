@@ -1,0 +1,7 @@
+GETRA PHASE 05 - KEYWORD SEARCH
+
+Keyword matching is performed in Postgres against canonical merchant name, category, and address using parameterized ILIKE expressions. Ranking is deterministic: exact/prefix merchant-name matches precede broader matches, followed by stable name and ID ordering.
+
+Only canonical merchants with approved canonical source links are returned. Search does not reinterpret Struk Go observations as merchants and does not query raw Mission records directly.
+
+The query is limited to 120 characters and the response limit is capped at 100.

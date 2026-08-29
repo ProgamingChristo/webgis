@@ -1,0 +1,9 @@
+GETRA PHASE 06 - RESULT GROUPING
+
+Grouping uses canonical merchant regionIds and the selected-region order. Duplicate canonical merchant IDs are defensively removed by the transformation.
+
+Each selected region receives a semantic H3 heading. The count text explicitly says "hasil pada halaman ini" because Phase 05 pagination is global and capped; it does not claim a complete real-world total per region.
+
+Selected regions with zero current-page matches remain represented with "0 hasil pada halaman ini" so an empty dataset is not confused with an absent selection.
+
+Unknown region metadata is labeled "Wilayah belum teridentifikasi" rather than guessed client-side.

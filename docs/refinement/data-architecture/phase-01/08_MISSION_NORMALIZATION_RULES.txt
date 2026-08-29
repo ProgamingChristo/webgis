@@ -1,0 +1,34 @@
+MISSION NORMALIZATION RULES
+
+Common normalized observation:
+- source_type
+- source_record_id
+- mission_name
+- geometry Point EPSG:4326 in longitude, latitude order
+- normalized_properties
+- raw_payload
+- raw_payload_checksum
+- observed_at
+- provider_updated_at
+- verification_status
+- freshness_status
+- provenance
+
+Source semantics:
+- MENU_GO: FIELD_SURVEY_MERCHANT_OBSERVATION.
+- STRUK_GO: TRANSACTION_OBSERVATION.
+- PROPERTI_GO: PROPERTY_OBSERVATION.
+- ACTIVITIES: FIELD_OBSERVATION.
+
+Verification:
+- Imported source records use SOURCE_OBSERVED, not VERIFIED.
+
+Freshness:
+- FRESH only when a parseable source date exists.
+- UNKNOWN otherwise.
+
+Activities official field mapping - 2026-08-27:
+- medias -> normalized media.
+- user_full_name, falling back to user_name -> normalized author.
+- created_at -> observed_at when parseable.
+- Raw provider payload remains preserved separately with checksum and provenance.

@@ -1,0 +1,8 @@
+GETRA PHASE 08 - SMART SEARCH INTENT CONTRACT
+
+The deterministic parser returns domain, keyword, location_text, scope, category,
+constraints, validated origin, parser, and confidence. Supported Indonesian budget
+forms include 30 ribu, 30rb, Rp30.000, and 20 ribuan. Walking limits are normalized
+to minutes. Opening intent is represented as an explicit open-now constraint.
+Unrecognized text remains a keyword; arbitrary SQL, provider paths, and coordinates
+are never accepted through this contract. Combined hard constraints are preserved.

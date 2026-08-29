@@ -1,0 +1,31 @@
+GETRA PHASE 04 - VIEWPORT MERCHANT LOADING ARCHITECTURE AUDIT
+
+STATUS: COMPLETED
+DATE: 2026-08-27
+
+Verified flow:
+USER session -> GETRA MapLibre map -> moveend bbox -> authenticated GETRA API
+-> service-role PostGIS RPC -> canonical merchant enrichment -> bounded page
+-> MapLibre markers or native clustering.
+
+Reused implementation:
+- Existing authenticated /api/merchants/canonical route.
+- Existing Phase 03 CanonicalMerchantReadService and safe merchant DTO mapping.
+- Existing merchant_source_links canonical identity and provenance.
+- Existing GETRA browser auth/session handling.
+- Existing MapLibre map and merchant selection behavior.
+
+No Mission or Premium provider request is made by the browser. Phase 01 ingestion
+and Phase 03 reconciliation are unchanged.
+
+Audit finding that required clustering:
+- Browser viewport contained 1,170 combined visible merchants.
+- Rendering each item as a DOM Marker was excessive.
+- Native MapLibre GeoJSON clustering is enabled above 250 visible merchants.
+- Selecting an unclustered point retains the existing detail-selection behavior.
+
+Security boundary:
+- Query accepts only west, south, east, north, limit, and offset.
+- Duplicate and unknown query parameters are rejected.
+- Bbox ordering, coordinate ranges, extent, limit, and offset are bounded.
+- RPC execution is revoked from anon/authenticated and granted to service_role.

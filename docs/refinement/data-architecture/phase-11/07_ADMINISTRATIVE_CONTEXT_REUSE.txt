@@ -1,0 +1,13 @@
+GETRA PHASE 11 - ADMINISTRATIVE CONTEXT REUSE
+
+Reused source:
+- Phase 06 administrative boundary repository.
+
+Behavior:
+- Region filters use existing administrative region metadata.
+- Candidate location is matched to the available region context when possible.
+- If no region is available, the API returns UNKNOWN administrative context instead of fabricating labels.
+
+No Phase 11 migration:
+- Administrative objects were already available from prior phases.
+

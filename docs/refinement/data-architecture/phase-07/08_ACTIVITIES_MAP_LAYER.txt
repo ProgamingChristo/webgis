@@ -1,0 +1,8 @@
+ACTIVITIES MAP LAYER
+
+Source identifier: ACTIVITIES
+Domain: FIELD / CONTEXTUAL OBSERVATION
+Default: OFF
+Rendering: purple source-specific points and clusters.
+
+Runtime initial viewport: HTTP 200, 60 of 60 observations. Activities are visual context only and do not mutate routing costs or penalties.

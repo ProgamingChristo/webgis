@@ -1,0 +1,7 @@
+GETRA PHASE 08 - ROUTE ARCHITECTURE
+
+POST /api/routing validates authenticated input, applies rate limiting, and calls
+calculate_walking_route_v2. The result contract distinguishes ROUTABLE, UNROUTABLE,
+and NO_NETWORK_ACCESS and returns nullable geometry for failures. There is no OSRM,
+direct-line, or browser fallback in the Phase 08 route path. Browser evidence produced
+a 26-coordinate LineString, 309.83 meters, and 222 seconds from pgRouting.

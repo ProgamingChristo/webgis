@@ -21,11 +21,9 @@ type ApiEnvelope<T> =
 
 function getApiBaseUrl(): string {
   const baseUrl =
-    process.env.NEXT_PUBLIC_API_URL;
-
-  if (!baseUrl) {
-    throw new Error("NEXT_PUBLIC_API_URL belum dikonfigurasi.");
-  }
+    process.env.NEXT_PUBLIC_API_URL ||
+    process.env.NEXT_PUBLIC_GETRA_API_URL ||
+    "http://localhost:8080";
 
   return baseUrl;
 }
@@ -50,8 +48,8 @@ async function request<T>(
     throw new Error(
       json.success
         ? "Request GETRA gagal."
-        : json.error?.code ||
-          json.error?.message ||
+        : json.error?.message ||
+          json.error?.code ||
           "Request GETRA gagal.",
     );
   }

@@ -1,0 +1,18 @@
+MISSION IDEMPOTENCY STRATEGY
+
+Logical identity:
+- source_type + source_record_id.
+
+Persistence:
+- Upsert uses source-scoped conflict target.
+- Existing records are updated in place.
+- Raw payload, normalized properties, geometry, freshness, provenance, checksum, last_seen_at, and latest_sync_run_id are refreshed.
+
+Duplicate protection:
+- The sync service skips duplicate source ids seen within the same run.
+- Same external id across different sources does not collide.
+
+Test evidence:
+- Unit test verifies duplicate skip inside a run.
+- Unit test verifies inserted and updated reporting.
+- Unit test verifies MENU_GO and STRUK_GO can share the same source_record_id without semantic collision.

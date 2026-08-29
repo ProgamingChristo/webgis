@@ -1,5 +1,10 @@
 import { authenticatedFetch } from "@/src/lib/auth-client";
 
+export interface AiAskMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export interface AiAskRequest {
   question: string;
   active_experience?: "GENERAL" | "UMKM" | "INVESTOR" | "GOVERNMENT";
@@ -15,6 +20,7 @@ export interface AiAskRequest {
       longitude: number;
     };
   };
+  history?: AiAskMessage[];
 }
 
 export interface AiAskResponse {

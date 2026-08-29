@@ -4,6 +4,19 @@ const nextConfig: NextConfig = {
   // Dibutuhkan untuk Docker image Christo
   output: "standalone",
 
+  images: {
+    remotePatterns: [
+      {
+        hostname: "mapidstorage.cdn.mapid.io",
+        protocol: "https",
+      },
+      {
+        hostname: "mapid-app-chat.cdn.mapid.io",
+        protocol: "https",
+      },
+    ],
+  },
+
   // Jangan expose header X-Powered-By
   poweredByHeader: false,
 

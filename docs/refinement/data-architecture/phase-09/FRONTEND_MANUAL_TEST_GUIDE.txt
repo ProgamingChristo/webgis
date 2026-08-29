@@ -1,0 +1,16 @@
+GETRA PHASE 09 FRONTEND MANUAL TEST GUIDE
+
+1. Login as an authenticated USER and open /app.
+2. Confirm Dataset remains the default mode, then choose Analytics.
+3. Confirm Demand Intelligence loads without exposing a provider request in DevTools Network.
+4. Select coffee and 30 days; compare map labels, summary, charts, and table for all five regions.
+5. Select Retail Gap; confirm diverging legend and positive/negative/null states.
+6. Select a region from the panel and from the map; confirm the same evidence becomes selected.
+7. Select pharmacy; confirm insufficient data is explicit and Retail Gap is not fabricated.
+8. Rapidly select bakso, coffee, then nasi-goreng; confirm the final result remains nasi-goreng.
+9. Select Explain; confirm every displayed number matches the selected aggregate evidence.
+10. Simulate a failed analytics request; confirm error UI appears and a retry recovers.
+11. Verify 390x844, 768x1024, 1366x768, and 1440x900 without horizontal overflow.
+12. Confirm no x-api-key, service-role key, actor ID, event history, query text, or precise origin appears.
+
+Expected browser flow: browser -> GETRA /api/analytics/* only. Never browser -> MAPID Mission.

@@ -1,0 +1,7 @@
+GETRA PHASE 08 - SMART ALTERNATIVE
+
+The alternative is the next deterministic merchant from the already eligible search
+result set. It cannot invent merchants, bypass filters, or relax budget/open/walking
+constraints. Selecting it keeps the origin and requests a fresh network route. When
+no eligible alternative exists, the control remains unavailable. Browser evidence
+successfully returned to the first eligible 309.83-meter route.

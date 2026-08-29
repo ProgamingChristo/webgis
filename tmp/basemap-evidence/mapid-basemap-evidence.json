@@ -1,0 +1,103 @@
+{
+  "generated_at": "2026-08-28T12:10:38.221Z",
+  "styles": [
+    {
+      "id": "mapid-basic",
+      "label": "Street",
+      "response_status": 200,
+      "response_path": "/styles/basic/style.json",
+      "query_key_redacted": true,
+      "aria_pressed": "true",
+      "button_text": "StreetMAPID 3D + 2D building",
+      "canvas_pixels": 468864
+    },
+    {
+      "id": "mapid-street-2d-building",
+      "label": "Street 2D",
+      "response_status": 200,
+      "response_path": "/styles/street-2d-building/style.json",
+      "query_key_redacted": true,
+      "aria_pressed": "true",
+      "button_text": "Street 2DMAPID 2D building",
+      "canvas_pixels": 468864
+    },
+    {
+      "id": "mapid-satellite",
+      "label": "Satelit",
+      "response_status": 200,
+      "response_path": "/styles/satellite/style.json",
+      "query_key_redacted": true,
+      "aria_pressed": "true",
+      "button_text": "SatelitMAPID satellite",
+      "canvas_pixels": 468864
+    },
+    {
+      "id": "mapid-dark",
+      "label": "Dark",
+      "response_status": 200,
+      "response_path": "/styles/dark/style.json",
+      "query_key_redacted": true,
+      "aria_pressed": "true",
+      "button_text": "DarkMAPID dark",
+      "canvas_pixels": 468864
+    },
+    {
+      "id": "mapid-light",
+      "label": "Light",
+      "response_status": 200,
+      "response_path": "/styles/light/style.json",
+      "query_key_redacted": true,
+      "aria_pressed": "true",
+      "button_text": "LightMAPID light",
+      "canvas_pixels": 468864
+    }
+  ],
+  "persistence": {
+    "stored": "mapid-light",
+    "active_label": "LightMAPID light"
+  },
+  "console_errors": [],
+  "failed_requests": [
+    {
+      "host": "basemap.mapid.io",
+      "path": "/styles/basic/style.json",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "host": "basemap.mapid.io",
+      "path": "/data/mapidtiles/12/3262/2118.pbf",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "host": "basemap.mapid.io",
+      "path": "/data/mapidtiles/12/3263/2118.pbf",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "host": "basemap.mapid.io",
+      "path": "/data/mapidtiles/12/3262/2117.pbf",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "host": "basemap.mapid.io",
+      "path": "/data/mapidtiles/12/3262/2119.pbf",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "host": "basemap.mapid.io",
+      "path": "/data/mapidtiles/12/3263/2117.pbf",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "host": "basemap.mapid.io",
+      "path": "/data/mapidtiles/12/3263/2119.pbf",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "host": "basemap.mapid.io",
+      "path": "/styles/basic/style.json",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "error": null
+}

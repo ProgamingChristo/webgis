@@ -1,0 +1,8 @@
+GETRA PHASE 10 BROWSER E2E
+
+Chrome headless logged in as the safe owner fixture, opened /umkm, and observed intelligence HTTP 200.
+Verified: selected canonical merchant, 20 diagnostic components, 3 recommendations, MapLibre ready, and 3 ECharts rendered.
+Copilot returned grounded deterministic evidence; prompt injection returned SAFETY_FALLBACK.
+Injected network failure displayed an error and a 30-day retry recovered successfully.
+Separate non-owner browser showed ownership-empty state; direct private API returned 403.
+Unexpected console errors: 0. Unexpected failed requests: 0. Evidence and screenshots are in browser-evidence/.

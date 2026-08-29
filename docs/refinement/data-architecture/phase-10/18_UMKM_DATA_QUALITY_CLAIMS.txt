@@ -1,0 +1,7 @@
+GETRA PHASE 10 DATA QUALITY AND CLAIMS
+
+Major market evidence includes time window, sample/source composition, confidence, model version, and claim scope.
+UNKNOWN means missing evidence, not zero business performance.
+INSUFFICIENT_DATA suppresses opportunity recommendations and leaves unsupported Retail Gap null.
+Data Readiness is completeness; Visibility is discovery eligibility; Location is spatial evidence.
+No population demand, customer total, popularity, financial outcome, or property-value claim is made.

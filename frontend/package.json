@@ -15,5 +15,8 @@
   },
   "devDependencies": {
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "echarts": "^6.1.0"
   }
 }

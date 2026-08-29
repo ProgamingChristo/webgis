@@ -2,6 +2,8 @@
 
 import { useEffect, useState, createContext, useContext } from "react";
 import { useRouter, usePathname } from "next/navigation";
+
+import { GetraLogo } from "@/src/components/getra-ui";
 import { getUserContext, type UserContext } from "@/src/lib/auth-client";
 
 interface AuthContextValue {
@@ -89,9 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="auth-loading">
-        <div className="auth-loading__mark">
-          G
-        </div>
+        <GetraLogo className="auth-loading__logo" />
 
         <span>
           Menyiapkan GETRA...

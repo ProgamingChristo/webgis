@@ -1,0 +1,7 @@
+GETRA PHASE 06 - REGION LABEL ARCHITECTURE
+
+Region names are plain-text feature properties rendered by a MapLibre symbol layer. Collision handling remains enabled; labels are not forced to overlap merchant or basemap labels.
+
+Labels are visible at useful city-scale zooms and hidden above zoom 15.5 to avoid dominating detailed merchant exploration. Small screens may display fewer map labels due to collision rules. Selected chips and semantic group headings are the accessible textual fallback.
+
+No unsafe HTML or per-region random palette is used.

@@ -1,0 +1,7 @@
+GETRA PHASE 10 COPILOT GROUNDING
+
+Every numeric output must occur in the server fact allowlist, including computed network-minute display.
+Financial, property-value, guaranteed-success, and population-customer claims are rejected.
+Merchant text and questions are declared untrusted data; injection patterns fail closed before the model.
+Runtime grounded response repeated Visibility 85 and pgRouting unavailable evidence without invention.
+Runtime injection request returned SAFETY_FALLBACK. Unit tests reject invented Demand 90 and ROI 30.

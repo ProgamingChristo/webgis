@@ -1,0 +1,29 @@
+GETRA PHASE 12 - RESIDUAL USER DATA EXPOSURE CLOSURE CHANGES
+
+Status:
+- VERIFIED.
+
+Backend:
+- Business Space candidate query now supports direct property search text.
+- Business Space candidate query now supports property_category filter.
+- Business Space candidate query now supports transaction_type DIJUAL/DISEWA.
+- Filtering remains bounded by active bbox or selected administrative region.
+
+Frontend:
+- Main GETRA map now exposes primary Merchant / Business Space mode.
+- Business Space mode adds direct Properti Go search and filters.
+- Properti Go markers render as property markers, not merchant markers.
+- Property detail panel is source-specific and includes Business Space analysis context.
+- Canonical merchant detail now renders Menu Go media/enrichment when linked evidence exists.
+- User-facing provenance wording was simplified.
+- Missing fields no longer dominate the normal detail panel.
+
+Media:
+- MAPID media hosts are explicitly allowed in next/image remotePatterns.
+- SafeMediaImage validates allowed hosts before rendering.
+- Broken media falls back without crashing the detail panel.
+
+Verification:
+- Browser evidence stored under docs/refinement/data-architecture/phase-12/browser-evidence.
+- Automated quality gates passed.
+

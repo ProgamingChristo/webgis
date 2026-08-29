@@ -1,0 +1,24 @@
+GETRA PHASE 12 - MENU GO MEDIA EXPOSURE
+
+Root cause:
+- Backend canonical merchant DTO already mapped Menu Go enrichment.
+- Frontend Merchant type and detail UI did not expose the fields.
+
+Fixed:
+- Merchant type now includes photo, menuPhotos, menu, observedPrice, observedCondition, mobility, observedAt, sources, and safe provenance.
+- Merchant detail renders a gallery when safe Menu Go media exists.
+- Menu Go place photo and menu photos are shown as enrichment of the same canonical merchant.
+- No second Menu Go merchant entity or duplicate pin is created.
+
+Browser evidence:
+- one_merchant_selection: true.
+- menu_go_provenance_visible: true.
+- place_photo_rendered: true.
+- menu_photo_rendered: true.
+- main_menu_visible: true.
+- no_raw_source_payload: true.
+
+Observed price:
+- The browser-verified Menu Go media target did not include observedPrice.
+- Status should be reported as NOT AVAILABLE for that verification target, not FAIL.
+

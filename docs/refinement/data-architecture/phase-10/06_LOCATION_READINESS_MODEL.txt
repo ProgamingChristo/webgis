@@ -1,0 +1,7 @@
+GETRA_LOCATION_READINESS_V1
+
+Weights: valid geometry 30, administrative region 25, pedestrian reachability 25, transit network evidence 20.
+Mobile geometry receives 15/30 and LIMITED because an observation is not a permanent address.
+Pedestrian and transit points require Phase 08 pgRouting evidence. No straight-line walking-time claim is allowed.
+The score is location evidence readiness, not property value or investment attractiveness.
+Missing graph coverage remains explicit NO_NETWORK_ACCESS or UNAVAILABLE.

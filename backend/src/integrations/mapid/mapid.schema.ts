@@ -19,7 +19,8 @@ const queryValueSchema = z.union([
 
 export const mapidRequestSchema = z
   .object({
-    method: z.literal("GET").default("GET"),
+    body: z.unknown().optional(),
+    method: z.enum(["GET", "POST"]).default("GET"),
     path: z.string().trim().min(1).max(1_024),
     query: z.record(z.string().min(1).max(128), queryValueSchema).optional(),
   })
@@ -36,6 +37,14 @@ export const mapidRequestSchema = z
         code: "custom",
         message: "MAPID request path must be a safe relative path",
         path: ["path"],
+      });
+    }
+
+    if (value.method === "GET" && value.body !== undefined) {
+      context.addIssue({
+        code: "custom",
+        message: "GET MAPID requests must not include a body",
+        path: ["body"],
       });
     }
   });

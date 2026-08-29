@@ -1,0 +1,24 @@
+GETRA PHASE 11 - AI LOCATION INSIGHT GROUNDING
+
+Endpoint:
+- POST /api/business-space/insight
+
+Behavior:
+- AI insight uses the same comparison payload as grounded input.
+- Deterministic fallback is available when AI is unavailable.
+- Prompt-injection style user input is not allowed to override system claim rules.
+
+Forbidden claims:
+- Available now.
+- Guaranteed availability.
+- ROI.
+- Revenue.
+- Profit.
+- Investment return.
+
+Client-visible output:
+- Safe summary.
+- Evidence bullets.
+- Caveats.
+- No secret values.
+

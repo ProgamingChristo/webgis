@@ -1,0 +1,11 @@
+DEMAND WEIGHT MODEL V1
+
+SEARCH = 1.0
+ROUTE_REQUEST = 2.0
+COMMUTER_REQUEST = 1.5
+TRANSACTION_OBSERVATION = 2.0
+CAMPAIGN_INTERACTION = 0.0
+
+Weighted demand is a deterministic sum of raw counts multiplied by these constants.
+Campaign interactions are visible in raw evidence but deliberately cannot raise Demand Score.
+Weights are server-owned, versioned, returned to clients, and covered by tests.

@@ -1,0 +1,8 @@
+GETRA PHASE 10 SECURITY AND PRIVACY
+
+Backend ownership checks are mandatory before private analysis. Runtime: owner 200, non-owner 403, anonymous test 401.
+UMKM mode alone produced an empty browser state and no private data.
+Responses omit raw provider payloads, user histories, tokens, service role, API keys, and private profile metadata.
+Claim POST creates PENDING only; instant owner binding and demo-merchant exposure were removed.
+Endpoint policy registers GET intelligence and POST Copilot. Strict UUID/day/body schemas reject injection fields.
+Browser network and response scans found no provider secret or Mission request.

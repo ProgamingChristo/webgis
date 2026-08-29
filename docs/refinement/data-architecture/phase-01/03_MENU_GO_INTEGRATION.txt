@@ -1,0 +1,41 @@
+MENU GO INTEGRATION
+
+Remote endpoint:
+- POST /web/competition/menugo through configured MAPID base URL.
+- Header: x-api-key, injected server-side.
+
+Request:
+- GeoJSON Polygon feature.
+- offset.
+
+Normalization:
+- Source type: MENU_GO.
+- Semantics: FIELD_SURVEY_MERCHANT_OBSERVATION.
+- Persisted as observation, not canonical merchant.
+- Preserves raw payload, checksum, source id, geometry, observed/provider timestamps when present.
+
+Allowed normalized fields:
+- nama_tempat
+- jenis_tempat
+- foto_tempat
+- foto_menu_1
+- foto_menu_2
+- menu_utama
+- harga_rata_rata
+- kondisi_tempat
+- mobilitas
+
+Status:
+- Implemented locally.
+- Remote runtime verification blocked until MAPID credentials/endpoint access are available.
+
+RUNTIME VERIFICATION - 2026-08-27
+
+- Real provider request: HTTP 200.
+- Response envelope: success + features + pagination.
+- Records parsed with valid source identity and Point geometry: 87.
+- Persisted remote logical row count: 87.
+- Idempotent rerun: 0 insert, 87 update, final count remained 87.
+- GETRA normalized read API: HTTP 200, 10 sampled items returned.
+- Credential remained server-side and was not recorded in evidence.
+- STATUS: VERIFIED.

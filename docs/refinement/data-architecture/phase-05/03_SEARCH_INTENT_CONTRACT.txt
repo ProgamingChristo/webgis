@@ -1,0 +1,24 @@
+GETRA PHASE 05 - SEARCH INTENT CONTRACT
+
+Canonical intent fields
+- domain: MERCHANT
+- original_query: bounded user input
+- keyword: normalized merchant/category term or null
+- location_text: recognized administrative location or null
+- category: optional bounded filter or null
+- scope.type: CURRENT_VIEWPORT, REGION, or MULTI_REGION
+- scope.region_ids: trusted canonical IDs only
+- scope.bounds: server-resolved or validated viewport bounds
+
+Precedence
+1. A recognized location inside q selects that location.
+2. Otherwise explicit region_ids select REGION or MULTI_REGION.
+3. Otherwise the current viewport is used.
+
+Examples
+- bakso -> keyword bakso, CURRENT_VIEWPORT
+- Jakarta Selatan -> no keyword, REGION jakarta-selatan
+- bakso Jakarta Selatan -> keyword bakso, REGION jakarta-selatan
+- bakso plus three selected region IDs -> MULTI_REGION
+
+Unknown explicit location text is rejected rather than silently widened.

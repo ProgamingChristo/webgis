@@ -1,0 +1,9 @@
+GROUNDED AI INTERPRETATION
+
+The interpretation endpoint recomputes analytics on the server and selects one aggregate row.
+It never accepts client-provided scores as facts. Any AI response is rejected unless its numbers
+belong to server evidence and it contains no revenue, profit, ROI, total-demand, or guarantee claim.
+
+If AI is unavailable or rejected, a deterministic explanation is returned. Browser evidence observed
+DETERMINISTIC_FALLBACK with the exact selected category, region, confidence, sample, and null gap.
+Analytics maps, charts, and tables remain usable independently of AI.

@@ -1,0 +1,7 @@
+GETRA PHASE 08 - WALKING TIME NETWORK MODEL
+
+Walking eligibility uses pgRouting over pedestrian_graph_edges. Edge cost is length
+in meters divided by 1.4 meters/second. The origin and merchant are snapped to valid
+nodes within a bounded threshold and a common graph component. Batch costs are capped
+at 30 destinations. Straight-line distance may be labelled as direct GPS distance,
+but is never claimed as walking distance or walking duration.

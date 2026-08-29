@@ -1,0 +1,15 @@
+DEMAND SIGNAL SOURCE INVENTORY - REMOTE AUDIT 2026-08-28
+
+Struk Go: 164 transaction observations. No transaction value or revenue field exists.
+Search: analytics_events SEARCH, server-instrumented in canonical merchant search.
+Route: analytics_events ROUTE_REQUEST, server-instrumented when a canonical destination ID exists.
+Commuter requests: commuter_requests exists; zero remote rows at audit time.
+Campaign: campaign_events exists; four historical interactions at audit time; reported at weight 0.
+Canonical supply: 1001 published canonical merchants at audit time.
+Spatial units: five Phase 06 administrative city regions.
+
+Unavailable: a prior general-search history and a prior general-route history. Phase 09 starts
+privacy-minimized aggregate event capture prospectively; it does not fabricate history.
+
+Runtime verification: a real Bakso Jakarta Selatan search returned three results, a canonical merchant
+route returned ROUTABLE, and aggregate analytics reported SEARCH=2, ROUTE_REQUEST=1, STRUK=1.

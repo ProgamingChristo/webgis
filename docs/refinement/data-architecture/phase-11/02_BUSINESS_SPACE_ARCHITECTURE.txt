@@ -1,0 +1,28 @@
+GETRA PHASE 11 - BUSINESS SPACE ARCHITECTURE
+
+Runtime flow:
+USER LOGIN
+-> /business-space
+-> GETRA frontend service
+-> GETRA backend /api/business-space/*
+-> Properti Go observations from mapid_mission_observations
+-> administrative context
+-> demand and retail gap context
+-> canonical merchant supply context
+-> commuter/transit context where available
+-> safe comparison and insight result
+
+Reused components:
+- Properti Go Mission observations from the verified Mission repository.
+- Canonical merchant read service from prior reconciliation and viewport phases.
+- Phase 06 administrative region repository.
+- Phase 08 commuter network and transport node services.
+- Phase 09 Demand Intelligence and Retail Gap repository.
+- Existing AI structured generation helper with deterministic fallback.
+
+Duplication avoided:
+- No new MAPID Mission client.
+- No new ingestion path.
+- No new canonical merchant persistence model.
+- No new demand model.
+

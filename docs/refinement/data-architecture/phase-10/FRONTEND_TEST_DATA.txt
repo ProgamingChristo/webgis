@@ -1,0 +1,11 @@
+GETRA PHASE 10 FRONTEND TEST DATA
+
+All entries are TEST/PILOT evidence. No password or secret is stored here.
+OWNER TEST: getra.umkm.test@example.com; requires externally supplied test password; 1 canonical owned merchant.
+NON-OWNER TEST: getra.commuter.test@example.com; expects 0 authorized merchants and private API 403.
+OWNER MERCHANT: incomplete photo/menu/verified evidence; hours, price, contact, category, location available.
+EXPECTED 30-DAY PILOT: Data 85, Visibility 85, Location 55, Demand 49, Supply 100, Retail Gap unavailable, INSUFFICIENT_DATA.
+ROUTING PILOT: NO_NETWORK_ACCESS and transit unavailable; no walking metric may be invented.
+RECOMMENDATIONS: review pedestrian access, add menu evidence, add profile photo.
+COPILOT: grounded Visibility 85 scenario and injection SAFETY_FALLBACK.
+MULTI-MERCHANT: use two approved/canonical owner fixtures when available; current remote owner has one.

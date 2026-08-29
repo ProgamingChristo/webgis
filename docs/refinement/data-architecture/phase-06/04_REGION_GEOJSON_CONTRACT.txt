@@ -1,0 +1,19 @@
+GETRA PHASE 06 - REGION GEOJSON CONTRACT
+
+Endpoint
+GET /api/regions?ids=jakarta-selatan,jakarta-barat
+
+Rules
+- authenticated GETRA user only
+- one to five canonical, unique, allow-listed IDs
+- duplicate parameters, duplicate IDs, unknown fields, and unknown IDs return HTTP 400
+- browser cannot submit geometry, SQL, predicate, or arbitrary provider path
+
+Response data
+- feature_collection.type = FeatureCollection
+- each feature has stable top-level id
+- geometry is Polygon or MultiPolygon in EPSG:4326 [longitude, latitude]
+- safe properties: id, name, region_type, bounds
+- feature_count is the number returned
+
+Actual runtime returned MultiPolygon. Polygon handling is supported and covered by unit tests.

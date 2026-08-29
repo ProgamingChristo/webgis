@@ -1,0 +1,23 @@
+GETRA PHASE 03 - PREMIUM + MENU GO RECONCILIATION CHANGES
+
+Added
+- Remote additive migration for reconciliation decisions, source-link identity, spatial sources, and PostGIS candidate RPC.
+- Deterministic merchant matching and normalization module.
+- Idempotent reconciliation repository and service.
+- ADMIN reconciliation GET/POST API.
+- Authenticated canonical merchant read API.
+- Focused normalization, matching, authorization, security, canonical read, attribute resolution, and provenance tests.
+- Phase 03 audit, architecture, runtime evidence, and final report documentation.
+
+Preserved
+- Existing Premium provider integration and credential handling.
+- Existing Phase 01 Mission synchronization.
+- Existing Phase 02 Admin Mission sync.
+- Raw Premium and Menu Go evidence.
+- Merchant ownership and claims.
+
+Not added
+- Phase 04 viewport loading.
+- Search changes.
+- New user-facing map layer architecture.
+- AI matching authority.

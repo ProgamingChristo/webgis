@@ -1,0 +1,27 @@
+GETRA PHASE 05 - SAFE FRONTEND TEST DATA
+
+Accounts
+- Use an existing authorized USER fixture for positive map/search tests.
+- Use an unauthenticated browser for the authentication negative case.
+- No password or secret is stored in this file.
+
+Safe queries
+- bakso
+- Jakarta Selatan
+- bakso Jakarta Selatan
+- soto Jakarta Barat
+- nonexistentmerchantxyz
+- Atlantis (expected safe validation error)
+
+Regions
+- Jakarta Barat
+- Jakarta Pusat
+- Jakarta Selatan
+- Jakarta Timur
+- Jakarta Utara
+
+Expected patterns
+- Result counts may change.
+- Result IDs must be canonical and unique.
+- Explicit region results must be inside selected trusted regions.
+- Browser requests must target GETRA /api/merchants/canonical only, never MAPID Mission.

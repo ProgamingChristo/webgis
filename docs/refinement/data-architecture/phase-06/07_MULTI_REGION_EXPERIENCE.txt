@@ -1,0 +1,15 @@
+GETRA PHASE 06 - MULTI-REGION EXPERIENCE
+
+Observed selection order
+1. Jakarta Selatan
+2. Jakarta Barat
+3. Jakarta Timur
+
+Observed behavior
+- three boundary features and three chips
+- MULTI_REGION merchant scope
+- combined exact bounds: 106.686211,-6.370783,106.971893,-6.095124
+- three deterministic result groups, including accurate zero-result groups
+- one semantic boundary style; identity is also communicated by labels/chips/headings, not color alone
+
+Removing Jakarta Timur produced two features, two chips, two groups, and recalculated bounds without stale state. Removing the final selected region falls back to current viewport search rather than all data.

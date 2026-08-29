@@ -19,11 +19,11 @@ describe("Docker deployment configuration", () => {
     expect(dockerfile).toContain("AS runner");
     expect(dockerfile).toContain("RUN npm ci");
     expect(dockerfile).toContain("RUN npm run build");
-    expect(dockerfile).toContain("/app/.next/standalone");
-    expect(dockerfile).toContain("/app/.next/static");
+    expect(dockerfile).toContain("/app/backend/.next/standalone");
+    expect(dockerfile).toContain("/app/backend/.next/static");
     expect(dockerfile).toContain("USER node");
     expect(dockerfile).toContain("EXPOSE 3000");
-    expect(dockerfile).toContain('CMD ["node", "server.js"]');
+    expect(dockerfile).toContain('CMD ["node", "backend/server.js"]');
     expect(dockerfile).not.toContain("npm run dev");
   });
 

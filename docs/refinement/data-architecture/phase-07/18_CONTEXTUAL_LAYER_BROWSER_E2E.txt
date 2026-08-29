@@ -1,0 +1,9 @@
+CONTEXTUAL LAYER BROWSER E2E
+
+PASS on Chrome headless through puppeteer-core.
+
+Verified defaults, all three source toggles, real HTTP 200 data, clusters/points, source-specific popups and media, cached re-enable, canonical search coexistence, merchant toggle independence, injected Activities 503 isolation, accessibility, responsive layouts, and network secrecy.
+
+Expected console entries were the deliberately tested HTTP 400 and HTTP 503 responses. Unexpected console errors and failed requests: 0.
+
+Machine evidence: browser-evidence/runtime-evidence.json

@@ -1,0 +1,290 @@
+.workspace {
+  display: grid;
+  gap: 18px;
+}
+
+.refreshButton {
+  align-items: center;
+  background: var(--getra-surface-raised);
+  border: 1px solid var(--getra-line);
+  border-radius: 6px;
+  color: var(--getra-ink);
+  cursor: pointer;
+  display: inline-flex;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.refreshButton:hover:not(:disabled),
+.refreshButton:focus-visible {
+  border-color: var(--getra-line-strong);
+  color: var(--getra-primary-hover);
+  outline: none;
+}
+
+.refreshButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.summaryBar {
+  align-items: stretch;
+  background: var(--getra-surface-dark);
+  border-block: 1px solid var(--getra-line);
+  display: grid;
+  grid-template-columns: minmax(100px, 0.5fr) minmax(100px, 0.5fr) minmax(220px, 1.5fr);
+}
+
+.summaryBar > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 14px 18px;
+}
+
+.summaryBar > div + div {
+  border-left: 1px solid var(--getra-line);
+}
+
+.summaryBar span,
+.lastSync span,
+.metrics dt {
+  color: var(--getra-ink-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.summaryBar strong {
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.pageError {
+  align-items: center;
+  background: color-mix(in srgb, var(--getra-danger) 10%, var(--getra-surface));
+  border: 1px solid color-mix(in srgb, var(--getra-danger) 38%, transparent);
+  border-radius: 6px;
+  color: #ffc3ca;
+  display: flex;
+  gap: 9px;
+  padding: 11px 13px;
+}
+
+.sourceGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sourceCard {
+  background: var(--getra-surface);
+  border: 1px solid var(--getra-line);
+  border-radius: 8px;
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding: 18px;
+}
+
+.cardHeader {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.sourceIdentity {
+  align-items: center;
+  display: flex;
+  gap: 11px;
+  min-width: 0;
+}
+
+.sourceIcon {
+  align-items: center;
+  background: var(--getra-primary-soft);
+  border: 1px solid var(--getra-line-strong);
+  border-radius: 6px;
+  color: var(--getra-primary);
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.sourceIdentity h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.sourceIdentity p {
+  color: var(--getra-ink-soft);
+  font-size: 0.78rem;
+  margin: 3px 0 0;
+}
+
+.status {
+  align-items: center;
+  border: 1px solid var(--getra-line);
+  border-radius: 999px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  font-weight: 800;
+  gap: 5px;
+  padding: 5px 8px;
+}
+
+.statusCOMPLETED {
+  border-color: color-mix(in srgb, var(--getra-action) 40%, transparent);
+  color: var(--getra-action);
+}
+
+.statusRUNNING {
+  border-color: var(--getra-line-strong);
+  color: var(--getra-primary);
+}
+
+.statusPARTIAL {
+  border-color: color-mix(in srgb, var(--getra-warning) 40%, transparent);
+  color: var(--getra-warning);
+}
+
+.statusFAILED,
+.statusBLOCKED {
+  border-color: color-mix(in srgb, var(--getra-danger) 40%, transparent);
+  color: var(--getra-danger);
+}
+
+.statusNEVER_SYNCED {
+  color: var(--getra-ink-soft);
+}
+
+.lastSync {
+  border-bottom: 1px solid var(--getra-line);
+  display: grid;
+  gap: 4px;
+  padding-bottom: 14px;
+}
+
+.lastSync strong {
+  font-size: 0.92rem;
+}
+
+.lastSync small {
+  color: var(--getra-ink-soft);
+  font-size: 0.75rem;
+}
+
+.metrics {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.metrics > div {
+  min-width: 0;
+}
+
+.metrics dd {
+  font-size: 1rem;
+  font-weight: 750;
+  margin: 4px 0 0;
+}
+
+.warning dd {
+  color: var(--getra-warning);
+}
+
+.danger dd {
+  color: var(--getra-danger);
+}
+
+.emptyMetrics {
+  align-items: center;
+  color: var(--getra-ink-soft);
+  display: flex;
+  font-size: 0.82rem;
+  min-height: 78px;
+}
+
+.sourceError {
+  color: #ffc3ca;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.syncButton {
+  align-items: center;
+  align-self: end;
+  background: var(--getra-action);
+  border: 1px solid var(--getra-action);
+  border-radius: 6px;
+  color: var(--getra-ink-inverse);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 850;
+  gap: 7px;
+  justify-content: center;
+  min-height: 38px;
+  padding: 9px 13px;
+  width: 100%;
+}
+
+.syncButton:hover:not(:disabled),
+.syncButton:focus-visible {
+  filter: brightness(1.06);
+  outline: 2px solid color-mix(in srgb, var(--getra-action) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.syncButton:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.spinning {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 860px) {
+  .sourceGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .summaryBar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summaryBar > div:last-child {
+    border-left: 0;
+    border-top: 1px solid var(--getra-line);
+    grid-column: 1 / -1;
+  }
+
+  .sourceCard {
+    padding: 14px;
+  }
+
+  .cardHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .status {
+    align-self: flex-start;
+  }
+}

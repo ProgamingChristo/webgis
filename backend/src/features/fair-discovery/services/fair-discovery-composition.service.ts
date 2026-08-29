@@ -9,12 +9,12 @@ import {
 import { SponsoredPlacementAdapter } from "../integrations/sponsored-placement.adapter";
 import { ContextualBannerServingService, ContextualBannerDTO } from "@/src/features/umkm-advertising";
 import {
-  AVERAGE_WALKING_SPEED_METERS_PER_MINUTE,
   DEFAULT_DISCOVERY_LIMIT,
   DEFAULT_DISCOVERY_RADIUS_METERS,
   HIDDEN_GEM_MIN_DATA_QUALITY_SCORE,
   MAX_SPONSORED_RESULTS_PER_DISCOVERY,
 } from "../constants/fair-discovery.constants";
+import { CommuterNetworkRepository, evaluateOpeningHours } from "@/src/features/commuter";
 
 export class FairDiscoveryCompositionService {
   private readonly sponsoredAdapter: SponsoredPlacementAdapter;
@@ -70,12 +70,8 @@ export class FairDiscoveryCompositionService {
 
       if (dist > radiusMeters) continue;
 
-      const walkingMin = Math.round(dist / AVERAGE_WALKING_SPEED_METERS_PER_MINUTE);
-
-      // Constraint: Max Walking Minutes
-      if (maxWalkingMinutes && maxWalkingMinutes > 0 && walkingMin > maxWalkingMinutes) {
-        continue;
-      }
+      const openingStatus = evaluateOpeningHours(m.opening_hours, now);
+      if (openNow && openingStatus !== "OPEN") continue;
 
       const merchantCategory = m.primary_category_id || "UMKM";
 
@@ -117,8 +113,9 @@ export class FairDiscoveryCompositionService {
           coordinates: [coords.longitude, coords.latitude],
         },
         distance_meters: dist,
-        walking_minutes: walkingMin,
-        open_now: true, // Default open or checked via opening_hours
+        walking_minutes: null,
+        open_now: openingStatus === "UNKNOWN" ? null : openingStatus === "OPEN",
+        route_status: null,
         data_quality_score: m.data_quality_score,
         price_level: m.price_level || null,
       });
@@ -127,11 +124,33 @@ export class FairDiscoveryCompositionService {
     // 3. Sort organic candidates by distance ascending (pure spatial proximity)
     organicCandidates.sort((a, b) => a.distance_meters - b.distance_meters);
 
+    let constrainedOrganic = organicCandidates;
+    if (maxWalkingMinutes && maxWalkingMinutes > 0) {
+      const bounded = organicCandidates.slice(0, 30);
+      const walking = await new CommuterNetworkRepository(this.supabase).walkingCosts(
+        { ...origin, source: "EXPLICIT_ORIGIN" },
+        bounded.map((merchant) => ({
+          candidate_id: merchant.id,
+          longitude: merchant.geometry.coordinates[0],
+          latitude: merchant.geometry.coordinates[1],
+        })),
+      );
+      const evidence = new Map(walking.candidates.map((item) => [item.candidate_id, item]));
+      constrainedOrganic = bounded.filter((merchant) => {
+        const route = evidence.get(merchant.id);
+        merchant.route_status = route?.status ?? "NO_NETWORK_ACCESS";
+        if (route?.status !== "ROUTABLE" || route.duration_seconds === null) return false;
+        merchant.walking_minutes = Math.max(1, Math.ceil(route.duration_seconds / 60));
+        merchant.distance_meters = Math.round(route.distance_meters ?? 0);
+        return route.duration_seconds <= maxWalkingMinutes * 60;
+      });
+    }
+
     // 4. Partition into Original and Hidden Gems
     const hiddenGems: HiddenGemDTO[] = [];
     const regularOriginal: OriginalMerchantDTO[] = [];
 
-    for (const item of organicCandidates) {
+    for (const item of constrainedOrganic) {
       if (
         item.data_quality_score &&
         item.data_quality_score >= HIDDEN_GEM_MIN_DATA_QUALITY_SCORE &&

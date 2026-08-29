@@ -1,4 +1,5 @@
 import type { NextRequest, NextResponse } from "next/server";
+import type * as GeoJSON from "geojson";
 
 import { withApiLogger } from "@/src/lib/api-logger";
 import { createOptionsHandler } from "@/src/lib/api-security";
@@ -8,6 +9,7 @@ import { ApplicationError } from "@/src/lib/errors";
 import { rateLimiter } from "@/src/lib/rate-limit";
 import { getRequestId } from "@/src/lib/request-id";
 import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
+import { JAKARTA_ADMIN_BOUNDARY_REGISTRY } from "@/data/jakarta-admin-boundaries";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -57,7 +59,22 @@ export async function GET(
     for (const row of studyAreaResult.data ?? []) {
       const metadata = asRecord(row.metadata);
       const batchId = readString(metadata.import_batch_id);
-      const geometry = readMultiPolygon(row.geometry);
+      const regionId = readString(metadata.region_id);
+      const regionName = readString(metadata.region_name) || row.name;
+      const detectedRegionName =
+        detectJakartaAdminRegionName(
+          regionId,
+          regionName,
+          row.name,
+        );
+      const curatedBoundary =
+        JAKARTA_ADMIN_BOUNDARY_REGISTRY[regionId] ??
+        JAKARTA_ADMIN_BOUNDARY_REGISTRY[slugify(regionName)] ??
+        JAKARTA_ADMIN_BOUNDARY_REGISTRY[slugify(detectedRegionName ?? "")];
+      const storedGeometry = readMultiPolygon(row.geometry);
+      const geometry =
+        curatedBoundary?.geometry ??
+        storedGeometry;
 
       if (!batchId || !geometry) {
         continue;
@@ -67,10 +84,12 @@ export async function GET(
         type: "Feature",
         id: row.id,
         properties: {
-          id: readString(metadata.region_id),
-          name: readString(metadata.region_name) || row.name,
+          id: curatedBoundary?.id ?? regionId,
+          name: curatedBoundary?.name ?? regionName,
           feature_count: readNumber(metadata.feature_count),
-          boundary_method: readString(metadata.boundary_method),
+          boundary_method: curatedBoundary
+            ? "jakarta_admin_curated_boundary"
+            : readString(metadata.boundary_method),
           import_batch_id: batchId,
         },
         geometry,
@@ -193,6 +212,50 @@ function readNumber(value: unknown) {
 
 function readBoolean(value: unknown, fallback: boolean) {
   return typeof value === "boolean" ? value : fallback;
+}
+
+function slugify(value: string) {
+  return (
+    value
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "wilayah-import"
+  );
+}
+
+function detectJakartaAdminRegionName(
+  ...candidates: Array<string | undefined>
+) {
+  const combined = candidates
+    .filter((candidate): candidate is string => Boolean(candidate?.trim()))
+    .join(" ")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (/\bjakarta\s*timur\b|\bjakarta\s*tim\b|\bjatim\b/.test(combined)) {
+    return "Jakarta Timur";
+  }
+
+  if (/\bjakarta\s*pusat\b|\bjakarta\s*pus\b|\bjakpus\b/.test(combined)) {
+    return "Jakarta Pusat";
+  }
+
+  if (/\bjakarta\s*selatan\b|\bjakarta\s*sel\b|\bjaksel\b/.test(combined)) {
+    return "Jakarta Selatan";
+  }
+
+  if (/\bjakarta\s*barat\b|\bjakarta\s*bar\b|\bjakbar\b/.test(combined)) {
+    return "Jakarta Barat";
+  }
+
+  if (/\bjakarta\s*utara\b|\bjakarta\s*ut\b|\bjakut\b/.test(combined)) {
+    return "Jakarta Utara";
+  }
+
+  return null;
 }
 
 function readPoint(value: unknown): [number, number] | null {

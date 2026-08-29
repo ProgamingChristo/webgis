@@ -1,0 +1,9 @@
+GETRA PHASE 08 - BROWSER E2E
+
+Executed 2026-08-28 with headless Chrome against the real local GETRA applications
+and linked remote database. Passed flows: origin lookup, network walking search,
+network service area, route, Route Switch, Smart Alternative, grounded AI fallback,
+and strict combined no-result. Search returned two eligible merchants. Strict budget
++ open-now + walking returned zero without relaxation. Console errors: 0. Failed
+requests: 0. Evidence is stored in browser-evidence/phase08-browser-evidence.json and
+the accompanying screenshots. axe-core WCAG 2/2.1 A-AA violations: 0.

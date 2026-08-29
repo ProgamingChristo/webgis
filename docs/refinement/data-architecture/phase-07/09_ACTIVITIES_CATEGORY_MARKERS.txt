@@ -1,0 +1,5 @@
+ACTIVITIES CATEGORY MARKERS
+
+The API accepts only the explicit safe category enum. Unknown or absent provider categories map to UNCLASSIFIED.
+
+Marker labels are category-derived, with a generic observation fallback. Actual verified runtime data exposed only UNCLASSIFIED because the persisted records contain no reliable category. No category was fabricated from descriptions.

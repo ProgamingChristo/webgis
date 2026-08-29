@@ -6,6 +6,10 @@ import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
 import { requireAuthenticatedUser } from "@/src/lib/auth";
 import { withApiLogger } from "@/src/lib/api-logger";
 import { createOptionsHandler } from "@/src/lib/api-security";
+import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
+import { z } from "zod";
+
+const merchantIdSchema = z.string().uuid();
 
 export const maxDuration = 15;
 
@@ -16,14 +20,15 @@ export async function GET(
   const reqId = getRequestId(req);
 
   return withApiLogger(req, reqId, async () => {
-    const merchantId = (await params).id;
-    if (!merchantId) {
+    const parsedMerchantId = merchantIdSchema.safeParse((await params).id);
+    if (!parsedMerchantId.success) {
       return NextResponse.json(
         { success: false, error: { message: "merchantId is required" } },
         { status: 400 }
       );
     }
 
+    const merchantId = parsedMerchantId.data;
     const userId = await requireAuthenticatedUser(req);
     const authHeader = req.headers.get("Authorization")!;
     const supabase = getRequestSupabaseClient(authHeader);
@@ -42,22 +47,22 @@ export async function POST(
   const reqId = getRequestId(req);
 
   return withApiLogger(req, reqId, async () => {
-    const merchantId = (await params).id;
-    if (!merchantId) {
+    const parsedMerchantId = merchantIdSchema.safeParse((await params).id);
+    if (!parsedMerchantId.success) {
       return NextResponse.json(
         { success: false, error: { message: "merchantId is required" } },
         { status: 400 }
       );
     }
 
+    const merchantId = parsedMerchantId.data;
     const userId = await requireAuthenticatedUser(req);
-    const authHeader = req.headers.get("Authorization")!;
-    const supabase = getRequestSupabaseClient(authHeader);
+    const supabase = getServiceRoleSupabaseClient();
 
     // 1. Verify merchant exists
     const { data: merchant, error: merchantError } = await supabase
       .from("merchants")
-      .select("id, name, owner_id")
+      .select("id, owner_id")
       .eq("id", merchantId)
       .single();
 
@@ -68,35 +73,36 @@ export async function POST(
       );
     }
 
-    // 2. Set ownership for the user
-    const { error: updateError } = await supabase
-      .from("merchants")
-      .update({ owner_id: userId })
-      .eq("id", merchantId);
-
-    if (updateError) {
-      return NextResponse.json(
-        { success: false, error: { message: "Failed to update merchant ownership: " + updateError.message } },
-        { status: 500 }
-      );
+    if (merchant.owner_id === userId) {
+      return createSuccessResponse(reqId, {
+        merchantId,
+        isOwned: true,
+        claimStatus: "APPROVED",
+      });
     }
 
-    // 3. Insert / record claim as APPROVED
-    await supabase.from("merchant_claims").insert({
-      merchant_id: merchantId,
-      user_id: userId,
-      status: "APPROVED",
-      evidence: { method: "instant_developer_claim", claimed_at: new Date().toISOString() },
-      reviewed_at: new Date().toISOString(),
-      reviewed_by: userId,
-    });
+    const { data: existingClaim } = await supabase
+      .from("merchant_claims")
+      .select("status")
+      .eq("merchant_id", merchantId)
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!existingClaim) {
+      const { error: claimError } = await supabase.from("merchant_claims").insert({
+        merchant_id: merchantId,
+        user_id: userId,
+        status: "PENDING",
+        evidence: { method: "user_claim_request" },
+      });
+      if (claimError) throw claimError;
+    }
 
     return createSuccessResponse(reqId, {
       merchantId,
-      isOwned: true,
-      ownerId: userId,
-      claimStatus: "APPROVED",
-      name: merchant.name,
+      isOwned: false,
+      claimStatus: existingClaim?.status ?? "PENDING",
     });
   });
 }

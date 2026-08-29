@@ -79,10 +79,12 @@ export function OriginalResultsSection({
                       : `${m.distance_meters} m`}
                   </span>
 
-                  <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-                    <Footprints className="w-3 h-3" />
-                    ~{m.walking_minutes} mnt
-                  </span>
+                  {m.walking_minutes !== null ? (
+                    <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                      <Footprints className="w-3 h-3" />
+                      {m.walking_minutes} mnt jaringan
+                    </span>
+                  ) : null}
                 </div>
 
                 <div className="flex items-center gap-1.5">

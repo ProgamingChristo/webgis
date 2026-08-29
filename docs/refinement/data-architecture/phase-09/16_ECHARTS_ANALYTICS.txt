@@ -1,0 +1,10 @@
+ECHARTS ANALYTICS
+
+ECharts 6 renders three horizontally navigable views:
+1. Demand Score versus Supply Score (0..100).
+2. Retail Gap (-100..100).
+3. Raw signal composition for the selected region.
+
+Each chart has an accessible label, stable 210px height, ResizeObserver lifecycle, and textual table.
+Raw counts and normalized scores are never placed on a shared misleading axis.
+Browser evidence confirmed three rendered canvases with non-zero pixel areas.

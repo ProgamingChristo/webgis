@@ -1,0 +1,7 @@
+GETRA PHASE 10 IMPLEMENTATION PLAN
+
+Prerequisite: Phase 09 VERIFIED and READY FOR PHASE 10 = YES.
+Scope: audit ownership, lock deterministic models, expose owner-authorized API, extend /umkm, verify runtime/browser, document evidence.
+Reuse: canonical merchants (Phase 03), boundaries (Phase 06), pgRouting (Phase 08), Demand/Retail Gap (Phase 09).
+No Phase 11 work, financial forecast, automatic campaign, or duplicate ingestion.
+Completion sequence: typecheck, lint, focused tests, full tests, build, DB dry-run, runtime auth, browser E2E, docs.

@@ -1,0 +1,99 @@
+GETRA PHASE 01 IMPLEMENTATION SUMMARY
+
+Status:
+- IMPLEMENTED locally.
+- Not VERIFIED remotely.
+
+Implemented:
+- Shared MAPID HTTP client supports POST JSON Mission requests.
+- Server-side x-api-key Mission authentication.
+- Menu Go, Struk Go, Properti Go source paths.
+- Activities explicit BLOCKED behavior when endpoint is unknown.
+- Zod-based sync request validation.
+- Runtime record validation and normalization.
+- Source-scoped idempotent persistence.
+- Sync run metrics.
+- Raw payload, checksum, provenance, freshness, and verification state.
+- Admin-only sync route.
+- Authenticated normalized read route.
+- Additive Supabase migration.
+- Unit/security tests for Phase 01 behavior.
+- Phase 01 documentation and changelog.
+
+Premium:
+- Unchanged by Phase 01.
+
+Ready for Phase 02:
+- NO.
+- Required before YES: resolve Activities endpoint if needed for Phase 02 scope, run Supabase migration checks, verify remote DB, verify real MAPID source retrieval.
+
+VERIFICATION CLOSURE UPDATE - 2026-08-27
+
+Transition achieved:
+- IMPLEMENTED LOCAL -> REMOTE DB VERIFIED.
+
+Verified:
+- Phase 01 migration pushed and recorded remotely.
+- Remote schema identity and geometry constraints.
+- RLS behavior and authenticated normalized read API.
+- Linked database TypeScript types regenerated.
+- Credential remains server-side and absent from API response.
+- Focused tests, full backend tests, typecheck, lint, and build pass.
+
+Not verified:
+- Real Menu Go retrieval and persistence.
+- Real Struk Go retrieval and persistence.
+- Real Properti Go retrieval and persistence.
+- Actual Activities endpoint and retrieval.
+- Real-source idempotent rerun.
+- GETRA read API against persisted real MAPID records.
+
+Final Phase 01 status:
+- BLOCKED, not VERIFIED.
+- READY FOR PHASE 02: NO.
+
+FINAL VERIFICATION CLOSURE - 2026-08-27
+
+Verified sources:
+- Menu Go: 87 real persisted records.
+- Struck Go: 164 real persisted records across 2 pages.
+- Properti Go: 99 real persisted records.
+- Activities: 60 real persisted records.
+
+Acceptance:
+- Remote migration and DB constraints verified.
+- Stable request/result contracts verified against official docs and real responses.
+- All source reruns are idempotent.
+- Normalized authenticated read API verified for every source.
+- Mission credential remains server-side.
+- Admin authorization route is available.
+- Focused tests, full backend tests, typecheck, lint, and build pass.
+
+Final status:
+- PHASE 01: VERIFIED.
+- READY FOR PHASE 02: YES.
+- Phase 02 was not started.
+
+REAL MAPID CREDENTIAL CLOSURE UPDATE - 2026-08-27
+
+Now verified:
+- Menu Go real retrieval, normalization, persistence, idempotency, and GETRA read API.
+- Properti Go real retrieval, normalization, persistence, idempotency, and GETRA read API.
+- Real credential remains server-side.
+
+Still blocked:
+- Struk Go actual endpoint; configured handoff path returns HTTP 404.
+- Activities actual endpoint and contract.
+
+Final status remains:
+- REAL MAPID: PARTIAL.
+- PHASE 01: BLOCKED.
+- READY FOR PHASE 02: NO.
+
+AUTHORITATIVE FINAL STATUS - 2026-08-27
+
+- The PARTIAL/BLOCKED status immediately above is historical pre-correction evidence.
+- REAL MAPID: VERIFIED.
+- PHASE 01: VERIFIED.
+- READY FOR PHASE 02: YES.
+- Phase 02 was not started.

@@ -1,0 +1,11 @@
+GETRA PHASE 09 IMPLEMENTATION PLAN
+
+Scope: Demand Intelligence and Retail Gap only. Phase 10 is excluded.
+1. Audit real demand, supply, geography, time, taxonomy, and privacy inputs. DONE
+2. Lock deterministic V1 formulas and insufficient-data rules. DONE
+3. Add aggregate event storage and database RPC by additive migration. DONE
+4. Expose authenticated GETRA analytics APIs and grounded interpretation. DONE
+5. Add opt-in map, ECharts, filters, evidence, and confidence UX. DONE
+6. Verify remote runtime, browser behavior, security, performance, and quality gates. DONE
+
+Premium ingestion, Mission ingestion, merchant reconciliation, and Phase 08 routing logic were not rewritten.

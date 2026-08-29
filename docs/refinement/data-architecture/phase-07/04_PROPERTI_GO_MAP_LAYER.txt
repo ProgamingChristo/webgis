@@ -1,0 +1,10 @@
+PROPERTI GO MAP LAYER
+
+Source identifier: PROPERTI_GO
+Domain: PROPERTY OBSERVATION
+Default: OFF
+Rendering: cyan source-specific points and clusters on the shared map.
+Loading: authenticated bbox request, limit 250, offset 0.
+
+Runtime initial viewport: HTTP 200, 130 of 130 observations.
+No property availability or canonical merchant claim is made.

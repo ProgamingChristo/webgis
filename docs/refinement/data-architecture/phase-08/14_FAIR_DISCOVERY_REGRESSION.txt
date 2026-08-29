@@ -1,0 +1,7 @@
+GETRA PHASE 08 - FAIR DISCOVERY REGRESSION
+
+Organic/Original, Hidden Gem, and Sponsored composition remains intact. Opening state
+is now nullable and evaluated from structured hours. Walking values come from the
+batch pgRouting repository before ranking. Hard commuter constraints are applied to
+both organic and sponsored candidates, so sponsorship cannot bypass eligibility.
+Sponsored labels and the existing ranking semantics remain unchanged.

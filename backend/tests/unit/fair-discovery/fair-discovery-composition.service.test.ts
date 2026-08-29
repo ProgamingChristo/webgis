@@ -3,6 +3,7 @@ import { FairDiscoveryCompositionService } from "@/src/features/fair-discovery/s
 import { SponsoredPlacementAdapter } from "@/src/features/fair-discovery/integrations/sponsored-placement.adapter";
 import { SponsoredPinDTO } from "@/src/features/umkm-advertising";
 import { GeoPoint } from "@/src/features/fair-discovery/types/fair-discovery.types";
+import { CommuterNetworkRepository } from "@/src/features/commuter";
 
 describe("FairDiscoveryCompositionService", () => {
   let mockSupabase: any;
@@ -214,5 +215,38 @@ describe("FairDiscoveryCompositionService", () => {
     expect(result.original.length).toBeGreaterThan(0);
     expect(result.sponsored).toEqual([]);
     expect(result.metadata.sponsored_available).toBe(false);
+  });
+
+  it("does not publish straight-line walking minutes without network evidence", async () => {
+    vi.spyOn(SponsoredPlacementAdapter.prototype, "getEligibleSponsoredPlacements").mockResolvedValue([]);
+    const result = await service.discover({ origin: mockOrigin, radiusMeters: 3000 });
+    expect([...result.original, ...result.hidden_gems].every((item) => item.walking_minutes === null)).toBe(true);
+  });
+
+  it("applies the network walking limit before fair-discovery partitioning", async () => {
+    vi.spyOn(SponsoredPlacementAdapter.prototype, "getEligibleSponsoredPlacements").mockResolvedValue([]);
+    vi.spyOn(CommuterNetworkRepository.prototype, "walkingCosts").mockResolvedValue({
+      status: "READY",
+      candidates: [
+        { candidate_id: "merchant-1", status: "ROUTABLE", duration_seconds: 8 * 60, distance_meters: 650, network_distance_meters: 620, access_distance_meters: 30, destination_node_id: 1 },
+        { candidate_id: "merchant-2", status: "ROUTABLE", duration_seconds: 12 * 60, distance_meters: 900, network_distance_meters: 870, access_distance_meters: 30, destination_node_id: 2 },
+        { candidate_id: "merchant-3", status: "UNROUTABLE", duration_seconds: null, distance_meters: null, network_distance_meters: null, access_distance_meters: null, destination_node_id: null },
+      ],
+    });
+
+    const result = await service.discover({
+      origin: mockOrigin,
+      radiusMeters: 3000,
+      maxWalkingMinutes: 10,
+    });
+    expect([...result.original, ...result.hidden_gems].map((item) => item.id)).toEqual(["merchant-1"]);
+    expect(result.hidden_gems[0]?.walking_minutes).toBe(8);
+  });
+
+  it("does not treat missing opening-hours evidence as confirmed open", async () => {
+    vi.spyOn(SponsoredPlacementAdapter.prototype, "getEligibleSponsoredPlacements").mockResolvedValue([]);
+    const result = await service.discover({ origin: mockOrigin, openNow: true });
+    expect(result.original).toEqual([]);
+    expect(result.hidden_gems).toEqual([]);
   });
 });

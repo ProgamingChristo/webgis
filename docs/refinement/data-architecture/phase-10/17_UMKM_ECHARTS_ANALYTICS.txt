@@ -1,0 +1,7 @@
+GETRA PHASE 10 ECHARTS ANALYTICS
+
+Three charts render readiness scores, Demand/Supply/Retail Gap indexes, and aggregate demand-source composition.
+Demand Score and raw event counts use distinct charts and axis wording.
+Retail Gap null remains empty; it is not rendered as zero.
+Each chart has a concise accessible role/label and a stable 230px canvas surface.
+Browser verification found all three rendered with nonzero canvas pixels on all target viewports.

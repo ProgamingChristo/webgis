@@ -1,0 +1,26 @@
+GETRA PHASE 10 FRONTEND MANUAL TEST GUIDE
+
+OWNER PATH
+1. Login with an authorized merchant-owner test account.
+2. Open /umkm and confirm only owned/approved-claim merchants appear.
+3. Inspect Overview, Data Readiness, Visibility, Location, Demand, Supply, and Retail Gap.
+4. Confirm every diagnostic component shows status and points.
+5. Confirm the map highlights the owned merchant and bounds similar merchants/transit.
+6. Confirm all three charts render and Demand Score is distinct from raw counts.
+7. Inspect recommendation triggers against missing evidence.
+8. Ask Copilot why visibility is limited; compare every number with dashboard facts.
+9. Change 30 days to 7 days and back; confirm final state matches the selected window.
+10. Switch Merchant A/B when a two-merchant owner fixture exists; verify no stale cross-merchant result.
+
+NEGATIVE / SAFETY PATH
+11. Login as a USER with no ownership and open /umkm; confirm ownership-empty state.
+12. Call the owner merchant intelligence endpoint directly; expect 403.
+13. Activate UMKM experience mode; confirm it still grants no merchant.
+14. Submit an injection-like Copilot question; expect safe fallback and no secret.
+15. For missing/insufficient evidence, confirm no opportunity or financial guarantee appears.
+
+BROWSER / RESPONSIVE PATH
+16. Verify 390x844, 768x1024, 1366x768, and 1440x900 without horizontal overflow.
+17. DevTools Network must show GETRA /api/umkm/* only, no Mission provider endpoint or key.
+18. DevTools Console must have no uncaught, chart, map, authorization, or stale-request error.
+19. Confirm MapLibre/ECharts canvases are nonblank and keyboard controls have labels.

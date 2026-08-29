@@ -1,0 +1,27 @@
+GETRA PHASE 11 - FRONTEND TEST DATA
+
+Page:
+- /business-space
+
+Safe test inputs:
+- Region: Jakarta Selatan
+- Category: Bakso
+- Window: 30 hari
+
+Expected UI:
+- Properti Go candidate list appears.
+- Candidate detail appears after selecting a candidate.
+- Map renders with the active MAPID GL basemap.
+- User can choose 2 to 4 candidates.
+- Compare button becomes usable after at least 2 candidates are selected.
+- ECharts comparison renders after comparison.
+- AI Location Insight returns a grounded or deterministic answer.
+
+Expected safety text:
+- Availability unconfirmed.
+- No ROI/revenue/profit guarantee.
+
+Secrets:
+- Do not enter or display real MAPID Mission credentials in the browser.
+- Do not document passwords or server-only keys here.
+

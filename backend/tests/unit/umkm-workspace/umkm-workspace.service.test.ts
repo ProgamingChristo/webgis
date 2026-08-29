@@ -47,6 +47,15 @@ describe("UmkmWorkspaceService", () => {
           }),
         };
       }
+      if (table === "merchant_claims") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            }),
+          }),
+        };
+      }
       if (table === "merchant_submissions") {
         return {
           select: vi.fn().mockReturnValue({
@@ -95,6 +104,15 @@ describe("UmkmWorkspaceService", () => {
           }),
         };
       }
+      if (table === "merchant_claims") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            }),
+          }),
+        };
+      }
       if (table === "merchant_submissions") {
         return {
           select: vi.fn().mockReturnValue({
@@ -116,5 +134,51 @@ describe("UmkmWorkspaceService", () => {
     expect(summary.pending_submissions_count).toBe(0);
     expect(summary.owned_merchants).toEqual([]);
     expect(summary.recent_submissions).toEqual([]);
+  });
+
+  it("includes an approved claim once in the authorized merchant selector", async () => {
+    mockSupabase.from.mockImplementation((table: string) => {
+      if (table === "merchants") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            in: vi.fn().mockResolvedValue({
+              data: [{
+                id: "claimed-1", name: "Merchant Claimed", address: null,
+                description: "Bakso", metadata: {}, publish_status: "PUBLISHED",
+                verification_status: "VERIFIED",
+              }],
+              error: null,
+            }),
+          }),
+        };
+      }
+      if (table === "merchant_claims") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: [{ merchant_id: "claimed-1" }], error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === "ad_campaigns") {
+        return { select: vi.fn().mockReturnValue({ in: vi.fn().mockResolvedValue({ data: [], error: null }) }) };
+      }
+      if (table === "merchant_submissions") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              order: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue({ data: [], error: null }) }),
+            }),
+          }),
+        };
+      }
+      return {};
+    });
+
+    const summary = await service.getWorkspaceSummary("claimant");
+    expect(summary.verified_merchants_count).toBe(1);
+    expect(summary.owned_merchants).toEqual([expect.objectContaining({ id: "claimed-1", name: "Merchant Claimed" })]);
   });
 });

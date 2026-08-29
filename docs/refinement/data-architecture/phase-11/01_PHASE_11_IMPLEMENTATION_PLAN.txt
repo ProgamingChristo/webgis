@@ -1,0 +1,20 @@
+GETRA PHASE 11 - BUSINESS SPACE INTELLIGENCE IMPLEMENTATION PLAN
+
+Scope:
+- Build Business Space Intelligence for Properti Go candidate evaluation.
+- Reuse verified Phase 01, 03, 06, 08, 09, and 10 services.
+- Add user-facing decision support without creating a property marketplace.
+
+Out of scope:
+- Property transactions.
+- Live availability claims.
+- ROI, revenue, profit, or investment return prediction.
+- Merchant reconciliation beyond the already verified canonical merchant layer.
+- Phase 12 implementation.
+
+Implementation result:
+- Backend GETRA APIs added for candidates, detail, comparison, and grounded insight.
+- Frontend page added at /business-space.
+- MAPID GL basemap selector preserved and reused by the Business Space map.
+- No Phase 11 database migration required.
+

@@ -1,0 +1,49 @@
+GETRA PHASE 02 - PRE-IMPLEMENTATION AUDIT
+Date: 2026-08-27
+
+Repository baseline
+- Branch: finalmerge
+- HEAD: 74f7ceb feat: implement full authentication system, profile management, and data ingestion infrastructure
+- Worktree: dirty before Phase 02. Existing unrelated and Phase 01 changes must be preserved.
+
+Authorization
+- Canonical authorization field: profiles.account_role.
+- Canonical roles: USER and ADMIN.
+- Backend guard: requireRole(request, "ADMIN").
+- Frontend AuthProvider redirects unauthenticated users to /login and non-admin users away from /admin routes.
+- Backend authorization remains mandatory; frontend route hiding is only a usability layer.
+
+Reusable Phase 01 ingestion
+- Existing admin route: POST /api/admin/mapid/mission-sync.
+- Existing orchestration: MapidMissionSyncService.syncSource.
+- Existing provider client, pagination, schema validation, normalization, provenance, idempotent upsert, and persistence are reusable without duplication.
+- Verified source identifiers are MENU_GO, STRUK_GO, PROPERTI_GO, and ACTIVITIES.
+- Provider paths remain server-owned. The browser must not submit or receive a provider path.
+
+Database and sync history
+- mapid_mission_sync_runs already records source, status, timestamps, all supported counters, triggering user, request context, and safe error metadata.
+- mapid_mission_observations already enforces source_type + source_record_id identity.
+- Existing sync-run data is sufficient for last-sync and last-result display.
+- No Phase 02 database migration is required.
+
+Phase 02 route decision
+- Preserve the existing Phase 01 route and request contract for compatibility.
+- Add a narrow GETRA-owned Admin route at /api/admin/mission/sync.
+- POST accepts only the strict body { "source": <canonical source> }.
+- GET returns the latest safe run summary for each canonical source.
+- The backend owns the verified Jakarta synchronization polygon and execution limits.
+- Both methods require ADMIN authorization and endpoint-policy registration.
+
+Concurrency
+- Phase 01 idempotency prevents logical row duplication.
+- Phase 02 will add a minimal same-source in-process execution guard and disable the active source in the UI.
+- This is intentionally not a distributed queue. The limitation will be documented accurately.
+
+Frontend
+- Existing GetraAppShell and AuthProvider will be reused.
+- Add an Admin Mission Data route and navigation item.
+- The UI will call only the GETRA /api/admin/mission/sync endpoint through authenticatedFetch/apiClient.
+- Four source controls will show loading, outcome, last sync, and only counters supported by Phase 01.
+
+Premium
+- Premium integration is outside Phase 02 and remains unchanged.

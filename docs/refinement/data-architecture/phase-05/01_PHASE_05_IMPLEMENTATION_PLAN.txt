@@ -1,0 +1,15 @@
+GETRA PHASE 05 - IMPLEMENTATION PLAN
+
+Objective
+Deliver deterministic global merchant search across the current viewport and trusted Jakarta administrative regions without starting Phase 06 boundary visualization.
+
+Completed sequence
+1. Audited the Phase 04 canonical merchant read path, map state, auth, migrations, and tests.
+2. Added a trusted region catalog and additive PostGIS migration.
+3. Extended the existing canonical merchant API with strict search intent and scope handling.
+4. Connected one frontend search command surface to map and list state.
+5. Added focused unit, integration, migration, security, and browser tests.
+6. Pushed and verified the migration remotely, regenerated DB types, and ran all quality gates.
+
+Scope guard
+No administrative boundary layer, Phase 06 feature, Mission ingestion rewrite, Premium rewrite, or merchant reconciliation rewrite was introduced.

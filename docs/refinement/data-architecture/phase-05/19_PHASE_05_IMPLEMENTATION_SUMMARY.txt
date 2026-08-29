@@ -1,0 +1,21 @@
+GETRA PHASE 05 - IMPLEMENTATION SUMMARY
+
+STATUS: VERIFIED
+
+Delivered
+- Deterministic global merchant search.
+- Keyword, location-only, keyword + location, current viewport, region, and multi-region contracts.
+- Search This Area and stale-request protection.
+- Trusted PostGIS administrative region filtering.
+- Canonical paginated results synchronized between list and MapLibre.
+- Honest unknown availability fields and empty/error states.
+- Responsive controls and browser evidence.
+
+Database
+Migration 20260828090000_phase05_global_search_regions.sql is additive, pushed, recorded remotely, and reflected in generated TypeScript types. Remote dry-run is clean.
+
+Acceptance
+Focused tests, full tests, typecheck, lint, builds, Phase 04 regression, live browser E2E, responsive checks, and security scans PASS.
+
+Phase 06 work was not started.
+READY FOR PHASE 06: YES

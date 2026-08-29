@@ -1,0 +1,11 @@
+GETRA PHASE 06 - FIT BOUNDS
+
+Single and multi-region bounds come from exact persisted administrative geometry through the Phase 05 region resolver. Multi-region bounds are the deterministic union of selected feature extents; a helper is independently unit-tested.
+
+MapLibre fitBounds uses:
+- maxZoom 14 to avoid over-zoom
+- desktop padding 52px on all sides
+- compact padding top 36, sides 28, bottom 190 to keep geometry above the mobile panel
+- 500ms camera transition
+
+Runtime instrumentation confirmed fit calls for single, keyword-region, multi-region, and chip-removal transitions.

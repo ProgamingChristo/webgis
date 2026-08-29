@@ -1,0 +1,8 @@
+GETRA PHASE 10 RESPONSIVE AUDIT
+
+390x844: PASS, body width 390, map and 3 charts nonblank, no horizontal overflow.
+768x1024: PASS, body width 768, map and 3 charts nonblank, no horizontal overflow.
+1366x768: PASS, body width 1366, map and 3 charts nonblank, no horizontal overflow.
+1440x900: PASS, body width 1440, map and 3 charts nonblank, no horizontal overflow.
+Visual screenshot inspection found no incoherent overlap or clipped controls.
+Axe WCAG 2 A/AA and 2.1 A/AA scope violations: 0.

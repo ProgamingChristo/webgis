@@ -1,0 +1,10 @@
+DEMAND SPATIAL AGGREGATION
+
+Canonical spatial unit: ADMINISTRATIVE_CITY.
+Supported units: Jakarta Barat, Pusat, Selatan, Timur, and Utara.
+All signals and canonical supply are compared against the exact same Phase 06 polygons.
+Requests accept an allow-listed region_ids set or a bounded bbox; API output is capped at five rows.
+
+Multi-region normalization always uses all five supported regions for the same category/window,
+then filters the response scope. This avoids changing a score merely because fewer rows were requested.
+No individual origin, event trail, or household-level aggregation is exposed.

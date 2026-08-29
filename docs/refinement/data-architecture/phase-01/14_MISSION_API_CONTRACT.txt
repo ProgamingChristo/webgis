@@ -1,0 +1,28 @@
+MISSION API CONTRACT
+
+Admin sync API:
+- POST /api/admin/mapid/mission-sync
+- Authorization: ADMIN.
+- Body:
+  - feature: GeoJSON Polygon.
+  - sources: array of MENU_GO, STRUK_GO, PROPERTI_GO, ACTIVITIES.
+  - offset: optional, default 0.
+  - page_size: optional, default 500.
+  - max_pages: optional, default 1.
+- Response:
+  - status.
+  - reports per source.
+
+Read API:
+- GET /api/mapid/mission-observations
+- Authorization: authenticated user.
+- Query:
+  - source_type optional.
+  - bbox optional as west,south,east,north.
+  - limit optional, max 500.
+  - offset optional.
+- Response:
+  - normalized observation items.
+  - pagination metadata.
+
+Raw MAPID response schema is not exposed directly.

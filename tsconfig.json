@@ -16,6 +16,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
+    "types": [
+      "geojson",
+      "node"
+    ],
     "incremental": true,
     "plugins": [
       {

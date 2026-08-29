@@ -1,0 +1,5 @@
+PROPERTI GO POPUP
+
+Safe fields are category, property type, address, observed/import time, source label, and an allowlisted HTTPS front photo when present.
+
+Runtime evidence rendered a heading, Rumah category, Dijual type, address, source provenance, unknown observation-time fallback, and image alt text. The popup says observation, not guaranteed availability.

@@ -1,0 +1,439 @@
+{
+  "generated_at": "2026-08-28T07:00:45.589Z",
+  "browser": "Chrome headless via puppeteer-core",
+  "flows": {
+    "demand_default": {
+      "status": 200,
+      "duration_ms": 606,
+      "payload_bytes": 31010,
+      "safe": true,
+      "state": {
+        "category": "coffee",
+        "mode": "DEMAND",
+        "row_count": 5,
+        "selected_region": "jakarta-barat",
+        "confidence": "LIMITED_EVIDENCE",
+        "sample_size": 19,
+        "retail_gap": "-7",
+        "map_feature_count": 5,
+        "map_mode": "DEMAND",
+        "rendered_charts": 3,
+        "chart_canvas_pixels": [
+          68670,
+          68670,
+          68670
+        ],
+        "legend": "0-34 rendah35-69 sedang70-100 tinggiData belum cukup",
+        "summary": "Demand93Supply100Retail Gap-7Sample19Bukti terbatasRaw: 0 search, 0 route, 0 commuter request, 19 transaction observation, 230 merchant canonical."
+      },
+      "rows": [
+        {
+          "region": "Jakarta Barat",
+          "demand": 93,
+          "supply": 100,
+          "gap": -7,
+          "sample": 19,
+          "confidence": "LIMITED_EVIDENCE"
+        },
+        {
+          "region": "Jakarta Pusat",
+          "demand": 82,
+          "supply": 47,
+          "gap": 35,
+          "sample": 12,
+          "confidence": "LIMITED_EVIDENCE"
+        },
+        {
+          "region": "Jakarta Selatan",
+          "demand": 100,
+          "supply": 50,
+          "gap": 50,
+          "sample": 25,
+          "confidence": "LIMITED_EVIDENCE"
+        },
+        {
+          "region": "Jakarta Timur",
+          "demand": 49,
+          "supply": 57,
+          "gap": -8,
+          "sample": 3,
+          "confidence": "LIMITED_EVIDENCE"
+        },
+        {
+          "region": "Jakarta Utara",
+          "demand": 0,
+          "supply": 0,
+          "gap": null,
+          "sample": 0,
+          "confidence": "INSUFFICIENT_DATA"
+        }
+      ]
+    },
+    "retail_gap": {
+      "status": 200,
+      "safe": true,
+      "state": {
+        "category": "coffee",
+        "mode": "RETAIL_GAP",
+        "row_count": 5,
+        "selected_region": "jakarta-barat",
+        "confidence": "LIMITED_EVIDENCE",
+        "sample_size": 19,
+        "retail_gap": "-7",
+        "map_feature_count": 5,
+        "map_mode": "RETAIL_GAP",
+        "rendered_charts": 0,
+        "chart_canvas_pixels": [
+          0,
+          0,
+          0
+        ],
+        "legend": "-100 sampai -1: supply relatif lebih tinggi0: seimbang1 sampai 100: demand relatif lebih tinggiData belum cukup",
+        "summary": "Demand93Supply100Retail Gap-7Sample19Bukti terbatasRaw: 0 search, 0 route, 0 commuter request, 19 transaction observation, 230 merchant canonical."
+      }
+    },
+    "insufficient_data": {
+      "status": 200,
+      "safe": true,
+      "state": {
+        "category": "pharmacy",
+        "mode": "RETAIL_GAP",
+        "row_count": 5,
+        "selected_region": "jakarta-barat",
+        "confidence": "INSUFFICIENT_DATA",
+        "sample_size": 0,
+        "retail_gap": "INSUFFICIENT_DATA",
+        "map_feature_count": 5,
+        "map_mode": "RETAIL_GAP",
+        "rendered_charts": 3,
+        "chart_canvas_pixels": [
+          68670,
+          68670,
+          68670
+        ],
+        "legend": "-100 sampai -1: supply relatif lebih tinggi0: seimbang1 sampai 100: demand relatif lebih tinggiData belum cukup",
+        "summary": "Demand0Supply0Retail Gap-Sample0Data belum cukup untuk menghitung Retail Gap secara andal.Raw: 0 search, 0 route, 0 commuter request, 0 transaction observation, 0 merchant canonical."
+      }
+    },
+    "failure_state": {
+      "message": "Failed to fetch"
+    },
+    "failure_recovery": {
+      "status": 200,
+      "safe": true,
+      "state": {
+        "category": "pharmacy",
+        "mode": "RETAIL_GAP",
+        "row_count": 5,
+        "selected_region": "jakarta-barat",
+        "confidence": "INSUFFICIENT_DATA",
+        "sample_size": 0,
+        "retail_gap": "INSUFFICIENT_DATA",
+        "map_feature_count": 5,
+        "map_mode": "RETAIL_GAP",
+        "rendered_charts": 0,
+        "chart_canvas_pixels": [
+          68670,
+          68670,
+          68670
+        ],
+        "legend": "-100 sampai -1: supply relatif lebih tinggi0: seimbang1 sampai 100: demand relatif lebih tinggiData belum cukup",
+        "summary": "Demand0Supply0Retail Gap-Sample0Data belum cukup untuk menghitung Retail Gap secara andal.Raw: 0 search, 0 route, 0 commuter request, 0 transaction observation, 0 merchant canonical."
+      }
+    },
+    "stale_response_guard": {
+      "status": 200,
+      "safe": true,
+      "state": {
+        "category": "nasi-goreng",
+        "mode": "RETAIL_GAP",
+        "row_count": 5,
+        "selected_region": "jakarta-barat",
+        "confidence": "INSUFFICIENT_DATA",
+        "sample_size": 0,
+        "retail_gap": "INSUFFICIENT_DATA",
+        "map_feature_count": 5,
+        "map_mode": "RETAIL_GAP",
+        "rendered_charts": 3,
+        "chart_canvas_pixels": [
+          68670,
+          68670,
+          68670
+        ],
+        "legend": "-100 sampai -1: supply relatif lebih tinggi0: seimbang1 sampai 100: demand relatif lebih tinggiData belum cukup",
+        "summary": "Demand0Supply0Retail Gap-Sample0Data belum cukup untuk menghitung Retail Gap secara andal.Raw: 0 search, 0 route, 0 commuter request, 0 transaction observation, 0 merchant canonical."
+      }
+    },
+    "grounded_interpretation": {
+      "status": 200,
+      "safe": true,
+      "response": {
+        "status": "DETERMINISTIC_FALLBACK",
+        "answer": "Data Nasi Goreng di Jakarta Barat belum cukup untuk menghitung Retail Gap secara andal pada window ini.",
+        "evidence": {
+          "region_id": "jakarta-barat",
+          "category": "nasi-goreng",
+          "demand_score": 0,
+          "supply_score": 0,
+          "retail_gap": null,
+          "sample_size": 0,
+          "confidence": "INSUFFICIENT_DATA",
+          "window": {
+            "end_at": "2026-08-28T07:01:01.584+00:00",
+            "start_at": "2026-07-29T07:01:01.584+00:00"
+          }
+        },
+        "limitations": [
+          "Observed GETRA/platform signals are not total population demand.",
+          "Represented supply is not a complete business census.",
+          "Retail Gap is a relative evidence signal, not revenue, profit, or ROI.",
+          "Campaign interactions are reported separately and have zero demand weight."
+        ]
+      },
+      "displayed": "Penjelasan deterministikData Nasi Goreng di Jakarta Barat belum cukup untuk menghitung Retail Gap secara andal pada window ini."
+    }
+  },
+  "responsive": {
+    "390x844": {
+      "body_scroll_width": 390,
+      "viewport_width": 390,
+      "panel_visible": true,
+      "map_visible": true,
+      "chart_visible": true,
+      "no_horizontal_overflow": true
+    },
+    "768x1024": {
+      "body_scroll_width": 768,
+      "viewport_width": 768,
+      "panel_visible": true,
+      "map_visible": true,
+      "chart_visible": true,
+      "no_horizontal_overflow": true
+    },
+    "1366x768": {
+      "body_scroll_width": 1366,
+      "viewport_width": 1366,
+      "panel_visible": true,
+      "map_visible": true,
+      "chart_visible": true,
+      "no_horizontal_overflow": true
+    },
+    "1440x900": {
+      "body_scroll_width": 1440,
+      "viewport_width": 1440,
+      "panel_visible": true,
+      "map_visible": true,
+      "chart_visible": true,
+      "no_horizontal_overflow": true
+    }
+  },
+  "network": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "http://localhost:8080/api/auth/login"
+      },
+      {
+        "method": "GET",
+        "url": "https://sesakxnjaphrxqxllqjm.supabase.co/auth/v1/user"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:3000/app?_rsc=Yaku0SukotyQAzL7"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:3000/app?_rsc=HcuIdjAOlPmjl1qE"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/styles/liberty"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/styles/liberty"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/map-import/layers"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/auth/me"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/map-import/layers"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.json"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.png"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3262/2118.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3263/2118.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3262/2117.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3262/2119.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3261/2118.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3263/2117.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3263/2119.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3261/2117.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3261/2119.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Italic/0-255.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Regular/0-255.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Bold/0-255.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/community/notifications?page=1&limit=10"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=&scope=CURRENT_VIEWPORT&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/10/815/529.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/10/816/529.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/10/815/530.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/10/816/530.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=&scope=REGION&region_ids=jakarta-barat&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=&scope=MULTI_REGION&region_ids=jakarta-barat%2Cjakarta-pusat&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=&scope=MULTI_REGION&region_ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=&scope=MULTI_REGION&region_ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan%2Cjakarta-timur&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=&scope=MULTI_REGION&region_ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan%2Cjakarta-timur%2Cjakarta-utara&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/analytics/demand?category=coffee&days=30&limit=5&region_ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan%2Cjakarta-timur%2Cjakarta-utara"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/regions?ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan%2Cjakarta-timur%2Cjakarta-utara"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/analytics/retail-gap?category=coffee&days=30&limit=5&region_ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan%2Cjakarta-timur%2Cjakarta-utara"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/analytics/retail-gap?category=pharmacy&days=30&limit=5&region_ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan%2Cjakarta-timur%2Cjakarta-utara"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/analytics/retail-gap?category=pharmacy&days=30&limit=5&region_ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan%2Cjakarta-timur%2Cjakarta-utara"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/analytics/retail-gap?category=bakso&days=30&limit=5&region_ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan%2Cjakarta-timur%2Cjakarta-utara"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/analytics/retail-gap?category=coffee&days=30&limit=5&region_ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan%2Cjakarta-timur%2Cjakarta-utara"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/analytics/retail-gap?category=nasi-goreng&days=30&limit=5&region_ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan%2Cjakarta-timur%2Cjakarta-utara"
+      },
+      {
+        "method": "POST",
+        "url": "http://localhost:8080/api/analytics/interpretation"
+      }
+    ]
+  },
+  "console_errors": [
+    "Failed to load resource: net::ERR_FAILED"
+  ],
+  "failed_requests": [
+    {
+      "url": "http://localhost:8080/api/analytics/retail-gap?category=minimarket&days=30&limit=5&region_ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan%2Cjakarta-timur%2Cjakarta-utara",
+      "error": "net::ERR_FAILED"
+    }
+  ],
+  "http_errors": [],
+  "accessibility": {
+    "scope": ".demand-intelligence",
+    "standard": "WCAG 2 A/AA and WCAG 2.1 A/AA via axe-core",
+    "violations": [],
+    "critical_or_serious": 0
+  },
+  "security": {
+    "browser_calls_getra_only": true,
+    "no_provider_mission_request": true,
+    "no_secret_in_urls": true,
+    "analytics_responses_safe": true
+  },
+  "expected_failure_injection": {
+    "purpose": "Verify visible transport-error state and successful recovery",
+    "console_errors": 1,
+    "failed_requests": 1
+  },
+  "unexpected_console_errors": [],
+  "unexpected_failed_requests": []
+}

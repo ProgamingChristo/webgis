@@ -7,7 +7,8 @@ export const MAPID_PROVIDER = "MAPID" as const;
 export type MapidRawResponse = unknown;
 
 export interface MapidRequest {
-  method?: "GET";
+  body?: unknown;
+  method?: "GET" | "POST";
   path: string;
   query?: Readonly<Record<string, string | readonly string[]>>;
 }

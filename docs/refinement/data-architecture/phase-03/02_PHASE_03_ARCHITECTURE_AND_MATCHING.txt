@@ -1,0 +1,49 @@
+GETRA PHASE 03 - ARCHITECTURE AND MATCHING RULES
+
+Domain model
+
+Premium evidence -----\
+                      > public.merchants -> canonical GETRA read API
+Menu Go evidence ----/
+
+Persistent evidence
+- public.merchant_source_links stores one logical source record per canonical merchant.
+- Unique identity: source_table + source_record_id.
+- public.merchant_reconciliation_decisions stores the selected candidate, status, signals, explanation, and algorithm version.
+- Raw Premium and Menu Go source data is not deleted or overwritten.
+
+Algorithm
+- Version: merchant-reconciliation-v1
+- Candidate radius: 250 metres.
+- Name weight: 0.60.
+- PostGIS distance weight: 0.25.
+- Compatible category weight: 0.10.
+- Exact normalized phone or address bonus: 0.05.
+- Distance is evidence and never sufficient on its own.
+
+Normalization
+- Unicode NFKD and diacritic removal.
+- Lowercase, punctuation normalization, repeated whitespace collapse.
+- Meaningful numbers remain intact.
+- Safe abbreviations: RM -> rumah makan; wrg -> warung.
+- Phone normalization preserves raw source values and compares normalized digits only.
+
+Statuses
+- MATCH_CONFIRMED: exact normalized name + exact normalized phone + <= 50 m.
+- MATCH_HIGH_CONFIDENCE: exact name + compatible/non-conflicting category + <= 20 m, or name score >= 0.94 + compatible category + <= 10 m.
+- MATCH_REVIEW_REQUIRED: plausible name and <= 120 m, exact name <= 200 m, conflicting close phone, mobile observation, or multiple nearby equal-name branches.
+- NO_MATCH: insufficient or conflicting evidence.
+
+Safety
+- Mobile Menu Go observations are never automatically reconciled from name and proximity alone.
+- Multiple nearby same-name Premium branches are downgraded to review.
+- REVIEW_REQUIRED and NO_MATCH produce/reuse a separate Menu Go canonical merchant.
+- Only CONFIRMED and HIGH_CONFIDENCE may resolve to the Premium canonical merchant.
+- Canonical geometry is Premium for reconciled permanent merchants; Menu Go source-only geometry remains explicitly observational.
+- Observed price and condition remain observations with observed_at and source provenance.
+
+Attribute resolution
+- Identity/address/phone/category prefer existing Premium/canonical evidence where present.
+- Place photo, menu photo, menu, observed price, condition, and mobility come from Menu Go observations.
+- Missing fields remain absent; no values are fabricated.
+

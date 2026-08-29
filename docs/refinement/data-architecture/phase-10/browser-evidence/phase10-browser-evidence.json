@@ -1,0 +1,279 @@
+{
+  "generated_at": "2026-08-28T11:19:39.376Z",
+  "browser": "Chrome headless via puppeteer-core",
+  "owner": {
+    "overview_status": 200,
+    "state": {
+      "merchant_selected": true,
+      "days": 30,
+      "metrics": [
+        "Data Readiness85READY",
+        "Visibility85Kesiapan discovery",
+        "Location55NO NETWORK ACCESS",
+        "Demand Score49INSUFFICIENT DATA",
+        "Retail Gap-Indeks relatif"
+      ],
+      "diagnostic_components": 20,
+      "recommendations": 3,
+      "map_ready": true,
+      "owned_merchant_count": 1,
+      "similar_merchant_count": 0,
+      "transit_count": 0,
+      "map_canvas_pixels": 273960,
+      "rendered_charts": 3,
+      "chart_canvas_pixels": [
+        83030,
+        83030,
+        83030
+      ],
+      "claim": "Demand signal GETRA dan represented supply, bukan jumlah calon pelanggan, revenue, profit, atau ROI.",
+      "versions": "GETRA_DATA_READINESS_V1 / GETRA_VISIBILITY_READINESS_V1 / GETRA_LOCATION_READINESS_V1 / GETRA_DEMAND_V1 / GETRA_RETAIL_GAP_V1 / GETRA_UMKM_RECOMMENDATIONS_V1"
+    }
+  },
+  "non_owner": {
+    "api": {
+      "workspace_status": 200,
+      "owned_count": 0,
+      "intelligence_status": 403,
+      "safe": true
+    },
+    "browser": {
+      "empty_state": true,
+      "active_umkm_mode_without_ownership": "Intelligence menunggu merchant terverifikasiMode UMKM tidak memberikan ownership. Ajukan merchant, lalu tunggu persetujuan sebelum insight privat tersedia.Ajukan merchant"
+    }
+  },
+  "copilot": {
+    "grounded": {
+      "status": 200,
+      "mode": "DETERMINISTIC_FALLBACK",
+      "evidence": {
+        "merchant_id": "[REDACTED]",
+        "data_readiness": 85,
+        "visibility": 85,
+        "location_readiness": 55,
+        "demand_score": 49,
+        "supply_score": 100,
+        "retail_gap": null,
+        "confidence": "INSUFFICIENT_DATA",
+        "recommendation_ids": [
+          "REVIEW_PEDESTRIAN_ACCESS",
+          "ADD_MENU_EVIDENCE",
+          "ADD_PROFILE_PHOTO"
+        ]
+      },
+      "answer": "Visibility Readiness merchant adalah 85. Prioritas tindakan: Tinjau akses pedestrian, karena pgRouting belum menemukan akses jaringan yang dapat digunakan.",
+      "safe": true
+    },
+    "injection": {
+      "status": 200,
+      "mode": "SAFETY_FALLBACK",
+      "safe": true
+    }
+  },
+  "failure_recovery": {
+    "failure_message": "Failed to fetch",
+    "recovery_status": 200,
+    "final_days": 30
+  },
+  "responsive": {
+    "390x844": {
+      "body_scroll_width": 390,
+      "viewport_width": 390,
+      "panel_width": 338,
+      "map_pixels": 101400,
+      "charts_visible": 3,
+      "no_horizontal_overflow": true
+    },
+    "768x1024": {
+      "body_scroll_width": 768,
+      "viewport_width": 768,
+      "panel_width": 716,
+      "map_pixels": 257760,
+      "charts_visible": 3,
+      "no_horizontal_overflow": true
+    },
+    "1366x768": {
+      "body_scroll_width": 1366,
+      "viewport_width": 1366,
+      "panel_width": 1036,
+      "map_pixels": 255600,
+      "charts_visible": 3,
+      "no_horizontal_overflow": true
+    },
+    "1440x900": {
+      "body_scroll_width": 1440,
+      "viewport_width": 1440,
+      "panel_width": 1110,
+      "map_pixels": 273960,
+      "charts_visible": 3,
+      "no_horizontal_overflow": true
+    }
+  },
+  "accessibility": {
+    "scope": ".umkm-intelligence",
+    "violations": [],
+    "critical_or_serious": 0
+  },
+  "security": {
+    "browser_calls_getra_only": true,
+    "no_provider_mission_request": true,
+    "no_secret_in_urls": true,
+    "responses_safe": true,
+    "non_owner_denied": true
+  },
+  "performance": {
+    "overview_ms": 4964,
+    "copilot_ms": 1343
+  },
+  "network": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "http://localhost:8080/api/auth/login"
+      },
+      {
+        "method": "GET",
+        "url": "https://sesakxnjaphrxqxllqjm.supabase.co/auth/v1/user"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:3000/app?_rsc=Yaku0SukotyQAzL7"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:3000/app?_rsc=HcuIdjAOlPmjl1qE"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/styles/liberty"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/styles/liberty"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/map-import/layers"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/auth/me"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/map-import/layers"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/auth/me"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/auth/me"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/umkm/workspace"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/umkm/intelligence?merchant_id=c706d357-f1b8-4580-8b79-4a7909b68a12&days=30"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/styles/liberty"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.json"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.png"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6526/4236.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6527/4236.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6525/4236.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Italic/0-255.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Regular/0-255.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Bold/0-255.pbf"
+      },
+      {
+        "method": "POST",
+        "url": "http://localhost:8080/api/umkm/intelligence/copilot"
+      },
+      {
+        "method": "POST",
+        "url": "http://localhost:8080/api/umkm/intelligence/copilot"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/umkm/intelligence?merchant_id=c706d357-f1b8-4580-8b79-4a7909b68a12&days=30"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8473.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8472.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8472.pbf"
+      },
+      {
+        "method": "GET",
+        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Italic/8192-8447.pbf"
+      }
+    ],
+    "responses": [
+      {
+        "endpoint": "/api/umkm/intelligence",
+        "status": 200,
+        "bytes": 7573,
+        "safe": true
+      }
+    ]
+  },
+  "console_errors": [
+    "Failed to load resource: net::ERR_FAILED"
+  ],
+  "failed_requests": [
+    {
+      "url": "http://localhost:8080/api/umkm/intelligence?merchant_id=c706d357-f1b8-4580-8b79-4a7909b68a12&days=7",
+      "error": "net::ERR_FAILED"
+    }
+  ],
+  "expected_failure_injection": {
+    "console_errors": 1,
+    "failed_requests": 1
+  },
+  "unexpected_console_errors": [],
+  "unexpected_failed_requests": []
+}

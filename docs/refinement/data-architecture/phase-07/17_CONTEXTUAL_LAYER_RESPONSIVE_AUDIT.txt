@@ -1,0 +1,5 @@
+CONTEXTUAL LAYER RESPONSIVE AUDIT
+
+Browser E2E passed at 390x844, 768x1024, 1366x768, and 1440x900.
+
+At every viewport: no horizontal overflow, map canvas present, layer control visible, all enabled contextual sources rendered, and administrative boundary retained. Popup content is scroll-bounded and media is size-constrained.

@@ -1,33 +1,43 @@
-import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { AiAskRequestSchema } from "@/src/modules/ai/ai.schema";
 import { AiService } from "@/src/modules/ai/ai.service";
 import { readBoundedJsonBody } from "@/src/lib/spatial/request";
+import { requireAuthenticatedUser } from "@/src/lib/auth";
+import { rateLimiter } from "@/src/lib/rate-limit";
+import { getRequestId } from "@/src/lib/request-id";
+import { withApiLogger } from "@/src/lib/api-logger";
+import { createSuccessResponse } from "@/src/lib/api-response";
+import { ApplicationError } from "@/src/lib/errors";
+import { createOptionsHandler } from "@/src/lib/api-security";
 
-export async function POST(req: Request) {
-  try {
-    const authorization = req.headers.get("authorization") ?? undefined;
-    
-    // We enforce auth for AI endpoint
-    if (!authorization) {
-      return NextResponse.json({ success: false, error: { message: "Unauthorized" } }, { status: 401 });
-    }
+export async function POST(req: NextRequest) {
+  const requestId = getRequestId(req);
 
-    const body = await readBoundedJsonBody(req, 8192);
-    if (!body) {
-      return NextResponse.json({ success: false, error: { message: "Invalid or too large request body" } }, { status: 400 });
-    }
+  return withApiLogger(req, requestId, async () => {
+      const authorization = req.headers.get("authorization");
 
-    const parsed = AiAskRequestSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json({ success: false, error: { message: "Invalid payload shape", details: parsed.error.issues } }, { status: 400 });
-    }
+      const userId = await requireAuthenticatedUser(req);
+      // requireAuthenticatedUser has already verified the canonical Bearer form.
+      if (!authorization) throw new ApplicationError("UNAUTHORIZED");
 
-    const aiService = new AiService(authorization);
-    const result = await aiService.handleAskRequest(parsed.data);
+      // Check rate limit for the authenticated user
+      await rateLimiter.checkLimit(req, `${userId}:mutation:ai:ask`);
 
-    return NextResponse.json({ success: true, data: result });
-  } catch (error: any) {
-    console.error("AI API Error:", error);
-    return NextResponse.json({ success: false, error: { message: error.message || "Internal server error" } }, { status: 500 });
-  }
+      const body = await readBoundedJsonBody(req, 8192);
+      if (!body) {
+        throw new ApplicationError("VALIDATION_ERROR");
+      }
+
+      const parsed = AiAskRequestSchema.safeParse(body);
+      if (!parsed.success) {
+        throw new ApplicationError("VALIDATION_ERROR");
+      }
+
+      const aiService = new AiService(authorization);
+      const result = await aiService.handleAskRequest(parsed.data);
+
+      return createSuccessResponse(requestId, result);
+  });
 }
+
+export const OPTIONS = createOptionsHandler("/api/ai/ask");

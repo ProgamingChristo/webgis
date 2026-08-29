@@ -113,6 +113,38 @@ describe("MAPID request builder", () => {
       }),
     );
   });
+
+  it("builds a POST request with a JSON body for MAPID Mission endpoints", () => {
+    const authentication = createTestAuthentication();
+    const built = buildMapidRequest(
+      createConfig(),
+      {
+        body: {
+          feature: {
+            coordinates: [[[106.7, -6.2], [106.8, -6.2], [106.8, -6.1], [106.7, -6.2]]],
+            type: "Polygon",
+          },
+          offset: 0,
+        },
+        method: "POST",
+        path: "/web/competition/menugo",
+      },
+      authentication,
+    );
+
+    expect(built.method).toBe("POST");
+    expect(new URL(built.url).pathname).toBe("/provider-root/web/competition/menugo");
+    expect(built.headers.get("Content-Type")).toBe("application/json");
+    expect(built.body).toBe(
+      JSON.stringify({
+        feature: {
+          coordinates: [[[106.7, -6.2], [106.8, -6.2], [106.8, -6.1], [106.7, -6.2]]],
+          type: "Polygon",
+        },
+        offset: 0,
+      }),
+    );
+  });
 });
 
 describe("MapidClient", () => {

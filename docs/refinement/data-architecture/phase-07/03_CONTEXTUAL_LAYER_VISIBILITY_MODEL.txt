@@ -1,0 +1,10 @@
+CONTEXTUAL LAYER VISIBILITY MODEL
+
+Defaults:
+- Merchant: ON
+- Properti: OFF
+- Observasi transaksi: OFF
+- Observasi lapangan: OFF
+- Batas administrasi: ON
+
+Each checkbox is independent. Disabled contextual sources issue no request. Re-enabling a source in the same viewport uses the bounded LRU cache. Merchant switches to a MapLibre cluster source while contextual observations are visible so DOM markers do not block contextual interactions.

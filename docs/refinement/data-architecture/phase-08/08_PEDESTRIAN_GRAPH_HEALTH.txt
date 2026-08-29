@@ -1,0 +1,17 @@
+GETRA PHASE 08 - PEDESTRIAN GRAPH HEALTH
+
+Source: OpenStreetMap pedestrian-compatible ways, imported through the Phase 08 tool.
+Environment: PRODUCTION. Coverage: bounded pilot, south -6.285, west 106.785,
+north -6.180, east 106.890.
+
+Nodes: 67,708
+Edges: 81,346
+Walkable edges: 81,346
+Invalid costs: 0
+Orphan edges: 0
+Isolated nodes: 0
+Components: 570
+Largest component: 64,950 nodes
+
+Health status: PASS for the bounded pilot. Coverage outside the pilot is explicitly
+reported as NO_NETWORK_ACCESS rather than fabricated.

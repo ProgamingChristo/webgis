@@ -1,0 +1,8 @@
+GETRA PHASE 10 PERFORMANCE AUDIT
+
+Runtime API overview: 4,393 ms server request, 7,571-byte safe payload on the verified fixture.
+Browser end-to-render measurement is recorded in browser-evidence/phase10-browser-evidence.json.
+Copilot runtime API: 1,804 ms during direct verification; browser measurement is also recorded.
+Similar merchants are capped at 20; transit candidates at 10/2km; analytics region result at 2.
+Stale requests use AbortController plus a monotonic sequence guard.
+Remote index audit confirmed active merchant/admin-region spatial GiST and pedestrian routing indexes.

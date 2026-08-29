@@ -1,0 +1,21 @@
+GETRA PHASE 11 - FRONTEND WORKSPACE ARCHITECTURE
+
+Page:
+- /business-space
+
+Main UI:
+- category selector
+- region selector
+- demand window selector
+- Properti Go candidate list
+- MapLibre map
+- candidate detail panel
+- comparison table
+- ECharts comparison chart
+- AI Location Insight action
+
+Data flow:
+- Browser calls GETRA /api/business-space/* only.
+- Browser does not call MAPID Mission APIs.
+- Browser does not receive provider credentials.
+

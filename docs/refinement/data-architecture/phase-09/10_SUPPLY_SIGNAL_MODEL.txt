@@ -1,0 +1,8 @@
+SUPPLY SIGNAL MODEL
+
+Supply is COUNT(DISTINCT canonical merchant id) for published canonical merchants matching the
+same category and administrative polygon. This preserves Phase 03 reconciliation deduplication.
+Premium and Menu Go are not counted as separate merchants after canonical reconciliation.
+
+supply_score uses the same logarithmic five-region normalization as demand_score and is bounded 0..100.
+It represents supply currently represented in GETRA, not a complete business census.

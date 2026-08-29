@@ -1,0 +1,37 @@
+ACTIVITIES INTEGRATION
+
+Contract rule:
+- Activities must use an actual known endpoint.
+- No invented endpoint, method, auth, schema, or pagination behavior.
+
+Implementation:
+- Source type ACTIVITIES is supported by shared schema/service/database/read API.
+- Sync is intentionally BLOCKED unless MAPID_ACTIVITIES_PATH is configured with a real server-side path.
+- If missing or invalid, source-level report returns BLOCKED.
+
+Normalization when endpoint is available:
+- Semantics: FIELD_OBSERVATION.
+- No automatic routing penalty or pedestrian graph mutation.
+
+Status:
+- Backend support implemented.
+- Actual Activities retrieval BLOCKED until real endpoint is confirmed.
+
+RUNTIME VERIFICATION - 2026-08-27
+
+- Real Mission credential/base URL is now configured server-side.
+- MAPID_ACTIVITIES_PATH remains absent.
+- No actual Activities path/method/response contract was found in project configuration, handoff documents, adapters, or available environment configuration.
+- No endpoint was guessed or fabricated.
+- STATUS: BLOCKED - ACTUAL ENDPOINT REQUIRED.
+
+FINAL RUNTIME VERIFICATION - 2026-08-27
+
+- Official endpoint confirmed: POST /web/competition/activities.
+- Authentication confirmed: server-side x-api-key.
+- Actual envelope confirmed: data.activities with meta.filters and meta.total.
+- First sync: 60 records inserted, 0 invalid.
+- Idempotent rerun: 0 insert, 60 update, final count remained 60.
+- GETRA normalized read API: HTTP 200, 10 sampled items returned.
+- Normalization maps provider medias to media and user name/full name to author.
+- STATUS: VERIFIED.

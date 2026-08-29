@@ -1,0 +1,62 @@
+GETRA PHASE 03 - RUNTIME VERIFICATION
+Date: 2026-08-27
+
+Remote migration
+- 20260824103000 history mismatch was repaired as applied after confirming the canonical account_role schema already existed and Phase 02 authorization used it.
+- Dry run then contained only 20260827120000_phase03_merchant_reconciliation.sql.
+- Phase 03 migration push: PASS.
+- Migration list local/remote 20260827120000: MATCH.
+- Linked public database TypeScript types regenerated: PASS.
+
+Real input
+- Premium persisted PUBLIC_API_URL merchants considered: 600.
+- Menu Go observations considered: 130.
+- PostGIS candidate rows: 221.
+- Candidate rows with a Premium merchant within 250 m: 145.
+- Unique Menu Go observations: 130.
+- Minimum observed candidate distance: 20.8 m.
+- Maximum observed candidate distance: 249.9 m.
+
+Real reconciliation result
+- MATCH_CONFIRMED: 0.
+- MATCH_HIGH_CONFIDENCE: 0.
+- MATCH_REVIEW_REQUIRED: 0.
+- NO_MATCH: 130.
+- This result was not forced. Manual samples showed close but differently named businesses, so proximity-only merging was correctly rejected.
+
+Manual NO_MATCH samples
+- Mie Pedas Kicau vs ROTI'O PONDOK KOPI, approximately 20.8 m: different identity.
+- Tahu Spesial Indramayu vs DUNKIN' DONUTS MANGGA BESAR, approximately 30.5 m: different identity/category.
+- Warung Kita vs KUE SUBUH MELAWAI, approximately 66.7 m: insufficient identity evidence.
+- Confirmed/high-confidence/review samples are unavailable in current real data because no pair reached those deterministic states.
+
+Idempotency
+- Before Phase 03: 871 canonical merchants.
+- After run 1: 1001 canonical merchants, 730 source links, 130 decisions.
+- Run 2: 0 canonical merchants created; 130 Menu Go canonical merchants reused.
+- Final: 1001 merchants, 730 source links, 130 decisions.
+- Duplicate logical source links: 0.
+- Unique Menu Go canonical IDs: 130.
+
+Canonical API
+- GET /api/merchants/canonical: HTTP 200.
+- Total canonical Phase 03 read items: 730.
+- Premium-only: 600.
+- Menu-Go-only: 130.
+- Premium + Menu Go reconciled: 0 because current real data contains no qualifying pair.
+- API key text: absent.
+- Service-role text: absent.
+- Raw payload: absent.
+
+Authorization runtime
+- USER -> GET admin reconciliation: HTTP 403.
+- USER -> GET canonical merchant read: HTTP 200.
+- Anonymous -> GET canonical merchant read: HTTP 401.
+
+Quality gates
+- Typecheck: PASS.
+- Lint: PASS, zero warnings.
+- Focused Phase 01-03 tests: 64 PASS.
+- Full frontend tests: 44 PASS.
+- Full backend tests: 653 PASS, 3 SKIPPED.
+- Build: PASS for frontend and backend.

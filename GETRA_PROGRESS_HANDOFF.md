@@ -4,6 +4,7 @@
 > **Repo:** `C:\Users\Revan Anthony\OneDrive\Documents\GitHub\webgis`  
 > **Branch integrasi:** `finalmerge`  
 > **Checkpoint:** 22 Agustus 2026  
+> **Independent verification update:** 27 Agustus 2026. Older DONE claims are historical context, not current evidence. Phase 2 found and repaired remaining legacy authorization policy gaps; fresh reset/RLS execution is still blocked until Docker/Supabase is available. Current release gates are `docs/SECURITY_REVIEW.md` and `docs/PRODUCTION_ACCEPTANCE_CHECKLIST.md`.
 > **Tujuan:** memberi konteks ke anggota tim lain agar bisa melanjutkan progress tanpa mengulang keputusan arsitektur/migrasi yang sudah selesai.
 
 ## Legend

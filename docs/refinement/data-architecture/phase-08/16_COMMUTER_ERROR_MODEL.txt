@@ -1,0 +1,7 @@
+GETRA PHASE 08 - COMMUTER ERROR MODEL
+
+Validation errors are safe 4xx responses. Graph outcomes use explicit statuses:
+UNROUTABLE, NO_NETWORK_ACCESS, or NO_FABRICATED_ROUTE with null geometry. Unknown
+price and hours are exclusion reasons, not guessed values. Upstream and database
+failures use sanitized summaries without credentials or stack traces. The frontend
+keeps hard constraints visible and provides explicit remove-filter controls.

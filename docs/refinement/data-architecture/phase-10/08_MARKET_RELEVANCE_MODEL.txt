@@ -1,0 +1,7 @@
+GETRA PHASE 10 MARKET RELEVANCE MODEL
+
+Merchant category is mapped with the canonical Phase 09 category resolver.
+The merchant point selects its exact Phase 06 administrative polygon through the Phase 09 API model.
+Market relevance reuses Demand Score, evidence confidence, window, source composition, and model version.
+AVAILABLE and INSUFFICIENT_DATA are preserved without optimistic reinterpretation.
+Claims say observed GETRA demand signal, never total population demand or customer count.

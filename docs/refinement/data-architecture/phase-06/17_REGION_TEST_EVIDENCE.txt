@@ -1,0 +1,22 @@
+GETRA PHASE 06 - TEST EVIDENCE
+
+Phase 06 focused backend
+- 2 files, 9 tests PASS
+- auth, safe GeoJSON, invalid/duplicate IDs, unknown input, Polygon, MultiPolygon, EPSG bounds
+
+Phase 06 focused frontend
+- 4 files, 5 tests PASS
+- combined bounds, selected ordering, deduplication, cache, MapLibre lifecycle, accessible chips
+
+Full suites
+- frontend: 15 files, 51 tests PASS
+- backend: 102 files PASS, 2 skipped; 685 tests PASS, 3 skipped; 688 total
+
+Quality and regressions
+- root typecheck PASS
+- root lint PASS with zero warnings
+- frontend/backend production build PASS
+- Phase 05 live browser regression PASS
+- Phase 04 viewport, pagination, clustering, and security regression PASS
+- Phase 06 live browser E2E PASS
+- Supabase dry-run: upToDate=true, no pending migrations

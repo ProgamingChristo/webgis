@@ -1,0 +1,12 @@
+GETRA PHASE 04 CHANGES - 2026-08-27
+
+- Added additive PostGIS canonical merchant bbox RPC and GiST index migration.
+- Extended GETRA canonical merchant API with strict bbox and pagination contract.
+- Restricted each page to a maximum of 250 records.
+- Reused Phase 03 canonical enrichment instead of duplicating reconciliation.
+- Added MapLibre moveend viewport loading with stale-request cancellation.
+- Prevented result-driven fitBounds loops through stable dataset lifecycle handling.
+- Added native MapLibre clustering for result sets above 250 visible merchants.
+- Added backend/frontend focused tests and browser runtime automation.
+- Regenerated linked Supabase database TypeScript types.
+- Added Phase 04 architecture, API, test, browser evidence, and final report docs.

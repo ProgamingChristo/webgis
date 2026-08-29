@@ -1,0 +1,9 @@
+RETAIL GAP CONFIDENCE MODEL
+
+sample < 3: INSUFFICIENT_DATA, Retail Gap null.
+sample < 10 OR source diversity < 2: LIMITED_EVIDENCE.
+sample >= 30 AND source diversity >= 3: STRONGER_EVIDENCE.
+otherwise: MODERATE_EVIDENCE.
+
+Every row returns sample size, source diversity/types, latest signal time, and coverage status.
+Confidence qualifies evidence breadth; it does not claim statistical population confidence.

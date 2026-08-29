@@ -1,0 +1,8 @@
+GETRA PHASE 10 SCORE VERSIONING
+
+Data readiness: GETRA_DATA_READINESS_V1.
+Visibility readiness: GETRA_VISIBILITY_READINESS_V1.
+Location readiness: GETRA_LOCATION_READINESS_V1.
+Demand: GETRA_DEMAND_V1. Retail Gap: GETRA_RETAIL_GAP_V1.
+Recommendations: GETRA_UMKM_RECOMMENDATIONS_V1.
+All versions are returned by the backend and visible in the workspace footer.

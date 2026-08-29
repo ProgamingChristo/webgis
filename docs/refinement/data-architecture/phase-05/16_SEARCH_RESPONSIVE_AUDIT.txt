@@ -1,0 +1,16 @@
+GETRA PHASE 05 - RESPONSIVE AUDIT
+
+Verified viewports
+- 390x844
+- 768x1024
+- 1366x768
+- 1440x900
+
+All passed:
+- no horizontal page overflow
+- search controls visible and inside viewport width
+- MapLibre canvas present
+- input, clear action, and fixed-width icon submit control retain stable dimensions
+- mobile text does not collide with the submit control
+
+The 390px screenshot was manually inspected after replacing the conditional search grid with a stable flex row.

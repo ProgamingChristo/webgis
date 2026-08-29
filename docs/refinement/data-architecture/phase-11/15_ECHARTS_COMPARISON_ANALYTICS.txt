@@ -1,0 +1,17 @@
+GETRA PHASE 11 - ECHARTS COMPARISON ANALYTICS
+
+Component:
+- BusinessSpaceChart
+
+Purpose:
+- Visualize candidate trade-offs for demand and supply scores.
+- Support the table-based comparison without replacing it.
+
+Accessibility:
+- A table remains available for structured data review.
+- The chart sets a rendered marker used by browser verification.
+
+No overclaim:
+- Chart values are contextual scores and counts.
+- They are not financial projections.
+

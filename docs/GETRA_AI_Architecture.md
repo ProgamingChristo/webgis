@@ -10,7 +10,7 @@ The AI engine does not guess routes, invent distances, or generate coordinate ge
 1. **User Request**: User sends a natural language query via the frontend AI UI.
 2. **Intent Detection**: The backend `/api/ai/ask` endpoint parses the request to determine if it requires spatial data, transport data, or general instructions.
 3. **Context Grounding (Retrieval)**: Based on the intent, the backend autonomously queries its own internal Spatial/v1 endpoints (e.g., nearest transit nodes, nearby UMKM) to gather factual context.
-4. **AI Processing**: The LLM provider is invoked with a strict system prompt containing the structured facts.
+4. **AI Processing**: The configured provider is invoked with a strict system prompt containing the structured facts. Production uses `AI_PROVIDER=claude`.
 5. **Grounded Response**: The AI synthesizes the facts into human-readable text without hallucinating spatial metadata.
 
 ## Security & Protections
@@ -21,8 +21,8 @@ The AI engine does not guess routes, invent distances, or generate coordinate ge
 
 ## Provider Configuration
 
-The provider (e.g. OpenAI / Google Gemini) is abstracted. Ensure `AI_API_KEY` or equivalent provider variables are set in the `.env.local` server environment.
+Provider selection is explicit. Configure `AI_PROVIDER=claude`, `ANTHROPIC_API_KEY`, and `ANTHROPIC_MODEL` in the server runtime. An explicit Claude configuration never silently fails over to another paid provider; an invalid provider value fails clearly.
 
 ## Troubleshooting
 
-- **AI Unavailable**: If the AI provider is down, the `/api/ai/ask` route will fail. However, **core GETRA remains fully usable**. The map, routing, UMKM, and transport services do not depend on the AI provider.
+- **AI Unavailable**: Deterministic intent rules and fact formatting return a bounded explanation when verified facts can be retrieved. The map, routing, UMKM, and transport services do not depend on the AI provider. Missing facts are reported as limitations, never fabricated.

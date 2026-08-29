@@ -1,26 +1,46 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/src/types/database.types";
+import { NextResponse, type NextRequest } from "next/server";
+import { z } from "zod";
+
+import { withApiLogger } from "@/src/lib/api-logger";
+import { createOptionsHandler } from "@/src/lib/api-security";
+import { requireAuthenticatedUser } from "@/src/lib/auth";
+import { ApplicationError } from "@/src/lib/errors";
+import { rateLimiter } from "@/src/lib/rate-limit";
+import { getRequestId } from "@/src/lib/request-id";
+import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
 import { TransportNodeRepository } from "@/src/repositories/transport-node.repository";
 import { TransportNodeService } from "@/src/modules/transport-node/transport-node.service";
 import { createSpatialService } from "@/src/modules/spatial/spatial.service";
 import { loadSpatialConfig } from "@/src/modules/spatial/spatial.config";
 
-export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const limit = Number(searchParams.get("limit")) || 20;
-    const page = Number(searchParams.get("page")) || 1;
-    
-    // Use service role for internal reading, or require auth if this was exposed
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:54321";
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
-    
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json({ error: "Missing Supabase credentials" }, { status: 500 });
+export const runtime = "nodejs";
+
+const PaginationSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  page: z.coerce.number().int().min(1).max(10_000).default(1),
+});
+
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  const requestId = getRequestId(request);
+
+  return withApiLogger(request, requestId, async () => {
+    const authorization = request.headers.get("authorization");
+    if (!authorization) {
+      throw new ApplicationError("UNAUTHORIZED");
     }
 
-    const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+    const userId = await requireAuthenticatedUser(request);
+    await rateLimiter.checkLimit(request, `${userId}:api:v1-transport-nodes`);
+
+    const { searchParams } = new URL(request.url);
+    const parsed = PaginationSchema.safeParse({
+      limit: searchParams.get("limit") ?? undefined,
+      page: searchParams.get("page") ?? undefined,
+    });
+    if (!parsed.success) throw new ApplicationError("VALIDATION_ERROR");
+    const { limit, page } = parsed.data;
+
+    const supabase = getRequestSupabaseClient(authorization);
     const repo = new TransportNodeRepository(supabase);
     const config = loadSpatialConfig();
     const spatial = createSpatialService(supabase, config);
@@ -31,11 +51,11 @@ export async function GET(request: Request) {
       page,
       offset: (page - 1) * limit,
       sort: "created_at",
-      order: "desc"
+      order: "desc",
     });
 
     return NextResponse.json(result);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  });
 }
+
+export const OPTIONS = createOptionsHandler("/api/v1/transport/nodes");

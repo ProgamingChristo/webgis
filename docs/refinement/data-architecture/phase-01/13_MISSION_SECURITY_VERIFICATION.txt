@@ -1,0 +1,31 @@
+MISSION SECURITY VERIFICATION
+
+Credentials:
+- MAPID_API_KEY remains server-side.
+- MAPID_BASE_URL remains server-side.
+- MAPID_TIMEOUT_MS remains server-side.
+- MAPID_ACTIVITIES_PATH is server-side path configuration only.
+
+No secret exposure:
+- No NEXT_PUBLIC Mission credential was added.
+- No client component uses MAPID Mission credentials.
+- Sync endpoint uses backend service role persistence.
+- Read API returns normalized DTO, not raw headers or provider credentials.
+
+Authorization:
+- POST /api/admin/mapid/mission-sync requires ADMIN.
+- GET /api/mapid/mission-observations requires authenticated user.
+- Endpoint policy matrix was updated and tested.
+
+Security test evidence:
+- npm run test -w backend -- --run tests/unit/security/endpoint-policy.test.ts tests/unit/integrations/mapid
+- Result: PASS, 6 files, 50 tests.
+
+VERIFICATION CLOSURE UPDATE - 2026-08-27
+
+- Runtime RLS check: anonymous client returned zero rows for an exact verification identity.
+- Runtime authorized read check: authenticated admin GET route returned HTTP 200.
+- Runtime response inspection: normalized response contained no MAPID_API_KEY or SUPABASE_SERVICE_ROLE_KEY value.
+- Static scan: no NEXT_PUBLIC Mission credential or browser x-api-key usage found.
+- NEXT_PUBLIC_MAPID_BASEMAP_KEY remains a separate public basemap configuration and is not the Mission credential.
+- SECURITY: PASS.

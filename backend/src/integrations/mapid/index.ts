@@ -6,3 +6,8 @@ export * from "@/src/integrations/mapid/mapid.mapper";
 export * from "@/src/integrations/mapid/mapid.normalizer";
 export * from "@/src/integrations/mapid/mapid.schema";
 export * from "@/src/integrations/mapid/mapid.types";
+export * from "@/src/integrations/mapid/mission.client";
+export * from "@/src/integrations/mapid/mission.repository";
+export * from "@/src/integrations/mapid/mission.schema";
+export * from "@/src/integrations/mapid/mission.service";
+export * from "@/src/integrations/mapid/mission.types";

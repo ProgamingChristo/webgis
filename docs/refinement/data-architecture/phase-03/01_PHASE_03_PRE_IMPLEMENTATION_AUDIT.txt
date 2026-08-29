@@ -1,0 +1,34 @@
+GETRA PHASE 03 - PRE-IMPLEMENTATION AUDIT
+Date: 2026-08-27
+
+Repository baseline
+- Branch: finalmerge
+- HEAD: 74f7ceb feat: implement full authentication system, profile management, and data ingestion infrastructure
+- The worktree already contained Phase 01/02 and unrelated dirty work. No unrelated changes were reverted.
+
+Canonical domain decision
+- public.merchants already exists and is used by ownership, merchant claims, submissions, advertising, and workspace features.
+- public.merchant_source_links already exists for source evidence.
+- No canonical_merchants_v2 table was created.
+- public.mapid_mission_observations remains the source of truth for Menu Go observations.
+- Premium remains represented by persisted PUBLIC_API_URL admin-import merchant records and the existing Premium read integration remains unchanged.
+
+Remote baseline observed before reconciliation
+- merchants: 871
+- merchant_source_links: 0
+- mapid_mission_observations: 489 total
+- Menu Go observations: 130 at Phase 03 runtime verification
+- Existing Premium-like persisted PUBLIC_API_URL merchants: 600
+
+Geometry and identity
+- merchants.location: PostGIS Point, SRID 4326
+- mapid_mission_observations.geometry: PostGIS Point, SRID 4326
+- Production candidate distance is calculated by PostGIS ST_DWithin and ST_Distance.
+- Ownership is not inferred or modified by reconciliation.
+
+Execution model
+- Explicit ADMIN command: POST /api/admin/merchant-reconciliation
+- Safe ADMIN status: GET /api/admin/merchant-reconciliation
+- Authenticated canonical read: GET /api/merchants/canonical
+- Phase 01 Mission synchronization is not duplicated or modified.
+

@@ -1,0 +1,12 @@
+GETRA PHASE 08 - SECURITY AUDIT
+
+PASS. Request schemas bound coordinates, thresholds, source values, and candidate
+counts. SQL RPCs use typed parameters and fixed queries; no SQL text comes from the
+browser. Routing is authenticated and rate-limited. Graph-health is internal/admin.
+Mission and service-role credentials remain server-side and are absent from response
+bodies, URLs, browser requests, logs, screenshots, and documentation.
+
+An old hardcoded browser basemap credential was removed. The browser now uses a
+separate explicitly configured public basemap key or OpenFreeMap. Because that old
+credential had previously been exposed, operational rotation is strongly recommended.
+Precise location is request-scoped and is not persisted by Phase 08.

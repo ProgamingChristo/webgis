@@ -4,13 +4,17 @@ import type { Coordinate, LineStringGeometry } from "@/src/types/spatial";
 export interface RoutingRequest {
   origin: Coordinate;
   destination: Coordinate;
+  destination_merchant_id?: string;
 }
 
 export interface RoutingResult {
+  route_status: "ROUTABLE" | "UNROUTABLE" | "NO_NETWORK_ACCESS";
   analysis_method: string;
-  distance_meters: number;
-  duration_seconds: number;
-  geometry: LineStringGeometry;
+  distance_meters: number | null;
+  network_distance_meters: number | null;
+  access_distance_meters: number | null;
+  duration_seconds: number | null;
+  geometry: LineStringGeometry | null;
   limitation_flags: string[];
   route_source: string;
   source: string;
@@ -30,13 +34,14 @@ export interface NearestTransportResult {
 }
 
 export const routingService = {
-  async getWalkingRoute(request: RoutingRequest): Promise<RoutingResult> {
+  async getWalkingRoute(request: RoutingRequest, signal?: AbortSignal): Promise<RoutingResult> {
     return apiClient.post<RoutingResult>(
       "/api/routing",
       {
         ...request,
         mode: "walking",
       },
+      { signal },
     );
   },
 

@@ -1,0 +1,5 @@
+ACTIVITIES POPUP
+
+Safe fields are title, normalized category label, description, observed/import time, provenance, and allowlisted observation media.
+
+Runtime evidence rendered a field-observation heading, title, descriptive text, 27 Aug 2026 observation date, MAPID Activities provenance, and accessible photo alt text.

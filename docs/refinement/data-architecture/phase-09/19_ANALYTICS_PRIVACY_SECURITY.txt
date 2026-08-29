@@ -1,0 +1,9 @@
+ANALYTICS PRIVACY AND SECURITY
+
+Outputs are aggregate by administrative city. No event history, actor ID, email, query text,
+precise origin, raw MAPID payload, credential, or service-role value is client-visible.
+analytics_events has RLS enabled and service-role-only policies. Existing RLS was not weakened.
+The five-minute unique dedup hash prevents noisy duplicate clicks without storing actor identity.
+
+Authenticated route policies, strict schemas, bounded windows/rows, and server-owned source mappings apply.
+Browser evidence: GETRA API only; no Mission provider call; no secret in URL or response.

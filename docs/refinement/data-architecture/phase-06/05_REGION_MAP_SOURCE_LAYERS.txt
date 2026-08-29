@@ -1,0 +1,14 @@
+GETRA PHASE 06 - MAP SOURCE AND LAYERS
+
+Source
+getra-administrative-regions, type geojson.
+
+Layers
+- getra-administrative-regions-fill: subtle cyan semantic selected fill, opacity 0.11.
+- getra-administrative-regions-line: readable selected outline with zoom interpolation.
+- getra-administrative-regions-label: collision-aware city name symbol, zoom 9 to 15.5.
+
+Lifecycle
+Source data is updated with setData. Source and layers are checked before registration and restored after basemap style reload. Default FeatureCollection is empty. Merchant markers/clusters are added above the boundary source; route behavior is unchanged.
+
+The previous bundled static boundary import was removed from the map component. Admin-import boundaries only render when an admin-import dataset is explicitly active.

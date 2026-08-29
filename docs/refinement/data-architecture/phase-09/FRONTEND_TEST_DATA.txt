@@ -1,0 +1,13 @@
+GETRA PHASE 09 FRONTEND TEST DATA
+
+Use an authenticated USER test account. Do not place passwords or provider keys in this file.
+Default meaningful comparison: category coffee, window 30 days, all visible Jakarta regions.
+Historical observed baseline at verification:
+- Barat D93/S100/Gap-7/sample19
+- Pusat D82/S47/Gap35/sample12
+- Selatan D100/S50/Gap50/sample25
+- Timur D49/S57/Gap-8/sample3
+- Utara sample0/INSUFFICIENT_DATA
+
+Insufficient-data case: pharmacy, Jakarta Barat, 30 days (sample0 at verification).
+Counts may change as real GETRA events arrive; assert contract/formula, not frozen provider totals.

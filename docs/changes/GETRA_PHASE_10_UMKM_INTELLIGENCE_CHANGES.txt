@@ -1,0 +1,53 @@
+GETRA PHASE 10 UMKM INTELLIGENCE CHANGES
+
+OBJECTIVE
+- Add owner-authorized merchant diagnostics and grounded interpretation to the existing /umkm workspace.
+
+CREATED
+- Backend UMKM intelligence constants, types, schemas, models, repository, orchestration, Copilot, and two API routes.
+- Frontend intelligence service, hook, types, dashboard, MapLibre context, and ECharts components.
+- Focused backend/frontend tests, Chrome browser verification script, 25 phase documents, test data, manual guide, JSON evidence, and screenshots.
+
+MODIFIED
+- Workspace API/service now uses ownership instead of stakeholder mode and includes deduplicated approved claims.
+- Workspace UI embeds intelligence and supports a safe no-ownership state.
+- Ownership claim route now creates PENDING claims only; instant owner binding/self-approval was removed.
+- Advertising merchant API/UI no longer exposes demo claimable merchants, instant claim, or arbitrary UUID selection.
+- Endpoint policy registers owner intelligence GET and Copilot POST.
+- Global styles add responsive, accessible Phase 10 diagnostic/map/chart surfaces.
+
+API / SECURITY
+- GET /api/umkm/intelligence?merchant_id=<uuid>&days=7|30.
+- POST /api/umkm/intelligence/copilot with strict merchant_id, days, question.
+- Owner, approved claimant, or ADMIN only; anonymous 401 and non-owner 403.
+- Safe DTO only; no raw evidence, provider headers, user histories, token, or secret.
+
+MODELS
+- GETRA_DATA_READINESS_V1: explicit 100-point completeness model.
+- GETRA_VISIBILITY_READINESS_V1: explicit discovery-eligibility model.
+- GETRA_LOCATION_READINESS_V1: GIS/network evidence model with mobile semantics.
+- GETRA_UMKM_RECOMMENDATIONS_V1: deterministic issue/action mapping.
+- Demand and Retail Gap reuse GETRA_DEMAND_V1 and GETRA_RETAIL_GAP_V1 unchanged.
+
+DATABASE / MIGRATION
+- No Phase 10 database object or migration required.
+- Remote migration list aligned; db push --dry-run reported up to date.
+- Remote index stats confirmed active spatial, claim, and pedestrian indexes.
+
+QUALITY / RUNTIME
+- Typecheck PASS. Lint PASS with zero warnings. Build PASS.
+- Focused backend 24 PASS; focused frontend 4 PASS.
+- Full frontend 69 PASS. Full backend 775 PASS, 3 SKIPPED.
+- Runtime owner 200, non-owner 403, Phase 09 consistency PASS, safe response scan PASS.
+- Chrome owner/non-owner, Copilot grounding/injection, failure recovery, network, console, and four responsive sizes PASS.
+- Axe scoped accessibility violations: 0.
+- Runtime overview 4,393 ms / 7,571 bytes; direct Copilot 1,804 ms on verified fixture.
+
+LIMITATIONS
+- Remote owner fixture has one merchant, INSUFFICIENT_DATA gap, and NO_NETWORK_ACCESS; states are represented honestly.
+- No history snapshots, financial forecast, campaign automation, or Phase 11 feature.
+
+ROLLBACK
+- Remove the two intelligence routes and feature modules; remove the dashboard embed/styles and browser/docs artifacts.
+- Restore prior workspace/claim UI only if ownership security is preserved.
+- No database rollback is needed. Never delete canonical merchants, claims, provenance, or Phase 09 history.

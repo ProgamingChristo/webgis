@@ -1,0 +1,22 @@
+GETRA PHASE 11 - MAPID BASEMAP SELECTOR
+
+Requirement:
+- Use MAPID GL Style basemaps directly.
+- Provide five user-selectable basemaps.
+
+Implemented styles:
+- Street Mapid
+- Street Mapid - 2d building only
+- Satellite
+- Dark Mapid
+- Light Mapid
+
+Behavior:
+- Selection is persisted in localStorage.
+- GETRA map surfaces reuse the selected basemap where applicable.
+- Basemap key is used only for public GL style URL access, not MAPID Mission ingestion.
+
+Browser evidence:
+- tmp/basemap-evidence/mapid-basemap-evidence.json
+- tmp/basemap-evidence/mapid-basemap-1366x768.png
+

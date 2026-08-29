@@ -1,0 +1,35 @@
+GETRA PHASE 02 - CHANGES
+
+Backend
+- Added GET and POST /api/admin/mission/sync.
+- Added strict canonical source validation.
+- Added AdminMissionSyncService as a thin orchestration layer over Phase 01.
+- Added safe latest-run projections from mapid_mission_sync_runs.
+- Added minimal same-source concurrency guard.
+- Registered GET/POST endpoint security policies.
+
+Frontend
+- Added /admin/mission-data.
+- Added Mission Data to ADMIN navigation.
+- Added four source controls with persisted last-sync status and actual counters.
+- Added loading, success, warning, blocked, failure, and never-synced states.
+- Added desktop and mobile responsive layouts.
+- Added authenticated GETRA-only frontend service.
+
+Tests and QA
+- Added backend route/service coverage.
+- Added frontend service coverage.
+- Added repeatable Puppeteer browser verifier.
+- Added safe test data and manual browser guide.
+- Captured desktop, mobile, success, and failure evidence.
+
+Database
+- No Phase 02 migration.
+
+Explicitly unchanged
+- Premium MAPID integration.
+- Phase 01 Mission provider client.
+- Provider endpoint mapping and credentials.
+- Phase 01 normalization, provenance, and persistence semantics.
+- Mission observation domain semantics.
+- Phase 03 merchant reconciliation.

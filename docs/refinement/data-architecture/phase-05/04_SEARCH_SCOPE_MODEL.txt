@@ -1,0 +1,12 @@
+GETRA PHASE 05 - SEARCH SCOPE MODEL
+
+CURRENT_VIEWPORT
+Uses validated west/south/east/north supplied from MapLibre. Panning during an active search does not silently replace results; the user receives Search This Area.
+
+REGION
+Uses one trusted administrative region geometry resolved by the backend. The map fits the returned region bounds.
+
+MULTI_REGION
+Uses the union of up to five trusted region geometries. Results must intersect at least one selected geometry. The contract supports multiple regions even when a specific query happens to return records from only one selected region.
+
+No scope means all Jakarta. The endpoint requires a valid viewport or trusted region scope.

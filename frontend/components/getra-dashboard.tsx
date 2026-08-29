@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  BarChart3,
   Bot,
+  Building2,
   CalendarDays,
   Coffee,
   Database,
@@ -17,10 +19,12 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 import { StakeholderModeSwitcher } from "@/src/components/stakeholder/stakeholder-mode-switcher";
 import { StakeholderContextShell } from "@/src/components/stakeholder/stakeholder-context-shell";
 import { useAuth } from "@/src/components/providers/AuthProvider";
+import { GetraLogo } from "@/src/components/getra-ui";
 import { AccountMenu } from "@/src/components/profile/account-menu";
 import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
 import { AiPanel } from "@/components/ai/ai-panel";
@@ -32,7 +36,21 @@ import { useProfilePoster, ProfilePoster } from "@/src/features/umkm-advertising
 import { useRouting } from "@/src/hooks/use-routing";
 import {
   mapidLayerService,
+  type CanonicalMerchantLayer,
+  type GlobalSearchIntent,
+  type MapViewportBounds,
+  type SearchRegion,
 } from "@/src/services/mapid-layer.service";
+import { GlobalSearchControls } from "@/src/features/global-search/components/global-search-controls";
+import { RegionScopeSummary } from "@/src/features/administrative-boundaries/components/region-scope-summary";
+import { useAdministrativeBoundaries } from "@/src/features/administrative-boundaries/hooks/use-administrative-boundaries";
+import { groupMerchantsByRegion } from "@/src/features/administrative-boundaries/utils/administrative-boundary.utils";
+import { useContextualLayers } from "@/src/features/mission-context-layers/hooks/use-contextual-layers";
+import type { ContextualLayerKey } from "@/src/features/mission-context-layers/types/contextual-layer.types";
+import {
+  DEFAULT_CONTEXTUAL_LAYER_VISIBILITY,
+  setContextualLayerVisibility,
+} from "@/src/features/mission-context-layers/utils/contextual-layer.utils";
 import {
   adminMapImportService,
   type AdminImportedLayer,
@@ -43,12 +61,26 @@ import {
   COFFEE_SHOPS,
 } from "@/data/coffee-shops-jakarta-barat";
 import { authenticatedFetch, clearAuthSession } from "@/src/lib/auth-client";
+import { commuterService, type WalkingServiceArea } from "@/src/services/commuter.service";
 import type { Merchant, UserLocation } from "@/types/getra";
+import { useDemandIntelligence } from "@/src/features/demand-intelligence/hooks/use-demand-intelligence";
+import { DemandIntelligencePanel } from "@/src/features/demand-intelligence/components/demand-intelligence-panel";
+import type {
+  AnalyticsCategorySlug,
+  AnalyticsMapCollection,
+  AnalyticsMode,
+  AnalyticsQuery,
+} from "@/src/features/demand-intelligence/types/demand-intelligence.types";
+import { businessSpaceService } from "@/src/features/business-space/services/business-space.service";
+import type {
+  BusinessCategorySlug,
+  BusinessSpaceCandidate,
+  BusinessSpaceCandidateDetail,
+} from "@/src/features/business-space/types/business-space.types";
 
 type LocatedMerchant =
   Merchant & {
     userDistanceMeters?: number;
-    userWalkingMinutes?: number;
   };
 
 type DatasetId =
@@ -70,6 +102,28 @@ const ROUTE_ORIGIN_CENTER =
 
 const MAX_ROUTE_SEARCH_RESULTS =
   6;
+
+const PROPERTY_REGION_OPTIONS = [
+  { id: "", label: "Viewport aktif" },
+  { id: "jakarta-selatan", label: "Jakarta Selatan" },
+  { id: "jakarta-pusat", label: "Jakarta Pusat" },
+  { id: "jakarta-barat", label: "Jakarta Barat" },
+  { id: "jakarta-timur", label: "Jakarta Timur" },
+  { id: "jakarta-utara", label: "Jakarta Utara" },
+] as const;
+
+const PROPERTY_BUSINESS_CATEGORIES: Array<{ value: BusinessCategorySlug; label: string }> = [
+  { value: "bakso", label: "Bakso" },
+  { value: "coffee", label: "Kopi / Kafe" },
+  { value: "restaurant", label: "Restoran" },
+  { value: "warung", label: "Warung" },
+  { value: "minimarket", label: "Minimarket" },
+];
+
+const SAFE_MEDIA_HOSTS = new Set([
+  "mapidstorage.cdn.mapid.io",
+  "mapid-app-chat.cdn.mapid.io",
+]);
 
 function toAdminImportDatasetId(
   layerId: string,
@@ -175,7 +229,320 @@ function formatDistance(
     return `${(meters / 1000).toFixed(1)} km`;
   }
 
-  return `${meters} m`;
+  return `${Math.round(meters)} m`;
+}
+
+function freshnessLabel(value: string | null | undefined) {
+  if (value === "FRESH") return "Fresh";
+  if (value === "AGING") return "Aging";
+  if (value === "STALE") return "Perlu konfirmasi ulang";
+  return "Freshness tidak diketahui";
+}
+
+function transactionLabel(value: string | null | undefined) {
+  const normalized = String(value ?? "").toLowerCase();
+  if (normalized.includes("sewa")) return "Disewa";
+  if (normalized.includes("jual")) return "Dijual";
+  return "Tidak tersedia";
+}
+
+function formatNullableNumber(value: number | null | undefined) {
+  return typeof value === "number" && Number.isFinite(value)
+    ? String(value)
+    : "Insufficient Data";
+}
+
+function isSafeMediaUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && SAFE_MEDIA_HOSTS.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function formatMerchantSources(merchant: Merchant) {
+  const sources = merchant.sources?.length
+    ? merchant.sources
+    : merchant.source.split("+").map((item) => item.trim()).filter(Boolean);
+  if (sources.length === 0) return "Tidak tersedia";
+  return sources.join(" + ");
+}
+
+function ensureSearchableBounds(bounds: MapViewportBounds): MapViewportBounds {
+  const longitudePadding = bounds.east > bounds.west ? 0 : 0.015;
+  const latitudePadding = bounds.north > bounds.south ? 0 : 0.015;
+  return {
+    west: bounds.west - longitudePadding,
+    south: bounds.south - latitudePadding,
+    east: bounds.east + longitudePadding,
+    north: bounds.north + latitudePadding,
+  };
+}
+
+function inferPropertyRegionId(query: string) {
+  const normalized = query.toLowerCase();
+  return PROPERTY_REGION_OPTIONS.find((region) =>
+    region.id &&
+    normalized.includes(region.label.toLowerCase())
+  )?.id ?? "";
+}
+
+function inferPropertyTransactionType(query: string): "" | "DIJUAL" | "DISEWA" {
+  const normalized = query.toLowerCase();
+  if (normalized.includes("disewa") || normalized.includes("sewa")) return "DISEWA";
+  if (normalized.includes("dijual") || normalized.includes("jual")) return "DIJUAL";
+  return "";
+}
+
+function normalizePropertySearchKeyword(query: string) {
+  let normalized = query;
+  for (const region of PROPERTY_REGION_OPTIONS) {
+    if (region.id) {
+      normalized = normalized.replace(new RegExp(region.label, "ig"), " ");
+    }
+  }
+  normalized = normalized
+    .replace(/\bproperti\b/gi, " ")
+    .replace(/\bdi\s*sewa\b/gi, " ")
+    .replace(/\bdisewa\b/gi, " ")
+    .replace(/\bdi\s*jual\b/gi, " ")
+    .replace(/\bdijual\b/gi, " ")
+    .replace(/\bsewa\b/gi, " ")
+    .replace(/\bjual\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized;
+}
+
+function MerchantResultRow({
+  merchant,
+  index,
+  selected,
+  onSelect,
+}: {
+  merchant: LocatedMerchant;
+  index: number;
+  selected: boolean;
+  onSelect: (merchant: LocatedMerchant) => void;
+}) {
+  const area = [merchant.district, merchant.city ?? merchant.regions?.[0]]
+    .filter((value, areaIndex, values) => value && values.indexOf(value) === areaIndex)
+    .join(", ");
+
+  return (
+    <button
+      className={selected ? "result-row result-row--selected" : "result-row"}
+      onClick={() => onSelect(merchant)}
+      type="button"
+    >
+      <span className="result-rank">{index + 1}</span>
+      <span className="result-main">
+        <strong>{merchant.name}</strong>
+        <span>{[merchant.brand, area].filter(Boolean).join(" - ")}</span>
+        <span className="result-meta">
+          {merchant.userDistanceMeters !== undefined ? (
+            <>
+              <LocateFixed size={13} />
+              Jarak langsung {formatDistance(merchant.userDistanceMeters)}
+              {merchant.networkDurationSeconds ? (
+                <><span>-</span>{Math.ceil(merchant.networkDurationSeconds / 60)} menit jaringan</>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <MapPinned size={13} />
+              {merchant.latitude.toFixed(6)}, {merchant.longitude.toFixed(6)}
+            </>
+          )}
+        </span>
+      </span>
+      <span className="score-box">
+        <strong>
+          {merchant.openingStatus === "OPEN" || (merchant.openStatusKnown && merchant.openNow)
+            ? "BUKA"
+            : merchant.openingStatus === "CLOSED" || (merchant.openStatusKnown && !merchant.openNow)
+              ? "TUTUP"
+              : "N/A"}
+        </strong>
+        <span>status</span>
+      </span>
+    </button>
+  );
+}
+
+function PropertyResultRow({
+  candidate,
+  index,
+  selected,
+  onSelect,
+}: {
+  candidate: BusinessSpaceCandidate;
+  index: number;
+  selected: boolean;
+  onSelect: (candidate: BusinessSpaceCandidate) => void;
+}) {
+  return (
+    <button
+      className={selected ? "result-row result-row--selected property-result-row" : "result-row property-result-row"}
+      onClick={() => onSelect(candidate)}
+      type="button"
+    >
+      <span className="result-rank">P{index + 1}</span>
+      <span className="result-main">
+        <strong>{candidate.property_category ?? "Observasi properti"}</strong>
+        <span>{[candidate.property_transaction_type, candidate.address].filter(Boolean).join(" - ") || "Alamat tidak tersedia"}</span>
+        <span className="result-meta">
+          <Building2 size={13} />
+          Sumber: Properti Go - {freshnessLabel(candidate.freshness)}
+        </span>
+      </span>
+      <span className="score-box">
+        <strong>{transactionLabel(candidate.property_transaction_type)}</strong>
+        <span>jenis</span>
+      </span>
+    </button>
+  );
+}
+
+function SafeMediaImage({
+  alt,
+  src,
+}: {
+  alt: string;
+  src?: string | null;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed || !isSafeMediaUrl(src)) {
+    return (
+      <div className="safe-media-placeholder" role="img" aria-label={`${alt} tidak tersedia`}>
+        Tidak ada foto
+      </div>
+    );
+  }
+  return (
+    <Image
+      alt={alt}
+      className="safe-media-image"
+      height={240}
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      src={src}
+      unoptimized
+      width={320}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+function PropertyObservationDetail({
+  detail,
+  fallback,
+  loading,
+}: {
+  detail: BusinessSpaceCandidateDetail | null;
+  fallback: BusinessSpaceCandidate | null;
+  loading: boolean;
+}) {
+  const candidate = detail?.candidate ?? fallback;
+  if (!candidate) {
+    return <div className="empty-state">Pilih observasi Properti Go pada peta atau daftar hasil.</div>;
+  }
+  return (
+    <>
+      <div className="detail-title">
+        <span className="source-stamp source-stamp--warning">PROPERTI GO</span>
+        <h3>{candidate.property_category ?? "Observasi properti"}</h3>
+        <p>{transactionLabel(candidate.property_transaction_type)} - {candidate.address ?? "Alamat tidak tersedia"}</p>
+      </div>
+      <div className="media-gallery media-gallery--property">
+        <SafeMediaImage alt="Foto tampak depan properti" src={candidate.facade_photo_url} />
+        <SafeMediaImage alt="Foto spanduk properti" src={candidate.banner_photo_url} />
+      </div>
+      <section className="evidence-section">
+        <h4>Property observation detail</h4>
+        <dl className="evidence-list evidence-list--compact">
+          <OptionalDetail label="Kategori properti" value={candidate.property_category} />
+          <OptionalDetail label="Jenis" value={transactionLabel(candidate.property_transaction_type)} />
+          <OptionalDetail label="Alamat" value={candidate.address} />
+          <OptionalDetail label="Observed at" value={candidate.observed_at} />
+          <OptionalDetail label="Freshness" value={freshnessLabel(candidate.freshness)} />
+          <OptionalDetail label="Region" value={detail?.administrative_context.region_name} />
+          <OptionalDetail label="Sumber" value="Properti Go" />
+        </dl>
+      </section>
+      <section className="evidence-section">
+        <h4>Analisis lokasi usaha</h4>
+        {loading ? (
+          <p className="limitation-box" role="status">Menghitung Business Space context...</p>
+        ) : detail ? (
+          <dl className="evidence-list evidence-list--compact">
+            <OptionalDetail label="Demand" value={formatNullableNumber(detail.market_context.demand_score)} />
+            <OptionalDetail label="Supply" value={formatNullableNumber(detail.market_context.supply_score)} />
+            <OptionalDetail label="Retail Gap" value={formatNullableNumber(detail.market_context.retail_gap)} />
+            <OptionalDetail label="Transit" value={detail.transit_context.nearest ? `${detail.transit_context.nearest.network_walking_minutes} menit jaringan` : "Tidak tersedia"} />
+            <OptionalDetail label="Walking" value={detail.walking_context.status === "ROUTABLE" ? `${detail.walking_context.catchment_minutes} menit network` : "Tidak tersedia"} />
+          </dl>
+        ) : (
+          <p className="limitation-box">Klik observasi untuk membuka konteks Business Space. Tidak ada klaim ketersediaan saat ini.</p>
+        )}
+      </section>
+      <section className="evidence-section">
+        <h4>Catatan</h4>
+        <p className="limitation-box">Properti Go adalah observasi sumber. Ketersediaan jual/sewa harus dikonfirmasi ulang.</p>
+      </section>
+    </>
+  );
+}
+
+function MerchantMediaGallery({ merchant }: { merchant: Merchant }) {
+  const items = [
+    { label: "Foto tempat merchant", src: merchant.photo },
+    ...(merchant.menuPhotos ?? []).slice(0, 2).map((src, index) => ({
+      label: `Foto menu merchant ${index + 1}`,
+      src,
+    })),
+  ];
+  if (!items.some((item) => item.src && isSafeMediaUrl(item.src))) return null;
+  return (
+    <section className="evidence-section">
+      <h4>Foto dan menu</h4>
+      <div className="media-gallery">
+        {items.map((item) => (
+          <SafeMediaImage key={item.label} alt={item.label} src={item.src} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MerchantSourceEvidence({ merchant }: { merchant: Merchant }) {
+  const hasMenuGo = merchant.sources?.includes("MENU_GO") || merchant.source.includes("MENU_GO");
+  return (
+    <section className="evidence-section">
+      <h4>Sumber data</h4>
+      <p className="limitation-box">Sumber data: {formatMerchantSources(merchant)}</p>
+      {hasMenuGo ? (
+        <dl className="evidence-list evidence-list--compact">
+          <OptionalDetail label="Menu utama" value={merchant.menu} />
+          <OptionalDetail label="Harga observasi" value={merchant.observedPrice} />
+          <OptionalDetail label="Kondisi tempat" value={merchant.observedCondition} />
+          <OptionalDetail label="Mobilitas" value={merchant.mobility} />
+          <OptionalDetail label="Observed at" value={merchant.observedAt} />
+        </dl>
+      ) : null}
+    </section>
+  );
+}
+
+function OptionalDetail({ label, value }: { label: string; value?: string | number | null }) {
+  if (value === undefined || value === null || value === "") return null;
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  );
 }
 
 function getMerchantAreaLine(
@@ -239,6 +606,10 @@ function findRouteSearchResults(
     0,
     MAX_ROUTE_SEARCH_RESULTS,
   );
+}
+
+function deduplicateMerchants(merchants: Merchant[]): Merchant[] {
+  return [...new Map(merchants.map((merchant) => [merchant.id, merchant])).values()];
 }
 
 function calculateMerchantBounds(
@@ -354,6 +725,8 @@ export function GetraDashboard() {
       "all-areas",
     );
 
+  const canonicalRequestRef = useRef<AbortController | null>(null);
+
   const [
     mapidMerchants,
     setMapidMerchants,
@@ -361,6 +734,8 @@ export function GetraDashboard() {
     useState<Merchant[]>(
       [],
     );
+
+  const [canonicalViewportLoaded, setCanonicalViewportLoaded] = useState(false);
 
   const [
     mapidLayerName,
@@ -383,6 +758,27 @@ export function GetraDashboard() {
     useState<string | null>(
       null,
     );
+
+  const [searchIntent, setSearchIntent] = useState<GlobalSearchIntent | null>(null);
+  const [searchRegions, setSearchRegions] = useState<SearchRegion[]>([]);
+  const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>([]);
+  const [searchTotal, setSearchTotal] = useState<number | null>(null);
+  const [searchActive, setSearchActive] = useState(false);
+  const [mapMovedSinceSearch, setMapMovedSinceSearch] = useState(false);
+  const [searchFocusBounds, setSearchFocusBounds] = useState<MapViewportBounds | null>(null);
+  const [searchFocusKey, setSearchFocusKey] = useState(0);
+  const [mapViewport, setMapViewport] = useState<MapViewportBounds | null>(null);
+  const [maxBudget, setMaxBudget] = useState("");
+  const [maxWalkingMinutes, setMaxWalkingMinutes] = useState<number | null>(null);
+  const [serviceArea, setServiceArea] = useState<WalkingServiceArea | null>(null);
+  const [serviceAreaLoading, setServiceAreaLoading] = useState(false);
+  const serviceAreaRequestRef = useRef<AbortController | null>(null);
+  const [contextualLayerVisibility, setContextualLayerVisibilityState] = useState(
+    DEFAULT_CONTEXTUAL_LAYER_VISIBILITY,
+  );
+  const currentViewportRef = useRef<MapViewportBounds | null>(null);
+  const activeSearchRef = useRef(false);
+  const suppressNextViewportRef = useRef(false);
 
   const [
     adminImportedLayer,
@@ -418,7 +814,7 @@ export function GetraDashboard() {
     openOnly,
     setOpenOnly,
   ] =
-    useState(true);
+    useState(false);
 
   const [
     loggingOut,
@@ -464,6 +860,12 @@ export function GetraDashboard() {
       ROUTE_ORIGIN_CENTER,
     );
 
+  const [explicitRouteOrigin, setExplicitRouteOrigin] = useState<{
+    id: string;
+    label: string;
+    coordinate: { latitude: number; longitude: number };
+  } | null>(null);
+
   const [
     routeDestinationId,
     setRouteDestinationId,
@@ -503,12 +905,12 @@ export function GetraDashboard() {
 
   const allMerchants =
     useMemo(
-      () => [
+      () => deduplicateMerchants([
         ...(adminImportedLayer?.merchants ??
           []),
         ...mapidMerchants,
         ...COFFEE_SHOPS,
-      ],
+      ]),
       [
         adminImportedLayer,
         mapidMerchants,
@@ -545,8 +947,12 @@ export function GetraDashboard() {
     useMemo(
       () =>
         datasetId ===
-        "all-areas"
-          ? allMerchants
+          "all-areas"
+          ? searchActive
+            ? mapidMerchants
+            : canonicalViewportLoaded
+              ? mapidMerchants
+              : allMerchants
           : isAdminImportDataset(
               datasetId,
             )
@@ -561,9 +967,11 @@ export function GetraDashboard() {
       [
         activeAdminImportedLayer,
         allMerchants,
+        canonicalViewportLoaded,
         datasetId,
         fallbackAdminImportedMerchants,
         mapidMerchants,
+        searchActive,
       ],
     );
 
@@ -681,7 +1089,25 @@ export function GetraDashboard() {
       ],
     );
 
-  const [viewMode, setViewMode] = useState<"fair-discovery" | "dataset">("fair-discovery");
+  const [primaryMode, setPrimaryMode] = useState<"merchant" | "business-space">("merchant");
+  const [viewMode, setViewMode] = useState<"fair-discovery" | "dataset" | "analytics">("dataset");
+  const [analyticsMode, setAnalyticsMode] = useState<AnalyticsMode>("DEMAND");
+  const [analyticsCategory, setAnalyticsCategory] = useState<AnalyticsCategorySlug>("coffee");
+  const [analyticsDays, setAnalyticsDays] = useState<7 | 30>(30);
+  const [selectedAnalyticsRegionId, setSelectedAnalyticsRegionId] = useState<string | null>(null);
+  const [propertyQuery, setPropertyQuery] = useState("");
+  const [propertyRegionId, setPropertyRegionId] = useState<string>("");
+  const [propertyBusinessCategory, setPropertyBusinessCategory] = useState<BusinessCategorySlug>("bakso");
+  const [propertyCategory, setPropertyCategory] = useState("");
+  const [propertyTransactionType, setPropertyTransactionType] = useState<"" | "DIJUAL" | "DISEWA">("");
+  const [propertyCandidates, setPropertyCandidates] = useState<BusinessSpaceCandidate[]>([]);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [selectedPropertyDetail, setSelectedPropertyDetail] = useState<BusinessSpaceCandidateDetail | null>(null);
+  const [propertyLoading, setPropertyLoading] = useState(false);
+  const [propertyDetailLoading, setPropertyDetailLoading] = useState(false);
+  const [propertyError, setPropertyError] = useState<string | null>(null);
+  const propertyRequestRef = useRef<AbortController | null>(null);
+  const propertyDetailRequestRef = useRef<AbortController | null>(null);
 
   const discoveryQuery = useMemo(() => {
     const origin = userLocation
@@ -703,7 +1129,7 @@ export function GetraDashboard() {
     error: fairDiscoveryError,
   } = useFairDiscovery({
     query: discoveryQuery,
-    enabled: true,
+    enabled: viewMode === "fair-discovery" && !searchActive,
   });
 
   const datasetBounds =
@@ -717,10 +1143,122 @@ export function GetraDashboard() {
       ],
     );
 
+  const analyticsQuery = useMemo<AnalyticsQuery>(() => ({
+    mode: analyticsMode,
+    category: analyticsCategory,
+    days: analyticsDays,
+    region_ids: selectedRegionIds,
+    bbox: selectedRegionIds.length === 0 ? (mapViewport ?? datasetBounds) : null,
+  }), [analyticsCategory, analyticsDays, analyticsMode, datasetBounds, mapViewport, selectedRegionIds]);
+  const analytics = useDemandIntelligence(viewMode === "analytics", analyticsQuery);
+
+  const effectiveAnalyticsRegionId = analytics.data?.rows.some(
+    (row) => row.spatial_unit.id === selectedAnalyticsRegionId,
+  ) ? selectedAnalyticsRegionId : analytics.data?.rows[0]?.spatial_unit.id ?? null;
+
+  const analyticsCollection = useMemo<AnalyticsMapCollection | null>(() => {
+    if (viewMode !== "analytics" || !analytics.data) return null;
+    return {
+      type: "FeatureCollection",
+      features: analytics.data.rows.map((row) => ({
+        type: "Feature",
+        id: row.spatial_unit.id,
+        geometry: row.spatial_unit.geometry,
+        properties: {
+          region_id: row.spatial_unit.id,
+          region_name: row.spatial_unit.name,
+          category_name: analytics.data!.category.name,
+          demand_score: row.demand_score,
+          supply_score: row.supply_score,
+          retail_gap: row.retail_gap,
+          sample_size: row.evidence.sample_size,
+          confidence: row.evidence.confidence,
+          selected: row.spatial_unit.id === effectiveAnalyticsRegionId,
+        },
+      })),
+    };
+  }, [analytics.data, effectiveAnalyticsRegionId, viewMode]);
+
   const visibleImportBoundaries =
     isAdminImportDataset(datasetId)
       ? activeAdminImportedLayer?.boundaries ?? null
-      : adminImportedLayer?.boundaries ?? null;
+      : null;
+
+  const visibleAdminBoundaryIds =
+    useMemo(
+      () => {
+        if (datasetId === "all-areas") {
+          return null;
+        }
+
+        if (datasetId === "mapid-food-jakarta-pusat") {
+          return ["jakarta-pusat"];
+        }
+
+        if (datasetId === "coffee-jakarta-barat") {
+          return ["jakarta-barat"];
+        }
+
+        if (isAdminImportDataset(datasetId)) {
+          const regionIds = (activeAdminImportedLayer?.regions ?? [])
+            .map((region) => region.id)
+            .filter(Boolean);
+
+          if (regionIds.length > 0) {
+            return regionIds;
+          }
+
+          const layerTitle = (
+            activeAdminImportedLayer?.layer_name ||
+            adminImportedLayer?.layer_name ||
+            ""
+          ).toLowerCase();
+
+          if (layerTitle.includes("utara") || layerTitle.includes("jakut")) {
+            return ["jakarta-utara"];
+          }
+          if (layerTitle.includes("barat") || layerTitle.includes("jakbar")) {
+            return ["jakarta-barat"];
+          }
+          if (layerTitle.includes("pusat") || layerTitle.includes("jakpus")) {
+            return ["jakarta-pusat"];
+          }
+          if (layerTitle.includes("selatan") || layerTitle.includes("jaksel")) {
+            return ["jakarta-selatan"];
+          }
+          if (layerTitle.includes("timur") || layerTitle.includes("jaktim")) {
+            return ["jakarta-timur"];
+          }
+
+          return null;
+        }
+
+        return [];
+      },
+      [
+        datasetId,
+        activeAdminImportedLayer,
+        adminImportedLayer,
+      ],
+    );
+
+  const boundaryRegionIds =
+    searchActive
+      ? selectedRegionIds
+      : visibleAdminBoundaryIds ?? [];
+
+  const {
+    boundaries: administrativeBoundaries,
+    loading: boundaryLoading,
+    error: boundaryError,
+  } = useAdministrativeBoundaries(boundaryRegionIds);
+  const contextualLayerData = useContextualLayers(
+    mapViewport,
+    contextualLayerVisibility,
+  );
+  const visibleAdministrativeBoundaries = contextualLayerVisibility.boundary
+    ? administrativeBoundaries
+    : { type: "FeatureCollection" as const, features: [] };
 
   const brandOptions =
     useMemo(
@@ -751,11 +1289,6 @@ export function GetraDashboard() {
 
   const merchants =
     useMemo(() => {
-      const normalizedQuery =
-        query
-          .trim()
-          .toLowerCase();
-
       const filtered =
         baseMerchants
         .filter((merchant) => {
@@ -770,18 +1303,7 @@ export function GetraDashboard() {
 
           if (
             openOnly &&
-            !merchant.openNow
-          ) {
-            return false;
-          }
-
-          if (
-            normalizedQuery &&
-            !`${merchant.name} ${merchant.brand} ${merchant.address ?? ""} ${merchant.district ?? ""} ${merchant.village ?? ""}`
-              .toLowerCase()
-              .includes(
-                normalizedQuery,
-              )
+            (!merchant.openStatusKnown || !merchant.openNow)
           ) {
             return false;
           }
@@ -804,14 +1326,6 @@ export function GetraDashboard() {
                 return {
                   ...merchant,
                   userDistanceMeters,
-                  userWalkingMinutes:
-                    Math.max(
-                      1,
-                      Math.round(
-                        userDistanceMeters /
-                          80,
-                      ),
-                    ),
                 };
               },
             )
@@ -853,7 +1367,6 @@ export function GetraDashboard() {
       brand,
       baseMerchants,
       openOnly,
-      query,
       userLocation,
     ]);
 
@@ -863,6 +1376,13 @@ export function GetraDashboard() {
         merchant.id ===
         selectedId,
     ) ?? null;
+
+  const regionResultGroups = useMemo(
+    () => selectedRegionIds.length > 0
+      ? groupMerchantsByRegion(merchants, selectedRegionIds, searchRegions)
+      : [],
+    [merchants, searchRegions, selectedRegionIds],
+  );
 
   const { poster: profilePoster } = useProfilePoster({
     merchantId: selectedMerchant?.id ?? null,
@@ -904,20 +1424,6 @@ export function GetraDashboard() {
     merchants[0] ??
     null;
 
-  const routeOriginMerchant =
-    routeOriginValue.startsWith(
-      "MERCHANT:",
-    )
-      ? merchants.find(
-          (merchant) =>
-            merchant.id ===
-            routeOriginValue.replace(
-              "MERCHANT:",
-              "",
-            ),
-        ) ?? null
-      : null;
-
   const routeOrigin =
     routeOriginValue ===
       ROUTE_ORIGIN_USER &&
@@ -932,17 +1438,8 @@ export function GetraDashboard() {
               userLocation.longitude,
           },
         }
-      : routeOriginMerchant
-        ? {
-            label:
-              routeOriginMerchant.name,
-            coordinate: {
-              latitude:
-                routeOriginMerchant.latitude,
-              longitude:
-                routeOriginMerchant.longitude,
-            },
-          }
+      : explicitRouteOrigin && routeOriginValue.startsWith("MERCHANT:")
+        ? { label: explicitRouteOrigin.label, coordinate: explicitRouteOrigin.coordinate }
         : {
             label:
               datasetOrigin.name,
@@ -954,22 +1451,8 @@ export function GetraDashboard() {
             },
           };
 
-  const routeIsFallback =
-    route?.route_source ===
-      "fallback_direct_line" ||
-    route?.limitation_flags.includes(
-      "ESTIMATED_DIRECT_LINE",
-    );
-
-  const routeUsesRoadNetwork =
-    route?.route_source ===
-      "osrm_road_network" ||
-    route?.limitation_flags.includes(
-      "ROAD_NETWORK_ROUTE",
-    );
-
   const routeDurationMinutes =
-    route
+    route?.duration_seconds !== null && route?.duration_seconds !== undefined
       ? Math.max(
           1,
           Math.ceil(
@@ -1019,9 +1502,16 @@ export function GetraDashboard() {
         setDestinationSearch(
           merchant.name,
         );
-        clearRoute();
+        if (routingState === "IDLE") {
+          clearRoute();
+        } else {
+          void requestRoute(routeOrigin.coordinate, {
+            latitude: merchant.latitude,
+            longitude: merchant.longitude,
+          }, merchant.id);
+        }
       },
-      [clearRoute],
+      [clearRoute, requestRoute, routeOrigin.coordinate, routingState],
     );
 
   const handleClearSelection =
@@ -1031,14 +1521,24 @@ export function GetraDashboard() {
       );
     }, []);
 
-  const loadMapidFoodLayer =
-    useCallback(async () => {
-      if (
-        mapidMerchants.length > 0 ||
-        mapidLoading
-      ) {
-        return;
-      }
+  const executeCanonicalSearch =
+    useCallback(async ({
+      bbox,
+      queryText,
+      regionIds,
+      activate,
+      focus,
+    }: {
+      bbox: MapViewportBounds;
+      queryText: string;
+      regionIds: string[];
+      activate: boolean;
+      focus: boolean;
+    }) => {
+      canonicalRequestRef.current?.abort();
+      serviceAreaRequestRef.current?.abort();
+      const controller = new AbortController();
+      canonicalRequestRef.current = controller;
 
       setMapidLoading(
         true,
@@ -1048,28 +1548,373 @@ export function GetraDashboard() {
       );
 
       try {
-        const layer =
-          await mapidLayerService.getFoodBeverageLayer();
+        const searchableBbox = ensureSearchableBounds(bbox);
+        const scope = regionIds.length > 1
+          ? "MULTI_REGION" as const
+          : regionIds.length === 1
+            ? "REGION" as const
+            : "CURRENT_VIEWPORT" as const;
+        const layer: CanonicalMerchantLayer =
+          await mapidLayerService.getCanonicalMerchants(
+            searchableBbox,
+            {
+              limit: 100,
+              signal: controller.signal,
+              query: queryText,
+              scope,
+              regionIds,
+              maxBudget: Number(maxBudget) >= 1_000 ? Number(maxBudget) : undefined,
+              openNow: openOnly || undefined,
+              maxWalkingMinutes: maxWalkingMinutes ?? undefined,
+              origin: {
+                longitude: routeOrigin.coordinate.longitude,
+                latitude: routeOrigin.coordinate.latitude,
+                source: routeOriginValue === ROUTE_ORIGIN_USER
+                  ? "USER_LOCATION"
+                  : explicitRouteOrigin
+                    ? "EXPLICIT_ORIGIN"
+                    : "SELECTED_POINT",
+              },
+            },
+          );
 
         setMapidMerchants(
           layer.merchants,
         );
+        setCanonicalViewportLoaded(true);
         setMapidLayerName(
           layer.layer_name,
         );
-      } catch {
+        setSearchIntent(layer.intent);
+        setSearchRegions(layer.available_regions);
+        setSelectedRegionIds(layer.intent.scope.region_ids);
+        setSearchTotal(layer.total_available);
+        const walkingThreshold = layer.intent.constraints.walking?.max_minutes;
+        if (walkingThreshold && layer.intent.origin) {
+          const serviceAreaController = new AbortController();
+          serviceAreaRequestRef.current = serviceAreaController;
+          setServiceAreaLoading(true);
+          try {
+            const area = await commuterService.serviceArea(
+              {
+                longitude: layer.intent.origin.longitude,
+                latitude: layer.intent.origin.latitude,
+              },
+              walkingThreshold,
+              serviceAreaController.signal,
+            );
+            if (!serviceAreaController.signal.aborted) setServiceArea(area);
+          } catch {
+            if (!serviceAreaController.signal.aborted) setServiceArea(null);
+          } finally {
+            if (serviceAreaRequestRef.current === serviceAreaController) {
+              serviceAreaRequestRef.current = null;
+              setServiceAreaLoading(false);
+            }
+          }
+        } else {
+          setServiceArea(null);
+          setServiceAreaLoading(false);
+        }
+        activeSearchRef.current = activate;
+        setSearchActive(activate);
+        setMapMovedSinceSearch(false);
+        if (focus && layer.intent.scope.type !== "CURRENT_VIEWPORT") {
+          suppressNextViewportRef.current = true;
+          setSearchFocusBounds(layer.intent.scope.bounds);
+          setSearchFocusKey((key) => key + 1);
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return;
         setMapidError(
-          "Layer MAPID belum bisa dimuat. Coba ulangi beberapa saat lagi.",
+          error instanceof Error
+            ? error.message
+            : "Merchant pada area peta belum bisa dimuat.",
         );
       } finally {
-        setMapidLoading(
-          false,
-        );
+        if (canonicalRequestRef.current === controller) {
+          canonicalRequestRef.current = null;
+          setMapidLoading(false);
+        }
       }
     }, [
-      mapidLoading,
-      mapidMerchants.length,
+      maxBudget,
+      maxWalkingMinutes,
+      openOnly,
+      routeOrigin.coordinate.latitude,
+      routeOrigin.coordinate.longitude,
+      explicitRouteOrigin,
+      routeOriginValue,
     ]);
+
+  const executePropertySearch = useCallback(async ({
+    bbox,
+    queryText,
+    regionId,
+    propertyCategoryValue,
+    transactionType,
+    focus,
+  }: {
+    bbox: MapViewportBounds;
+    queryText: string;
+    regionId: string;
+    propertyCategoryValue: string;
+    transactionType: "" | "DIJUAL" | "DISEWA";
+    focus: boolean;
+  }) => {
+    propertyRequestRef.current?.abort();
+    propertyDetailRequestRef.current?.abort();
+    const controller = new AbortController();
+    propertyRequestRef.current = controller;
+    setPropertyLoading(true);
+    setPropertyError(null);
+    setSelectedPropertyDetail(null);
+    try {
+      const inferredRegionId = regionId || inferPropertyRegionId(queryText);
+      const inferredTransaction = transactionType || inferPropertyTransactionType(queryText);
+      const keyword = normalizePropertySearchKeyword(queryText);
+      const result = await businessSpaceService.listCandidates({
+        bbox: inferredRegionId ? undefined : ensureSearchableBounds(bbox),
+        category: propertyBusinessCategory,
+        days: 30,
+        limit: 24,
+        property_category: propertyCategoryValue || undefined,
+        q: keyword || undefined,
+        region_id: inferredRegionId || undefined,
+        transaction_type: inferredTransaction || undefined,
+      }, controller.signal);
+      if (controller.signal.aborted) return;
+      setPropertyCandidates(result.candidates);
+      setSelectedPropertyId((current) =>
+        current && result.candidates.some((candidate) => candidate.id === current)
+          ? current
+          : result.candidates[0]?.id ?? null,
+      );
+      if (focus && inferredRegionId) {
+        const region = PROPERTY_REGION_OPTIONS.find((item) => item.id === inferredRegionId);
+        if (region) setPropertyRegionId(region.id);
+      }
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      setPropertyCandidates([]);
+      setSelectedPropertyId(null);
+      setPropertyError(error instanceof Error ? error.message : "Properti Go belum bisa dimuat.");
+    } finally {
+      if (propertyRequestRef.current === controller) {
+        propertyRequestRef.current = null;
+        setPropertyLoading(false);
+      }
+    }
+  }, [propertyBusinessCategory]);
+
+  const loadSelectedPropertyDetail = useCallback(async (candidate: BusinessSpaceCandidate) => {
+    propertyDetailRequestRef.current?.abort();
+    const controller = new AbortController();
+    propertyDetailRequestRef.current = controller;
+    setSelectedPropertyId(candidate.id);
+    setPropertyDetailLoading(true);
+    try {
+      const detail = await businessSpaceService.detail(
+        candidate.id,
+        { category: propertyBusinessCategory, days: 30 },
+        controller.signal,
+      );
+      if (!controller.signal.aborted) setSelectedPropertyDetail(detail);
+    } catch {
+      if (!controller.signal.aborted) setSelectedPropertyDetail(null);
+    } finally {
+      if (propertyDetailRequestRef.current === controller) {
+        propertyDetailRequestRef.current = null;
+        setPropertyDetailLoading(false);
+      }
+    }
+  }, [propertyBusinessCategory]);
+
+  const handleViewportChange = useCallback((bbox: MapViewportBounds) => {
+    currentViewportRef.current = bbox;
+    setMapViewport(bbox);
+    if (primaryMode === "business-space") {
+      void executePropertySearch({
+        bbox,
+        queryText: propertyQuery,
+        regionId: propertyRegionId,
+        propertyCategoryValue: propertyCategory,
+        transactionType: propertyTransactionType,
+        focus: false,
+      });
+      return;
+    }
+    if (suppressNextViewportRef.current) {
+      suppressNextViewportRef.current = false;
+      return;
+    }
+    if (activeSearchRef.current) {
+      setMapMovedSinceSearch(true);
+      return;
+    }
+    void executeCanonicalSearch({
+      bbox,
+      queryText: "",
+      regionIds: [],
+      activate: false,
+      focus: false,
+    });
+  }, [
+    executeCanonicalSearch,
+    executePropertySearch,
+    primaryMode,
+    propertyCategory,
+    propertyQuery,
+    propertyRegionId,
+    propertyTransactionType,
+  ]);
+
+  const handleContextualLayerChange = useCallback((
+    layer: ContextualLayerKey,
+    visible: boolean,
+  ) => {
+    setContextualLayerVisibilityState((current) =>
+      setContextualLayerVisibility(current, layer, visible)
+    );
+  }, []);
+
+  const submitGlobalSearch = useCallback(() => {
+    clearRoute();
+    setRouteDestinationId(null);
+    setSelectedId(null);
+    setDestinationSearch("");
+    setDatasetId("all-areas");
+    setViewMode("dataset");
+    void executeCanonicalSearch({
+      bbox: currentViewportRef.current ?? datasetBounds,
+      queryText: query,
+      regionIds: selectedRegionIds,
+      activate: Boolean(
+        query.trim() || selectedRegionIds.length || maxBudget || openOnly || maxWalkingMinutes,
+      ),
+      focus: true,
+    });
+  }, [clearRoute, datasetBounds, executeCanonicalSearch, maxBudget, maxWalkingMinutes, openOnly, query, selectedRegionIds]);
+
+  const toggleSearchRegion = useCallback((regionId: string) => {
+    const next = selectedRegionIds.includes(regionId)
+      ? selectedRegionIds.filter((id) => id !== regionId)
+      : [...selectedRegionIds, regionId];
+    setSelectedRegionIds(next);
+    setDatasetId("all-areas");
+    setViewMode("dataset");
+    void executeCanonicalSearch({
+      bbox: currentViewportRef.current ?? datasetBounds,
+      queryText: query,
+      regionIds: next,
+      activate: Boolean(query.trim() || next.length || maxBudget || openOnly || maxWalkingMinutes),
+      focus: true,
+    });
+  }, [datasetBounds, executeCanonicalSearch, maxBudget, maxWalkingMinutes, openOnly, query, selectedRegionIds]);
+
+  const clearGlobalSearch = useCallback(() => {
+    setQuery("");
+    setSelectedRegionIds([]);
+    setSearchIntent(null);
+    setSearchTotal(null);
+    setMapMovedSinceSearch(false);
+    activeSearchRef.current = false;
+    setSearchActive(false);
+    setMaxBudget("");
+    setMaxWalkingMinutes(null);
+    setOpenOnly(false);
+    setServiceArea(null);
+    const bbox = currentViewportRef.current;
+    if (bbox) void executeCanonicalSearch({
+      bbox,
+      queryText: "",
+      regionIds: [],
+      activate: false,
+      focus: false,
+    });
+  }, [executeCanonicalSearch]);
+
+  const searchCurrentArea = useCallback(() => {
+    const bbox = currentViewportRef.current;
+    if (!bbox) return;
+    const keyword = searchIntent?.keyword ?? query;
+    setQuery(keyword);
+    setSelectedRegionIds([]);
+    void executeCanonicalSearch({
+      bbox,
+      queryText: keyword,
+      regionIds: [],
+      activate: Boolean(keyword.trim() || maxBudget || openOnly || maxWalkingMinutes),
+      focus: false,
+    });
+  }, [executeCanonicalSearch, maxBudget, maxWalkingMinutes, openOnly, query, searchIntent]);
+
+  const activateMerchantMode = useCallback(() => {
+    setPrimaryMode("merchant");
+    setSelectedPropertyId(null);
+    setSelectedPropertyDetail(null);
+    setPropertyCandidates([]);
+    const bbox = currentViewportRef.current;
+    if (bbox) {
+      void executeCanonicalSearch({
+        bbox,
+        queryText: query,
+        regionIds: selectedRegionIds,
+        activate: Boolean(query.trim() || selectedRegionIds.length || maxBudget || openOnly || maxWalkingMinutes),
+        focus: false,
+      });
+    }
+  }, [executeCanonicalSearch, maxBudget, maxWalkingMinutes, openOnly, query, selectedRegionIds]);
+
+  const activateBusinessSpaceMode = useCallback(() => {
+    setPrimaryMode("business-space");
+    setViewMode("dataset");
+    setSelectedId(null);
+    setRouteDestinationId(null);
+    clearRoute();
+    void executePropertySearch({
+      bbox: currentViewportRef.current ?? datasetBounds,
+      queryText: propertyQuery,
+      regionId: propertyRegionId,
+      propertyCategoryValue: propertyCategory,
+      transactionType: propertyTransactionType,
+      focus: true,
+    });
+  }, [
+    clearRoute,
+    datasetBounds,
+    executePropertySearch,
+    propertyCategory,
+    propertyQuery,
+    propertyRegionId,
+    propertyTransactionType,
+  ]);
+
+  const submitPropertySearch = useCallback(() => {
+    setPrimaryMode("business-space");
+    void executePropertySearch({
+      bbox: currentViewportRef.current ?? datasetBounds,
+      queryText: propertyQuery,
+      regionId: propertyRegionId,
+      propertyCategoryValue: propertyCategory,
+      transactionType: propertyTransactionType,
+      focus: true,
+    });
+  }, [
+    datasetBounds,
+    executePropertySearch,
+    propertyCategory,
+    propertyQuery,
+    propertyRegionId,
+    propertyTransactionType,
+  ]);
+
+  useEffect(() => () => {
+    canonicalRequestRef.current?.abort();
+    serviceAreaRequestRef.current?.abort();
+    propertyRequestRef.current?.abort();
+    propertyDetailRequestRef.current?.abort();
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -1140,37 +1985,6 @@ export function GetraDashboard() {
     };
   }, []);
 
-  useEffect(() => {
-    let requestId: number | null =
-      null;
-
-    if (
-      datasetId ===
-        "all-areas" ||
-      datasetId ===
-      "mapid-food-jakarta-pusat"
-    ) {
-      requestId =
-        window.setTimeout(
-          () => {
-            void loadMapidFoodLayer();
-          },
-          0,
-        );
-    }
-
-    return () => {
-      if (requestId !== null) {
-        window.clearTimeout(
-          requestId,
-        );
-      }
-    };
-  }, [
-    datasetId,
-    loadMapidFoodLayer,
-  ]);
-
   const handleDatasetChange =
     useCallback(
       (
@@ -1203,20 +2017,12 @@ export function GetraDashboard() {
         setRouteOriginValue(
           ROUTE_ORIGIN_CENTER,
         );
+        setExplicitRouteOrigin(null);
         clearRoute();
 
-        if (
-          nextDatasetId ===
-            "all-areas" ||
-          nextDatasetId ===
-          "mapid-food-jakarta-pusat"
-        ) {
-          void loadMapidFoodLayer();
-        }
       },
       [
         clearRoute,
-        loadMapidFoodLayer,
       ],
     );
 
@@ -1234,12 +2040,27 @@ export function GetraDashboard() {
           longitude:
             routeDestination.longitude,
         },
+        routeDestination.id,
       );
     }, [
       requestRoute,
       routeDestination,
       routeOrigin.coordinate,
     ]);
+
+  const handleSmartAlternative = useCallback(() => {
+    if (merchants.length < 2) return;
+    const currentIndex = merchants.findIndex((merchant) => merchant.id === routeDestination?.id);
+    const alternative = merchants[(currentIndex + 1 + merchants.length) % merchants.length];
+    if (!alternative || alternative.id === routeDestination?.id) return;
+    setSelectedId(alternative.id);
+    setRouteDestinationId(alternative.id);
+    setDestinationSearch(alternative.name);
+    void requestRoute(routeOrigin.coordinate, {
+      latitude: alternative.latitude,
+      longitude: alternative.longitude,
+    }, alternative.id);
+  }, [merchants, requestRoute, routeDestination?.id, routeOrigin.coordinate]);
 
   const handleRouteChoice =
     useCallback(
@@ -1268,6 +2089,11 @@ export function GetraDashboard() {
         setRouteOriginValue(
           `MERCHANT:${merchant.id}`,
         );
+        setExplicitRouteOrigin({
+          id: merchant.id,
+          label: merchant.name,
+          coordinate: { latitude: merchant.latitude, longitude: merchant.longitude },
+        });
         setOriginSearch(
           merchant.name,
         );
@@ -1281,15 +2107,24 @@ export function GetraDashboard() {
         setDestinationSearch(
           merchant.name,
         );
+        if (routingState !== "IDLE") {
+          void requestRoute(routeOrigin.coordinate, {
+            latitude: merchant.latitude,
+            longitude: merchant.longitude,
+          }, merchant.id);
+        }
       }
 
-      clearRoute();
+      if (target === "origin" || routingState === "IDLE") clearRoute();
       setPendingRouteChoice(
         null,
       );
     }, [
       clearRoute,
       pendingRouteChoice,
+      requestRoute,
+      routeOrigin.coordinate,
+      routingState,
     ]);
 
   const handleLocateUser =
@@ -1329,6 +2164,7 @@ export function GetraDashboard() {
           setRouteOriginValue(
             ROUTE_ORIGIN_USER,
           );
+          setExplicitRouteOrigin(null);
           setOriginSearch(
             "",
           );
@@ -1373,6 +2209,7 @@ export function GetraDashboard() {
       setRouteOriginValue(
         ROUTE_ORIGIN_USER,
       );
+      setExplicitRouteOrigin(null);
       setOriginSearch(
         "",
       );
@@ -1388,6 +2225,7 @@ export function GetraDashboard() {
       setRouteOriginValue(
         ROUTE_ORIGIN_CENTER,
       );
+      setExplicitRouteOrigin(null);
       setOriginSearch(
         "",
       );
@@ -1448,17 +2286,7 @@ export function GetraDashboard() {
     <main className="workspace">
       <header className="topbar">
         <div className="brand">
-          <div className="brand-mark">
-            G
-          </div>
-          <div>
-            <strong>
-              GETRA
-            </strong>
-            <span>
-              Geo-Enabled Transit & Retail Analytics
-            </span>
-          </div>
+          <GetraLogo className="workspace-brand-logo" />
         </div>
 
         <StakeholderModeSwitcher />
@@ -1494,6 +2322,19 @@ export function GetraDashboard() {
               Advertising UMKM
             </button>
           ) : null}
+
+          <button
+            className="business-space-nav-button"
+            type="button"
+            onClick={() =>
+              router.push(
+                "/business-space",
+              )
+            }
+          >
+            <Building2 size={15} />
+            Business Space
+          </button>
 
           <div className="pilot-badge">
             <ShieldCheck size={15} />
@@ -1532,7 +2373,7 @@ export function GetraDashboard() {
 
       <StakeholderContextShell>
         <section className="workspace-grid">
-          <aside className="left-panel panel">
+          <aside className="left-panel panel" tabIndex={0} aria-label="Kontrol pencarian dan rute">
           <div className="panel-heading">
             <div>
               <span className="eyebrow">
@@ -1799,7 +2640,7 @@ export function GetraDashboard() {
                       </button>
                     ),
                   )
-                ) : originSearch.trim() ? (
+                ) : originSearch.trim() && explicitRouteOrigin?.label !== originSearch.trim() ? (
                   <p className="route-search-empty">
                     Titik mulai tidak ditemukan.
                   </p>
@@ -1903,15 +2744,19 @@ export function GetraDashboard() {
               >
                 Reset
               </button>
+              <button
+                className="route-secondary-button"
+                type="button"
+                onClick={handleSmartAlternative}
+                disabled={merchants.length < 2 || routingState === "LOADING"}
+              >
+                Alternatif berikutnya
+              </button>
             </div>
 
-            {route ? (
+            {route && route.distance_meters !== null ? (
               <div
-                className={
-                  routeIsFallback
-                    ? "route-result route-result--warning"
-                    : "route-result"
-                }
+                className="route-result"
               >
                 <strong>
                   {formatDistance(
@@ -1921,11 +2766,7 @@ export function GetraDashboard() {
                   {routeDurationMinutes} menit
                 </strong>
                 <span>
-                  {routeIsFallback
-                    ? "Estimasi garis langsung karena network pedestrian belum tersedia."
-                    : routeUsesRoadNetwork
-                      ? "Jalur mengikuti jaringan jalan seperti peta navigasi. Waktu berjalan masih estimasi GETRA."
-                      : "Rute berjalan kaki berhasil dihitung dari backend GETRA."}
+                  Rute berjalan kaki dihitung dari jaringan pedestrian GETRA.
                 </span>
               </div>
             ) : null}
@@ -2007,9 +2848,13 @@ export function GetraDashboard() {
                       Status
                     </dt>
                     <dd>
-                      {pendingRouteChoice.merchant.openNow
+                      {pendingRouteChoice.merchant.openingStatus === "OPEN" ||
+                      (pendingRouteChoice.merchant.openStatusKnown && pendingRouteChoice.merchant.openNow)
                         ? "BUKA"
-                        : "TUTUP / belum diketahui"}
+                        : pendingRouteChoice.merchant.openingStatus === "CLOSED" ||
+                            (pendingRouteChoice.merchant.openStatusKnown && !pendingRouteChoice.merchant.openNow)
+                          ? "TUTUP"
+                          : "Jam buka tidak tersedia"}
                     </dd>
                   </div>
                   <div>
@@ -2051,39 +2896,142 @@ export function GetraDashboard() {
             </div>
           ) : null}
 
-          <label
-            className="field-label"
-            htmlFor="search-query"
-          >
-            Pencarian
-          </label>
-          <div className="search-box">
-            <Search size={17} />
-            <input
-              id="search-query"
-              value={query}
-              onChange={(event) =>
-                setQuery(
-                  event.target.value,
-                )
-              }
-              placeholder={
-                datasetId ===
-                "all-areas"
-                  ? "contoh: FOUR LEAVES atau Starbucks Puri"
-                  : isAdminImportDataset(
-                      datasetId,
-                    )
-                    ? "contoh: nama titik dari import admin"
-                    : datasetId ===
-                      "mapid-food-jakarta-pusat"
-                    ? "contoh: Holland Bakery"
-                    : "contoh: Starbucks Puri"
-              }
-            />
+          <div className="primary-map-mode" aria-label="Mode peta utama">
+            <button
+              type="button"
+              className={primaryMode === "merchant" ? "primary-map-mode__button primary-map-mode__button--active" : "primary-map-mode__button"}
+              aria-pressed={primaryMode === "merchant"}
+              onClick={activateMerchantMode}
+            >
+              Merchant
+            </button>
+            <button
+              type="button"
+              className={primaryMode === "business-space" ? "primary-map-mode__button primary-map-mode__button--active" : "primary-map-mode__button"}
+              aria-pressed={primaryMode === "business-space"}
+              onClick={activateBusinessSpaceMode}
+            >
+              Business Space
+            </button>
           </div>
 
-          <div className="filter-grid filter-grid--single">
+          {primaryMode === "merchant" ? (
+            <GlobalSearchControls
+              query={query}
+              regions={searchRegions}
+              selectedRegionIds={selectedRegionIds}
+              intent={searchIntent}
+              loading={mapidLoading}
+              error={mapidError}
+              total={searchTotal}
+              mapMoved={mapMovedSinceSearch}
+              maxBudget={maxBudget}
+              openNow={openOnly}
+              maxWalkingMinutes={maxWalkingMinutes}
+              onQueryChange={setQuery}
+              onSubmit={submitGlobalSearch}
+              onClear={clearGlobalSearch}
+              onToggleRegion={toggleSearchRegion}
+              onSearchThisArea={searchCurrentArea}
+              onMaxBudgetChange={setMaxBudget}
+              onOpenNowChange={setOpenOnly}
+              onMaxWalkingMinutesChange={setMaxWalkingMinutes}
+            />
+          ) : (
+            <section className="property-search-panel" aria-label="Pencarian Properti Go">
+              <label>
+                <span>Cari Properti Go</span>
+                <input
+                  type="search"
+                  value={propertyQuery}
+                  placeholder="Cari properti atau area..."
+                  onChange={(event) => setPropertyQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") submitPropertySearch();
+                  }}
+                />
+              </label>
+              <div className="property-filter-grid">
+                <label>
+                  <span>Wilayah / Area</span>
+                  <select value={propertyRegionId} onChange={(event) => setPropertyRegionId(event.target.value)}>
+                    {PROPERTY_REGION_OPTIONS.map((option) => (
+                      <option key={option.id || "viewport"} value={option.id}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Kategori usaha</span>
+                  <select value={propertyBusinessCategory} onChange={(event) => setPropertyBusinessCategory(event.target.value as BusinessCategorySlug)}>
+                    {PROPERTY_BUSINESS_CATEGORIES.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Kategori Properti</span>
+                  <input
+                    value={propertyCategory}
+                    placeholder="ruko"
+                    onChange={(event) => setPropertyCategory(event.target.value)}
+                  />
+                </label>
+                <label>
+                  <span>Jenis</span>
+                  <select value={propertyTransactionType} onChange={(event) => setPropertyTransactionType(event.target.value as "" | "DIJUAL" | "DISEWA")}>
+                    <option value="">Semua</option>
+                    <option value="DIJUAL">Dijual</option>
+                    <option value="DISEWA">Disewa</option>
+                  </select>
+                </label>
+              </div>
+              <button className="route-primary-button property-search-button" type="button" onClick={submitPropertySearch}>
+                <Search size={15} />
+                Cari Properti
+              </button>
+              {propertyLoading ? <p className="route-message" role="status">Memuat Properti Go pada cakupan aktif...</p> : null}
+              {propertyError ? <p className="route-message route-message--error" role="alert">{propertyError}</p> : null}
+            </section>
+          )}
+
+          {primaryMode === "merchant" && serviceAreaLoading ? (
+            <p className="route-message" role="status">Menghitung jangkauan berjalan...</p>
+          ) : primaryMode === "merchant" && serviceArea?.status === "READY" ? (
+            <p className="route-message" role="status">
+              Jangkauan jaringan {serviceArea.threshold_minutes} menit: {serviceArea.reachable_edge_count ?? 0} segmen terjangkau.
+            </p>
+          ) : primaryMode === "merchant" && maxWalkingMinutes ? (
+            <p className="route-message" role="status">Jaringan pedestrian tidak tersedia dari titik awal ini.</p>
+          ) : null}
+
+          {primaryMode === "merchant" && searchActive && searchTotal === 0 ? (
+            <section className="commuter-no-results" aria-live="polite">
+              <strong>Tidak ada merchant yang memenuhi semua batas.</strong>
+              <span>GETRA tidak melonggarkan budget, status buka, atau waktu berjalan secara otomatis.</span>
+              <div>
+                {maxBudget ? <button type="button" onClick={() => setMaxBudget("")}>Hapus budget</button> : null}
+                {openOnly ? <button type="button" onClick={() => setOpenOnly(false)}>Abaikan status buka</button> : null}
+                {maxWalkingMinutes ? (
+                  <button type="button" onClick={() => {
+                    setMaxWalkingMinutes(null);
+                    setServiceArea(null);
+                  }}>Hapus batas berjalan</button>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+
+          {primaryMode === "merchant" ? (
+            <RegionScopeSummary
+              selectedRegionIds={selectedRegionIds}
+              regions={searchRegions}
+              boundaryLoading={boundaryLoading}
+              boundaryError={boundaryError}
+              onRemove={toggleSearchRegion}
+            />
+          ) : null}
+
+          {primaryMode === "merchant" ? <div className="filter-grid filter-grid--single">
             <label>
               <span>
                 Brand
@@ -2107,28 +3055,12 @@ export function GetraDashboard() {
                 ))}
               </select>
             </label>
-          </div>
-
-          <label className="toggle-row">
-            <input
-              type="checkbox"
-              checked={openOnly}
-              onChange={(event) =>
-                setOpenOnly(
-                  event.target
-                    .checked,
-                )
-              }
-            />
-            <span>
-              Hanya status BUKA
-            </span>
-          </label>
+          </div> : null}
 
           <div className="section-divider" />
 
           {/* View Mode Switcher */}
-          <div className="mb-3 flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950/70 p-1">
+          {primaryMode === "merchant" ? <div className="mb-3 flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950/70 p-1">
             <button
               type="button"
               onClick={() => setViewMode("fair-discovery")}
@@ -2151,9 +3083,47 @@ export function GetraDashboard() {
             >
               📁 Katalog Dataset
             </button>
-          </div>
+            <button
+              type="button"
+              onClick={() => setViewMode("analytics")}
+              className={`flex-1 rounded-md py-1.5 text-xs font-bold transition-all ${
+                viewMode === "analytics"
+                  ? "bg-emerald-700 text-white shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <BarChart3 size={13} aria-hidden="true" /> Analytics
+            </button>
+          </div> : null}
 
-          {viewMode === "fair-discovery" ? (
+          {primaryMode === "business-space" ? (
+            <>
+              <div className="results-header">
+                <div>
+                  <span className="eyebrow">Hasil Properti Go</span>
+                  <strong>{propertyCandidates.length} observasi properti</strong>
+                </div>
+                <span className="source-stamp">PROPERTI GO</span>
+              </div>
+              <div className="result-list" data-property-result-count={propertyCandidates.length}>
+                {propertyCandidates.length === 0 ? (
+                  <div className="empty-state" role="status">
+                    Properti Go tidak ditemukan pada cakupan aktif.
+                  </div>
+                ) : (
+                  propertyCandidates.map((candidate, index) => (
+                    <PropertyResultRow
+                      key={candidate.id}
+                      candidate={candidate}
+                      index={index}
+                      selected={candidate.id === selectedPropertyId}
+                      onSelect={loadSelectedPropertyDetail}
+                    />
+                  ))
+                )}
+              </div>
+            </>
+          ) : viewMode === "fair-discovery" ? (
             <div className="mb-4">
               <FairDiscoveryResults
                 result={fairDiscoveryResult}
@@ -2176,6 +3146,18 @@ export function GetraDashboard() {
                 }}
               />
             </div>
+          ) : viewMode === "analytics" ? (
+            <DemandIntelligencePanel
+              query={analyticsQuery}
+              data={analytics.data}
+              loading={analytics.loading}
+              error={analytics.error}
+              selectedRegionId={effectiveAnalyticsRegionId}
+              onModeChange={setAnalyticsMode}
+              onCategoryChange={setAnalyticsCategory}
+              onDaysChange={setAnalyticsDays}
+              onSelectRegion={setSelectedAnalyticsRegionId}
+            />
           ) : (
             <>
               <div className="results-header">
@@ -2223,50 +3205,38 @@ export function GetraDashboard() {
 
               <div className="result-list">
                 {merchants.length === 0 ? (
-                  <div className="empty-state">
-                    Tidak ada titik yang cocok. Ubah brand, kata kunci, atau status buka.
+                  <div className="empty-state" role="status">
+                    {searchIntent?.keyword
+                      ? `"${searchIntent.keyword}" tidak ditemukan di ${searchIntent.location_text ?? "area ini"}.`
+                      : "Tidak ada merchant canonical di area ini."}
                   </div>
+                ) : regionResultGroups.length > 0 ? (
+                  regionResultGroups.map((group) => (
+                    <section className="region-result-group" key={group.id} aria-labelledby={`region-group-${group.id}`}>
+                      <header className="region-result-group__header">
+                        <h3 id={`region-group-${group.id}`}>{group.name}</h3>
+                        <span>{group.merchants.length} hasil pada halaman ini</span>
+                      </header>
+                      {group.merchants.map((merchant) => (
+                        <MerchantResultRow
+                          key={merchant.id}
+                          merchant={merchant}
+                          index={merchants.findIndex((item) => item.id === merchant.id)}
+                          selected={merchant.id === selectedMerchant?.id}
+                          onSelect={handleSelect}
+                        />
+                      ))}
+                    </section>
+                  ))
                 ) : (
                   merchants.map((merchant, index) => (
-                    <button
+                    <MerchantResultRow
                       key={merchant.id}
-                      className={
-                        merchant.id === selectedMerchant?.id
-                          ? "result-row result-row--selected"
-                          : "result-row"
-                      }
-                      onClick={() => handleSelect(merchant)}
-                    >
-                      <span className="result-rank">{index + 1}</span>
-                      <span className="result-main">
-                        <strong>{merchant.name}</strong>
-                        <span>
-                          {merchant.brand}
-                          {" · "}
-                          {merchant.district}
-                        </span>
-                        <span className="result-meta">
-                          {merchant.userDistanceMeters !== undefined ? (
-                            <>
-                              <LocateFixed size={13} />
-                              {formatDistance(merchant.userDistanceMeters)}
-                              <span>·</span>
-                              {merchant.userWalkingMinutes} menit
-                            </>
-                          ) : (
-                            <>
-                              <MapPinned size={13} />
-                              {merchant.latitude.toFixed(6)},{" "}
-                              {merchant.longitude.toFixed(6)}
-                            </>
-                          )}
-                        </span>
-                      </span>
-                      <span className="score-box">
-                        <strong>{merchant.openNow ? "BUKA" : "TUTUP"}</strong>
-                        <span>status</span>
-                      </span>
-                    </button>
+                      merchant={merchant}
+                      index={index}
+                      selected={merchant.id === selectedMerchant?.id}
+                      onSelect={handleSelect}
+                    />
                   ))
                 )}
               </div>
@@ -2304,7 +3274,7 @@ export function GetraDashboard() {
           <div className="mt-4">
             <AiPanel
               activeExperience={activeExperience}
-              currentOrigin={userLocation ?? undefined}
+              currentOrigin={routeOrigin.coordinate}
               currentDestination={selectedMerchant ? { latitude: selectedMerchant.latitude, longitude: selectedMerchant.longitude } : undefined}
               selectedEntityId={selectedMerchant?.id}
             />
@@ -2316,28 +3286,42 @@ export function GetraDashboard() {
           aria-label="Peta GETRA"
         >
           <GetraMap
-            merchants={merchants}
-            selectedId={selectedId}
+            datasetKey={datasetId}
+            focusBounds={searchFocusBounds}
+            focusKey={searchFocusKey}
+            merchants={primaryMode === "merchant" ? merchants : []}
+            selectedId={primaryMode === "merchant" ? selectedId : null}
+            propertyCandidates={primaryMode === "business-space" ? propertyCandidates : []}
+            selectedPropertyId={primaryMode === "business-space" ? selectedPropertyId : null}
             userLocation={userLocation}
             onSelect={handleSelect}
+            onSelectProperty={loadSelectedPropertyDetail}
             onClearSelection={handleClearSelection}
+            onViewportChange={handleViewportChange}
+            contextualLayerData={contextualLayerData}
+            contextualLayerVisibility={contextualLayerVisibility}
+            onContextualLayerChange={handleContextualLayerChange}
             datasetBounds={datasetBounds}
             datasetOrigin={datasetOrigin}
             routeOriginPoint={routeOriginPoint}
             routeDestinationPoint={routeDestinationPoint}
             routeGeometry={route?.geometry}
-            routeIsFallback={routeIsFallback}
+            serviceAreaGeometry={serviceArea?.geometry ?? null}
             importBoundaries={
               visibleImportBoundaries
             }
+            administrativeBoundaries={visibleAdministrativeBoundaries}
             sponsoredPlacements={fairDiscoveryResult?.sponsored}
             onSelectSponsored={() => {
               // Set selection or route point if needed
             }}
+            analyticsCollection={analyticsCollection}
+            analyticsMode={analyticsMode}
+            onSelectAnalyticsRegion={setSelectedAnalyticsRegionId}
           />
         </section>
 
-        <aside className="right-panel panel">
+        <aside className="right-panel panel" tabIndex={0} aria-label="Detail lokasi terpilih">
           <div className="panel-heading">
             <div>
               <span className="eyebrow">
@@ -2350,7 +3334,13 @@ export function GetraDashboard() {
             <Database size={20} />
           </div>
 
-          {selectedMerchant ? (
+          {primaryMode === "business-space" ? (
+            <PropertyObservationDetail
+              detail={selectedPropertyDetail}
+              fallback={propertyCandidates.find((candidate) => candidate.id === selectedPropertyId) ?? null}
+              loading={propertyDetailLoading}
+            />
+          ) : selectedMerchant ? (
             <>
               <div className="detail-title">
                 <span className="source-stamp source-stamp--warning">
@@ -2388,6 +3378,8 @@ export function GetraDashboard() {
                 </div>
               )}
 
+              <MerchantMediaGallery merchant={selectedMerchant} />
+
               <div className="metric-grid">
                 <div className="metric">
                   <Coffee size={18} />
@@ -2405,7 +3397,7 @@ export function GetraDashboard() {
                   </span>
                   <strong>
                     {selectedMerchant.district ||
-                      "-"}
+                      "Tidak tersedia"}
                   </strong>
                 </div>
                 <div className="metric">
@@ -2416,7 +3408,11 @@ export function GetraDashboard() {
                   <strong>
                     {selectedMerchant.userDistanceMeters !==
                     undefined
-                      ? `${formatDistance(selectedMerchant.userDistanceMeters)} · ${selectedMerchant.userWalkingMinutes} menit`
+                      ? `Jarak langsung ${formatDistance(selectedMerchant.userDistanceMeters)}${
+                          selectedMerchant.networkDurationSeconds
+                            ? ` · ${Math.ceil(selectedMerchant.networkDurationSeconds / 60)} menit jaringan`
+                            : ""
+                        }`
                       : "Aktifkan GPS"}
                   </strong>
                 </div>
@@ -2426,9 +3422,13 @@ export function GetraDashboard() {
                     Status
                   </span>
                   <strong>
-                    {selectedMerchant.openNow
+                    {selectedMerchant.openingStatus === "OPEN" ||
+                    (selectedMerchant.openStatusKnown && selectedMerchant.openNow)
                       ? "BUKA"
-                      : "TUTUP"}
+                      : selectedMerchant.openingStatus === "CLOSED" ||
+                          (selectedMerchant.openStatusKnown && !selectedMerchant.openNow)
+                        ? "TUTUP"
+                        : "Jam buka tidak tersedia"}
                   </strong>
                 </div>
               </div>
@@ -2453,58 +3453,29 @@ export function GetraDashboard() {
               </section>
 
               <section className="evidence-section">
+                <h4>Wilayah administrasi</h4>
+                <p className="limitation-box">
+                  {selectedMerchant.city ?? selectedMerchant.regions?.[0] ??
+                    "Wilayah belum teridentifikasi."}
+                </p>
+              </section>
+
+              <MerchantSourceEvidence merchant={selectedMerchant} />
+
+              <section className="evidence-section">
                 <h4>
-                  Provenance
+                  Detail tambahan
                 </h4>
-                <dl className="evidence-list">
-                  <div>
-                    <dt>
-                      Sumber
-                    </dt>
-                    <dd>
-                      {selectedMerchant.source}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>
-                      Desa
-                    </dt>
-                    <dd>
-                      {selectedMerchant.village ||
-                        "-"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>
-                      Telepon
-                    </dt>
-                    <dd>
-                      {selectedMerchant.phone ? (
-                        <span className="inline-icon-value">
-                          <Phone size={12} />
-                          {selectedMerchant.phone}
-                        </span>
-                      ) : (
-                        "-"
-                      )}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>
-                      Koordinat
-                    </dt>
-                    <dd>
-                      {selectedMerchant.latitude.toFixed(6)}, {selectedMerchant.longitude.toFixed(6)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>
-                      Update
-                    </dt>
-                    <dd>
-                      {selectedMerchant.updatedAt}
-                    </dd>
-                  </div>
+                <dl className="evidence-list evidence-list--compact">
+                  <OptionalDetail label="Desa" value={selectedMerchant.village} />
+                  {selectedMerchant.phone ? (
+                    <div>
+                      <dt>Telepon</dt>
+                      <dd><span className="inline-icon-value"><Phone size={12} />{selectedMerchant.phone}</span></dd>
+                    </div>
+                  ) : null}
+                  <OptionalDetail label="Koordinat" value={`${selectedMerchant.latitude.toFixed(6)}, ${selectedMerchant.longitude.toFixed(6)}`} />
+                  <OptionalDetail label="Update" value={selectedMerchant.updatedAt} />
                 </dl>
               </section>
 

@@ -1,0 +1,17 @@
+GETRA PHASE 07 FRONTEND MANUAL TEST GUIDE
+
+1. Start the GETRA backend and frontend, then login as a USER.
+2. Open /app and confirm there is one map canvas.
+3. Open Layer peta; confirm Merchant and Batas administrasi are on while all three contextual layers are off.
+4. In DevTools Network, confirm no contextual-observations request occurs for an off layer.
+5. Enable Properti. Confirm a bounded GETRA request, cyan clusters/points, and a property popup with safe fields, provenance, optional media, and no availability claim.
+6. Disable and re-enable Properti without moving. Confirm no duplicate network request.
+7. Repeat for Observasi transaksi. Confirm place/category/payment fields and no merchant or revenue claim.
+8. Repeat for Observasi lapangan. Confirm title/description/category fallback/date/media and no routing mutation.
+9. Enable all layers, search a Jakarta region, pan and zoom, and confirm each source remains visually distinct and reloads independently.
+10. Disable Merchant and confirm contextual layers and search text remain intact; re-enable it.
+11. Inspect all browser requests and responses. Confirm the browser calls GETRA only and exposes no Mission key, x-api-key, service-role key, raw payload, or provider path.
+12. Repeat at 390x844, 768x1024, 1366x768, and 1440x900. Confirm no overlap or horizontal overflow.
+13. For failure isolation, make one contextual request return a safe 503. Confirm that source shows an error while Merchant and other layers remain usable.
+
+Automated equivalent: node scripts/verify-phase07-contextual-layers-browser.mjs

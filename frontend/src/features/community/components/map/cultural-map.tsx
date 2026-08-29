@@ -26,7 +26,7 @@ import {
   formatCommunityTime,
   formatLocationCoordinate,
 } from "../../utils/community-format";
-import { getBasemapOption, getDefaultBasemapId } from "../../../../../lib/mapid";
+import { getBasemapOption, getPreferredBasemapId } from "../../../../../lib/mapid";
 import { CommunityAvatar } from "../common/community-avatar";
 import styles from "../community.module.css";
 
@@ -125,7 +125,7 @@ export function CulturalMap() {
 
       const map = new maplibre.Map({
         container: containerRef.current,
-        style: getBasemapOption(getDefaultBasemapId()).style,
+        style: getBasemapOption(getPreferredBasemapId()).style,
         center: [
           COMMUNITY_DEFAULT_LOCATION.longitude,
           COMMUNITY_DEFAULT_LOCATION.latitude,

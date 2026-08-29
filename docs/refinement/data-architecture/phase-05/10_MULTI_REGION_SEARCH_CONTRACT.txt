@@ -1,0 +1,15 @@
+GETRA PHASE 05 - MULTI-REGION SEARCH CONTRACT
+
+Request
+- scope=MULTI_REGION
+- region_ids is a comma-separated set of canonical IDs produced by GETRA UI controls.
+- maximum five unique regions.
+
+Server rules
+- unknown IDs fail validation.
+- duplicates fail validation.
+- geometries are loaded from administrative_regions.
+- RPC search uses the selected geometry union while retaining individual IDs in the intent response.
+
+Observed run
+jakarta-barat + jakarta-selatan + jakarta-timur with keyword bakso returned 3 unique canonical merchants. All happened to be in jakarta-selatan; this is a valid subset of the selected union, not evidence of fake per-region results.

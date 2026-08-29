@@ -1,0 +1,26 @@
+GETRA PHASE 05 - FRONTEND MANUAL TEST GUIDE
+
+USER path
+1. Login as an existing USER and open /app.
+2. Confirm the map loads canonical merchants for the initial viewport.
+3. Search bakso and verify map/list show the same bounded results.
+4. Search Jakarta Selatan and verify the map focuses that region.
+5. Search bakso Jakarta Selatan and verify both keyword and region appear in the returned intent/result.
+6. Search soto Jakarta Barat and verify Jakarta Barat scope.
+7. Select three region controls and search bakso; verify MULTI_REGION intent.
+8. Pan the map and verify results do not silently change.
+9. Press Search This Area and verify the keyword remains while scope becomes CURRENT_VIEWPORT.
+10. Search nonexistentmerchantxyz and verify the empty state.
+11. Enter two searches rapidly and verify only the latest result remains.
+12. Submit with Enter.
+13. Clear search and verify current viewport data returns.
+
+Security path
+1. Open browser DevTools Network.
+2. Verify search calls GETRA /api/merchants/canonical.
+3. Verify no browser call targets MAPID Mission /web/competition paths.
+4. Inspect responses and verify no x-api-key, MAPID credential, service role, authorization header, or environment value.
+5. Sign out and directly request the canonical endpoint; verify authentication is rejected.
+
+Responsive path
+Repeat at 390x844, 768x1024, 1366x768, and 1440x900. Verify controls do not overlap, horizontal overflow is absent, and the map canvas renders.

@@ -1,0 +1,15 @@
+GETRA PHASE 11 - ENDPOINT POLICY
+
+Registered endpoints:
+- GET /api/business-space/candidates
+- GET /api/business-space/candidates/[candidateId]
+- POST /api/business-space/compare
+- POST /api/business-space/insight
+
+Classification:
+- USER-facing read and analysis endpoints.
+- Mutation-like insight endpoint does not persist data and remains credential-safe.
+
+Verification:
+- Endpoint policy test suite passed inside full backend tests.
+

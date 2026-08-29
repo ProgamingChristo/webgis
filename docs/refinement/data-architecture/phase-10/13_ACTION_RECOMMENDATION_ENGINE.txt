@@ -1,0 +1,8 @@
+GETRA_UMKM_RECOMMENDATIONS_V1
+
+HIGH: missing canonical category or location.
+MEDIUM: missing opening hours, missing price, or unavailable pedestrian route evidence.
+LOW: missing photo, menu, contact, or positive grounded gap with visibility below 80.
+Rules deduplicate by stable ID and sort HIGH, MEDIUM, LOW. Resolved issues disappear on recomputation.
+The positive-gap visibility rule is suppressed for INSUFFICIENT_DATA.
+No rule recommends spend, price, branch expansion, revenue, ROI, or guaranteed outcome.

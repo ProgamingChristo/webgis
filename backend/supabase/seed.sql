@@ -15,24 +15,29 @@ SET search_path = public, extensions, gis;
 DO $$
 DECLARE
   admin_id UUID := '00000000-0000-0000-0000-000000000001';
-  umkm_id UUID := '00000000-0000-0000-0000-000000000002';
-  commuter_id UUID := '00000000-0000-0000-0000-000000000003';
+  umkm_user_id UUID := '00000000-0000-0000-0000-000000000002';
+  general_user_id UUID := '00000000-0000-0000-0000-000000000003';
 BEGIN
-  -- Insert auth.users. The admin fixture starts as COMMUTER so the public
-  -- registration guard remains effective; its trusted role is assigned below.
+  -- Insert auth.users. All users start with no privileged metadata.
+  -- account_role is assigned by the trigger (USER) and then overridden for admin below.
   INSERT INTO auth.users (
     instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, recovery_sent_at, last_sign_in_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_change, email_change_token_new, recovery_token
   ) VALUES 
-    ('00000000-0000-0000-0000-000000000000', admin_id, 'authenticated', 'authenticated', 'admin.mock@getra.local', crypt('PasswordDevelopment123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"full_name": "Admin Test", "role": "COMMUTER"}', now(), now(), '', '', '', ''),
-    ('00000000-0000-0000-0000-000000000000', umkm_id, 'authenticated', 'authenticated', 'umkm.mock@getra.local', crypt('PasswordDevelopment123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"full_name": "UMKM Test", "role": "UMKM"}', now(), now(), '', '', '', ''),
-    ('00000000-0000-0000-0000-000000000000', commuter_id, 'authenticated', 'authenticated', 'commuter.mock@getra.local', crypt('PasswordDevelopment123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"full_name": "Commuter Test", "role": "COMMUTER"}', now(), now(), '', '', '', '');
+    ('00000000-0000-0000-0000-000000000000', admin_id, 'authenticated', 'authenticated', 'admin.mock@getra.local', crypt('PasswordDevelopment123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"full_name": "Admin Test"}', now(), now(), '', '', '', ''),
+    ('00000000-0000-0000-0000-000000000000', umkm_user_id, 'authenticated', 'authenticated', 'umkm.mock@getra.local', crypt('PasswordDevelopment123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"full_name": "UMKM Test"}', now(), now(), '', '', '', ''),
+    ('00000000-0000-0000-0000-000000000000', general_user_id, 'authenticated', 'authenticated', 'user.mock@getra.local', crypt('PasswordDevelopment123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"full_name": "General User Test"}', now(), now(), '', '', '', '');
 
 END $$;
 
--- Update the admin profile role manually to bypass public registration guard
+-- Elevate admin profile to ADMIN account_role (bypass trigger default).
 UPDATE public.profiles
-SET role = 'ADMIN'::public.user_role
+SET account_role = 'ADMIN'::public.account_role
 WHERE id = '00000000-0000-0000-0000-000000000001';
+
+-- Assign UMKM stakeholder mode to the UMKM test user.
+INSERT INTO public.user_stakeholder_modes (user_id, mode)
+VALUES ('00000000-0000-0000-0000-000000000002', 'UMKM')
+ON CONFLICT DO NOTHING;
 
 -- Spatial fixtures are synthetic DEV/TEST records only. Coordinates are deliberately
 -- simple and do not represent a real study area, transport route, or research data.

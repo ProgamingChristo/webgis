@@ -1,0 +1,7 @@
+GETRA PHASE 10 MERCHANT SUPPLY / COMPETITION CONTEXT
+
+Supply Score is reused from GETRA_RETAIL_GAP_V1 and counts distinct published canonical merchants.
+Comparable detail uses the same normalized category and exact administrative area.
+Nearby display is bounded to 20, excludes the selected merchant, and inherits Phase 03 canonical deduplication.
+UI wording is represented supply or merchant sejenis, not confirmed direct competitors.
+No all-Jakarta merchant dump is performed.

@@ -3,7 +3,8 @@
 import React, { useEffect, useRef } from "react";
 import type { GeoJSONSource, Map as MapLibreMap, Marker, Popup } from "maplibre-gl";
 import { SponsoredPinDTO, SponsoredPinServingContext } from "../types/ad-serving.types";
-import { getBasemapOption, getDefaultBasemapId } from "@/lib/mapid";
+import { getBasemapOption, getPreferredBasemapId } from "@/lib/mapid";
+import { buildSponsoredPopupContent } from "@/src/lib/maplibre-popup";
 
 interface SponsoredPinPreviewMapProps {
   merchantLocation: { longitude: number; latitude: number } | null;
@@ -47,7 +48,7 @@ export function SponsoredPinPreviewMap({
 
       const map = new maplibre.Map({
         container: containerRef.current,
-        style: getBasemapOption(getDefaultBasemapId()).style,
+        style: getBasemapOption(getPreferredBasemapId()).style,
         center: defaultCenter,
         zoom: 14,
       });
@@ -229,16 +230,10 @@ export function SponsoredPinPreviewMap({
       `;
 
       // Create Popup
-      const popup = new maplibre.Popup({ offset: 25, closeButton: true }).setHTML(`
-        <div style="padding: 6px; font-family: sans-serif; max-width: 200px;">
-          <span style="background: #fef3c7; color: #92400e; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase;">✨ Sponsored</span>
-          <h5 style="margin: 4px 0 2px 0; font-size: 12px; font-weight: 700; color: #0f172a;">${placement.headline}</h5>
-          <p style="margin: 0; font-size: 10px; color: #64748b;">${placement.merchant_name} (${placement.merchant_category})</p>
-          <div style="margin-top: 6px; font-size: 10px; font-weight: 600; color: #d97706;">
-            ${placement.cta_type === "REQUEST_ROUTE" ? "📍 Rute Tersedia" : "🏪 Kunjungi Profil"}
-          </div>
-        </div>
-      `);
+      const popup = new maplibre.Popup({
+        offset: 25,
+        closeButton: true,
+      }).setDOMContent(buildSponsoredPopupContent(placement));
 
       if (sponsoredMarkerRef.current) {
         sponsoredMarkerRef.current.setLngLat([lng, lat]);

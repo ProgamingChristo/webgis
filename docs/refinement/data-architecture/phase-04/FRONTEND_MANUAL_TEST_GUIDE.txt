@@ -1,0 +1,14 @@
+GETRA PHASE 04 - MANUAL BROWSER TEST GUIDE
+
+1. Login with an authorized GETRA fixture account.
+2. Open /app and wait for the basemap.
+3. In DevTools Network, filter for /api/merchants/canonical.
+4. Confirm the request contains west, south, east, north, limit, and offset.
+5. Confirm HTTP 200 and no more than 250 merchants in one page.
+6. Drag the map and confirm another request uses a different bbox.
+7. Zoom out and confirm large result sets display cluster circles with counts.
+8. Click a cluster and confirm the map zooms in.
+9. Click an individual point and confirm merchant details can be selected.
+10. Confirm the browser never requests /web/competition/*.
+11. Confirm no provider key, x-api-key, or service-role credential is visible.
+12. Open the endpoint anonymously and confirm access is rejected.

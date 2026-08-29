@@ -8,6 +8,7 @@ import {
   MapPinned,
   Megaphone,
   Menu,
+  RefreshCw,
   Settings,
   Store,
   UsersRound,
@@ -103,6 +104,11 @@ export function GetraAppShell({
       isAdmin
         ? [
             ...NAV_ITEMS,
+            {
+              href: "/admin/mission-data",
+              label: "Mission Data",
+              icon: RefreshCw,
+            },
             {
               href: "/admin/import",
               label: "Admin Import",
@@ -285,9 +291,15 @@ export function GetraAppShell({
             <nav className="getra-app-drawer__nav">
               {visibleNav.map((item) => {
                 const Icon = item.icon;
+                const active =
+                  pathname === item.href ||
+                  (item.href !== "/app" &&
+                    pathname.startsWith(`${item.href}/`));
 
                 return (
                   <Link
+                    aria-current={active ? "page" : undefined}
+                    className={active ? "getra-app-drawer__nav-link--active" : ""}
                     href={item.href}
                     key={item.href}
                     onClick={() => setMenuOpen(false)}
@@ -298,6 +310,18 @@ export function GetraAppShell({
                 );
               })}
             </nav>
+            <div className="getra-app-drawer__account">
+              <AccountMenu context={context} />
+              <button
+                className="getra-app-logout getra-app-drawer__logout"
+                disabled={loggingOut}
+                onClick={handleLogout}
+                type="button"
+              >
+                <LogOut size={15} />
+                {loggingOut ? "Keluar..." : "Keluar"}
+              </button>
+            </div>
           </section>
         </div>
       ) : null}

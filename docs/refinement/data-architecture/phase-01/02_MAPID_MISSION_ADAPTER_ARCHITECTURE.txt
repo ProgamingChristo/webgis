@@ -1,0 +1,16 @@
+MAPID MISSION ADAPTER ARCHITECTURE
+
+Existing MAPID integration was reused.
+
+Key components:
+- mapid.client.ts: shared timeout/retry/status/JSON client, now supports GET and POST.
+- mission.client.ts: Mission request owner with x-api-key server-side authentication.
+- mission.schema.ts: request validation, response extraction, normalization rules.
+- mission.service.ts: source-level sync loop, pagination guard, idempotency metrics.
+- mission.repository.ts: Supabase persistence and read RPC access.
+
+Endpoint ownership:
+- POST /api/admin/mapid/mission-sync triggers backend sync and requires ADMIN.
+- GET /api/mapid/mission-observations reads normalized GETRA data for authenticated users.
+
+No frontend code receives MAPID credentials.

@@ -1,0 +1,32 @@
+GETRA PHASE 03 - FINAL REPORT
+
+STATUS
+PHASE 03: PARTIAL
+
+Implemented and verified
+- Existing public.merchants canonical model reused.
+- Persistent Premium and Menu Go source relationships implemented.
+- Deterministic name/phone/address/category/mobility matching implemented.
+- Candidate distance uses PostGIS.
+- Explicit statuses and auditable decision evidence implemented.
+- Mobile and multi-branch false-positive protections implemented.
+- Source-only Premium and Menu Go canonical reads implemented.
+- Stable IDs and idempotent rerun verified remotely.
+- ADMIN mutation authorization and authenticated canonical read verified.
+- Migration, generated types, typecheck, lint, tests, and build pass.
+
+Phase 03 blocker
+- The current real Premium and Menu Go datasets contain zero candidates that qualify as MATCH_CONFIRMED or MATCH_HIGH_CONFIDENCE.
+- Therefore a real Premium + Menu Go -> one canonical merchant demo cannot be produced honestly.
+- No match was fabricated and thresholds were not weakened to manufacture success.
+
+Future improvement, not implemented
+- Add a small ADMIN review UI if real MATCH_REVIEW_REQUIRED candidates appear.
+- Re-run after a verified overlapping Premium/Menu Go sample exists.
+
+Pre-existing / out-of-scope
+- Existing dirty worktree from earlier phases remains untouched.
+- No Phase 04 viewport loading, search, map redesign, or intelligence feature was added.
+
+READY FOR PHASE 04: NO
+

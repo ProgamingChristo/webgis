@@ -1,0 +1,28 @@
+GETRA PHASE 07 CONTEXTUAL SOURCE LAYERS CHANGES
+
+Objective:
+Expose persisted Properti Go, Struk Go, and Activities as safe, independent context layers on the existing map.
+
+Created:
+- backend/app/api/contextual-observations/route.ts
+- backend/src/features/contextual-observations/*
+- backend Phase 07 route/service tests
+- frontend/src/features/mission-context-layers/*
+- frontend Phase 07 tests
+- scripts/verify-phase07-contextual-layers-browser.mjs
+- docs/refinement/data-architecture/phase-07/*
+
+Modified:
+- backend/src/lib/api-security/endpoint-policy.ts
+- frontend/components/getra-dashboard.tsx
+- frontend/components/getra-map.tsx
+- frontend/app/globals.css
+
+Deleted: none.
+API: added authenticated GET /api/contextual-observations with strict source+bbox pagination.
+DB/migration: no change; existing Mission observation table and spatial indexes reused.
+MapLibre: three independent clustered sources with source-specific layers, markers, popups, toggles, media, and provenance.
+Performance: off-by-default loading, debounce, abort, LRU cache, response cap.
+Security: GETRA API only; safe DTO; no Mission credential in client or response.
+Verification: typecheck, lint, tests, builds, Phase 04-07 browser E2E, and remote migration dry-run pass.
+READY FOR PHASE 08: YES.

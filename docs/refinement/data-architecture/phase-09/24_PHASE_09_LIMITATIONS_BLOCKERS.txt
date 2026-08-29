@@ -1,0 +1,13 @@
+PHASE 09 LIMITATIONS AND BLOCKERS
+
+BLOCKERS: NONE.
+
+Known evidence limitations:
+- No historical generic search/route event store existed before Phase 09; capture is prospective.
+- Remote commuter_requests contained zero rows at audit time.
+- Struk is presence/count evidence only; no value, quantity, or revenue is inferred.
+- Canonical merchant supply is represented GETRA supply, not a census.
+- PostgREST EXPLAIN output is disabled remotely (HTTP 406); query plan status is PARTIAL.
+- Confidence labels describe evidence volume/diversity, not statistical population confidence.
+
+No Phase 10 feature was implemented.

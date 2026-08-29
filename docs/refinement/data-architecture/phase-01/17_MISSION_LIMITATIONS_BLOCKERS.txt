@@ -1,0 +1,87 @@
+MISSION LIMITATIONS AND BLOCKERS
+
+Blockers:
+- Activities actual endpoint is not confirmed. Source remains BLOCKED by design until MAPID_ACTIVITIES_PATH is configured with a real server-side path.
+- Supabase migration list and dry-run are blocked because .env.local cannot be parsed by Supabase tooling.
+- Remote DB verification was not performed.
+- Remote MAPID runtime verification was not performed.
+- Full backend test suite currently fails on an unrelated Dockerfile expectation mismatch.
+- Global lint currently fails on an unrelated frontend unused import warning.
+
+Limitations by design:
+- No admin sync UI.
+- No map layer.
+- No merchant reconciliation.
+- No Premium + Menu Go merge.
+- No viewport loading.
+- No search/filter implementation.
+- No routing mutation from Activities.
+
+Phase status:
+- Backend implementation is local IMPLEMENTED.
+- Not VERIFIED until remote DB and real MAPID runtime evidence exist.
+
+VERIFICATION CLOSURE UPDATE - 2026-08-27
+
+Closed blockers:
+- Supabase CLI env parsing is bypassed safely with the actual backend project workdir.
+- Phase 01 migration 20260827090000 is pushed and recorded remotely.
+- Remote tables, identity constraint, Point geometry constraint, RLS behavior, RPC/read route, and generated DB types are verified.
+- Canonical lint, full backend tests, typecheck, focused tests, and build pass.
+
+Remaining blockers:
+- Authorized real MAPID Mission runtime configuration is absent. Available backend config targets localhost fixture infrastructure.
+- Menu Go real retrieval is not verified.
+- Struk Go real retrieval is not verified.
+- Properti Go real retrieval is not verified.
+- Actual Activities endpoint/path is not confirmed or configured.
+- Real-source persistence and same-scope idempotent rerun cannot be verified until real MAPID retrieval succeeds.
+- GETRA read API is verified against remote DB data, but not against persisted real MAPID records.
+
+Unrelated migration note:
+- 20260824103000_database_reconciliation_role_and_profiles.sql remains local-only.
+- It was deliberately excluded from the Phase 01 push because it changes profile/role authorization behavior outside this scope.
+
+Phase status after closure attempt:
+- STATUS: BLOCKED.
+- READY FOR PHASE 02: NO.
+
+FINAL VERIFICATION CLOSURE - 2026-08-27
+
+Resolved:
+- Struck Go endpoint corrected from the handoff typo to official `struckgo` and verified.
+- Activities endpoint confirmed from official MAPID documentation and verified.
+- All four sources retrieved, normalized, persisted, rerun idempotently, and read through GETRA API.
+- No Phase 01 verification blockers remain.
+
+Historical notes retained:
+- Earlier BLOCKED sections describe the evidence available before official endpoint documentation was supplied.
+- Unrelated local-only migration 20260824103000 remains outside Phase 01 and was not pushed.
+
+Final phase status:
+- STATUS: VERIFIED.
+- READY FOR PHASE 02: YES.
+
+REAL MAPID CREDENTIAL CLOSURE UPDATE - 2026-08-27
+
+Additional closed blockers:
+- Authorized real MAPID Mission credential/base URL is configured server-side.
+- Menu Go retrieval, persistence, idempotency, and read API are verified.
+- Properti Go retrieval, persistence, idempotency, and read API are verified.
+
+Current remaining blockers:
+- The handoff Struk Go path /web/competition/strukgo returns HTTP 404 from the actual provider. Actual current path is required.
+- Activities endpoint/path/method/response contract remains unknown.
+- Struk Go and Activities cannot yet be persisted, rerun, or read as real source data.
+
+Phase status remains:
+- STATUS: BLOCKED.
+- READY FOR PHASE 02: NO.
+
+AUTHORITATIVE FINAL STATUS - 2026-08-27
+
+- The BLOCKED status immediately above is retained as historical evidence from before official endpoint documentation was supplied.
+- Struck Go and Activities were subsequently corrected and verified in real runtime.
+- REMAINING PHASE 01 BLOCKERS: NONE.
+- STATUS: VERIFIED.
+- READY FOR PHASE 02: YES.

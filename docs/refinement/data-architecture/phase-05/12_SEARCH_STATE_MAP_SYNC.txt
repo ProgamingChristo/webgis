@@ -1,0 +1,14 @@
+GETRA PHASE 05 - SEARCH STATE AND MAP SYNC
+
+One request result drives both the visible list and MapLibre source, preventing list/map disagreement.
+
+State transitions
+- Initial: current viewport canonical data.
+- Submit: cancel stale request, show loading, apply successful intent/result.
+- Location result: fit map to server-returned region bounds.
+- Pan active result: keep current result and expose Search This Area.
+- Search This Area: retain parsed keyword, clear region scope, query new viewport.
+- Clear: remove query/region state and reload current viewport.
+- Failure: preserve safe UI state and display bounded error text.
+
+Rapid requests use AbortController. Browser evidence confirmed an earlier request was aborted and the final visible query/result remained soto.

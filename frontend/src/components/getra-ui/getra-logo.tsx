@@ -1,4 +1,5 @@
-import Image from "next/image";
+const GETRA_LOGO_SRC =
+  "/brand/getra-logo.png?v=20260826";
 
 type GetraLogoProps = {
   className?: string;
@@ -21,12 +22,18 @@ export function GetraLogo({
   }
 
   return (
-    <Image
+    // Static app chrome logo: use a plain image to keep SSR/client markup
+    // deterministic in Client Providers and avoid Next Image hydration drift.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       alt="GETRA"
       className={`h-auto w-36 rounded-xl object-contain sm:w-40 ${className}`}
       height={173}
-      priority
-      src="/brand/getra-logo.png"
+      decoding="async"
+      draggable={false}
+      fetchPriority="high"
+      loading="eager"
+      src={GETRA_LOGO_SRC}
       width={486}
     />
   );

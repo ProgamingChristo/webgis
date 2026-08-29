@@ -2,6 +2,7 @@ import type {
   NextRequest,
   NextResponse,
 } from "next/server";
+import type * as GeoJSON from "geojson";
 import { z } from "zod";
 
 import { withApiLogger } from "@/src/lib/api-logger";
@@ -12,6 +13,7 @@ import { ApplicationError } from "@/src/lib/errors";
 import { rateLimiter } from "@/src/lib/rate-limit";
 import { getRequestId } from "@/src/lib/request-id";
 import { validateBody } from "@/src/lib/validation";
+import { JAKARTA_ADMIN_BOUNDARY_REGISTRY } from "@/data/jakarta-admin-boundaries";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -147,18 +149,38 @@ export async function POST(
           layerName,
         );
 
+      const batchId = `admin-import-${Date.now()}`;
+      const regions = summarizeRegions(
+        merchants,
+        batchId,
+        layerName,
+      );
+      const boundaries: GeoJSON.FeatureCollection<GeoJSON.MultiPolygon> = {
+        type: "FeatureCollection",
+        features: regions.map((region) => ({
+          type: "Feature",
+          id: region.id,
+          properties: {
+            id: region.id,
+            name: region.name,
+            feature_count: region.count,
+            boundary_method: region.boundaryMethod,
+            import_batch_id: batchId,
+          },
+          geometry: region.geometry,
+        })),
+      };
+
       return createSuccessResponse(
         requestId,
         {
-          layer_id:
-            `admin-import-${Date.now()}`,
-          layer_name:
-            layerName,
-          source_type:
-            payload.source_type,
-          total_features:
-            merchants.length,
+          layer_id: batchId,
+          layer_name: layerName,
+          source_type: payload.source_type,
+          total_features: merchants.length,
           merchants,
+          regions,
+          boundaries,
           limitation:
             "Layer admin import bersifat sementara untuk preview dan disimpan di browser admin. Belum menulis massal ke database.",
         },
@@ -793,5 +815,138 @@ function isRecord(
     !Array.isArray(
       value,
     )
+  );
+}
+
+type AdminImportRegion = {
+  id: string;
+  name: string;
+  count: number;
+  boundaryMethod:
+    | "jakarta_admin_curated_boundary"
+    | "import_extent_with_safety_padding";
+  bounds: {
+    west: number;
+    south: number;
+    east: number;
+    north: number;
+  };
+  geometry: GeoJSON.MultiPolygon;
+};
+
+function getMerchantRegionName(
+  merchant: AdminImportMerchant,
+  layerName?: string,
+) {
+  const detectedRegion = detectJakartaAdminRegionName(
+    merchant.city,
+    merchant.district,
+    merchant.province,
+    layerName,
+  );
+
+  return (
+    detectedRegion ||
+    merchant.city?.trim() ||
+    merchant.district?.trim() ||
+    merchant.province?.trim() ||
+    layerName?.trim() ||
+    "Wilayah import"
+  );
+}
+
+function summarizeRegions(
+  merchants: AdminImportMerchant[],
+  batchId: string,
+  layerName: string,
+): AdminImportRegion[] {
+  const groups = new Map<string, AdminImportMerchant[]>();
+
+  for (const merchant of merchants) {
+    const name = getMerchantRegionName(merchant, layerName);
+    groups.set(name, [...(groups.get(name) ?? []), merchant]);
+  }
+
+  return Array.from(groups.entries()).map(([name, members]) => {
+    const west = Math.min(...members.map((item) => item.longitude));
+    const east = Math.max(...members.map((item) => item.longitude));
+    const south = Math.min(...members.map((item) => item.latitude));
+    const north = Math.max(...members.map((item) => item.latitude));
+    const longitudePadding = Math.max((east - west) * 0.08, 0.002);
+    const latitudePadding = Math.max((north - south) * 0.08, 0.002);
+    const bounds = {
+      west: west - longitudePadding,
+      south: south - latitudePadding,
+      east: east + longitudePadding,
+      north: north + latitudePadding,
+    };
+    const curatedBoundary =
+      JAKARTA_ADMIN_BOUNDARY_REGISTRY[slugify(name)];
+
+    return {
+      id: curatedBoundary?.id ?? slugify(name),
+      name: curatedBoundary?.name ?? name,
+      count: members.length,
+      boundaryMethod: curatedBoundary
+        ? "jakarta_admin_curated_boundary"
+        : "import_extent_with_safety_padding",
+      bounds,
+      geometry:
+        curatedBoundary?.geometry ?? {
+          type: "MultiPolygon",
+          coordinates: [[[
+            [bounds.west, bounds.south],
+            [bounds.east, bounds.south],
+            [bounds.east, bounds.north],
+            [bounds.west, bounds.north],
+            [bounds.west, bounds.south],
+          ]]],
+        },
+      batch_id: batchId,
+    } as AdminImportRegion & { batch_id: string };
+  });
+}
+
+function detectJakartaAdminRegionName(
+  ...candidates: Array<string | undefined>
+) {
+  const combined = candidates
+    .filter((candidate): candidate is string => Boolean(candidate?.trim()))
+    .join(" ")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (/\bjakarta\s*timur\b|\bjakarta\s*tim\b|\bjatim\b/.test(combined)) {
+    return "Jakarta Timur";
+  }
+
+  if (/\bjakarta\s*pusat\b|\bjakarta\s*pus\b|\bjakpus\b/.test(combined)) {
+    return "Jakarta Pusat";
+  }
+
+  if (/\bjakarta\s*selatan\b|\bjakarta\s*sel\b|\bjaksel\b/.test(combined)) {
+    return "Jakarta Selatan";
+  }
+
+  if (/\bjakarta\s*barat\b|\bjakarta\s*bar\b|\bjakbar\b/.test(combined)) {
+    return "Jakarta Barat";
+  }
+
+  if (/\bjakarta\s*utara\b|\bjakarta\s*ut\b|\bjakut\b/.test(combined)) {
+    return "Jakarta Utara";
+  }
+
+  return null;
+}
+
+function slugify(value: string) {
+  return (
+    value
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "wilayah-import"
   );
 }

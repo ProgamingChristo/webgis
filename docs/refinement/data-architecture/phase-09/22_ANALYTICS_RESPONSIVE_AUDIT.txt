@@ -1,0 +1,10 @@
+ANALYTICS RESPONSIVE AUDIT
+
+Chrome headless captures were taken with the Analytics panel scrolled into view.
+390x844: PASS, no body horizontal overflow; panel, map, and chart rendered.
+768x1024: PASS, no body horizontal overflow; panel/map/chart present in capture.
+1366x768: PASS, no body horizontal overflow; panel, map, and chart rendered.
+1440x900: PASS, no body horizontal overflow; panel/map/chart present in capture.
+
+Fixed chart dimensions, bounded grid tracks, horizontal chart navigation, and table overflow prevent
+labels or analytics controls from resizing the application shell.

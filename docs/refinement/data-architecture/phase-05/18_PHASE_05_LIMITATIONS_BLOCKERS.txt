@@ -1,0 +1,18 @@
+GETRA PHASE 05 - LIMITATIONS AND BLOCKERS
+
+Phase 05 blockers
+NONE.
+
+Intentional limitations
+- Region catalog currently covers five DKI mainland administrative cities present in the trusted project asset; Kepulauan Seribu requires a separately sourced/reviewed boundary.
+- Location parsing is deterministic alias matching, not free-form geocoding.
+- Search uses bounded contains/prefix ranking; typo-tolerant trigram search was not required for the current canonical data scale.
+- Region polygons are used for server spatial filtering but not drawn on the map. Drawing is Phase 06.
+- Runtime counts are snapshots and can change with canonical data.
+
+Pre-existing/out-of-scope
+- Existing Fair Discovery mode remains isolated from active global search.
+- Premium and Mission ingestion remain unchanged.
+
+Rollback
+Frontend/API/service changes can be reverted independently. The additive region table and RPCs may safely remain unused. If database removal is later required, use a reviewed forward migration that first verifies no dependent callers, drops only Phase 05 RPCs/table/indexes, and never deletes canonical merchant data.

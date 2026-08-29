@@ -1,0 +1,8 @@
+GETRA PHASE 08 - OPENING HOURS CONSTRAINT
+
+Open-now evaluation is deterministic in Asia/Jakarta. It supports weekday ranges,
+weekend schedules, explicit closed days, and overnight periods. A provider snapshot
+such as {open_now:true} is not treated as a weekly schedule. Missing or incomplete
+hours are UNKNOWN and excluded under an open-now constraint, never presented as open
+or closed. Current canonical production rows do not yet contain sufficient weekly
+schedules, so strict open-now can correctly return no results.
