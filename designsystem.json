@@ -1,0 +1,193 @@
+{
+  "runId": "getra-webgis-redesign-ds-2026-08-28",
+  "fileKey": "RkzSo03YbL6AezQi3NArPU",
+  "status": "blocked_in_figma_connector",
+  "blockedBy": "Figma use_figma returned INVALID_ARGUMENT on the first minimal read-only inspection call for the latest target file, so no write calls were attempted to protect Codex quota.",
+  "sourceCode": {
+    "dashboard": "frontend/components/getra-dashboard.tsx",
+    "map": "frontend/components/getra-map.tsx",
+    "styles": "frontend/app/globals.css"
+  },
+  "product": {
+    "name": "GETRA WebGIS",
+    "direction": "Map-first urban intelligence workspace for UMKM discovery, routing, layer analysis, advertising, and AI-assisted evidence review.",
+    "audience": [
+      "city analysts",
+      "UMKM operators",
+      "field teams",
+      "admin reviewers",
+      "designers maintaining the WebGIS product UI"
+    ]
+  },
+  "designPrinciples": [
+    "Map is the primary workspace, with controls arranged around it instead of a landing-page layout.",
+    "Use dense but calm panels for repeated geospatial work.",
+    "Keep Explore, Route, and Analyze as the main task modes.",
+    "Show evidence, provenance, and data source state near every selected merchant.",
+    "Use restrained color for clarity; reserve strong accents for active controls, danger, success, warning, and sponsored states."
+  ],
+  "tokens": {
+    "color": {
+      "canvas": "#f5f7f9",
+      "surface": "#ffffff",
+      "surfaceRaised": "#ffffff",
+      "surfaceDark": "#f8fafc",
+      "ink": "#182230",
+      "inkSoft": "#526174",
+      "inkMuted": "#7a8798",
+      "inkInverse": "#ffffff",
+      "line": "#d2d9e3",
+      "lineStrong": "#adb8c7",
+      "primary": "#0891b2",
+      "primaryHover": "#0e7490",
+      "primaryActive": "#155e75",
+      "primarySoft": "#ecfeff",
+      "primarySoftStrong": "#cffafe",
+      "warning": "#d97706",
+      "danger": "#dc2626",
+      "success": "#15803d",
+      "sponsored": "#4f46e5"
+    },
+    "radius": {
+      "control": "8px",
+      "panel": "0px to 8px depending on docked context",
+      "mapControl": "8px",
+      "modal": "8px"
+    },
+    "layout": {
+      "desktopShell": "Topbar + 3-column workspace: left task panel, center map, right evidence panel when selected.",
+      "taskPanelWidth": "360px",
+      "evidencePanelWidth": "340px",
+      "workspaceModes": [
+        "Explore",
+        "Route",
+        "Analyze"
+      ]
+    },
+    "typography": {
+      "family": "Use project default sans stack; keep GIS panels compact.",
+      "headings": "600 to 700 weight, compact scale inside panels.",
+      "body": "14px to 15px for readable operational UI.",
+      "metadata": "12px to 13px with muted ink for provenance and secondary labels."
+    },
+    "motion": {
+      "panelTransition": "160ms to 220ms ease",
+      "hover": "subtle border and background changes",
+      "map": "avoid layout shifts around controls"
+    }
+  },
+  "componentsToCreateInFigma": [
+    {
+      "name": "Workspace Topbar",
+      "states": [
+        "default",
+        "admin/import available",
+        "auth loading"
+      ],
+      "notes": "Contains product identity, import/admin actions, stakeholder switch, notifications, auth/profile actions."
+    },
+    {
+      "name": "Workspace Tabs",
+      "variants": [
+        "Explore",
+        "Route",
+        "Analyze"
+      ],
+      "states": [
+        "default",
+        "active",
+        "hover"
+      ],
+      "notes": "Icon-led segmented task switcher."
+    },
+    {
+      "name": "Search Box",
+      "states": [
+        "empty",
+        "typed",
+        "focused",
+        "disabled"
+      ],
+      "notes": "Used for place, UMKM, transit, origin, and destination search."
+    },
+    {
+      "name": "Data Scope Chip",
+      "variants": [
+        "All",
+        "Imported",
+        "Jakarta Pusat",
+        "Jakarta Barat",
+        "Use dataset center",
+        "Lokasi saya"
+      ],
+      "states": [
+        "default",
+        "active",
+        "hover"
+      ]
+    },
+    {
+      "name": "Route Planner",
+      "states": [
+        "empty",
+        "origin selected",
+        "destination selected",
+        "route ready",
+        "route error"
+      ],
+      "notes": "Includes route primary button and route summary metrics."
+    },
+    {
+      "name": "Metric Tile",
+      "variants": [
+        "rating",
+        "distance",
+        "category",
+        "source"
+      ],
+      "notes": "Small evidence metrics for selected merchant detail."
+    },
+    {
+      "name": "Map Controls",
+      "variants": [
+        "basemap switcher",
+        "layer toggle",
+        "zoom/location",
+        "legend",
+        "sponsored pin",
+        "merchant popup"
+      ],
+      "notes": "Must remain compact and non-overlapping across desktop and mobile."
+    },
+    {
+      "name": "Evidence Panel",
+      "states": [
+        "merchant selected",
+        "with ad poster",
+        "no selection"
+      ],
+      "notes": "Shows provenance, address, notes, metrics, and advertising preview."
+    },
+    {
+      "name": "Analyze Panel",
+      "contents": [
+        "Fair Discovery results",
+        "AI Panel",
+        "layer context"
+      ]
+    }
+  ],
+  "figmaPlanWhenConnectorWorks": [
+    "Create one page named GETRA DS - Current Redesign.",
+    "Add token tables for color, typography, spacing, radius, elevation, and motion.",
+    "Create component spec frames for topbar, workspace tabs, search, chips, route planner, metric tile, map controls, sponsored marker, merchant popup, evidence panel, and analyze panel.",
+    "Add one dashboard anatomy frame showing left panel, map canvas, and evidence panel.",
+    "Run one screenshot/metadata validation pass."
+  ],
+  "verification": {
+    "localBuild": "Previously passed npm run build:frontend.",
+    "lint": "Previously passed npm run lint:frontend.",
+    "typecheck": "Previously passed npm run typecheck:frontend.",
+    "figma": "Blocked before writes by INVALID_ARGUMENT on 2026-08-28."
+  }
+}
