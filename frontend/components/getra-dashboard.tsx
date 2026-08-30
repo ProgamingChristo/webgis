@@ -23,6 +23,7 @@ import {
   COFFEE_SHOP_SOURCE_NAME,
   COFFEE_SHOPS,
 } from "@/data/coffee-shops-jakarta-barat";
+import { useCanonicalData } from "@/src/hooks/useCanonicalData";
 import { authenticatedFetch, clearAuthSession } from "@/src/lib/auth-client";
 import type { Merchant, UserLocation } from "@/types/getra";
 
@@ -115,6 +116,9 @@ function formatDistance(
 export function GetraDashboard() {
   const router =
     useRouter();
+
+  const canonical =
+    useCanonicalData();
 
   const [
     query,
@@ -438,7 +442,7 @@ export function GetraDashboard() {
         <div className="topbar-actions">
           <div className="pilot-badge">
             <ShieldCheck size={15} />
-            GeoJSON Q2 2026
+            Canonical API + GeoJSON
           </div>
 
           <button
@@ -686,6 +690,10 @@ export function GetraDashboard() {
         >
           <GetraMap
             merchants={merchants}
+            transportNodes={
+              canonical.data
+                .transportNodes
+            }
             selectedId={selectedId}
             userLocation={userLocation}
             onSelect={handleSelect}
@@ -707,6 +715,92 @@ export function GetraDashboard() {
 
           {selectedMerchant ? (
             <>
+              <section className="canonical-card">
+                <div className="canonical-card__header">
+                  <div>
+                    <span className="eyebrow">
+                      Canonical backend
+                    </span>
+                    <strong>
+                      Study Area & Transport
+                    </strong>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={
+                      canonical.reload
+                    }
+                    disabled={
+                      canonical.loading
+                    }
+                  >
+                    {canonical.loading
+                      ? "Memuat..."
+                      : "Refresh"}
+                  </button>
+                </div>
+
+                {canonical.error ? (
+                  <p className="canonical-state canonical-state--error">
+                    {canonical.error}
+                  </p>
+                ) : canonical.loading ? (
+                  <p className="canonical-state">
+                    Mengambil data canonical dari backend GETRA...
+                  </p>
+                ) : (
+                  <dl className="canonical-grid">
+                    <div>
+                      <dt>
+                        Study area
+                      </dt>
+                      <dd>
+                        {
+                          canonical.data
+                            .studyAreas
+                            .length
+                        }
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>
+                        Transport nodes
+                      </dt>
+                      <dd>
+                        {
+                          canonical.data
+                            .transportNodes
+                            .length
+                        }
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>
+                        Corridors
+                      </dt>
+                      <dd>
+                        {
+                          canonical.data
+                            .transportCorridors
+                            .length
+                        }
+                      </dd>
+                    </div>
+                  </dl>
+                )}
+
+                {!canonical.loading &&
+                !canonical.error &&
+                canonical.data.studyAreas
+                  .length === 0 &&
+                canonical.data.transportNodes
+                  .length === 0 ? (
+                  <p className="canonical-state">
+                    Backend canonical aktif, tetapi belum mengembalikan study area atau transport node.
+                  </p>
+                ) : null}
+              </section>
+
               <div className="detail-title">
                 <span className="source-stamp source-stamp--warning">
                   GeoJSON

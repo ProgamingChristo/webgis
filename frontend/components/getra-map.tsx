@@ -16,6 +16,7 @@ import {
 } from "maplibre-gl";
 
 import type { Merchant, UserLocation } from "@/types/getra";
+import type { TransportNodeDto } from "@/src/types/canonical-api";
 
 import {
   COFFEE_SHOP_BOUNDS,
@@ -36,6 +37,7 @@ setWorkerUrl(
 
 type GetraMapProps = {
   merchants: Merchant[];
+  transportNodes: TransportNodeDto[];
   selectedId: string | null;
   userLocation: UserLocation | null;
   onSelect: (merchant: Merchant) => void;
@@ -108,6 +110,15 @@ function createPopupContent(
   );
 
   return content;
+}
+
+function createTransportMarker(node: TransportNodeDto) {
+  const element = document.createElement("div");
+
+  element.className = "canonical-transport-marker";
+  element.title = node.name;
+
+  return element;
 }
 
 function addDatasetExtent(map: MapLibreMap) {
@@ -189,6 +200,7 @@ function addDatasetExtent(map: MapLibreMap) {
 
 export function GetraMap({
   merchants,
+  transportNodes,
   selectedId,
   userLocation,
   onSelect,
@@ -215,6 +227,11 @@ export function GetraMap({
   const userLocationMarkerRef =
     useRef<Marker | null>(
       null,
+    );
+
+  const transportMarkersRef =
+    useRef<Map<string, Marker>>(
+      new Map(),
     );
 
   useEffect(() => {
@@ -256,6 +273,9 @@ export function GetraMap({
      */
     const merchantMarkers =
       merchantMarkersRef.current;
+
+    const transportMarkers =
+      transportMarkersRef.current;
 
     map.addControl(
       new NavigationControl({
@@ -343,6 +363,13 @@ export function GetraMap({
       );
 
       merchantMarkers.clear();
+
+      transportMarkers.forEach(
+        (marker) =>
+          marker.remove(),
+      );
+
+      transportMarkers.clear();
 
       userLocationMarkerRef.current?.remove();
       userLocationMarkerRef.current = null;
@@ -459,6 +486,79 @@ export function GetraMap({
     merchants,
     selectedId,
     onSelect,
+  ]);
+
+  /*
+   * Canonical transport reference markers.
+   */
+  useEffect(() => {
+    const map =
+      mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    transportMarkersRef.current.forEach(
+      (marker) =>
+        marker.remove(),
+    );
+
+    transportMarkersRef.current.clear();
+
+    for (const node of transportNodes) {
+      if (
+        node.geometry?.type !== "Point" ||
+        !Array.isArray(node.geometry.coordinates)
+      ) {
+        continue;
+      }
+
+      const [
+        longitude,
+        latitude,
+      ] =
+        node.geometry.coordinates;
+
+      if (
+        !Number.isFinite(longitude) ||
+        !Number.isFinite(latitude)
+      ) {
+        continue;
+      }
+
+      const marker =
+        new Marker({
+          element:
+            createTransportMarker(
+              node,
+            ),
+          anchor:
+            "center",
+        })
+          .setLngLat([
+            longitude,
+            latitude,
+          ])
+          .setPopup(
+            new Popup({
+              offset: 14,
+            }).setDOMContent(
+              createPopupContent(
+                node.name,
+                `${node.transport_mode ?? "Transport"} · ${node.node_type ?? "node"}`,
+              ),
+            ),
+          )
+          .addTo(map);
+
+      transportMarkersRef.current.set(
+        node.id,
+        marker,
+      );
+    }
+  }, [
+    transportNodes,
   ]);
 
   /*
