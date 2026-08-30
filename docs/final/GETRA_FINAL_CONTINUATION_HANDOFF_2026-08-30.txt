@@ -1,0 +1,928 @@
+GETRA FINAL CONTINUATION HANDOFF
+Date: 2026-08-30
+Repository: D:\Getra_Production
+Branch: finalmerge
+HEAD: 511292f Merge branch 'finalmerge' of https://github.com/ProgamingChristo/webgis into finalmerge
+
+This handoff is documentation only. It records the repository state observed on 2026-08-30 and must be treated as the current continuation guide for the next developer.
+
+01. Executive Summary
+GETRA is a Geo-Enabled Transit & Retail Analytics platform. It combines WebGIS, PostGIS, MapLibre, Supabase, deterministic routing/analytics, MAPID evidence sources, community observations, and grounded AI interpretation.
+
+Current high-level status:
+- Phases 01-13 have documentation and substantial implementation evidence.
+- Phase 13 documentation says PASS / VERIFIED and Demo Ready.
+- Phase 14 documentation exists and says IMPLEMENTED / VERIFIED, but current repository evidence does not include Phase 14 browser evidence files.
+- The active worktree contains uncommitted Phase 14 changes in two frontend files.
+- Latest rerun after those active changes: frontend typecheck PASS, frontend lint PASS.
+- Latest full backend/frontend tests and builds were reported PASS before the latest active Phase 14 worktree changes, so they must not be treated as current final verification.
+- Phase 14 must be considered PARTIAL until browser E2E proves the camera, manual START, destination cancel, loading stability, marker semantics, and runtime error closure.
+
+02. Project Purpose
+GETRA exists to support spatial decision-making across:
+- merchant discovery;
+- commuter mobility;
+- pedestrian routing;
+- market demand signals;
+- Retail Gap;
+- UMKM intelligence;
+- Business Space intelligence;
+- property observations;
+- field/contextual observations;
+- accessibility evidence;
+- grounded AI interpretation.
+
+03. Architecture
+The platform is a monorepo with npm workspaces:
+- frontend: Next.js application and MapLibre client experience.
+- backend: Next.js API routes, Supabase access, integrations, repositories, and deterministic services.
+
+Main flow:
+User/Admin UI -> GETRA API -> repository/service layer -> Supabase/PostGIS/pgRouting and provider integrations -> safe DTO back to frontend.
+
+Mission provider flow:
+Admin UI -> GETRA Admin API -> existing MAPID Mission ingestion services -> MAPID -> validation -> normalization -> idempotent persistence -> safe sync result.
+
+04. Tech Stack
+- Node >= 22.13.0
+- Next.js 16.3.1
+- React 19.2.8
+- TypeScript
+- Supabase
+- PostgreSQL
+- PostGIS
+- pgRouting
+- MapLibre GL
+- Zod
+- Vitest
+- ESLint
+- ECharts
+- AI provider adapters for Anthropic/OpenAI
+
+05. Permanent Product Rules
+- GIS computes. AI interprets.
+- USER and ADMIN are the only canonical auth roles.
+- Stakeholder modes are UX modes, not authorization roles.
+- One real-world place should become one user-facing canonical merchant.
+- Premium and Menu Go can enrich one canonical merchant; do not reintroduce duplicate pins.
+- Property observation is not live property availability.
+- Struk Go is transaction observation, not revenue proof.
+- Activity evidence is contextual/accessibility evidence, not a direct routing-cost modifier.
+
+06. Auth / Authorization
+Canonical field:
+- profiles.account_role
+
+Canonical values:
+- USER
+- ADMIN
+
+Do not reintroduce these as auth roles:
+- COMMUTER
+- COMMUNITY
+- UMKM
+- UMKM_OWNER
+- MODERATOR
+- INVESTOR
+- GOVERNMENT
+
+Merchant ownership is separate from account_role. A USER in UMKM mode is not automatically an owner. Private UMKM intelligence must check actual merchant ownership or approved claim. Admin-only mutations use server-side role checks such as requireRole(request, "ADMIN") or equivalent dependency authorization.
+
+07. Data Sources
+PREMIUM:
+- Merchant/business evidence.
+- Frozen conceptually; do not refactor without a concrete defect.
+
+MENU GO:
+- Merchant/food observation.
+- Used as canonical merchant enrichment after reconciliation.
+- Known schema fields include foto_tempat, foto_menu_1, foto_menu_2, menu_utama, harga_rata_rata, kondisi_tempat, mobilitas.
+
+STRUK GO:
+- Transaction observation.
+- Endpoint previously verified as /web/competition/struckgo.
+- Do not rename to "strukgo" without fresh provider evidence.
+
+PROPERTI GO:
+- Property observation.
+- Used by contextual layers and Business Space.
+- Safe fields include kategori_properti, jenis_properti, alamat, geometry, foto_tampak_depan, foto_spanduk where available.
+
+ACTIVITIES:
+- Field/contextual observation.
+- Endpoint previously verified as /web/competition/activities.
+- Feeds contextual Activities and Accessibility evidence.
+
+GETRA COMMUNITY:
+- Community contribution and accessibility evidence source.
+
+08. Canonical Merchant
+Important code:
+- backend/src/features/merchant-reconciliation/
+- backend/src/features/merchant-reconciliation/canonical-merchant-read.service.ts
+- backend/app/api/merchants/canonical/route.ts
+- frontend/src/services/mapid-layer.service.ts
+- frontend/components/getra-dashboard.tsx
+- frontend/components/getra-map.tsx
+
+Current behavior:
+- Canonical merchant read service exposes safe map/detail DTOs.
+- Menu Go enrichment is read from mapid_mission_observations where source_type = MENU_GO.
+- Menu Go observed fields are merged into the canonical DTO where available.
+- Mobile merchant semantics are preserved in code: Menu Go mobile observation is described as observed location, not permanent address.
+
+09. Map Architecture
+Primary map component:
+- frontend/components/getra-map.tsx
+
+Dashboard/state orchestrator:
+- frontend/components/getra-dashboard.tsx
+
+Map technology:
+- MapLibre GL.
+- MAPID GL Style basemaps are supported.
+- User-selectable basemaps are defined in frontend/lib/mapid.ts:
+  - basic
+  - street-2d-building
+  - satellite
+  - dark
+  - light
+
+Client basemap key:
+- NEXT_PUBLIC_MAPID_BASEMAP_KEY
+
+This is a basemap key, not the server-side MAPID Mission x-api-key.
+
+10. Search / Region / Viewport
+Important code:
+- backend/src/features/global-search/
+- backend/app/api/discovery/route.ts
+- backend/app/api/regions/route.ts
+- backend/app/api/merchants/canonical/route.ts
+- frontend/src/features/global-search/
+- frontend/src/features/administrative-boundaries/
+- frontend/components/getra-dashboard.tsx
+
+Supported documented flows:
+- keyword search;
+- location search;
+- keyword + location search;
+- viewport search;
+- Search This Area;
+- single-region and multi-region selection;
+- property search in Business Space mode.
+
+Current limitation:
+- Phase 05 browser evidence records manual "open verified" filter availability as false. Do not document rating/open filters as fully available unless reverified.
+
+11. Commuter / Routing
+Important code:
+- backend/src/modules/pedestrian-network/
+- backend/src/modules/spatial/
+- backend/app/api/routing/route.ts
+- backend/app/api/internal/routing/walking/route.ts
+- backend/app/api/spatial/service-area/route.ts
+- frontend/src/services/routing.service.ts
+- frontend/src/hooks/use-routing.ts
+- frontend/components/getra-dashboard.tsx
+
+Core concepts:
+- route origin;
+- route destination;
+- pedestrian graph;
+- graph snap;
+- network walking time;
+- route geometry;
+- service area;
+- Route Switch;
+- Smart Alternative;
+- budget and opening-hours hard constraints.
+
+12. Demand / Retail Gap
+Important code:
+- backend/src/features/demand-intelligence/
+- backend/app/api/analytics/demand/route.ts
+- backend/app/api/analytics/retail-gap/route.ts
+- backend/app/api/analytics/interpretation/route.ts
+- frontend/src/features/demand-intelligence/
+
+Rules:
+- Demand Score is deterministic backend computation.
+- Supply Score uses canonical merchant supply.
+- Retail Gap is an analytical signal, not guaranteed profit or guaranteed opportunity.
+- AI may explain grounded evidence but must not compute or invent scores.
+
+13. UMKM Intelligence
+Important code:
+- backend/src/features/umkm-intelligence/
+- backend/app/api/umkm/intelligence/route.ts
+- backend/app/api/umkm/intelligence/copilot/route.ts
+- frontend/src/features/umkm-intelligence/
+
+Behavior:
+- Uses merchant ownership authorization.
+- ADMIN may access; owner/approved claim may access relevant private merchant intelligence.
+- Data Readiness, Visibility Diagnosis, Location Readiness, Demand, Supply, Retail Gap, recommendations, and Copilot are grounded in backend evidence.
+
+Current verification note:
+- The Phase 10 browser script was blocked in the latest observed run by direct Supabase auth/test-account environment setup. This does not prove the product feature is broken, but it does mean the latest Phase 10 E2E was not rerun successfully in this session.
+
+14. Business Space
+Important code:
+- backend/src/features/business-space-intelligence/
+- backend/app/api/business-space/candidates/route.ts
+- backend/app/api/business-space/candidates/[candidateId]/route.ts
+- backend/app/api/business-space/compare/route.ts
+- backend/app/api/business-space/insight/route.ts
+- frontend/src/features/business-space/
+- frontend/app/business-space/page.tsx
+
+Behavior:
+- Uses Properti Go property candidates.
+- Supports candidate detail, comparison, demand/supply/retail-gap context, transit/walking context, and AI location insight.
+- No property availability, price, ROI, or profitability guarantee should be claimed unless real verified data exists.
+
+15. Accessibility
+Important code:
+- backend/src/features/accessibility-evidence/
+- backend/src/modules/accessibility/
+- backend/app/api/accessibility/evidence/route.ts
+- backend/app/api/accessibility/evidence/[evidenceId]/route.ts
+- backend/app/api/accessibility/need/route.ts
+- backend/app/api/admin/accessibility/evidence/[evidenceId]/review/route.ts
+- frontend/src/features/accessibility-evidence/
+- frontend/components/getra-map.tsx
+
+Behavior:
+- Accessibility evidence comes from MAPID Activities and GETRA Community.
+- It is rendered as evidence, not as direct routing-cost mutation.
+- The current active worktree restores explicit accessibility evidence markers in getra-map.tsx.
+
+16. AI
+Important code:
+- backend/src/modules/ai/
+- backend/lib/ai/
+- backend/app/api/ai/ask/route.ts
+- frontend/src/services/ai.service.ts
+- frontend/components/ai/ai-panel.tsx
+
+Providers:
+- ANTHROPIC_API_KEY / ANTHROPIC_MODEL / ANTHROPIC_BASE_URL
+- OPENAI_API_KEY / OPENAI_MODEL
+- AI_PROVIDER selects provider.
+
+Rule:
+- AI interprets, summarizes, classifies intent, and explains grounded evidence.
+- AI must not fabricate coordinates, routes, distances, walking time, scores, revenue, ROI, property availability, or route penalties.
+
+Runtime note:
+- "hallo" / greeting behavior must be reverified before calling AI fully healthy in the final demo.
+
+17. Phase History
+Phase 01:
+- MAPID Mission backend ingestion: Menu Go, Struk Go, Properti Go, Activities.
+- Mission credential server-side.
+- Idempotency via source_type + source_record_id.
+- Pagination, provenance, GETRA read APIs.
+
+Phase 02:
+- Admin Mission Data Sync UI/API.
+- Browser evidence files exist under docs/refinement/data-architecture/phase-02/browser-evidence.
+
+Phase 03:
+- Premium + Menu Go merchant reconciliation.
+- Canonical merchant rule established.
+
+Phase 04:
+- Canonical merchant viewport loading.
+- Browser evidence exists.
+
+Phase 05:
+- Global search and area scope.
+- Browser evidence exists.
+- Manual open-verified filter was recorded as a limitation.
+
+Phase 06:
+- Administrative boundary / multi-region.
+- Browser evidence exists, but one previous script run printed evidence and then hung; re-run if final certainty is needed.
+
+Phase 07:
+- Contextual source layers: Properti Go, Struk Go, Activities.
+- Browser evidence exists.
+
+Phase 08:
+- Core commuter routing.
+- Browser evidence exists.
+
+Phase 09:
+- Demand Intelligence and Retail Gap.
+- Browser evidence exists.
+
+Phase 10:
+- UMKM Intelligence.
+- Latest observed E2E was blocked by direct Supabase auth/test-account configuration.
+
+Phase 11:
+- Business Space Intelligence.
+- Browser evidence exists.
+
+Phase 12:
+- Residual closure and Accessibility Foundation.
+- Accessibility migration exists: backend/supabase/migrations/20260828170000_phase12_accessibility_evidence_foundation.sql
+- Browser evidence exists.
+
+Phase 13:
+- Final integration QA/demo docs exist and say PASS / VERIFIED.
+
+Phase 14:
+- User control / exploration refinement docs exist, but current runtime evidence is incomplete. Treat as PARTIAL until E2E is rerun.
+
+18. Current Phase 14 State
+Current active worktree changes:
+- frontend/components/getra-dashboard.tsx
+- frontend/components/getra-map.tsx
+
+Implemented in current dirty worktree:
+- Selecting a merchant no longer automatically sets it as route destination.
+- Destination selection is intended to be explicit through route controls.
+- Hapus tujuan clears routeDestinationId, destinationSearch, pendingRouteChoice, and route geometry.
+- Manual map START sets ROUTE_ORIGIN_MANUAL, explicitRouteOrigin null, originSearch blank, locationError null.
+- routeOrigin is memoized to avoid unstable dependency behavior.
+- Map camera has cameraOwner SYSTEM/USER state and data-camera-owner attribute.
+- User map gestures call map.stop() and mark camera owner USER.
+- Dataset fitBounds is blocked when camera owner is USER.
+- Accessibility evidence markers are explicitly rendered and source-specific.
+
+Current verification:
+- npm run typecheck --workspace frontend: PASS on 2026-08-30 after active changes.
+- npm run lint --workspace frontend: PASS on 2026-08-30 after active changes.
+- Browser E2E after these active changes: NOT RUN.
+- Full backend/frontend test after these active changes: NOT RUN.
+- Production build after these active changes: NOT RUN.
+
+19. Location State Architecture
+The current intended distinction:
+- actualLocation: user's real/geolocation position.
+- explorationLocation: current map/search context.
+- routeOrigin: route start used by routing calculation; may be user location, explicit merchant, or manual point.
+- routeDestination: selected destination merchant/feature for route.
+- selectedFeature / selectedId: current selected UI feature/detail, not automatically route destination.
+- cameraState / cameraOwner: map camera control ownership; data updates should not own camera after user interaction.
+
+Do not collapse these into one selectedLocation.
+
+20. Camera Architecture
+Desired rule:
+- DATA UPDATE != CAMERA UPDATE.
+
+Current code locations:
+- frontend/components/getra-map.tsx has fitBounds at the focusBounds path, initial loaded dataset fit, and route fit paths.
+- Active change adds cameraOwnerRef and cameraOwner state.
+- User gestures mark camera owner USER and call map.stop().
+- Explicit focusBounds marks SYSTEM intent.
+
+Remaining risk:
+- getra-map.tsx still contains easeTo/fitBounds callsites for selected features, user location, route destination, and route geometry. They must be reviewed against the final Phase 14 rule.
+
+21. Manual Route START
+Current active behavior:
+- "Pilih titik mulai di peta" should set manualRouteStart and ROUTE_ORIGIN_MANUAL.
+- START marker is draggable.
+- Dragging START marks camera as USER.
+- Manual START should preserve route origin after destination cancel.
+
+Not yet verified after active changes:
+- START marker appears on arbitrary map click.
+- route panel syncs after manual START.
+- graph snap succeeds from manual START.
+- change start and clear start work on desktop and mobile.
+
+22. Route Destination Cancellation
+Current active behavior:
+- clearRouteDestination clears destination id/search/pending choice and route.
+- It should preserve manual START.
+
+Not yet verified:
+- stale route response protection;
+- marker cleanup;
+- camera remains stable after Hapus tujuan;
+- route geometry disappears consistently.
+
+23. Properti Search / Flicker State
+Business Space property discovery exists in:
+- frontend/src/features/business-space/
+- backend/src/features/business-space-intelligence/
+
+Contextual Properti layer exists in:
+- frontend/src/features/mission-context-layers/
+- backend/src/features/contextual-observations/
+
+Current blocker:
+- The specific "Memuat Properti Go..." repeated flicker/request loop has not been reverified after active Phase 14 changes.
+- Do not mark Properti loading stable until browser/network evidence proves bounded requests after mode switch, search, filter, and pan.
+
+24. Marker Semantics
+Visible GETRA marker families to audit:
+- canonical merchant;
+- property observation;
+- transaction observation;
+- Activity observation;
+- Accessibility evidence;
+- actual user location;
+- exploration/current context;
+- manual route START;
+- route destination;
+- transit/network context if rendered.
+
+BLACK MARKER ROOT SOURCE:
+- Not conclusively verified in current session.
+- Active code restored accessibility evidence marker semantics, but browser inspection is still required to confirm the previously mysterious black marker is fixed.
+
+25. Rating Audit
+RATING DATA:
+- NOT AVAILABLE as verified star/user rating data in current audit.
+
+Do not label analytics scores, trust scores, data quality scores, Demand Score, or Retail Gap as consumer rating.
+
+26. React / Next Runtime Status
+Reported error:
+- "We are cleaning up async info that was not on the parent Suspense boundary. This is a bug in React."
+
+Previous indication:
+- stack involved chrome-extension://.../installHook.js, suggesting React DevTools/browser extension/dev overlay interaction.
+
+Current status:
+- Not reproduced in a clean production build in this latest documentation pass.
+- Requires production/browser verification before marking fully closed.
+
+27. Database
+Important locations:
+- backend/supabase/migrations/
+- backend/supabase/tests/database/
+- backend/src/types/database.types.ts
+
+Important DB capabilities:
+- Supabase/PostgreSQL
+- PostGIS
+- pgRouting
+- Mission observations
+- canonical merchant reconciliation
+- demand/retail gap analytics
+- pedestrian network and routing
+- accessibility evidence
+- community contribution tables
+- UMKM advertising tables
+
+Latest relevant migration observed:
+- 20260828170000_phase12_accessibility_evidence_foundation.sql
+
+Phase 14:
+- No DB migration observed/expected for current active Phase 14 camera/user-control changes.
+
+Never run:
+- supabase db reset --linked
+
+28. API
+Important backend API areas:
+- /api/admin/mission/sync
+- /api/admin/mapid/mission-sync
+- /api/admin/merchant-reconciliation
+- /api/merchants/canonical
+- /api/discovery
+- /api/regions
+- /api/contextual-observations
+- /api/business-space/candidates
+- /api/business-space/compare
+- /api/business-space/insight
+- /api/routing
+- /api/spatial/nearby
+- /api/spatial/distance
+- /api/spatial/service-area
+- /api/analytics/demand
+- /api/analytics/retail-gap
+- /api/analytics/interpretation
+- /api/umkm/intelligence
+- /api/umkm/intelligence/copilot
+- /api/accessibility/evidence
+- /api/accessibility/need
+- /api/ai/ask
+
+Endpoint policy:
+- backend/src/lib/api-security/endpoint-policy.ts
+- New API routes must be registered if the policy catalog requires it.
+
+29. Security
+Client secret rules:
+- No Supabase service-role key in browser.
+- No MAPID Mission key in browser.
+- No AI provider private key in browser.
+- No provider authorization headers in client DTOs.
+
+Client-safe env names:
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+- NEXT_PUBLIC_GETRA_API_URL
+- NEXT_PUBLIC_API_URL
+- NEXT_PUBLIC_MAPID_BASEMAP_KEY
+- NEXT_PUBLIC_MAPID_STYLE_NAME
+- NEXT_PUBLIC_MIDTRANS_CLIENT_KEY
+
+Server-only env names:
+- SUPABASE_SERVICE_ROLE_KEY
+- SUPABASE_SECRET_KEY
+- SUPABASE_REQUEST_TIMEOUT_MS
+- MAPID_BASE_URL
+- MAPID_API_KEY
+- MAPID_ACTIVITIES_PATH
+- MAPID_TIMEOUT_MS
+- MIDTRANS_SERVER_KEY
+- MIDTRANS_MERCHANT_ID
+- MIDTRANS_IS_PRODUCTION
+- MIDTRANS_SANDBOX_TEST_AMOUNT_IDR
+- AI_PROVIDER
+- ANTHROPIC_API_KEY
+- ANTHROPIC_MODEL
+- ANTHROPIC_BASE_URL
+- OPENAI_API_KEY
+- OPENAI_MODEL
+
+30. Tests / Build
+Latest current rerun after active Phase 14 changes:
+- npm run typecheck --workspace frontend: PASS
+- npm run lint --workspace frontend: PASS
+
+Previously observed before latest active Phase 14 worktree changes:
+- npm run typecheck --workspace backend: PASS
+- npm run typecheck --workspace frontend: PASS
+- npm run lint --workspace backend: PASS
+- npm run lint --workspace frontend: PASS
+- npm run test --workspace frontend: PASS, 24 files, 82 tests
+- npm run test --workspace backend: PASS, 125 files passed, 2 skipped; 790 tests passed, 3 skipped
+- npm run build --workspace frontend: PASS
+- npm run build --workspace backend: PASS
+
+Do not treat the previous full suite/build as final current verification until rerun after the dirty Phase 14 changes.
+
+31. Browser E2E
+Available scripts:
+- scripts/verify-phase02-admin-mission-browser.mjs
+- scripts/verify-phase04-canonical-viewport-browser.mjs
+- scripts/verify-phase05-global-search-browser.mjs
+- scripts/verify-phase06-administrative-boundaries-browser.mjs
+- scripts/verify-phase07-contextual-layers-browser.mjs
+- scripts/verify-phase08-commuter-browser.mjs
+- scripts/verify-phase09-demand-intelligence-browser.mjs
+- scripts/verify-phase10-umkm-intelligence-browser.mjs
+- scripts/verify-phase11-business-space-browser.mjs
+- scripts/verify-phase12-accessibility-browser.mjs
+- scripts/verify-phase12-residual-closure-browser.mjs
+- scripts/verify-mapid-gl-basemaps-browser.mjs
+
+Observed historical browser results:
+- Phase 02: PASS.
+- Phase 04: PASS.
+- Phase 05: PASS after QA script adjustment; manual open-verified filter limitation recorded.
+- Phase 06: evidence printed but one run hung after output; rerun recommended.
+- Phase 07: PASS.
+- Phase 08: PASS.
+- Phase 09: PASS.
+- Phase 10: BLOCKED by direct Supabase auth/test-account env setup.
+- Phase 11: PASS.
+- Phase 12 Accessibility: PASS.
+
+Phase 14 browser E2E after current dirty changes:
+- NOT RUN.
+
+32. Responsive
+Historical evidence exists for common viewports:
+- 390x844
+- 768x1024
+- 1366x768
+- 1440x900
+
+The Phase 14 exact golden flow across these sizes still requires rerun.
+
+33. Known Limitations
+- Missing price does not mean zero.
+- Missing hours does not mean open.
+- Property observation does not mean available now.
+- Struk Go is not revenue.
+- Activity does not confirm route inaccessibility.
+- Demand Signal is not total population demand.
+- Retail Gap is not guaranteed business opportunity.
+- AI explanation is not GIS computation.
+- Rating data is not verified as available.
+- Property freshness/availability may be incomplete.
+- Pedestrian graph coverage should be verified per region.
+- Activities sample size and category coverage can be limited.
+
+34. Current Blockers
+Blocker 1: Phase 14 browser verification missing
+- Severity: P0 for handoff/final verified status.
+- Affected workflow: main map, manual exploration, routing, mode switching.
+- Reproduction: run app, perform Phase 14 golden flow, inspect camera stability and network/console.
+- Known root cause/status: active code changes exist but no browser evidence after those changes.
+- Recommended next action: run or create Phase 14 browser E2E and capture evidence.
+
+Blocker 2: Camera callsite audit incomplete
+- Severity: P0/P1 depending on reproducibility.
+- Affected workflow: user pan/zoom, selected feature, route, region focus.
+- Reproduction: pan/zoom after data update, route update, layer/mode switch.
+- Known root cause/status: fitBounds/easeTo callsites remain; cameraOwner guard covers dataset fit but not every explicit camera movement.
+- Recommended next action: audit each fitBounds/easeTo callsite and gate only on explicit user intent.
+
+Blocker 3: Manual route START not fully verified
+- Severity: P0 for commuter flow.
+- Affected workflow: arbitrary START -> destination -> route -> clear destination.
+- Reproduction: choose "Pilih titik mulai di peta", click arbitrary point, choose destination, calculate route, clear destination.
+- Known root cause/status: code changed, browser E2E not run.
+- Recommended next action: verify route panel sync, graph snap, marker drag, clear behavior, mobile behavior.
+
+Blocker 4: Properti loading flicker unverified
+- Severity: P1.
+- Affected workflow: Business Space and Properti Go contextual loading.
+- Reproduction: switch Business Space, search/filter, pan map; watch network and loading indicator.
+- Known root cause/status: no current evidence after latest changes.
+- Recommended next action: verify request cancellation and bounded request count.
+
+Blocker 5: Phase 10 UMKM E2E environment blocked
+- Severity: P1 for full demo regression.
+- Affected workflow: UMKM Intelligence browser automation.
+- Reproduction: run scripts/verify-phase10-umkm-intelligence-browser.mjs.
+- Known root cause/status: latest observed run failed on direct Supabase auth/test-account/local URL setup.
+- Recommended next action: configure safe ADMIN/USER/owner test accounts and matching Supabase URL/key for E2E.
+
+35. Technical Debt
+- Large legacy component: frontend/components/getra-dashboard.tsx carries many state domains and is high-risk to modify broadly.
+- Map camera logic is spread across focus, dataset fit, selected feature, route, and marker interactions.
+- Phase 14 docs contain status claims with insufficient evidence files.
+- Some historical documentation may overstate current verification.
+- Phase 06 browser script should be checked for process hang after successful evidence.
+- Test-account/env setup for browser E2E is fragile.
+- Rating filter/data should stay disabled or absent until real rating data exists.
+
+36. Important Files
+- frontend/components/getra-dashboard.tsx: main GETRA dashboard state, mode, search, route origin/destination, contextual loading.
+- frontend/components/getra-map.tsx: MapLibre map, markers, camera, sources/layers, popups.
+- frontend/lib/mapid.ts: MAPID GL Style basemap configuration and user-selectable basemap list.
+- frontend/src/services/mapid-layer.service.ts: frontend canonical/context map API service.
+- backend/src/features/merchant-reconciliation/canonical-merchant-read.service.ts: canonical merchant DTO and Menu Go enrichment.
+- backend/src/features/merchant-reconciliation/merchant-reconciliation.repository.ts: Premium + Menu Go reconciliation persistence.
+- backend/src/integrations/mapid/mission.client.ts: MAPID Mission client and Activities path.
+- backend/src/integrations/mapid/mission.service.ts: existing Mission sync orchestration.
+- backend/src/integrations/mapid/mission-admin.service.ts: Admin sync support.
+- backend/app/api/admin/mission/sync/route.ts: Phase 02 Admin Mission sync endpoint.
+- backend/src/features/business-space-intelligence/: Business Space backend.
+- frontend/src/features/business-space/: Business Space frontend.
+- backend/src/features/accessibility-evidence/: Accessibility evidence backend.
+- frontend/src/features/accessibility-evidence/: Accessibility frontend service/types.
+- backend/src/lib/api-security/endpoint-policy.ts: endpoint classification/policy catalog.
+- backend/src/types/database.types.ts: generated Supabase DB types.
+- backend/supabase/migrations/: migration history.
+
+37. Commands
+Install:
+- npm install
+
+Dev:
+- npm run dev
+- npm run dev:frontend
+- npm run dev:backend
+
+Typecheck:
+- npm run typecheck
+- npm run typecheck --workspace frontend
+- npm run typecheck --workspace backend
+
+Lint:
+- npm run lint
+- npm run lint --workspace frontend
+- npm run lint --workspace backend
+
+Tests:
+- npm run test
+- npm run test --workspace frontend
+- npm run test --workspace backend
+
+Build:
+- npm run build
+- npm run build --workspace frontend
+- npm run build --workspace backend
+
+Supabase:
+- npm run db:start
+- npm run db:stop
+- npm run db:test
+- npm run db:lint
+- npm run db:migrations
+- supabase migration list --workdir backend
+- supabase db push --dry-run --workdir backend
+
+Browser E2E examples:
+- node scripts\verify-phase02-admin-mission-browser.mjs
+- node scripts\verify-phase04-canonical-viewport-browser.mjs
+- node scripts\verify-phase05-global-search-browser.mjs
+- node scripts\verify-phase06-administrative-boundaries-browser.mjs
+- node scripts\verify-phase07-contextual-layers-browser.mjs
+- node scripts\verify-phase08-commuter-browser.mjs
+- node scripts\verify-phase09-demand-intelligence-browser.mjs
+- node scripts\verify-phase10-umkm-intelligence-browser.mjs
+- node scripts\verify-phase11-business-space-browser.mjs
+- node scripts\verify-phase12-accessibility-browser.mjs
+- node scripts\verify-phase12-residual-closure-browser.mjs
+- node scripts\verify-mapid-gl-basemaps-browser.mjs
+
+38. Environment Variables
+Use .env.example for names. Do not commit .env.local.
+
+Client-safe:
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+- NEXT_PUBLIC_API_URL
+- NEXT_PUBLIC_GETRA_API_URL
+- NEXT_PUBLIC_MAPID_BASEMAP_KEY
+- NEXT_PUBLIC_MAPID_STYLE_NAME
+- NEXT_PUBLIC_MIDTRANS_CLIENT_KEY
+
+Server-only:
+- SUPABASE_SERVICE_ROLE_KEY
+- SUPABASE_SECRET_KEY
+- SUPABASE_REQUEST_TIMEOUT_MS
+- MAPID_BASE_URL
+- MAPID_API_KEY
+- MAPID_ACTIVITIES_PATH
+- MAPID_TIMEOUT_MS
+- MIDTRANS_SERVER_KEY
+- MIDTRANS_MERCHANT_ID
+- MIDTRANS_IS_PRODUCTION
+- MIDTRANS_SANDBOX_TEST_AMOUNT_IDR
+- AI_PROVIDER
+- ANTHROPIC_API_KEY
+- ANTHROPIC_MODEL
+- ANTHROPIC_BASE_URL
+- OPENAI_API_KEY
+- OPENAI_MODEL
+
+39. Next Developer First Steps
+First 60 minutes:
+1. Read this handoff.
+2. Run git status --short and confirm only expected dirty files.
+3. Review active diffs in frontend/components/getra-dashboard.tsx and frontend/components/getra-map.tsx.
+4. Run npm run typecheck --workspace frontend and npm run lint --workspace frontend.
+5. Start dev servers with npm run dev or separate frontend/backend dev scripts.
+6. Reproduce the Phase 14 golden flow manually.
+7. Inspect browser console and network.
+8. Confirm browser calls GETRA API only for credentialed flows.
+9. Check whether map snap-back still happens after user pan/zoom.
+10. If fixed, create/capture Phase 14 browser evidence and update docs.
+
+40. Recommended Next Work
+If Phase 14 is not verified, do not add features.
+
+Priority:
+1. Complete camera lock/auto-zoom browser verification.
+2. Verify destination clear preserves manual START and clears route/destination.
+3. Verify manual arbitrary START end-to-end with graph snap.
+4. Verify Properti loading stability and request cancellation.
+5. Verify marker semantics and identify/fix the black marker root source.
+6. Verify React/Next runtime error in clean browser and production build.
+7. Run full quality gate.
+8. Update Phase 14 docs with real evidence, not placeholder status.
+
+41. Do Not Do
+- Do not create Phase 15 automatically.
+- Do not refactor Premium integration without a concrete defect.
+- Do not duplicate MAPID Mission ingestion.
+- Do not expose MAPID Mission key to frontend.
+- Do not expose Supabase service role to frontend.
+- Do not let frontend send arbitrary MAPID provider paths.
+- Do not reintroduce duplicate Premium/Menu Go merchant pins.
+- Do not treat stakeholder modes as auth roles.
+- Do not claim property availability, revenue, rating, ROI, or route accessibility unless evidence supports it.
+- Do not run supabase db reset --linked.
+
+42. Final Current Status
+GETRA CURRENT PROJECT STATUS
+
+ARCHITECTURE:
+IMPLEMENTED
+
+MISSION INTEGRATION:
+VERIFIED historically; do not refactor. Reverify only if touched.
+
+CANONICAL MERCHANT:
+IMPLEMENTED / VERIFIED historically.
+
+MENU GO MEDIA:
+IMPLEMENTED in DTO path; browser rendering must be reverified if Phase 14/demo status is required.
+
+STRUK GO:
+VERIFIED historically as transaction observation.
+
+PROPERTI GO:
+IMPLEMENTED / VERIFIED historically; loading flicker stability requires current Phase 14 recheck.
+
+ACTIVITIES:
+IMPLEMENTED / VERIFIED historically; Accessibility marker rendering changed in active worktree and needs browser recheck.
+
+COMMUNITY:
+IMPLEMENTED.
+
+SEARCH:
+IMPLEMENTED / VERIFIED historically with known manual filter limitation.
+
+REGION:
+IMPLEMENTED / VERIFIED historically; rerun Phase 06 if exact process exit evidence is required.
+
+VIEWPORT:
+IMPLEMENTED / VERIFIED historically; Phase 14 camera change requires current recheck.
+
+COMMUTER:
+IMPLEMENTED / VERIFIED historically; manual START and destination cancel changed and require current recheck.
+
+NETWORK ROUTING:
+IMPLEMENTED / VERIFIED historically.
+
+SERVICE AREA:
+IMPLEMENTED / VERIFIED historically.
+
+DEMAND:
+IMPLEMENTED / VERIFIED historically.
+
+RETAIL GAP:
+IMPLEMENTED / VERIFIED historically.
+
+UMKM INTELLIGENCE:
+IMPLEMENTED; latest browser automation blocked by environment/test account.
+
+BUSINESS SPACE:
+IMPLEMENTED / VERIFIED historically.
+
+ACCESSIBILITY:
+IMPLEMENTED / VERIFIED historically; active marker changes require current browser recheck.
+
+AI:
+IMPLEMENTED; runtime greeting/general health should be reverified before demo.
+
+STAKEHOLDER MODE:
+IMPLEMENTED as UX state, not auth.
+
+ACTUAL / EXPLORATION LOCATION:
+PARTIAL / requires Phase 14 browser verification.
+
+MANUAL ROUTE START:
+PARTIAL / active code changed, browser verification missing.
+
+ROUTE DESTINATION CANCEL:
+PARTIAL / active code changed, browser verification missing.
+
+MAP CAMERA:
+PARTIAL / active code changed, browser verification missing.
+
+PROPERTI LOADING:
+PARTIAL / current flicker state unverified.
+
+MARKER SEMANTICS:
+PARTIAL / accessibility marker code changed, black marker root source unverified.
+
+RATING:
+NOT AVAILABLE as verified rating data.
+
+REACT / NEXT RUNTIME:
+PARTIAL / suspected extension/dev-only issue, production recheck needed.
+
+AUTH:
+IMPLEMENTED with profiles.account_role.
+
+RLS:
+IMPLEMENTED historically; recheck if migrations/auth policies are touched.
+
+TYPECHECK:
+frontend PASS after active changes. Full repo not rerun after active changes.
+
+LINT:
+frontend PASS after active changes. Full repo not rerun after active changes.
+
+TESTS:
+Historical full PASS before active Phase 14 worktree changes. Current full suite not rerun.
+
+BUILD:
+Historical PASS before active Phase 14 worktree changes. Current build not rerun.
+
+BROWSER E2E:
+Historical passes through several phases. Phase 14 current E2E NOT RUN.
+
+SECURITY:
+No secret values included in this handoff. Client/server env boundary documented. Reverify browser network before final demo.
+
+RESPONSIVE:
+Historical evidence exists for 390x844, 768x1024, 1366x768, 1440x900. Phase 14 golden flow responsive recheck needed.
+
+CURRENT ACTIVE BLOCKER:
+Phase 14 is not evidence-verified after current active code changes.
+
+CURRENT PROJECT STATUS:
+PARTIAL for current handoff state due Phase 14 evidence gap and dirty worktree.
+
+RECOMMENDED NEXT ACTION:
+Finish Phase 14 verification first. Do not add new product phases until the Phase 14 golden flow passes in browser and full quality gates are rerun.

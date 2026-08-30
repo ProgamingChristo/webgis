@@ -3,6 +3,7 @@
 import type * as GeoJSON from "geojson";
 
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -186,6 +187,35 @@ function createPropertyMarker(
     `Pilih observasi properti ${candidate.property_category ?? candidate.source_id}`,
   );
   button.dataset.source = "PROPERTI_GO";
+  element.append(button);
+  return { element, button };
+}
+
+function createAccessibilityEvidenceMarker(
+  selected: boolean,
+  evidence: AccessibilityEvidence,
+) {
+  const element = document.createElement("div");
+  element.className = "accessibility-marker-anchor";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = selected
+    ? "accessibility-marker accessibility-marker--selected"
+    : "accessibility-marker";
+  button.setAttribute(
+    "aria-label",
+    `Pilih observasi aksesibilitas ${evidence.title ?? evidence.source_record_id}`,
+  );
+  button.dataset.source = evidence.source_type;
+  button.dataset.status = evidence.validation_status;
+  button.textContent =
+    evidence.subcategory === "CROSSING"
+      ? "X"
+      : evidence.subcategory === "GUIDING_BLOCK"
+        ? "G"
+        : evidence.subcategory === "TRANSIT_ACCESS"
+          ? "T"
+          : "A";
   element.append(button);
   return { element, button };
 }
@@ -718,7 +748,8 @@ export function GetraMap({
   const [clusterSourceFeatureCount, setClusterSourceFeatureCount] = useState(0);
   const [boundaryLayersReady, setBoundaryLayersReady] = useState(false);
   const [cameraFitKey, setCameraFitKey] = useState(0);
-  const cameraModeRef = useRef<"AUTO_INITIAL" | "USER_CONTROLLED">("AUTO_INITIAL");
+  const [cameraOwner, setCameraOwner] = useState<"SYSTEM" | "USER">("SYSTEM");
+  const cameraOwnerRef = useRef<"SYSTEM" | "USER">("SYSTEM");
 
   const hasVisibleContextualLayer =
     contextualLayerVisibility.property ||
@@ -731,12 +762,29 @@ export function GetraMap({
   const mapRef =
     useRef<MapLibreMap | null>(null);
 
+  const markUserCameraControl = useCallback(() => {
+    const map = mapRef.current;
+    if (map) map.stop();
+    cameraOwnerRef.current = "USER";
+    setCameraOwner("USER");
+  }, []);
+
+  const markSystemCameraIntent = useCallback(() => {
+    cameraOwnerRef.current = "SYSTEM";
+    setCameraOwner("SYSTEM");
+  }, []);
+
   const merchantMarkersRef =
     useRef<Map<string, Marker>>(
       new Map(),
     );
 
   const propertyMarkersRef =
+    useRef<Map<string, Marker>>(
+      new Map(),
+    );
+
+  const accessibilityMarkersRef =
     useRef<Map<string, Marker>>(
       new Map(),
     );
@@ -791,10 +839,7 @@ export function GetraMap({
     );
 
   const mapPickModeRef = useRef(mapPickMode);
-  mapPickModeRef.current = mapPickMode;
-
   const onMapPickRef = useRef(onMapPick);
-  onMapPickRef.current = onMapPick;
 
   const manualRouteStartMarkerRef = useRef<Marker | null>(null);
 
@@ -803,6 +848,14 @@ export function GetraMap({
   const contextualLayerDataRef = useRef(contextualLayerData);
   const contextualLayerVisibilityRef = useRef(contextualLayerVisibility);
   const onSelectAnalyticsRegionRef = useRef(onSelectAnalyticsRegion);
+
+  useEffect(() => {
+    mapPickModeRef.current = mapPickMode;
+  }, [mapPickMode]);
+
+  useEffect(() => {
+    onMapPickRef.current = onMapPick;
+  }, [onMapPick]);
 
   useEffect(() => {
     onSelectAnalyticsRegionRef.current = onSelectAnalyticsRegion;
@@ -823,8 +876,7 @@ export function GetraMap({
     if (!map || !focusBounds || focusKey === 0) return;
     const compact = window.innerWidth <= 768;
     
-    // Explicit focus resets user control override
-    cameraModeRef.current = "AUTO_INITIAL";
+    markSystemCameraIntent();
     
     map.fitBounds(
       [
@@ -840,7 +892,7 @@ export function GetraMap({
       },
     );
     setCameraFitKey(focusKey);
-  }, [focusBounds, focusKey]);
+  }, [focusBounds, focusKey, markSystemCameraIntent]);
 
   useEffect(() => {
     administrativeBoundariesRef.current = administrativeBoundaries;
@@ -952,13 +1004,15 @@ export function GetraMap({
 
     mapRef.current = map;
 
-    map.on("dragstart", () => {
-      cameraModeRef.current = "USER_CONTROLLED";
-    });
+    map.on("dragstart", markUserCameraControl);
+    map.on("rotatestart", markUserCameraControl);
+    map.on("pitchstart", markUserCameraControl);
+    map.on("wheel", markUserCameraControl);
+    map.on("touchstart", markUserCameraControl);
 
     map.on("zoomstart", (e) => {
       if (e.originalEvent) {
-        cameraModeRef.current = "USER_CONTROLLED";
+        markUserCameraControl();
       }
     });
 
@@ -977,6 +1031,9 @@ export function GetraMap({
      */
     const merchantMarkers =
       merchantMarkersRef.current;
+
+    const accessibilityMarkers =
+      accessibilityMarkersRef.current;
 
     map.addControl(
       new NavigationControl({
@@ -1077,6 +1134,12 @@ export function GetraMap({
 
       sponsoredMarkers.clear();
 
+      accessibilityMarkers.forEach(
+        (marker) => marker.remove(),
+      );
+
+      accessibilityMarkers.clear();
+
       userLocationMarkerRef.current?.remove();
       userLocationMarkerRef.current = null;
 
@@ -1093,7 +1156,7 @@ export function GetraMap({
 
       mapRef.current = null;
     };
-  }, []);
+  }, [markUserCameraControl]);
 
   /*
    * Basemap switcher
@@ -1266,7 +1329,7 @@ export function GetraMap({
       shouldFitDataset &&
       !selectedId &&
       !routeGeometry &&
-      cameraModeRef.current !== "USER_CONTROLLED"
+      cameraOwnerRef.current !== "USER"
     ) {
       map.fitBounds(
         [
@@ -1561,6 +1624,51 @@ export function GetraMap({
       propertyMarkersRef.current.set(candidate.id, marker);
     }
   }, [propertyCandidates, selectedPropertyId, onSelectProperty, styleRevision]);
+
+  /*
+   * Accessibility evidence markers remain observation markers. They do not
+   * mutate pedestrian routing or route costs.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    accessibilityMarkersRef.current.forEach((marker) => marker.remove());
+    accessibilityMarkersRef.current.clear();
+
+    for (const evidence of accessibilityEvidence) {
+      const markerElements = createAccessibilityEvidenceMarker(
+        evidence.id === selectedAccessibilityEvidenceId,
+        evidence,
+      );
+      markerElements.button.onclick = () => {
+        onSelectAccessibilityEvidence?.(evidence);
+      };
+      const detail = [
+        evidence.validation_status === "CONFIRMED"
+          ? "Terkonfirmasi"
+          : evidence.validation_status === "NEEDS_REVIEW"
+            ? "Perlu verifikasi"
+            : "Observasi lapangan",
+        evidence.freshness_status,
+        `Sumber: ${evidence.source_type === "GETRA_COMMUNITY" ? "GETRA Community" : "MAPID Activities"}`,
+      ].join(" - ");
+      const marker = new Marker({ element: markerElements.element, anchor: "center" })
+        .setLngLat(evidence.geometry.coordinates)
+        .setPopup(
+          new Popup({ offset: 16 }).setDOMContent(
+            createPopupContent(evidence.title ?? "Observasi aksesibilitas", detail),
+          ),
+        )
+        .addTo(map);
+      accessibilityMarkersRef.current.set(evidence.id, marker);
+    }
+  }, [
+    accessibilityEvidence,
+    onSelectAccessibilityEvidence,
+    selectedAccessibilityEvidenceId,
+    styleRevision,
+  ]);
 
   /*
    * Sponsored Pin markers
@@ -1947,9 +2055,7 @@ export function GetraMap({
         .setLngLat([manualRouteStart.longitude, manualRouteStart.latitude])
         .addTo(map);
 
-      marker.on("dragstart", () => {
-        cameraModeRef.current = "USER_CONTROLLED";
-      });
+      marker.on("dragstart", markUserCameraControl);
 
       marker.on("dragend", () => {
         const lngLat = marker.getLngLat();
@@ -1965,7 +2071,7 @@ export function GetraMap({
         manualRouteStart.latitude,
       ]);
     }
-  }, [manualRouteStart]);
+  }, [manualRouteStart, markUserCameraControl]);
 
   return (
     <div
@@ -1996,6 +2102,7 @@ export function GetraMap({
       data-context-property-count={contextualLayerData.PROPERTI_GO.collection.features.length}
       data-context-transaction-count={contextualLayerData.STRUK_GO.collection.features.length}
       data-context-activities-count={contextualLayerData.ACTIVITIES.collection.features.length}
+      data-camera-owner={cameraOwner}
     >
 
       <div

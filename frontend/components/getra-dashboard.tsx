@@ -1637,28 +1637,29 @@ export function GetraDashboard() {
         routeDestinationId,
     ) ?? null;
 
-  const routeOrigin =
+  const routeOrigin = useMemo(() => (
     routeOriginValue === ROUTE_ORIGIN_MANUAL && manualRouteStart
       ? {
           label: "Titik pilihan di peta",
           coordinate: manualRouteStart,
         }
-      : routeOriginValue ===
-        ROUTE_ORIGIN_USER &&
-      userLocation
+      : routeOriginValue === ROUTE_ORIGIN_USER && userLocation
         ? {
-            label:
-              "Lokasi saya",
+            label: "Lokasi saya",
             coordinate: {
-              latitude:
-                userLocation.latitude,
-              longitude:
-                userLocation.longitude,
+              latitude: userLocation.latitude,
+              longitude: userLocation.longitude,
             },
           }
-      : explicitRouteOrigin && routeOriginValue.startsWith("MERCHANT:")
-        ? { label: explicitRouteOrigin.label, coordinate: explicitRouteOrigin.coordinate }
-        : null;
+        : explicitRouteOrigin && routeOriginValue.startsWith("MERCHANT:")
+          ? { label: explicitRouteOrigin.label, coordinate: explicitRouteOrigin.coordinate }
+          : null
+  ), [
+    explicitRouteOrigin,
+    manualRouteStart,
+    routeOriginValue,
+    userLocation,
+  ]);
 
   const routeDurationMinutes =
     route?.duration_seconds !== null && route?.duration_seconds !== undefined
@@ -1704,26 +1705,14 @@ export function GetraDashboard() {
         setSelectedId(
           merchant.id,
         );
-        setRouteDestinationId(
-          merchant.id,
-        );
-        setDestinationSearch(
-          merchant.name,
-        );
-        if (routingState === "IDLE") {
-          clearRoute();
-        } else if (routeOrigin) {
-          void requestRoute(routeOrigin.coordinate, {
-            latitude: merchant.latitude,
-            longitude: merchant.longitude,
-          }, merchant.id);
-        }
       },
-      [clearRoute, requestRoute, routeOrigin, routingState],
+      [],
     );
 
   const clearRouteDestination = useCallback(() => {
     setRouteDestinationId(null);
+    setDestinationSearch("");
+    setPendingRouteChoice(null);
     clearRoute();
   }, [clearRoute]);
 
@@ -1860,8 +1849,7 @@ export function GetraDashboard() {
       maxBudget,
       maxWalkingMinutes,
       openOnly,
-      routeOrigin?.coordinate.latitude,
-      routeOrigin?.coordinate.longitude,
+      routeOrigin,
       explicitRouteOrigin,
       routeOriginValue,
     ]);
@@ -2366,8 +2354,7 @@ export function GetraDashboard() {
     }, [
       requestRoute,
       routeDestination,
-      routeOrigin?.coordinate.latitude,
-      routeOrigin?.coordinate.longitude,
+      routeOrigin,
     ]);
 
   const handleSmartAlternative = useCallback(() => {
@@ -2382,7 +2369,7 @@ export function GetraDashboard() {
       latitude: alternative.latitude,
       longitude: alternative.longitude,
     }, alternative.id);
-  }, [merchants, requestRoute, routeDestination?.id, routeOrigin?.coordinate.latitude, routeOrigin?.coordinate.longitude]);
+  }, [merchants, requestRoute, routeDestination?.id, routeOrigin]);
 
   const handleRouteChoice =
     useCallback(
@@ -2445,8 +2432,7 @@ export function GetraDashboard() {
       clearRoute,
       pendingRouteChoice,
       requestRoute,
-      routeOrigin?.coordinate.latitude,
-      routeOrigin?.coordinate.longitude,
+      routeOrigin,
       routingState,
     ]);
 
@@ -2560,6 +2546,7 @@ export function GetraDashboard() {
     setRouteOriginValue(ROUTE_ORIGIN_MANUAL);
     setExplicitRouteOrigin(null);
     setOriginSearch("");
+    setLocationError(null);
     clearRoute();
     setMapPickMode("ROUTE_START");
   }, [clearRoute]);
@@ -2572,6 +2559,10 @@ export function GetraDashboard() {
 
   const handleMapPick = useCallback((coordinate: { latitude: number; longitude: number }) => {
     setManualRouteStart(coordinate);
+    setRouteOriginValue(ROUTE_ORIGIN_MANUAL);
+    setExplicitRouteOrigin(null);
+    setOriginSearch("");
+    setLocationError(null);
     setMapPickMode("NONE");
   }, []);
 
