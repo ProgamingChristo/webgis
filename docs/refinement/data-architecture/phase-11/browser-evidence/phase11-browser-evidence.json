@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-28T12:33:20.680Z",
+  "generated_at": "2026-08-30T05:42:02.677Z",
   "browser": "Chrome headless via puppeteer-core",
   "api": [
     {
@@ -27,7 +27,7 @@
       "endpoint": "/api/business-space/candidates/764ebc55-139b-4a60-883d-1658d0230f27?[redacted]",
       "method": "GET",
       "status": 200,
-      "bytes": 2853,
+      "bytes": 2855,
       "safe": true
     },
     {
@@ -41,7 +41,7 @@
       "endpoint": "/api/business-space/candidates/deb245e4-85d0-42b5-bfc9-3be734dddcb8?[redacted]",
       "method": "GET",
       "status": 200,
-      "bytes": 2870,
+      "bytes": 2872,
       "safe": true
     },
     {
@@ -55,7 +55,7 @@
       "endpoint": "/api/business-space/compare",
       "method": "POST",
       "status": 200,
-      "bytes": 7754,
+      "bytes": 7764,
       "safe": true
     },
     {

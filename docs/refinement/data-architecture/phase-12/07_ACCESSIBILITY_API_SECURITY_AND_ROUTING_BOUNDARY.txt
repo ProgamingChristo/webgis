@@ -1,0 +1,60 @@
+GETRA PHASE 12 - ACCESSIBILITY API SECURITY AND ROUTING BOUNDARY
+
+Status:
+VERIFIED
+
+Client-visible APIs:
+- GET /api/accessibility/evidence
+- GET /api/accessibility/evidence/[evidenceId]
+- GET /api/accessibility/need
+
+Admin-only API:
+- POST /api/admin/accessibility/evidence/[evidenceId]/review
+
+Authorization:
+- Safe evidence and need APIs require an authenticated GETRA user.
+- Review mutation requires ADMIN.
+- ADMIN is resolved from profiles.account_role.
+- USER is not allowed to review, confirm, reject, or attach routing relation decisions.
+
+Request safety:
+- Evidence list accepts bounded bbox and explicit filters only.
+- Unknown filters are rejected by strict schema validation.
+- Limit is bounded.
+- Frontend cannot submit arbitrary MAPID provider paths.
+- Frontend cannot submit pgRouting cost, reverse_cost, walkable, or exclusion changes.
+
+Response safety:
+- User-facing responses contain normalized observation DTOs only.
+- Responses do not include MAPID x-api-key.
+- Responses do not include SUPABASE_SERVICE_ROLE_KEY.
+- Responses do not include provider request headers.
+- Responses do not include raw Mission payload.
+- Responses do not include checksum/internal import metadata.
+
+Routing boundary:
+- Accessibility evidence is observational.
+- Pedestrian edge relation is a candidate relation only.
+- Candidate relation is not a route penalty.
+- Candidate relation is not a route exclusion.
+- Candidate relation does not change pgRouting edge cost.
+- Candidate relation does not change pgRouting edge reverse_cost.
+- Candidate relation does not change walkable flags.
+- Database metadata enforces routing_effect_enabled = false.
+
+Verified audit:
+- Routing code and Phase 08 routing migrations contain no accessibility evidence hook.
+- Phase 12 migration contains no update to cost, reverse_cost, or walkable.
+- Browser flow does not call route APIs when loading accessibility evidence.
+
+User-facing wording:
+- Observasi aksesibilitas
+- Temuan lapangan
+- Perlu verifikasi
+- Hubungan jaringan kandidat
+
+Prohibited wording:
+- Jalan tidak bisa dilewati
+- Rute aman untuk kursi roda
+- Kondisi saat ini pasti
+- Route penalty active

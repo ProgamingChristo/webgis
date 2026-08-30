@@ -1,0 +1,53 @@
+GETRA PHASE 12 - FRONTEND MANUAL TEST GUIDE
+
+ADMIN path:
+1. Login as ADMIN.
+2. Open the main GETRA map.
+3. Confirm default experience remains merchant-first.
+4. Select Accessibility mode.
+5. Confirm the same MapLibre map is reused.
+6. Confirm Accessibility filters are visible.
+7. Select a source filter.
+8. Select an accessibility category filter.
+9. Select a status/freshness filter.
+10. Confirm evidence results load for the active viewport.
+11. Click an evidence marker or result.
+12. Confirm the detail panel opens.
+13. Confirm detail says observation/evidence and does not claim route closure.
+14. Confirm candidate pedestrian relation, if present, is shown as candidate only.
+15. If an admin review interface is available, submit a safe review decision.
+16. Confirm USER-only language and raw source payload are not displayed.
+
+USER path:
+1. Login as USER.
+2. Open the main GETRA map.
+3. Select Accessibility mode.
+4. Confirm USER can view safe accessibility evidence.
+5. Attempt to call POST /api/admin/accessibility/evidence/[evidenceId]/review directly.
+6. Confirm backend returns forbidden.
+
+Security path:
+1. Open browser DevTools.
+2. Go to Network.
+3. Select Accessibility mode.
+4. Trigger evidence search/filter.
+5. Confirm browser calls GETRA /api/accessibility/evidence and /api/accessibility/need.
+6. Confirm browser does not call MAPID Mission endpoints.
+7. Inspect responses.
+8. Confirm no x-api-key, MAPID credential, service role key, provider headers, raw payload, or checksum is visible.
+
+Routing safety path:
+1. Select Accessibility mode.
+2. Open an evidence detail.
+3. Confirm wording remains observational.
+4. Confirm no UI control claims routing penalties are active.
+5. Run a route search separately.
+6. Confirm accessibility observations do not automatically block, penalize, or guarantee routes.
+
+Regression path:
+1. Return to Merchant mode.
+2. Confirm merchant viewport loading still works.
+3. Confirm merchant detail still shows Menu Go media where available.
+4. Select Business Space mode.
+5. Confirm Properti Go direct search/filter still works.
+6. Confirm property markers remain property observations, not merchants.

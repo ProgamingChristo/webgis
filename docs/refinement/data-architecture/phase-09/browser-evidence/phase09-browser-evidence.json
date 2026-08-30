@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-08-28T07:00:45.589Z",
+  "generated_at": "2026-08-30T05:38:34.427Z",
   "browser": "Chrome headless via puppeteer-core",
   "flows": {
     "demand_default": {
       "status": 200,
-      "duration_ms": 606,
+      "duration_ms": 802,
       "payload_bytes": 31010,
       "safe": true,
       "state": {
@@ -13,8 +13,8 @@
         "row_count": 5,
         "selected_region": "jakarta-barat",
         "confidence": "LIMITED_EVIDENCE",
-        "sample_size": 19,
-        "retail_gap": "-7",
+        "sample_size": 24,
+        "retail_gap": "-3",
         "map_feature_count": 5,
         "map_mode": "DEMAND",
         "rendered_charts": 3,
@@ -24,22 +24,22 @@
           68670
         ],
         "legend": "0-34 rendah35-69 sedang70-100 tinggiData belum cukup",
-        "summary": "Demand93Supply100Retail Gap-7Sample19Bukti terbatasRaw: 0 search, 0 route, 0 commuter request, 19 transaction observation, 230 merchant canonical."
+        "summary": "Demand97Supply100Retail Gap-3Sample24Bukti terbatasRaw: 0 search, 0 route, 0 commuter request, 24 transaction observation, 230 merchant canonical."
       },
       "rows": [
         {
           "region": "Jakarta Barat",
-          "demand": 93,
+          "demand": 97,
           "supply": 100,
-          "gap": -7,
-          "sample": 19,
+          "gap": -3,
+          "sample": 24,
           "confidence": "LIMITED_EVIDENCE"
         },
         {
           "region": "Jakarta Pusat",
-          "demand": 82,
+          "demand": 80,
           "supply": 47,
-          "gap": 35,
+          "gap": 33,
           "sample": 12,
           "confidence": "LIMITED_EVIDENCE"
         },
@@ -48,7 +48,7 @@
           "demand": 100,
           "supply": 50,
           "gap": 50,
-          "sample": 25,
+          "sample": 27,
           "confidence": "LIMITED_EVIDENCE"
         },
         {
@@ -78,18 +78,18 @@
         "row_count": 5,
         "selected_region": "jakarta-barat",
         "confidence": "LIMITED_EVIDENCE",
-        "sample_size": 19,
-        "retail_gap": "-7",
+        "sample_size": 24,
+        "retail_gap": "-3",
         "map_feature_count": 5,
         "map_mode": "RETAIL_GAP",
         "rendered_charts": 0,
         "chart_canvas_pixels": [
-          0,
-          0,
-          0
+          68670,
+          68670,
+          68670
         ],
         "legend": "-100 sampai -1: supply relatif lebih tinggi0: seimbang1 sampai 100: demand relatif lebih tinggiData belum cukup",
-        "summary": "Demand93Supply100Retail Gap-7Sample19Bukti terbatasRaw: 0 search, 0 route, 0 commuter request, 19 transaction observation, 230 merchant canonical."
+        "summary": "Demand97Supply100Retail Gap-3Sample24Bukti terbatasRaw: 0 search, 0 route, 0 commuter request, 24 transaction observation, 230 merchant canonical."
       }
     },
     "insufficient_data": {
@@ -101,7 +101,7 @@
         "row_count": 5,
         "selected_region": "jakarta-barat",
         "confidence": "INSUFFICIENT_DATA",
-        "sample_size": 0,
+        "sample_size": 2,
         "retail_gap": "INSUFFICIENT_DATA",
         "map_feature_count": 5,
         "map_mode": "RETAIL_GAP",
@@ -112,7 +112,7 @@
           68670
         ],
         "legend": "-100 sampai -1: supply relatif lebih tinggi0: seimbang1 sampai 100: demand relatif lebih tinggiData belum cukup",
-        "summary": "Demand0Supply0Retail Gap-Sample0Data belum cukup untuk menghitung Retail Gap secara andal.Raw: 0 search, 0 route, 0 commuter request, 0 transaction observation, 0 merchant canonical."
+        "summary": "Demand100Supply0Retail Gap-Sample2Data belum cukup untuk menghitung Retail Gap secara andal.Raw: 0 search, 0 route, 0 commuter request, 2 transaction observation, 0 merchant canonical."
       }
     },
     "failure_state": {
@@ -127,7 +127,7 @@
         "row_count": 5,
         "selected_region": "jakarta-barat",
         "confidence": "INSUFFICIENT_DATA",
-        "sample_size": 0,
+        "sample_size": 2,
         "retail_gap": "INSUFFICIENT_DATA",
         "map_feature_count": 5,
         "map_mode": "RETAIL_GAP",
@@ -138,7 +138,7 @@
           68670
         ],
         "legend": "-100 sampai -1: supply relatif lebih tinggi0: seimbang1 sampai 100: demand relatif lebih tinggiData belum cukup",
-        "summary": "Demand0Supply0Retail Gap-Sample0Data belum cukup untuk menghitung Retail Gap secara andal.Raw: 0 search, 0 route, 0 commuter request, 0 transaction observation, 0 merchant canonical."
+        "summary": "Demand100Supply0Retail Gap-Sample2Data belum cukup untuk menghitung Retail Gap secara andal.Raw: 0 search, 0 route, 0 commuter request, 2 transaction observation, 0 merchant canonical."
       }
     },
     "stale_response_guard": {
@@ -179,8 +179,8 @@
           "sample_size": 0,
           "confidence": "INSUFFICIENT_DATA",
           "window": {
-            "end_at": "2026-08-28T07:01:01.584+00:00",
-            "start_at": "2026-07-29T07:01:01.584+00:00"
+            "end_at": "2026-08-30T05:38:56.885+00:00",
+            "start_at": "2026-07-31T05:38:56.885+00:00"
           }
         },
         "limitations": [
@@ -247,11 +247,11 @@
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/styles/liberty"
+        "url": "https://basemap.mapid.io/styles/basic/style.json?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/styles/liberty"
+        "url": "https://basemap.mapid.io/styles/basic/style.json?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
@@ -267,67 +267,71 @@
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.json"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.png"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3262/2118.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3263/2118.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3262/2117.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3262/2119.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3261/2118.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3263/2117.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3263/2119.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3261/2117.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3261/2119.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Italic/0-255.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Regular/0-255.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Bold/0-255.pbf"
-      },
-      {
-        "method": "GET",
         "url": "http://localhost:8080/api/community/notifications?page=1&limit=10"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles.json?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://maputnik.github.io/osm-liberty/sprites/osm-liberty.json"
+      },
+      {
+        "method": "GET",
+        "url": "https://maputnik.github.io/osm-liberty/sprites/osm-liberty.png"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3262/2118.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3263/2118.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3262/2117.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3262/2119.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3261/2118.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3263/2117.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3263/2119.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3261/2117.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3261/2119.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/fonts/Roboto%20Regular/0-255.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/fonts/Roboto%20Regular/8192-8447.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/fonts/Roboto%20Condensed%20Italic/0-255.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/fonts/Roboto%20Medium/0-255.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
@@ -335,19 +339,19 @@
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/10/815/529.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/10/815/529.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/10/816/529.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/10/816/529.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/10/815/530.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/10/815/530.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/10/816/530.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/10/816/530.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
@@ -376,6 +380,10 @@
       {
         "method": "GET",
         "url": "http://localhost:8080/api/regions?ids=jakarta-barat%2Cjakarta-pusat%2Cjakarta-selatan%2Cjakarta-timur%2Cjakarta-utara"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/fonts/Noto%20Sans%20Regular/0-255.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",

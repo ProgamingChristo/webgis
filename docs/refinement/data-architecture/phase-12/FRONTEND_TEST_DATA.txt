@@ -1,0 +1,45 @@
+GETRA PHASE 12 - FRONTEND TEST DATA
+
+Do not place passwords or API keys in this file.
+
+Required accounts:
+- ADMIN account for review endpoint negative/positive verification where available.
+- USER account for safe read and review-denial verification.
+
+Accessibility mode:
+- Open the main GETRA map.
+- Select Accessibility mode.
+- Use an initial Jakarta viewport with evidence coverage.
+
+Safe expected source filters:
+- Semua sumber
+- MAPID Activities
+- Kontribusi komunitas
+
+Safe expected category filters:
+- Accessibility
+- Pedestrian
+- Transit
+- Area
+- UMKM/Economic
+
+Safe expected status filters:
+- Semua status
+- Observed
+- Needs review
+- Reviewed
+- Confirmed
+- Rejected
+- Stale
+
+Safe expected user-visible patterns:
+- Evidence count may vary as provider/community data changes.
+- Detail may show candidate pedestrian relation when a nearby edge exists.
+- Candidate relation must be worded as informational/reviewable only.
+- No route penalty, route exclusion, or wheelchair-safe guarantee should be shown.
+- Photos are shown only when safe media URLs exist.
+
+Security expectations:
+- Browser calls GETRA /api/accessibility/* endpoints only.
+- Browser must not call MAPID Mission endpoints.
+- No x-api-key or MAPID credential appears in browser requests, responses, local state, or rendered text.

@@ -1,0 +1,8 @@
+GETRA FINAL DEMO SCRIPT
+1. Opening Narrative: Welcome to GETRA, a spatial decision-support platform.
+2. Commuter Flow: Search for Bakso < 30k, 10 min walk.
+3. UMKM Flow: Check location readiness and retail gap.
+4. Business Space Flow: Compare properties based on network constraints.
+5. Accessibility Flow: Validate field evidence.
+6. Admin Story: Review data sync.
+7. Closing Narrative: GETRA connects mobility, merchants, and property.

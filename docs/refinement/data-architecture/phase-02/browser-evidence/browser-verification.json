@@ -13,84 +13,60 @@
     "final_cards": [
       {
         "source": "Menu Go",
-        "text": "Menu GoObservasi merchant lapanganBerhasilSinkron terakhir27 Agu 2026, 18.1654.4 dtkDiambil130Baru0Diperbarui130Dilewati0Invalid0Gagal0Sync Menu Go"
+        "text": "Menu GoObservasi merchant lapanganBerhasilSinkron terakhir30 Agu 2026, 12.3035.6 dtkDiambil130Baru0Diperbarui130Dilewati0Invalid0Gagal0Sync Menu Go"
       },
       {
         "source": "Struk Go",
-        "text": "Struk GoObservasi transaksiBerhasilSinkron terakhir27 Agu 2026, 18.1769.8 dtkDiambil164Baru0Diperbarui164Dilewati0Invalid0Gagal0Sync Struk Go"
+        "text": "Struk GoObservasi transaksiBerhasilSinkron terakhir30 Agu 2026, 12.3147.4 dtkDiambil183Baru0Diperbarui183Dilewati0Invalid0Gagal0Sync Struk Go"
       },
       {
         "source": "Properti Go",
-        "text": "Properti GoObservasi propertiBerhasilSinkron terakhir27 Agu 2026, 18.1857.4 dtkDiambil135Baru0Diperbarui135Dilewati0Invalid0Gagal0Sync Properti Go"
+        "text": "Properti GoObservasi propertiBerhasilSinkron terakhir30 Agu 2026, 12.3135.4 dtkDiambil135Baru0Diperbarui135Dilewati0Invalid0Gagal0Sync Properti Go"
       },
       {
         "source": "Activities",
-        "text": "ActivitiesObservasi lapangan dan konteksBerhasilSinkron terakhir27 Agu 2026, 18.2722.2 dtkDiambil60Baru0Diperbarui60Dilewati0Invalid0Gagal0Sync Activities"
+        "text": "ActivitiesObservasi lapangan dan konteksBerhasilSinkron terakhir30 Agu 2026, 12.3117.0 dtkDiambil60Baru60Diperbarui0Dilewati0Invalid0Gagal0Sync Activities"
       }
     ],
     "sync_results": [
       {
-        "duration_ms": 54418,
-        "error_summary": null,
         "failed": 0,
         "fetched": 130,
-        "finished_at": "2026-08-27T11:16:32.63+00:00",
         "inserted": 0,
         "invalid": 0,
-        "pages_fetched": 2,
-        "skipped": 0,
         "source": "MENU_GO",
-        "started_at": "2026-08-27T11:15:38.21296+00:00",
         "status": "COMPLETED",
         "updated": 130
       },
       {
-        "duration_ms": 69829,
-        "error_summary": null,
         "failed": 0,
-        "fetched": 164,
-        "finished_at": "2026-08-27T11:17:43.901+00:00",
+        "fetched": 183,
         "inserted": 0,
         "invalid": 0,
-        "pages_fetched": 2,
-        "skipped": 0,
         "source": "STRUK_GO",
-        "started_at": "2026-08-27T11:16:34.072703+00:00",
         "status": "COMPLETED",
-        "updated": 164
+        "updated": 183
       },
       {
-        "duration_ms": 57392,
-        "error_summary": null,
         "failed": 0,
         "fetched": 135,
-        "finished_at": "2026-08-27T11:18:42.523+00:00",
         "inserted": 0,
         "invalid": 0,
-        "pages_fetched": 2,
-        "skipped": 0,
         "source": "PROPERTI_GO",
-        "started_at": "2026-08-27T11:17:45.131458+00:00",
         "status": "COMPLETED",
         "updated": 135
       },
       {
-        "duration_ms": 22249,
-        "error_summary": null,
         "failed": 0,
         "fetched": 60,
-        "finished_at": "2026-08-27T11:27:44.636+00:00",
-        "inserted": 0,
+        "inserted": 60,
         "invalid": 0,
-        "pages_fetched": 1,
-        "skipped": 0,
         "source": "ACTIVITIES",
-        "started_at": "2026-08-27T11:27:22.387782+00:00",
         "status": "COMPLETED",
-        "updated": 60
+        "updated": 0
       }
     ],
-    "failure_state": "Menu GoObservasi merchant lapanganBerhasilSinkron terakhir27 Agu 2026, 18.1654.4 dtkDiambil130Baru0Diperbarui130Dilewati0Invalid0Gagal0Server GETRA tidak dapat menyelesaikan sinkronisasi.Sync Menu Go",
+    "failure_state": "Menu GoObservasi merchant lapanganBerhasilSinkron terakhir30 Agu 2026, 12.3035.6 dtkDiambil130Baru0Diperbarui130Dilewati0Invalid0Gagal0Server GETRA tidak dapat menyelesaikan sinkronisasi.Sync Menu Go",
     "mobile": {
       "horizontal_overflow": false,
       "source_count": 4
@@ -100,10 +76,46 @@
     "api_status": 401
   },
   "browser": "Chrome headless via puppeteer-core",
-  "generated_at": "2026-08-27T11:27:15.436Z",
+  "generated_at": "2026-08-30T05:29:33.052Z",
   "network": [
     {
       "method": "GET",
+      "safe_body": true,
+      "status": 200,
+      "url": "http://localhost:8080/api/admin/mission/sync"
+    },
+    {
+      "method": "GET",
+      "safe_body": true,
+      "status": 200,
+      "url": "http://localhost:8080/api/admin/mission/sync"
+    },
+    {
+      "method": "POST",
+      "safe_body": true,
+      "status": 200,
+      "url": "http://localhost:8080/api/admin/mission/sync"
+    },
+    {
+      "method": "GET",
+      "safe_body": true,
+      "status": 200,
+      "url": "http://localhost:8080/api/admin/mission/sync"
+    },
+    {
+      "method": "POST",
+      "safe_body": true,
+      "status": 200,
+      "url": "http://localhost:8080/api/admin/mission/sync"
+    },
+    {
+      "method": "GET",
+      "safe_body": true,
+      "status": 200,
+      "url": "http://localhost:8080/api/admin/mission/sync"
+    },
+    {
+      "method": "POST",
       "safe_body": true,
       "status": 200,
       "url": "http://localhost:8080/api/admin/mission/sync"

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-08-28T05:08:15.918Z",
+  "generated_at": "2026-08-30T05:41:14.761Z",
   "browser": "Chrome headless via puppeteer-core",
   "flows": {
     "origin_lookup": {
       "status": 200,
-      "duration_ms": 2818,
-      "payload_bytes": 3291,
+      "duration_ms": 2309,
+      "payload_bytes": 3229,
       "safe": true,
       "total": 1,
       "returned": 1,
@@ -18,10 +18,10 @@
           "type": "CURRENT_VIEWPORT",
           "region_ids": [],
           "bounds": {
-            "west": 106.68418551219526,
-            "south": -6.254937148470006,
-            "east": 106.83217648780459,
-            "north": -6.088716443930409
+            "west": 106.692585,
+            "south": -6.221355,
+            "east": 106.823777,
+            "north": -6.122307
           }
         },
         "category": null,
@@ -31,8 +31,8 @@
           "walking": null
         },
         "origin": {
-          "longitude": 106.8278985,
-          "latitude": -6.2033015,
+          "longitude": 106.75818100000001,
+          "latitude": -6.171831,
           "source": "SELECTED_POINT"
         },
         "parser": "DETERMINISTIC",
@@ -56,7 +56,7 @@
     },
     "network_walking_search": {
       "status": 200,
-      "duration_ms": 5333,
+      "duration_ms": 7091,
       "payload_bytes": 5926,
       "safe": true,
       "total": 2,
@@ -143,7 +143,7 @@
     },
     "route": {
       "status": 200,
-      "duration_ms": 2421,
+      "duration_ms": 3478,
       "payload_bytes": 1114,
       "safe": true,
       "result": {
@@ -167,7 +167,7 @@
     },
     "route_switch": {
       "status": 200,
-      "duration_ms": 2327,
+      "duration_ms": 3412,
       "payload_bytes": 1162,
       "safe": true,
       "result": {
@@ -192,7 +192,7 @@
     },
     "smart_alternative": {
       "status": 200,
-      "duration_ms": 1460,
+      "duration_ms": 1834,
       "payload_bytes": 1114,
       "safe": true,
       "result": {
@@ -232,7 +232,7 @@
     },
     "strict_no_result": {
       "status": 200,
-      "duration_ms": 2453,
+      "duration_ms": 2441,
       "payload_bytes": 2920,
       "safe": true,
       "total": 0,
@@ -367,11 +367,11 @@
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/styles/liberty"
+        "url": "https://basemap.mapid.io/styles/basic/style.json?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/styles/liberty"
+        "url": "https://basemap.mapid.io/styles/basic/style.json?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
@@ -387,51 +387,7 @@
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.json"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.png"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3262/2118.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3263/2118.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3262/2117.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3262/2119.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3261/2118.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3263/2117.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3263/2119.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3261/2117.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3261/2119.pbf"
+        "url": "http://localhost:8080/api/merchants/canonical?west=106.692585&south=-6.221355&east=106.823777&north=-6.122307&limit=100&offset=0&q=MIRA+KANTIN&scope=CURRENT_VIEWPORT&origin_longitude=106.75818100000001&origin_latitude=-6.171831&origin_source=SELECTED_POINT"
       },
       {
         "method": "GET",
@@ -439,43 +395,75 @@
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Italic/0-255.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles.json?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Regular/0-255.pbf"
+        "url": "https://maputnik.github.io/osm-liberty/sprites/osm-liberty.json"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Bold/0-255.pbf"
+        "url": "https://maputnik.github.io/osm-liberty/sprites/osm-liberty.png"
       },
       {
         "method": "GET",
-        "url": "http://localhost:8080/api/merchants/canonical?west=106.68418551219526&south=-6.254937148470006&east=106.83217648780459&north=-6.088716443930409&limit=100&offset=0&q=&scope=CURRENT_VIEWPORT&origin_longitude=106.75818100000001&origin_latitude=-6.171831&origin_source=SELECTED_POINT"
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3262/2118.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/11/1631/1059.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3263/2118.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/11/1631/1058.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3262/2117.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/11/1630/1059.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3262/2119.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/11/1630/1058.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3261/2118.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "http://localhost:8080/api/merchants/canonical?west=106.68418551219526&south=-6.254937148470006&east=106.83217648780459&north=-6.088716443930409&limit=100&offset=0&q=MIRA+KANTIN&scope=CURRENT_VIEWPORT&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT"
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3263/2117.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "http://localhost:8080/api/merchants/canonical?west=106.68418551219526&south=-6.254937148470006&east=106.83217648780459&north=-6.088716443930409&limit=100&offset=0&q=bakso+Jakarta+Pusat&scope=CURRENT_VIEWPORT&max_walking_minutes=10&origin_longitude=106.81138&origin_latitude=-6.18531&origin_source=EXPLICIT_ORIGIN"
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3263/2119.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3261/2117.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3261/2119.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/fonts/Roboto%20Regular/0-255.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/fonts/Roboto%20Regular/8192-8447.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/fonts/Roboto%20Condensed%20Italic/0-255.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/fonts/Roboto%20Medium/0-255.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8474.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "http://localhost:8080/api/merchants/canonical?west=106.81113189566452&south=-6.185588659089959&east=106.8116281043325&north=-6.185031340763928&limit=100&offset=0&q=bakso+Jakarta+Pusat&scope=CURRENT_VIEWPORT&max_walking_minutes=10&origin_longitude=106.81138&origin_latitude=-6.18531&origin_source=EXPLICIT_ORIGIN"
       },
       {
         "method": "POST",
@@ -487,23 +475,75 @@
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/11/1632/1059.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8474.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/11/1632/1058.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8474.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3264/2118.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8474.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3264/2117.pbf"
+        "url": "https://basemap.mapid.io/fonts/Noto%20Sans%20Regular/0-255.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/12/3264/2119.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8473.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13052/8474.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13052/8473.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8474.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8473.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13052/8474.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13052/8473.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/13/6526/4237.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/13/6526/4236.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/13/6527/4237.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/13/6527/4236.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3264/2118.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3264/2117.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/12/3264/2119.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
@@ -511,91 +551,27 @@
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6526/4236.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8473.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6526/4237.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8474.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6527/4236.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8473.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6527/4237.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13052/8473.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8474.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8473.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8474.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13054/8473.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13054/8474.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8473.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8474.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8473.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
-      },
-      {
-        "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8474.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13052/8474.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "POST",
@@ -603,19 +579,19 @@
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8473.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13053/8474.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8473.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13052/8473.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8474.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/14/13052/8474.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "POST",
@@ -647,35 +623,43 @@
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8474.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/13/6526/4237.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13053/8473.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/13/6526/4236.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8474.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/13/6527/4237.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/14/13052/8473.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/13/6527/4236.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6526/4236.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/13/6525/4237.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6526/4237.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/13/6525/4236.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6527/4236.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/11/1631/1059.pbf?key=6a808f2a610fe054a12df0a9"
       },
       {
         "method": "GET",
-        "url": "https://tiles.openfreemap.org/planet/20260823_080002_pt/13/6527/4237.pbf"
+        "url": "https://basemap.mapid.io/data/mapidtiles/11/1632/1059.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/11/1631/1058.pbf?key=6a808f2a610fe054a12df0a9"
+      },
+      {
+        "method": "GET",
+        "url": "https://basemap.mapid.io/data/mapidtiles/11/1632/1058.pbf?key=6a808f2a610fe054a12df0a9"
       }
     ]
   },

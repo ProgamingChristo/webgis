@@ -1,0 +1,77 @@
+GETRA PHASE 12 - ACCESSIBILITY FOUNDATION ARCHITECTURE
+
+Status:
+IMPLEMENTED AND BROWSER-VERIFIED
+
+Scope implemented:
+- Activities normalization into source-preserving accessibility evidence.
+- GETRA Community Contribution bridge for approved accessibility reports.
+- Accessibility Evidence API.
+- Accessibility Need aggregation foundation.
+- Accessibility primary map mode on the existing GETRA MapLibre map.
+- Evidence detail with freshness, validation status, source identity, media, and candidate pedestrian relation.
+- Admin-only review endpoint foundation.
+
+Source model:
+- MAPID Activities remains stored in mapid_mission_observations.
+- GETRA Community Contribution remains stored in community_contributions.
+- Phase 12 does not duplicate raw records into a new observation table.
+- Review metadata is additive in accessibility_evidence_reviews.
+
+Source identifiers:
+- MAPID_ACTIVITY:<source_record_id>
+- GETRA_COMMUNITY:<community_contribution_id>
+
+Validation states:
+- OBSERVED
+- NEEDS_REVIEW
+- REVIEWED
+- CONFIRMED
+- REJECTED
+- STALE
+
+Categories:
+- TRANSIT_OBSERVATION
+- ACCESSIBILITY_OBSERVATION
+- PEDESTRIAN_OBSERVATION
+- ECONOMIC_UMKM_OBSERVATION
+- AREA_OBSERVATION
+- UNCLASSIFIED
+
+Accessibility subcategories:
+- SIDEWALK
+- CROSSING
+- GUIDING_BLOCK
+- WHEELCHAIR_ACCESS
+- OBSTRUCTION
+- SURFACE_CONDITION
+- TRANSIT_ACCESS
+- OTHER_ACCESSIBILITY
+
+Freshness model:
+- RECENT: observed/created within 30 days.
+- AGING: observed/created within 90 days.
+- STALE: older than 90 days.
+- UNKNOWN: no timestamp.
+
+Routing boundary:
+- Accessibility Evidence is not a routing rule.
+- No Activities text/photo modifies pgRouting cost, reverse_cost, walkable flag, or route exclusion.
+- Candidate pedestrian relation is informational/reviewable.
+- Phase 12 enforces routing_effect_enabled = false at database constraint and DTO level.
+
+APIs:
+- GET /api/accessibility/evidence
+- GET /api/accessibility/evidence/[evidenceId]
+- GET /api/accessibility/need
+- POST /api/admin/accessibility/evidence/[evidenceId]/review
+
+Security:
+- User-facing APIs return safe DTO only.
+- No raw Mission payload, provider headers, checksum, service role key, or MAPID credential is exposed.
+- Admin review uses profiles.account_role = ADMIN through existing auth guard and database RPC check.
+
+Database:
+- Migration: 20260828170000_phase12_accessibility_evidence_foundation.sql
+- Remote push: VERIFIED on 2026-08-30.
+- Type generation: backend/src/types/database.types.ts regenerated from linked Supabase project.

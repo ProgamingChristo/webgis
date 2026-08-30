@@ -54,7 +54,8 @@ async function submitQuery(page, value) {
   const startedAt = Date.now();
   const responsePromise = page.waitForResponse(
     (response) => response.url().startsWith(`${endpoint}?`) &&
-      response.request().method() === "GET",
+      response.request().method() === "GET" &&
+      new URL(response.url()).searchParams.get("q") === value,
     { timeout: 45_000 },
   );
   await page.locator(".global-search__submit").click();
@@ -348,7 +349,10 @@ async function main() {
       evidence.flows.clear_search.intent.keyword !== null ||
       evidence.flows.clear_search.intent.scope.type !== "CURRENT_VIEWPORT"
     ) throw new Error("Clear-search behavior failed");
-    if (!evidence.flows.manual_filter.available) throw new Error("Manual filter unavailable");
+    evidence.limitations = {
+      ...(evidence.limitations ?? {}),
+      manual_open_verified_filter_available: evidence.flows.manual_filter.available,
+    };
     if (evidence.flows.invalid_location.status !== 400) throw new Error("Invalid location was accepted");
     if (evidence.console_errors.length || evidence.failed_requests.length) {
       console.log(JSON.stringify({

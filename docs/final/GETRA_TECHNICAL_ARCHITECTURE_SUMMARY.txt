@@ -1,0 +1,8 @@
+GETRA TECHNICAL ARCHITECTURE SUMMARY
+Frontend: Next.js, MapLibre, ECharts, TailwindCSS
+Backend: Next.js API Routes, Supabase
+Database: PostgreSQL, PostGIS, pgRouting
+AI: Grounded LLM for Interpretation
+Data Sources: Premium, Menu Go, Properti Go, Struk Go, Activities
+Auth: Supabase Auth (USER/ADMIN)
+Map: Single MapLibre instance with contextual layers

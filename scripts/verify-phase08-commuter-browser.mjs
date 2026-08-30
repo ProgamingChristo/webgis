@@ -13,10 +13,22 @@ const evidenceDir = path.resolve("docs/refinement/data-architecture/phase-08/bro
 const axeSource = await readFile(path.resolve("node_modules/axe-core/axe.min.js"), "utf8");
 const forbidden = ["x-api-key", "service_role", "MAPID_MISSION_API_KEY", "/web/competition/"];
 
+async function fillInput(page, selector, value) {
+  await page.waitForSelector(selector, { timeout: 20_000 });
+  await page.evaluate(({ inputSelector, inputValue }) => {
+    const input = document.querySelector(inputSelector);
+    if (!(input instanceof HTMLInputElement)) throw new Error(`Input not found: ${inputSelector}`);
+    const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+    descriptor?.set?.call(input, inputValue);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }, { inputSelector: selector, inputValue: value });
+}
+
 async function login(page) {
   await page.goto(`${appUrl}/login`, { waitUntil: "networkidle2", timeout: 45_000 });
-  await page.locator("#email").fill(userEmail);
-  await page.locator("#password").fill(password);
+  await fillInput(page, "#email", userEmail);
+  await fillInput(page, "#password", password);
   await Promise.allSettled([
     page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 30_000 }),
     page.locator("button[type=submit]").click(),
@@ -27,7 +39,6 @@ async function login(page) {
 }
 
 async function submitSearch(page, query) {
-  await page.locator("#global-search-query").fill(query);
   const responsePromise = page.waitForResponse(
     (response) => response.url().startsWith(`${apiUrl}/api/merchants/canonical?`) &&
       response.request().method() === "GET" &&
@@ -35,6 +46,7 @@ async function submitSearch(page, query) {
     { timeout: 45_000 },
   );
   const startedAt = Date.now();
+  await fillInput(page, "#global-search-query", query);
   await page.locator(".global-search__submit").click();
   const response = await responsePromise;
   const text = await response.text();
@@ -52,7 +64,7 @@ async function submitSearch(page, query) {
 }
 
 async function selectRouteOrigin(page, merchantName) {
-  await page.locator('input[aria-label="Cari titik mulai"]').fill(merchantName);
+  await fillInput(page, 'input[aria-label="Cari titik mulai"]', merchantName);
   await page.waitForFunction((name) => {
     const originField = document.querySelectorAll(".route-field")[0];
     return [...(originField?.querySelectorAll(".route-search-result strong") ?? [])]

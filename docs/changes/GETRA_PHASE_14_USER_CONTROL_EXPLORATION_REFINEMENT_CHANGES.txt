@@ -1,0 +1,8 @@
+GETRA PHASE 14 CHANGELOG
+Objective: USER CONTROL, EXPLORATION, AND REFINEMENT
+Files Created: Phase 14 documentation files.
+Mode Switching: Added distinct UI for modes without altering profiles.account_role.
+Location Model: Introduced actualLocation and explorationLocation states.
+Camera Fixes: Fixed auto zoom loop by implementing explicit camera ownership (cameraMode).
+React Error: Diagnosed as extension-only React DevTools/Next dev overlay conflict. Production is stable.
+Filters: Added category and spatial filters. Rating filter disabled (NO RATING DATA).

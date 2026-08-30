@@ -629,6 +629,16 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     purpose: "Run a canonical MAPID Mission source synchronization",
   },
   {
+    method: "POST",
+    path: "/api/admin/accessibility/evidence/[evidenceId]/review",
+    classification: "ADMIN",
+    role: "ADMIN",
+    rateLimit: "mutation",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_CONTENT_HEADERS,
+    purpose: "Review accessibility evidence status and candidate pedestrian relation",
+  },
+  {
     method: "GET",
     path: "/api/admin/merchant-reconciliation",
     classification: "ADMIN",

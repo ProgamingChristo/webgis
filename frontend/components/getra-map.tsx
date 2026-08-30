@@ -23,6 +23,7 @@ import {
 import { buildSponsoredPopupContent } from "@/src/lib/maplibre-popup";
 import type { Merchant, UserLocation } from "@/types/getra";
 import type { BusinessSpaceCandidate } from "@/src/features/business-space/types/business-space.types";
+import type { AccessibilityEvidence } from "@/src/features/accessibility-evidence/types/accessibility-evidence.types";
 import type { MapViewportBounds } from "@/src/services/mapid-layer.service";
 import { syncAdministrativeBoundaryLayers } from "@/src/features/administrative-boundaries/map/administrative-boundary-layers";
 import type { AdministrativeBoundaryCollection } from "@/src/features/administrative-boundaries/types/administrative-boundary.types";
@@ -65,9 +66,12 @@ type GetraMapProps = {
   selectedId: string | null;
   propertyCandidates?: BusinessSpaceCandidate[];
   selectedPropertyId?: string | null;
+  accessibilityEvidence?: AccessibilityEvidence[];
+  selectedAccessibilityEvidenceId?: string | null;
   userLocation: UserLocation | null;
   onSelect: (merchant: Merchant) => void;
   onSelectProperty?: (candidate: BusinessSpaceCandidate) => void;
+  onSelectAccessibilityEvidence?: (evidence: AccessibilityEvidence) => void;
   onClearSelection: () => void;
   datasetBounds: DatasetBounds;
   datasetOrigin: DatasetOrigin;
@@ -83,6 +87,10 @@ type GetraMapProps = {
   sponsoredPlacements?: SponsoredPinDTO[];
   onSelectSponsored?: (placement: SponsoredPinDTO) => void;
   onViewportChange?: (bounds: MapViewportBounds) => void;
+  onRandomExploration?: () => void;
+  mapPickMode?: "NONE" | "ROUTE_START";
+  manualRouteStart?: { latitude: number; longitude: number } | null;
+  onMapPick?: (coordinate: { latitude: number; longitude: number }) => void;
   datasetKey: string;
   focusBounds?: MapViewportBounds | null;
   focusKey?: number;
@@ -661,9 +669,12 @@ export function GetraMap({
   selectedId,
   propertyCandidates = [],
   selectedPropertyId = null,
+  accessibilityEvidence = [],
+  selectedAccessibilityEvidenceId = null,
   userLocation,
   onSelect,
   onSelectProperty,
+  onSelectAccessibilityEvidence,
   onClearSelection,
   datasetBounds,
   datasetOrigin,
@@ -679,6 +690,9 @@ export function GetraMap({
   sponsoredPlacements,
   onSelectSponsored,
   onViewportChange,
+  mapPickMode = "NONE",
+  manualRouteStart = null,
+  onMapPick,
   datasetKey,
   focusBounds,
   focusKey = 0,
@@ -704,6 +718,7 @@ export function GetraMap({
   const [clusterSourceFeatureCount, setClusterSourceFeatureCount] = useState(0);
   const [boundaryLayersReady, setBoundaryLayersReady] = useState(false);
   const [cameraFitKey, setCameraFitKey] = useState(0);
+  const cameraModeRef = useRef<"AUTO_INITIAL" | "USER_CONTROLLED">("AUTO_INITIAL");
 
   const hasVisibleContextualLayer =
     contextualLayerVisibility.property ||
@@ -775,6 +790,15 @@ export function GetraMap({
       importBoundaries ?? null,
     );
 
+  const mapPickModeRef = useRef(mapPickMode);
+  mapPickModeRef.current = mapPickMode;
+
+  const onMapPickRef = useRef(onMapPick);
+  onMapPickRef.current = onMapPick;
+
+  const manualRouteStartMarkerRef = useRef<Marker | null>(null);
+
+  // Trigger HMR
   const administrativeBoundariesRef = useRef(administrativeBoundaries);
   const contextualLayerDataRef = useRef(contextualLayerData);
   const contextualLayerVisibilityRef = useRef(contextualLayerVisibility);
@@ -798,6 +822,10 @@ export function GetraMap({
     const map = mapRef.current;
     if (!map || !focusBounds || focusKey === 0) return;
     const compact = window.innerWidth <= 768;
+    
+    // Explicit focus resets user control override
+    cameraModeRef.current = "AUTO_INITIAL";
+    
     map.fitBounds(
       [
         [focusBounds.west, focusBounds.south],
@@ -923,6 +951,24 @@ export function GetraMap({
       });
 
     mapRef.current = map;
+
+    map.on("dragstart", () => {
+      cameraModeRef.current = "USER_CONTROLLED";
+    });
+
+    map.on("zoomstart", (e) => {
+      if (e.originalEvent) {
+        cameraModeRef.current = "USER_CONTROLLED";
+      }
+    });
+
+    map.on("click", (e) => {
+      if (mapPickModeRef.current === "ROUTE_START") {
+        if (onMapPickRef.current) {
+          onMapPickRef.current({ latitude: e.lngLat.lat, longitude: e.lngLat.lng });
+        }
+      }
+    });
 
     /*
      * Snapshot marker collection untuk cleanup.
@@ -1219,7 +1265,8 @@ export function GetraMap({
     if (
       shouldFitDataset &&
       !selectedId &&
-      !routeGeometry
+      !routeGeometry &&
+      cameraModeRef.current !== "USER_CONTROLLED"
     ) {
       map.fitBounds(
         [
@@ -1361,6 +1408,7 @@ export function GetraMap({
       });
 
       const expandCluster = async (event: MapLayerMouseEvent) => {
+        if (mapPickModeRef.current === "ROUTE_START") return;
         const feature = event.features?.[0];
         const clusterId = Number(feature?.properties?.cluster_id);
         if (!feature || !Number.isFinite(clusterId) || feature.geometry.type !== "Point") return;
@@ -1369,11 +1417,12 @@ export function GetraMap({
         map.easeTo({ center: feature.geometry.coordinates as [number, number], zoom });
       };
       const selectPoint = (event: MapLayerMouseEvent) => {
+        if (mapPickModeRef.current === "ROUTE_START") return;
         const merchantId = String(event.features?.[0]?.properties?.merchantId ?? "");
         const merchant = merchantById.get(merchantId);
         if (merchant) onSelect(merchant);
       };
-      const showPointer = () => { map.getCanvas().style.cursor = "pointer"; };
+      const showPointer = () => { if (mapPickModeRef.current !== "ROUTE_START") map.getCanvas().style.cursor = "pointer"; };
       const hidePointer = () => { map.getCanvas().style.cursor = ""; };
 
       map.on("click", MERCHANT_CLUSTER_LAYER_ID, expandCluster);
@@ -1741,56 +1790,46 @@ export function GetraMap({
   ]);
 
   /*
-   * Focus selected merchant
+   * Focus selected merchant (One-shot)
    */
+  const lastFocusedMerchantId = useRef<string | null>(null);
   useEffect(() => {
-    const map =
-      mapRef.current;
+    if (!selectedId) lastFocusedMerchantId.current = null;
+  }, [selectedId]);
 
-    if (
-      !map ||
-      !selectedId
-    ) {
-      return;
-    }
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !selectedId) return;
+    if (lastFocusedMerchantId.current === selectedId) return;
 
-    const merchant =
-      merchants.find(
-        (item) =>
-          item.id ===
-          selectedId,
-      );
+    const merchant = merchants.find((item) => item.id === selectedId);
+    if (!merchant) return;
 
-    if (!merchant) {
-      return;
-    }
-
+    lastFocusedMerchantId.current = selectedId;
     map.easeTo({
-      center: [
-        merchant.longitude,
-        merchant.latitude,
-      ],
-
-      zoom: Math.max(
-        map.getZoom(),
-        16,
-      ),
-
+      center: [merchant.longitude, merchant.latitude],
+      zoom: Math.max(map.getZoom(), 16),
       duration: 500,
     });
-  }, [
-    merchants,
-    selectedId,
-  ]);
+  }, [merchants, selectedId]);
 
   /*
-   * Focus selected property observation
+   * Focus selected property observation (One-shot)
    */
+  const lastFocusedPropertyId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!selectedPropertyId) lastFocusedPropertyId.current = null;
+  }, [selectedPropertyId]);
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !selectedPropertyId) return;
+    if (lastFocusedPropertyId.current === selectedPropertyId) return;
+
     const property = propertyCandidates.find((item) => item.id === selectedPropertyId);
     if (!property) return;
+
+    lastFocusedPropertyId.current = selectedPropertyId;
     map.easeTo({
       center: [property.longitude, property.latitude],
       zoom: Math.max(map.getZoom(), 16),
@@ -1801,6 +1840,8 @@ export function GetraMap({
   /*
    * Draw Route Line
    */
+  const lastFocusedRouteGeometry = useRef<GeoJSON.LineString | null>(null);
+
   useEffect(() => {
     const map =
       mapRef.current;
@@ -1827,35 +1868,104 @@ export function GetraMap({
     }
 
     if (routeGeometry) {
-      const bounds =
-        new LngLatBounds();
+      if (lastFocusedRouteGeometry.current !== routeGeometry) {
+        lastFocusedRouteGeometry.current = routeGeometry;
+        const bounds =
+          new LngLatBounds();
 
-      routeGeometry.coordinates.forEach(
-        (
-          coordinate,
-        ) => {
-          bounds.extend([
-            coordinate[0],
-            coordinate[1],
-          ]);
-        },
-      );
-
-      if (!bounds.isEmpty()) {
-        map.fitBounds(
-          bounds,
-          {
-            padding: 72,
-            maxZoom: 16,
-            duration: 650,
+        routeGeometry.coordinates.forEach(
+          (
+            coordinate,
+          ) => {
+            bounds.extend([
+              coordinate[0],
+              coordinate[1],
+            ]);
           },
         );
+
+        if (!bounds.isEmpty()) {
+          map.fitBounds(
+            bounds,
+            {
+              padding: 72,
+              maxZoom: 16,
+              duration: 650,
+            },
+          );
+        }
       }
+    } else {
+      lastFocusedRouteGeometry.current = null;
     }
   }, [
     routeGeometry,
     serviceAreaGeometry,
   ]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const canvas = mapRef.current.getCanvas();
+    if (mapPickMode === "ROUTE_START") {
+      canvas.style.cursor = "crosshair";
+    } else {
+      canvas.style.cursor = "";
+    }
+  }, [mapPickMode]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+
+    if (!manualRouteStart) {
+      if (manualRouteStartMarkerRef.current) {
+        manualRouteStartMarkerRef.current.remove();
+        manualRouteStartMarkerRef.current = null;
+      }
+      return;
+    }
+
+    if (!manualRouteStartMarkerRef.current) {
+      const el = document.createElement("div");
+      el.className = "manual-start-marker";
+      el.style.backgroundColor = "#ef4444";
+      el.style.color = "white";
+      el.style.padding = "2px 6px";
+      el.style.borderRadius = "4px";
+      el.style.fontWeight = "bold";
+      el.style.fontSize = "12px";
+      el.style.border = "2px solid white";
+      el.style.boxShadow = "0 2px 4px rgba(0,0,0,0.3)";
+      el.style.cursor = "grab";
+      el.textContent = "START";
+
+      const marker = new Marker({
+        element: el,
+        draggable: true,
+        anchor: "bottom",
+      })
+        .setLngLat([manualRouteStart.longitude, manualRouteStart.latitude])
+        .addTo(map);
+
+      marker.on("dragstart", () => {
+        cameraModeRef.current = "USER_CONTROLLED";
+      });
+
+      marker.on("dragend", () => {
+        const lngLat = marker.getLngLat();
+        if (onMapPickRef.current) {
+          onMapPickRef.current({ latitude: lngLat.lat, longitude: lngLat.lng });
+        }
+      });
+
+      manualRouteStartMarkerRef.current = marker;
+    } else {
+      manualRouteStartMarkerRef.current.setLngLat([
+        manualRouteStart.longitude,
+        manualRouteStart.latitude,
+      ]);
+    }
+  }, [manualRouteStart]);
 
   return (
     <div
@@ -1920,6 +2030,7 @@ export function GetraMap({
           className="map-show-all-button"
           type="button"
           onClick={onClearSelection}
+          style={{ backgroundColor: "#0284c7", color: "white", textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}
         >
           Tampilkan semua titik
         </button>
@@ -1956,7 +2067,7 @@ export function GetraMap({
               <span>
                 {option.label}
               </span>
-              <small>
+              <small style={{ color: "#94a3b8" }}>
                 {option.description}
               </small>
             </button>

@@ -1,0 +1,85 @@
+GETRA PHASE 12 - ACCESSIBILITY FOUNDATION TEST EVIDENCE
+
+Verification date:
+2026-08-30
+
+Database:
+PASS
+- Migration pushed to linked Supabase project.
+- Migration recorded remotely: 20260828170000.
+- Database TypeScript types regenerated from linked Supabase project.
+
+Migration:
+PASS
+- backend/supabase/migrations/20260828170000_phase12_accessibility_evidence_foundation.sql
+- Additive review metadata table only.
+- No destructive change to Phase 01-11 tables.
+- No routing cost or walkable mutation.
+
+Focused backend tests:
+PASS
+- tests/unit/accessibility-evidence/accessibility-evidence.schema.test.ts
+- tests/unit/security/migration-phase12-accessibility-evidence.test.ts
+- tests/integration/accessibility-evidence-review-route.test.ts
+- tests/unit/security/endpoint-policy.test.ts
+- Result: 4 files passed, 18 tests passed.
+
+Focused frontend tests:
+PASS
+- tests/accessibility-evidence/accessibility-evidence-service.test.ts
+- Result: 1 file passed, 3 tests passed.
+
+Full backend tests:
+PASS
+- Test files: 125 passed, 2 skipped.
+- Tests: 790 passed, 3 skipped.
+
+Full frontend tests:
+PASS
+- Test files: 24 passed.
+- Tests: 82 passed.
+
+Typecheck:
+PASS
+- backend workspace passed.
+- frontend workspace passed.
+
+Lint:
+PASS
+- backend workspace passed.
+- frontend workspace passed.
+
+Build:
+PASS
+- backend workspace passed.
+- frontend workspace passed.
+
+Browser evidence:
+PASS
+- Script: scripts/verify-phase12-accessibility-browser.mjs
+- Evidence JSON: docs/refinement/data-architecture/phase-12/browser-evidence/phase12-accessibility-foundation-evidence.json
+- Screenshot: docs/refinement/data-architecture/phase-12/browser-evidence/accessibility-foundation-flow.png
+
+Observed browser checks:
+- Accessibility mode entry visible.
+- Accessibility search/filter panel visible.
+- Source filter visible.
+- Category filter visible.
+- Status filter visible.
+- Need summary visible.
+- Evidence results loaded.
+- Map evidence marker rendered.
+- Evidence detail panel rendered.
+- Detail avoids current-condition overclaim.
+- Detail avoids route penalty wording.
+
+Browser network checks:
+- Browser called GETRA accessibility API.
+- Browser did not call MAPID Mission endpoint.
+- Response did not expose provider credential.
+- Accessibility evidence load did not require route API.
+
+Residual closure evidence from same Phase 12 cycle:
+- docs/refinement/data-architecture/phase-12/browser-evidence/phase12-residual-closure-evidence.json
+- docs/refinement/data-architecture/phase-12/browser-evidence/property-business-space-flow.png
+- docs/refinement/data-architecture/phase-12/browser-evidence/merchant-menu-go-media-flow.png

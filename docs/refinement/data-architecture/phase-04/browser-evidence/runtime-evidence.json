@@ -1,6 +1,6 @@
 {
   "browser": "Chrome headless via puppeteer-core",
-  "generated_at": "2026-08-28T02:45:59.829Z",
+  "generated_at": "2026-08-30T05:32:13.758Z",
   "requests": [
     {
       "bbox": {
@@ -21,9 +21,26 @@
     },
     {
       "bbox": {
-        "west": 106.78525468122314,
+        "west": 106.6752582713421,
+        "south": -6.37471210157949,
+        "east": 106.98053872866006,
+        "north": -6.031847590790221
+      },
+      "has_more": true,
+      "limit": 100,
+      "marker_contract_valid": true,
+      "offset": 0,
+      "safe_body": true,
+      "status": 200,
+      "total_available": 715,
+      "total_features": 100,
+      "url_has_bbox": true
+    },
+    {
+      "bbox": {
+        "west": 106.76684240854365,
         "south": -6.374712101589694,
-        "east": 107.09053513854104,
+        "east": 107.07212286586156,
         "north": -6.031847590800467
       },
       "has_more": true,
@@ -32,7 +49,7 @@
       "offset": 0,
       "safe_body": true,
       "status": 200,
-      "total_available": 601,
+      "total_available": 674,
       "total_features": 100,
       "url_has_bbox": true
     }

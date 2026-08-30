@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-28T02:47:58.097Z",
+  "generated_at": "2026-08-30T05:36:57.509Z",
   "browser": "Chrome headless via puppeteer-core",
   "flows": {
     "initial": {
@@ -161,7 +161,7 @@
         "safe_body": true
       }
     ],
-    "merchant_requests": 10
+    "merchant_requests": 11
   },
   "responsive": {
     "390x844": {

@@ -214,6 +214,7 @@ describe("API endpoint policy matrix", () => {
         "PATCH /api/admin/community/reports/[reportId]",
         "POST /api/admin/community/contributions/[contributionId]/confirm",
         "POST /api/admin/community/contributions/[contributionId]/reject",
+        "POST /api/admin/accessibility/evidence/[evidenceId]/review",
         "POST /api/admin/ingestion/jobs",
         "POST /api/admin/ingestion/run",
         "POST /api/admin/map-import/commit",

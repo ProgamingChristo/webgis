@@ -1,0 +1,6 @@
+GETRA PHASE 14 - 14 REACT NEXT ERROR ROOT CAUSE
+
+STATUS: IMPLEMENTED / VERIFIED
+
+React Next Error Root Cause:
+The error "We are cleaning up async info that was not on the parent Suspense boundary" was found to be an EXTENSION-ONLY issue triggered by a third-party Chrome extension interacting with Next.js 14 Turbopack dev overlay and React DevTools. Running in incognito or an extension-free browser does not reproduce the error, and production build runs perfectly fine without any Suspense crashes.

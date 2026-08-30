@@ -10,31 +10,75 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
-  }
-  private: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      is_admin: { Args: never; Returns: boolean }
-      is_merchant_owner: {
-        Args: { target_merchant_id: string }
-        Returns: boolean
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
+      accessibility_evidence_reviews: {
+        Row: {
+          candidate_distance_m: number | null
+          candidate_network_feature_id: string | null
+          candidate_network_feature_type: string | null
+          confirmed_category: string | null
+          confirmed_subcategory: string | null
+          created_at: string
+          id: string
+          relation_status: string
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          routing_effect_enabled: boolean
+          source_record_id: string
+          source_type: string
+          updated_at: string
+          validation_status: string
+        }
+        Insert: {
+          candidate_distance_m?: number | null
+          candidate_network_feature_id?: string | null
+          candidate_network_feature_type?: string | null
+          confirmed_category?: string | null
+          confirmed_subcategory?: string | null
+          created_at?: string
+          id?: string
+          relation_status?: string
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          routing_effect_enabled?: boolean
+          source_record_id: string
+          source_type: string
+          updated_at?: string
+          validation_status?: string
+        }
+        Update: {
+          candidate_distance_m?: number | null
+          candidate_network_feature_id?: string | null
+          candidate_network_feature_type?: string | null
+          confirmed_category?: string | null
+          confirmed_subcategory?: string | null
+          created_at?: string
+          id?: string
+          relation_status?: string
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          routing_effect_enabled?: boolean
+          source_record_id?: string
+          source_type?: string
+          updated_at?: string
+          validation_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accessibility_evidence_reviews_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ad_campaign_targets: {
         Row: {
           campaign_id: string
@@ -5128,6 +5172,44 @@ export type Database = {
         Args: { lat: number; lng: number; radius_m: number }
         Returns: Json
       }
+      get_accessibility_evidence_detail_v1: {
+        Args: { p_evidence_id: string; p_max_distance_m?: number }
+        Returns: Json
+      }
+      get_accessibility_freshness_v1: {
+        Args: { p_created_at?: string; p_observed_at: string }
+        Returns: string
+      }
+      get_accessibility_need_summary_v1: {
+        Args: {
+          p_category?: string
+          p_days?: number
+          p_max_lat: number
+          p_max_lng: number
+          p_min_lat: number
+          p_min_lng: number
+          p_source_type?: string
+          p_validation_status?: string
+        }
+        Returns: Json
+      }
+      get_accessibility_observation_category_v1: {
+        Args: {
+          p_properties: Json
+          p_report_type?: string
+          p_source_type: string
+        }
+        Returns: string
+      }
+      get_accessibility_observation_subcategory_v1: {
+        Args: {
+          p_properties: Json
+          p_report_data?: Json
+          p_report_type?: string
+          p_source_type: string
+        }
+        Returns: string
+      }
       get_analytics_merchant_context_v1: {
         Args: { p_merchant_id: string }
         Returns: {
@@ -5364,6 +5446,38 @@ export type Database = {
       is_valid_wgs84_geometry: {
         Args: { allowed_types: string[]; input_geometry: unknown }
         Returns: boolean
+      }
+      list_accessibility_evidence_v1: {
+        Args: {
+          p_category?: string
+          p_days?: number
+          p_limit?: number
+          p_max_lat: number
+          p_max_lng: number
+          p_min_lat: number
+          p_min_lng: number
+          p_offset?: number
+          p_source_type?: string
+          p_validation_status?: string
+        }
+        Returns: {
+          category: string
+          description: string
+          freshness_status: string
+          geometry: Json
+          id: string
+          media_urls: Json
+          observed_at: string
+          relation_status: string
+          routing_effect_enabled: boolean
+          source_record_id: string
+          source_type: string
+          subcategory: string
+          suggested_category: string
+          title: string
+          total_count: number
+          validation_status: string
+        }[]
       }
       list_admin_community_reports_v1: {
         Args: { p_limit?: number; p_offset?: number; p_status?: string }
@@ -5877,6 +5991,18 @@ export type Database = {
           viewer_reactions: string[]
         }[]
       }
+      review_accessibility_evidence_v1: {
+        Args: {
+          p_candidate_network_feature_id?: string
+          p_confirmed_category?: string
+          p_confirmed_subcategory?: string
+          p_evidence_id: string
+          p_relation_status?: string
+          p_review_reason?: string
+          p_validation_status: string
+        }
+        Returns: Json
+      }
       review_community_contribution_v1: {
         Args: {
           p_action: string
@@ -6166,9 +6292,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  private: {
-    Enums: {},
-  },
   public: {
     Enums: {
       account_role: ["USER", "ADMIN"],

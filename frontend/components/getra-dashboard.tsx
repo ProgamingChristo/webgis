@@ -17,6 +17,7 @@ import {
   Route,
   Search,
   ShieldCheck,
+  Target,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -77,6 +78,15 @@ import type {
   BusinessSpaceCandidate,
   BusinessSpaceCandidateDetail,
 } from "@/src/features/business-space/types/business-space.types";
+import { accessibilityEvidenceService } from "@/src/features/accessibility-evidence/services/accessibility-evidence.service";
+import type {
+  AccessibilityEvidence,
+  AccessibilityEvidenceCategory,
+  AccessibilityEvidenceDetail,
+  AccessibilityEvidenceSource,
+  AccessibilityNeedSummary,
+  AccessibilityValidationStatus,
+} from "@/src/features/accessibility-evidence/types/accessibility-evidence.types";
 
 type LocatedMerchant =
   Merchant & {
@@ -94,11 +104,11 @@ type RouteSearchTarget =
   | "origin"
   | "destination";
 
-const ROUTE_ORIGIN_USER =
-  "USER_LOCATION";
+const ROUTE_ORIGIN_USER = "user";
 
-const ROUTE_ORIGIN_CENTER =
-  "DATASET_CENTER";
+const ROUTE_ORIGIN_MANUAL = "manual";
+
+const ROUTE_ORIGIN_NONE = "none";
 
 const MAX_ROUTE_SEARCH_RESULTS =
   6;
@@ -118,6 +128,28 @@ const PROPERTY_BUSINESS_CATEGORIES: Array<{ value: BusinessCategorySlug; label: 
   { value: "restaurant", label: "Restoran" },
   { value: "warung", label: "Warung" },
   { value: "minimarket", label: "Minimarket" },
+];
+
+const ACCESSIBILITY_SOURCE_OPTIONS: Array<{ value: "" | AccessibilityEvidenceSource; label: string }> = [
+  { value: "", label: "Semua sumber" },
+  { value: "MAPID_ACTIVITY", label: "MAPID Activities" },
+  { value: "GETRA_COMMUNITY", label: "GETRA Community" },
+];
+
+const ACCESSIBILITY_CATEGORY_OPTIONS: Array<{ value: "" | AccessibilityEvidenceCategory; label: string }> = [
+  { value: "", label: "Semua kategori" },
+  { value: "ACCESSIBILITY_OBSERVATION", label: "Aksesibilitas" },
+  { value: "PEDESTRIAN_OBSERVATION", label: "Pedestrian" },
+  { value: "TRANSIT_OBSERVATION", label: "Transit" },
+  { value: "UNCLASSIFIED", label: "Belum terklasifikasi" },
+];
+
+const ACCESSIBILITY_STATUS_OPTIONS: Array<{ value: "" | AccessibilityValidationStatus; label: string }> = [
+  { value: "", label: "Semua status" },
+  { value: "OBSERVED", label: "Observasi" },
+  { value: "NEEDS_REVIEW", label: "Perlu verifikasi" },
+  { value: "CONFIRMED", label: "Terkonfirmasi" },
+  { value: "STALE", label: "Stale" },
 ];
 
 const SAFE_MEDIA_HOSTS = new Set([
@@ -244,6 +276,67 @@ function transactionLabel(value: string | null | undefined) {
   if (normalized.includes("sewa")) return "Disewa";
   if (normalized.includes("jual")) return "Dijual";
   return "Tidak tersedia";
+}
+
+function accessibilityCategoryLabel(value: string | null | undefined) {
+  switch (value) {
+    case "ACCESSIBILITY_OBSERVATION":
+      return "Observasi aksesibilitas";
+    case "PEDESTRIAN_OBSERVATION":
+      return "Observasi pedestrian";
+    case "TRANSIT_OBSERVATION":
+      return "Observasi transit";
+    case "ECONOMIC_UMKM_OBSERVATION":
+      return "Observasi ekonomi/UMKM";
+    case "AREA_OBSERVATION":
+      return "Observasi area";
+    default:
+      return "Temuan lapangan";
+  }
+}
+
+function accessibilitySubcategoryLabel(value: string | null | undefined) {
+  switch (value) {
+    case "SIDEWALK":
+      return "Trotoar";
+    case "CROSSING":
+      return "Penyeberangan";
+    case "GUIDING_BLOCK":
+      return "Guiding block";
+    case "WHEELCHAIR_ACCESS":
+      return "Akses kursi roda";
+    case "OBSTRUCTION":
+      return "Hambatan";
+    case "SURFACE_CONDITION":
+      return "Kondisi permukaan";
+    case "TRANSIT_ACCESS":
+      return "Akses transit";
+    default:
+      return "Observasi lain";
+  }
+}
+
+function accessibilityStatusLabel(value: string | null | undefined) {
+  switch (value) {
+    case "CONFIRMED":
+      return "Terkonfirmasi";
+    case "NEEDS_REVIEW":
+      return "Perlu verifikasi";
+    case "REVIEWED":
+      return "Sudah ditinjau";
+    case "REJECTED":
+      return "Ditolak";
+    case "STALE":
+      return "Perlu konfirmasi ulang";
+    default:
+      return "Observasi";
+  }
+}
+
+function accessibilitySourceLabel(value: string | null | undefined) {
+  return value === "GETRA_COMMUNITY"
+    ? "GETRA Community"
+    : "MAPID Activities";
 }
 
 function formatNullableNumber(value: number | null | undefined) {
@@ -490,6 +583,113 @@ function PropertyObservationDetail({
       <section className="evidence-section">
         <h4>Catatan</h4>
         <p className="limitation-box">Properti Go adalah observasi sumber. Ketersediaan jual/sewa harus dikonfirmasi ulang.</p>
+      </section>
+    </>
+  );
+}
+
+function AccessibilityEvidenceResultRow({
+  evidence,
+  index,
+  selected,
+  onSelect,
+}: {
+  evidence: AccessibilityEvidence;
+  index: number;
+  selected: boolean;
+  onSelect: (evidence: AccessibilityEvidence) => void;
+}) {
+  return (
+    <button
+      className={selected ? "result-row result-row--selected accessibility-result-row" : "result-row accessibility-result-row"}
+      onClick={() => onSelect(evidence)}
+      type="button"
+    >
+      <span className="result-rank">A{index + 1}</span>
+      <span className="result-main">
+        <strong>{evidence.title ?? accessibilityCategoryLabel(evidence.category)}</strong>
+        <span>{accessibilitySubcategoryLabel(evidence.subcategory)} - {accessibilityStatusLabel(evidence.validation_status)}</span>
+        <span className="result-meta">
+          <ShieldCheck size={13} />
+          {accessibilitySourceLabel(evidence.source_type)} - {freshnessLabel(evidence.freshness_status)}
+        </span>
+      </span>
+      <span className="score-box">
+        <strong>{evidence.routing_effect_enabled ? "ON" : "OFF"}</strong>
+        <span>routing</span>
+      </span>
+    </button>
+  );
+}
+
+function AccessibilityEvidenceDetailPanel({
+  detail,
+  fallback,
+  loading,
+}: {
+  detail: AccessibilityEvidenceDetail | null;
+  fallback: AccessibilityEvidence | null;
+  loading: boolean;
+}) {
+  const evidence = detail ?? fallback;
+  if (!evidence) {
+    return <div className="empty-state">Pilih observasi aksesibilitas pada peta atau daftar evidence.</div>;
+  }
+  return (
+    <>
+      <div className="detail-title">
+        <span className="source-stamp source-stamp--warning">
+          {accessibilitySourceLabel(evidence.source_type)}
+        </span>
+        <h3>{evidence.title ?? accessibilityCategoryLabel(evidence.category)}</h3>
+        <p>{accessibilitySubcategoryLabel(evidence.subcategory)} - {accessibilityStatusLabel(evidence.validation_status)}</p>
+      </div>
+      {evidence.media_urls.length > 0 ? (
+        <section className="evidence-section">
+          <h4>Foto observasi</h4>
+          <div className="media-gallery">
+            {evidence.media_urls.map((url, index) => (
+              <SafeMediaImage
+                key={url}
+                alt={index === 0 ? "Foto observasi aksesibilitas" : "Foto observasi lapangan"}
+                src={url}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+      <section className="evidence-section">
+        <h4>Observasi aksesibilitas</h4>
+        <dl className="evidence-list evidence-list--compact">
+          <OptionalDetail label="Kategori" value={accessibilityCategoryLabel(evidence.category)} />
+          <OptionalDetail label="Subkategori" value={accessibilitySubcategoryLabel(evidence.subcategory)} />
+          <OptionalDetail label="Status" value={accessibilityStatusLabel(evidence.validation_status)} />
+          <OptionalDetail label="Freshness" value={freshnessLabel(evidence.freshness_status)} />
+          <OptionalDetail label="Observed at" value={evidence.observed_at} />
+          <OptionalDetail label="Sumber" value={accessibilitySourceLabel(evidence.source_type)} />
+          <OptionalDetail label="Deskripsi" value={evidence.description} />
+        </dl>
+      </section>
+      <section className="evidence-section">
+        <h4>Hubungan jaringan kandidat</h4>
+        {loading ? (
+          <p className="limitation-box" role="status">Memeriksa kandidat jaringan pedestrian...</p>
+        ) : detail?.spatial_relation ? (
+          <dl className="evidence-list evidence-list--compact">
+            <OptionalDetail label="Tipe fitur" value="Pedestrian edge" />
+            <OptionalDetail label="Jarak kandidat" value={`${detail.spatial_relation.distance_m} m`} />
+            <OptionalDetail label="Status relasi" value={detail.spatial_relation.relation_status} />
+            <OptionalDetail label="Routing effect" value="Tidak aktif pada Phase 12" />
+          </dl>
+        ) : (
+          <p className="limitation-box">Belum ada kandidat jaringan dalam batas jarak aman. Evidence tetap tidak mengubah rute.</p>
+        )}
+      </section>
+      <section className="evidence-section">
+        <h4>Batas klaim</h4>
+        <p className="limitation-box">
+          Evidence ini adalah temuan lapangan atau kontribusi terkurasi. Phase 12 tidak menyatakan rute berbahaya dan tidak mengubah biaya pgRouting.
+        </p>
       </section>
     </>
   );
@@ -822,6 +1022,9 @@ export function GetraDashboard() {
   ] =
     useState(false);
 
+  const [mapPickMode, setMapPickMode] = useState<"NONE" | "ROUTE_START">("NONE");
+  const [manualRouteStart, setManualRouteStart] = useState<{ latitude: number; longitude: number } | null>(null);
+
   const [
     locating,
     setLocating,
@@ -857,7 +1060,7 @@ export function GetraDashboard() {
     setRouteOriginValue,
   ] =
     useState<string>(
-      ROUTE_ORIGIN_CENTER,
+      ROUTE_ORIGIN_NONE,
     );
 
   const [explicitRouteOrigin, setExplicitRouteOrigin] = useState<{
@@ -1089,7 +1292,7 @@ export function GetraDashboard() {
       ],
     );
 
-  const [primaryMode, setPrimaryMode] = useState<"merchant" | "business-space">("merchant");
+  const [primaryMode, setPrimaryMode] = useState<"merchant" | "business-space" | "accessibility">("merchant");
   const [viewMode, setViewMode] = useState<"fair-discovery" | "dataset" | "analytics">("dataset");
   const [analyticsMode, setAnalyticsMode] = useState<AnalyticsMode>("DEMAND");
   const [analyticsCategory, setAnalyticsCategory] = useState<AnalyticsCategorySlug>("coffee");
@@ -1108,6 +1311,19 @@ export function GetraDashboard() {
   const [propertyError, setPropertyError] = useState<string | null>(null);
   const propertyRequestRef = useRef<AbortController | null>(null);
   const propertyDetailRequestRef = useRef<AbortController | null>(null);
+  const [accessibilitySource, setAccessibilitySource] = useState<"" | AccessibilityEvidenceSource>("");
+  const [accessibilityCategory, setAccessibilityCategory] = useState<"" | AccessibilityEvidenceCategory>("ACCESSIBILITY_OBSERVATION");
+  const [accessibilityStatus, setAccessibilityStatus] = useState<"" | AccessibilityValidationStatus>("");
+  const [accessibilityDays, setAccessibilityDays] = useState<30 | 90 | 0>(90);
+  const [accessibilityEvidence, setAccessibilityEvidence] = useState<AccessibilityEvidence[]>([]);
+  const [accessibilityNeed, setAccessibilityNeed] = useState<AccessibilityNeedSummary | null>(null);
+  const [selectedAccessibilityEvidenceId, setSelectedAccessibilityEvidenceId] = useState<string | null>(null);
+  const [selectedAccessibilityEvidenceDetail, setSelectedAccessibilityEvidenceDetail] = useState<AccessibilityEvidenceDetail | null>(null);
+  const [accessibilityLoading, setAccessibilityLoading] = useState(false);
+  const [accessibilityDetailLoading, setAccessibilityDetailLoading] = useState(false);
+  const [accessibilityError, setAccessibilityError] = useState<string | null>(null);
+  const accessibilityRequestRef = useRef<AbortController | null>(null);
+  const accessibilityDetailRequestRef = useRef<AbortController | null>(null);
 
   const discoveryQuery = useMemo(() => {
     const origin = userLocation
@@ -1419,37 +1635,30 @@ export function GetraDashboard() {
       (merchant) =>
         merchant.id ===
         routeDestinationId,
-    ) ??
-    selectedMerchant ??
-    merchants[0] ??
-    null;
+    ) ?? null;
 
   const routeOrigin =
-    routeOriginValue ===
-      ROUTE_ORIGIN_USER &&
-    userLocation
+    routeOriginValue === ROUTE_ORIGIN_MANUAL && manualRouteStart
       ? {
-          label:
-            "Lokasi saya",
-          coordinate: {
-            latitude:
-              userLocation.latitude,
-            longitude:
-              userLocation.longitude,
-          },
+          label: "Titik pilihan di peta",
+          coordinate: manualRouteStart,
         }
-      : explicitRouteOrigin && routeOriginValue.startsWith("MERCHANT:")
-        ? { label: explicitRouteOrigin.label, coordinate: explicitRouteOrigin.coordinate }
-        : {
+      : routeOriginValue ===
+        ROUTE_ORIGIN_USER &&
+      userLocation
+        ? {
             label:
-              datasetOrigin.name,
+              "Lokasi saya",
             coordinate: {
               latitude:
-                datasetOrigin.latitude,
+                userLocation.latitude,
               longitude:
-                datasetOrigin.longitude,
+                userLocation.longitude,
             },
-          };
+          }
+      : explicitRouteOrigin && routeOriginValue.startsWith("MERCHANT:")
+        ? { label: explicitRouteOrigin.label, coordinate: explicitRouteOrigin.coordinate }
+        : null;
 
   const routeDurationMinutes =
     route?.duration_seconds !== null && route?.duration_seconds !== undefined
@@ -1462,14 +1671,13 @@ export function GetraDashboard() {
         )
       : null;
 
-  const routeOriginPoint = {
-    label:
-      routeOrigin.label,
-    latitude:
-      routeOrigin.coordinate.latitude,
-    longitude:
-      routeOrigin.coordinate.longitude,
-  };
+  const routeOriginPoint = routeOrigin
+    ? {
+        label: routeOrigin.label,
+        latitude: routeOrigin.coordinate.latitude,
+        longitude: routeOrigin.coordinate.longitude,
+      }
+    : null;
 
   const routeDestinationPoint =
     routeDestination &&
@@ -1504,21 +1712,30 @@ export function GetraDashboard() {
         );
         if (routingState === "IDLE") {
           clearRoute();
-        } else {
+        } else if (routeOrigin) {
           void requestRoute(routeOrigin.coordinate, {
             latitude: merchant.latitude,
             longitude: merchant.longitude,
           }, merchant.id);
         }
       },
-      [clearRoute, requestRoute, routeOrigin.coordinate, routingState],
+      [clearRoute, requestRoute, routeOrigin, routingState],
     );
+
+  const clearRouteDestination = useCallback(() => {
+    setRouteDestinationId(null);
+    clearRoute();
+  }, [clearRoute]);
 
   const handleClearSelection =
     useCallback(() => {
       setSelectedId(
         null,
       );
+      setSelectedPropertyId(null);
+      setSelectedPropertyDetail(null);
+      setSelectedAccessibilityEvidenceId(null);
+      setSelectedAccessibilityEvidenceDetail(null);
     }, []);
 
   const executeCanonicalSearch =
@@ -1566,15 +1783,17 @@ export function GetraDashboard() {
               maxBudget: Number(maxBudget) >= 1_000 ? Number(maxBudget) : undefined,
               openNow: openOnly || undefined,
               maxWalkingMinutes: maxWalkingMinutes ?? undefined,
-              origin: {
-                longitude: routeOrigin.coordinate.longitude,
-                latitude: routeOrigin.coordinate.latitude,
-                source: routeOriginValue === ROUTE_ORIGIN_USER
-                  ? "USER_LOCATION"
-                  : explicitRouteOrigin
-                    ? "EXPLICIT_ORIGIN"
-                    : "SELECTED_POINT",
-              },
+              origin: routeOrigin
+                ? {
+                    longitude: routeOrigin.coordinate.longitude,
+                    latitude: routeOrigin.coordinate.latitude,
+                    source: routeOriginValue === ROUTE_ORIGIN_USER
+                      ? "USER_LOCATION"
+                      : explicitRouteOrigin
+                        ? "EXPLICIT_ORIGIN"
+                        : "SELECTED_POINT",
+                  }
+                : undefined,
             },
           );
 
@@ -1641,8 +1860,8 @@ export function GetraDashboard() {
       maxBudget,
       maxWalkingMinutes,
       openOnly,
-      routeOrigin.coordinate.latitude,
-      routeOrigin.coordinate.longitude,
+      routeOrigin?.coordinate.latitude,
+      routeOrigin?.coordinate.longitude,
       explicitRouteOrigin,
       routeOriginValue,
     ]);
@@ -1730,6 +1949,76 @@ export function GetraDashboard() {
     }
   }, [propertyBusinessCategory]);
 
+  const executeAccessibilitySearch = useCallback(async (bbox: MapViewportBounds) => {
+    accessibilityRequestRef.current?.abort();
+    const controller = new AbortController();
+    accessibilityRequestRef.current = controller;
+    setAccessibilityLoading(true);
+    setAccessibilityError(null);
+    setSelectedAccessibilityEvidenceDetail(null);
+    try {
+      const query = {
+        bbox: ensureSearchableBounds(bbox),
+        category: accessibilityCategory || undefined,
+        days: accessibilityDays || undefined,
+        limit: 100,
+        source_type: accessibilitySource || undefined,
+        validation_status: accessibilityStatus || undefined,
+      };
+      const [result, need] = await Promise.all([
+        accessibilityEvidenceService.list(query, controller.signal),
+        accessibilityEvidenceService.need(query, controller.signal),
+      ]);
+      if (controller.signal.aborted) return;
+      setAccessibilityEvidence(result.evidence);
+      setAccessibilityNeed(need);
+      setSelectedAccessibilityEvidenceId((current) =>
+        current && result.evidence.some((item) => item.id === current)
+          ? current
+          : result.evidence[0]?.id ?? null,
+      );
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      setAccessibilityEvidence([]);
+      setAccessibilityNeed(null);
+      setSelectedAccessibilityEvidenceId(null);
+      setAccessibilityError(
+        error instanceof Error
+          ? error.message
+          : "Observasi aksesibilitas belum bisa dimuat.",
+      );
+    } finally {
+      if (accessibilityRequestRef.current === controller) {
+        accessibilityRequestRef.current = null;
+        setAccessibilityLoading(false);
+      }
+    }
+  }, [
+    accessibilityCategory,
+    accessibilityDays,
+    accessibilitySource,
+    accessibilityStatus,
+  ]);
+
+  const loadSelectedAccessibilityEvidenceDetail = useCallback(async (evidence: AccessibilityEvidence) => {
+    accessibilityDetailRequestRef.current?.abort();
+    const controller = new AbortController();
+    accessibilityDetailRequestRef.current = controller;
+    setSelectedAccessibilityEvidenceId(evidence.id);
+    setAccessibilityDetailLoading(true);
+    try {
+      const detail = await accessibilityEvidenceService.detail(evidence.id, controller.signal);
+      if (!controller.signal.aborted) setSelectedAccessibilityEvidenceDetail(detail);
+    } catch {
+      if (!controller.signal.aborted) setSelectedAccessibilityEvidenceDetail(null);
+    } finally {
+      if (accessibilityDetailRequestRef.current === controller) {
+        accessibilityDetailRequestRef.current = null;
+        setAccessibilityDetailLoading(false);
+      }
+    }
+  }, []);
+
   const handleViewportChange = useCallback((bbox: MapViewportBounds) => {
     currentViewportRef.current = bbox;
     setMapViewport(bbox);
@@ -1742,6 +2031,10 @@ export function GetraDashboard() {
         transactionType: propertyTransactionType,
         focus: false,
       });
+      return;
+    }
+    if (primaryMode === "accessibility") {
+      void executeAccessibilitySearch(bbox);
       return;
     }
     if (suppressNextViewportRef.current) {
@@ -1761,6 +2054,7 @@ export function GetraDashboard() {
     });
   }, [
     executeCanonicalSearch,
+    executeAccessibilitySearch,
     executePropertySearch,
     primaryMode,
     propertyCategory,
@@ -1854,6 +2148,10 @@ export function GetraDashboard() {
     setSelectedPropertyId(null);
     setSelectedPropertyDetail(null);
     setPropertyCandidates([]);
+    setSelectedAccessibilityEvidenceId(null);
+    setSelectedAccessibilityEvidenceDetail(null);
+    setAccessibilityEvidence([]);
+    setAccessibilityNeed(null);
     const bbox = currentViewportRef.current;
     if (bbox) {
       void executeCanonicalSearch({
@@ -1870,6 +2168,10 @@ export function GetraDashboard() {
     setPrimaryMode("business-space");
     setViewMode("dataset");
     setSelectedId(null);
+    setSelectedAccessibilityEvidenceId(null);
+    setSelectedAccessibilityEvidenceDetail(null);
+    setAccessibilityEvidence([]);
+    setAccessibilityNeed(null);
     setRouteDestinationId(null);
     clearRoute();
     void executePropertySearch({
@@ -1889,6 +2191,23 @@ export function GetraDashboard() {
     propertyRegionId,
     propertyTransactionType,
   ]);
+
+  const activateAccessibilityMode = useCallback(() => {
+    setPrimaryMode("accessibility");
+    setViewMode("dataset");
+    setSelectedId(null);
+    setSelectedPropertyId(null);
+    setSelectedPropertyDetail(null);
+    setPropertyCandidates([]);
+    setRouteDestinationId(null);
+    clearRoute();
+    void executeAccessibilitySearch(currentViewportRef.current ?? datasetBounds);
+  }, [clearRoute, datasetBounds, executeAccessibilitySearch]);
+
+  const submitAccessibilitySearch = useCallback(() => {
+    setPrimaryMode("accessibility");
+    void executeAccessibilitySearch(currentViewportRef.current ?? datasetBounds);
+  }, [datasetBounds, executeAccessibilitySearch]);
 
   const submitPropertySearch = useCallback(() => {
     setPrimaryMode("business-space");
@@ -1914,6 +2233,8 @@ export function GetraDashboard() {
     serviceAreaRequestRef.current?.abort();
     propertyRequestRef.current?.abort();
     propertyDetailRequestRef.current?.abort();
+    accessibilityRequestRef.current?.abort();
+    accessibilityDetailRequestRef.current?.abort();
   }, []);
 
   useEffect(() => {
@@ -2015,7 +2336,7 @@ export function GetraDashboard() {
           null,
         );
         setRouteOriginValue(
-          ROUTE_ORIGIN_CENTER,
+          ROUTE_ORIGIN_NONE,
         );
         setExplicitRouteOrigin(null);
         clearRoute();
@@ -2028,7 +2349,7 @@ export function GetraDashboard() {
 
   const handleBuildRoute =
     useCallback(() => {
-      if (!routeDestination) {
+      if (!routeDestination || !routeOrigin) {
         return;
       }
 
@@ -2045,11 +2366,12 @@ export function GetraDashboard() {
     }, [
       requestRoute,
       routeDestination,
-      routeOrigin.coordinate,
+      routeOrigin?.coordinate.latitude,
+      routeOrigin?.coordinate.longitude,
     ]);
 
   const handleSmartAlternative = useCallback(() => {
-    if (merchants.length < 2) return;
+    if (merchants.length < 2 || !routeOrigin) return;
     const currentIndex = merchants.findIndex((merchant) => merchant.id === routeDestination?.id);
     const alternative = merchants[(currentIndex + 1 + merchants.length) % merchants.length];
     if (!alternative || alternative.id === routeDestination?.id) return;
@@ -2060,7 +2382,7 @@ export function GetraDashboard() {
       latitude: alternative.latitude,
       longitude: alternative.longitude,
     }, alternative.id);
-  }, [merchants, requestRoute, routeDestination?.id, routeOrigin.coordinate]);
+  }, [merchants, requestRoute, routeDestination?.id, routeOrigin?.coordinate.latitude, routeOrigin?.coordinate.longitude]);
 
   const handleRouteChoice =
     useCallback(
@@ -2107,7 +2429,7 @@ export function GetraDashboard() {
         setDestinationSearch(
           merchant.name,
         );
-        if (routingState !== "IDLE") {
+        if (routingState !== "IDLE" && routeOrigin) {
           void requestRoute(routeOrigin.coordinate, {
             latitude: merchant.latitude,
             longitude: merchant.longitude,
@@ -2123,7 +2445,8 @@ export function GetraDashboard() {
       clearRoute,
       pendingRouteChoice,
       requestRoute,
-      routeOrigin.coordinate,
+      routeOrigin?.coordinate.latitude,
+      routeOrigin?.coordinate.longitude,
       routingState,
     ]);
 
@@ -2223,14 +2546,34 @@ export function GetraDashboard() {
   const handleUseDatasetCenterAsOrigin =
     useCallback(() => {
       setRouteOriginValue(
-        ROUTE_ORIGIN_CENTER,
+        ROUTE_ORIGIN_NONE,
       );
       setExplicitRouteOrigin(null);
       setOriginSearch(
         "",
       );
       clearRoute();
+      setMapPickMode("NONE");
     }, [clearRoute]);
+
+  const handleUseManualOrigin = useCallback(() => {
+    setRouteOriginValue(ROUTE_ORIGIN_MANUAL);
+    setExplicitRouteOrigin(null);
+    setOriginSearch("");
+    clearRoute();
+    setMapPickMode("ROUTE_START");
+  }, [clearRoute]);
+
+  const handleClearManualOrigin = useCallback(() => {
+    setManualRouteStart(null);
+    setMapPickMode("NONE");
+    handleUseDatasetCenterAsOrigin();
+  }, [handleUseDatasetCenterAsOrigin]);
+
+  const handleMapPick = useCallback((coordinate: { latitude: number; longitude: number }) => {
+    setManualRouteStart(coordinate);
+    setMapPickMode("NONE");
+  }, []);
 
   useEffect(() => {
     const requestId =
@@ -2583,16 +2926,31 @@ export function GetraDashboard() {
                 <button
                   className={
                     routeOriginValue ===
-                    ROUTE_ORIGIN_CENTER
+                    ROUTE_ORIGIN_MANUAL
                       ? "route-chip-button route-chip-button--active"
                       : "route-chip-button"
                   }
                   type="button"
-                  onClick={handleUseDatasetCenterAsOrigin}
+                  onClick={handleUseManualOrigin}
+                  style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
                 >
-                  Pusat data
+                  <Target size={14} /> Pilih di peta
                 </button>
               </div>
+
+              {routeOriginValue === ROUTE_ORIGIN_MANUAL && manualRouteStart ? (
+                <div style={{ marginTop: "1rem", padding: "0.75rem", backgroundColor: "#1e293b", borderRadius: "8px", border: "1px solid #334155" }}>
+                  <span style={{ display: "block", fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>TITIK MULAI</span>
+                  <strong style={{ display: "block", fontSize: "0.9rem", color: "#eef8fa", marginBottom: "0.25rem" }}>Titik pilihan di peta</strong>
+                  <p style={{ margin: 0, fontSize: "0.8rem", color: "#cbd5e1" }}>
+                    {manualRouteStart.latitude.toFixed(6)}, {manualRouteStart.longitude.toFixed(6)}
+                  </p>
+                  <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
+                    <button type="button" onClick={() => setMapPickMode("ROUTE_START")} style={{ fontSize: "0.75rem", backgroundColor: "#0284c7", color: "white", padding: "0.3rem 0.6rem", borderRadius: "4px", border: "none", cursor: "pointer" }}>Pilih ulang</button>
+                    <button type="button" onClick={handleClearManualOrigin} style={{ fontSize: "0.75rem", backgroundColor: "#b91c1c", color: "white", padding: "0.3rem 0.6rem", borderRadius: "4px", border: "none", cursor: "pointer" }}>Batal / Hapus</button>
+                  </div>
+                </div>
+              ) : null}
               <div className="route-search-box">
                 <Search size={15} />
                 <input
@@ -2707,20 +3065,32 @@ export function GetraDashboard() {
               </div>
             </div>
 
-            <div className="route-summary-card">
-              <span>
-                {routeOrigin.label}
-              </span>
-              <strong aria-hidden="true">
-                {"->"}
-              </strong>
-              <span>
-                {routeDestination?.name ??
-                  "Pilih tujuan"}
-              </span>
-            </div>
+            {routeDestination ? (
+              <div style={{ marginTop: "1.5rem", marginBottom: "1rem", padding: "0.75rem", backgroundColor: "#1e293b", borderRadius: "8px", border: "1px solid #334155" }}>
+                <span style={{ display: "block", fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>TUJUAN</span>
+                <strong style={{ display: "block", fontSize: "0.9rem", color: "#eef8fa", marginBottom: "0.25rem" }}>
+                  <MapPinned size={14} style={{ display: "inline-block", marginRight: "4px", verticalAlign: "middle", color: "#ef4444" }}/>
+                  {routeDestination.name}
+                </strong>
+                <p style={{ margin: 0, fontSize: "0.8rem", color: "#cbd5e1", marginLeft: "18px" }}>
+                  {routeDestination.district ?? routeDestination.city ?? `${routeDestination.latitude.toFixed(5)}, ${routeDestination.longitude.toFixed(5)}`}
+                </p>
+                <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
+                  <button type="button" onClick={() => {
+                    const input = document.querySelector('.route-search-box--destination input') as HTMLInputElement;
+                    input?.focus();
+                  }} style={{ fontSize: "0.75rem", backgroundColor: "#0284c7", color: "white", padding: "0.3rem 0.6rem", borderRadius: "4px", border: "none", cursor: "pointer" }}>Ganti tujuan</button>
+                  <button type="button" onClick={clearRouteDestination} style={{ fontSize: "0.75rem", backgroundColor: "#b91c1c", color: "white", padding: "0.3rem 0.6rem", borderRadius: "4px", border: "none", cursor: "pointer" }}>Batal / Hapus tujuan</button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ marginTop: "1.5rem", marginBottom: "1rem", padding: "0.75rem", backgroundColor: "#0f172a", borderRadius: "8px", border: "1px dashed #334155" }}>
+                <span style={{ display: "block", fontSize: "0.7rem", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>TUJUAN</span>
+                <p style={{ margin: 0, fontSize: "0.8rem", color: "#94a3b8" }}>Belum ada tujuan dipilih.</p>
+              </div>
+            )}
 
-            <div className="route-actions">
+            <div className="route-actions" style={{ marginTop: "1rem" }}>
               <button
                 className="route-primary-button"
                 type="button"
@@ -2734,7 +3104,7 @@ export function GetraDashboard() {
                 {routingState ===
                 "LOADING"
                   ? "Menghitung rute..."
-                  : "Buat rute"}
+                  : "Hitung Rute"}
               </button>
               <button
                 className="route-secondary-button"
@@ -2913,6 +3283,14 @@ export function GetraDashboard() {
             >
               Business Space
             </button>
+            <button
+              type="button"
+              className={primaryMode === "accessibility" ? "primary-map-mode__button primary-map-mode__button--active" : "primary-map-mode__button"}
+              aria-pressed={primaryMode === "accessibility"}
+              onClick={activateAccessibilityMode}
+            >
+              Accessibility
+            </button>
           </div>
 
           {primaryMode === "merchant" ? (
@@ -2937,7 +3315,7 @@ export function GetraDashboard() {
               onOpenNowChange={setOpenOnly}
               onMaxWalkingMinutesChange={setMaxWalkingMinutes}
             />
-          ) : (
+          ) : primaryMode === "business-space" ? (
             <section className="property-search-panel" aria-label="Pencarian Properti Go">
               <label>
                 <span>Cari Properti Go</span>
@@ -2991,6 +3369,67 @@ export function GetraDashboard() {
               </button>
               {propertyLoading ? <p className="route-message" role="status">Memuat Properti Go pada cakupan aktif...</p> : null}
               {propertyError ? <p className="route-message route-message--error" role="alert">{propertyError}</p> : null}
+            </section>
+          ) : (
+            <section className="accessibility-search-panel" aria-label="Filter observasi aksesibilitas">
+              <div className="accessibility-panel-heading">
+                <ShieldCheck size={17} />
+                <div>
+                  <strong>Observasi aksesibilitas</strong>
+                  <span>Evidence viewport, bukan routing penalty.</span>
+                </div>
+              </div>
+              <div className="property-filter-grid">
+                <label>
+                  <span>Sumber</span>
+                  <select value={accessibilitySource} onChange={(event) => setAccessibilitySource(event.target.value as "" | AccessibilityEvidenceSource)}>
+                    {ACCESSIBILITY_SOURCE_OPTIONS.map((option) => (
+                      <option key={option.value || "all"} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Kategori</span>
+                  <select value={accessibilityCategory} onChange={(event) => setAccessibilityCategory(event.target.value as "" | AccessibilityEvidenceCategory)}>
+                    {ACCESSIBILITY_CATEGORY_OPTIONS.map((option) => (
+                      <option key={option.value || "all"} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Status</span>
+                  <select value={accessibilityStatus} onChange={(event) => setAccessibilityStatus(event.target.value as "" | AccessibilityValidationStatus)}>
+                    {ACCESSIBILITY_STATUS_OPTIONS.map((option) => (
+                      <option key={option.value || "all"} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Periode</span>
+                  <select value={accessibilityDays} onChange={(event) => setAccessibilityDays(Number(event.target.value) as 30 | 90 | 0)}>
+                    <option value={30}>30 hari</option>
+                    <option value={90}>90 hari</option>
+                    <option value={0}>Semua waktu</option>
+                  </select>
+                </label>
+              </div>
+              <button className="route-primary-button property-search-button" type="button" onClick={submitAccessibilitySearch}>
+                <Search size={15} />
+                Terapkan filter
+              </button>
+              {accessibilityLoading ? <p className="route-message" role="status">Memuat observasi aksesibilitas pada viewport aktif...</p> : null}
+              {accessibilityError ? <p className="route-message route-message--error" role="alert">{accessibilityError}</p> : null}
+              {accessibilityNeed ? (
+                <div className="accessibility-summary" data-accessibility-sample-size={accessibilityNeed.sample_size}>
+                  <span><strong>{accessibilityNeed.observation_count}</strong> observasi</span>
+                  <span><strong>{accessibilityNeed.confirmed_count}</strong> terkonfirmasi</span>
+                  <span><strong>{accessibilityNeed.needs_review_count}</strong> perlu verifikasi</span>
+                  <span><strong>{accessibilityNeed.recent_count}</strong> recent</span>
+                </div>
+              ) : null}
+              {accessibilityNeed?.low_sample ? (
+                <p className="limitation-box">Data observasi masih terbatas.</p>
+              ) : null}
             </section>
           )}
 
@@ -3118,6 +3557,33 @@ export function GetraDashboard() {
                       index={index}
                       selected={candidate.id === selectedPropertyId}
                       onSelect={loadSelectedPropertyDetail}
+                    />
+                  ))
+                )}
+              </div>
+            </>
+          ) : primaryMode === "accessibility" ? (
+            <>
+              <div className="results-header">
+                <div>
+                  <span className="eyebrow">Accessibility Evidence</span>
+                  <strong>{accessibilityEvidence.length} observasi pada viewport</strong>
+                </div>
+                <span className="source-stamp">EVIDENCE</span>
+              </div>
+              <div className="result-list" data-accessibility-result-count={accessibilityEvidence.length}>
+                {accessibilityEvidence.length === 0 ? (
+                  <div className="empty-state" role="status">
+                    Belum ada observasi aksesibilitas yang tercatat di area ini.
+                  </div>
+                ) : (
+                  accessibilityEvidence.map((evidence, index) => (
+                    <AccessibilityEvidenceResultRow
+                      key={evidence.id}
+                      evidence={evidence}
+                      index={index}
+                      selected={evidence.id === selectedAccessibilityEvidenceId}
+                      onSelect={loadSelectedAccessibilityEvidenceDetail}
                     />
                   ))
                 )}
@@ -3274,7 +3740,7 @@ export function GetraDashboard() {
           <div className="mt-4">
             <AiPanel
               activeExperience={activeExperience}
-              currentOrigin={routeOrigin.coordinate}
+              currentOrigin={routeOrigin?.coordinate}
               currentDestination={selectedMerchant ? { latitude: selectedMerchant.latitude, longitude: selectedMerchant.longitude } : undefined}
               selectedEntityId={selectedMerchant?.id}
             />
@@ -3284,7 +3750,48 @@ export function GetraDashboard() {
         <section
           className="map-panel"
           aria-label="Peta GETRA"
+          style={{ position: "relative" }}
         >
+          {mapPickMode === "ROUTE_START" && (
+            <div
+              style={{
+                position: "absolute",
+                top: "1rem",
+                left: "50%",
+                transform: "translateX(-50%)",
+                zIndex: 20,
+                backgroundColor: "#1e293b",
+                color: "#eef8fa",
+                padding: "0.75rem 1rem",
+                borderRadius: "8px",
+                border: "1px solid #38bdf8",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.5)",
+                display: "flex",
+                alignItems: "center",
+                gap: "1rem",
+              }}
+            >
+              <div>
+                <strong style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.25rem" }}>Pilih titik mulai</strong>
+                <span style={{ fontSize: "0.8rem", color: "#94a3b8" }}>Klik peta untuk menentukan START</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleClearManualOrigin}
+                style={{
+                  padding: "0.25rem 0.5rem",
+                  fontSize: "0.75rem",
+                  backgroundColor: "#334155",
+                  border: "none",
+                  borderRadius: "4px",
+                  color: "#eef8fa",
+                  cursor: "pointer",
+                }}
+              >
+                Batal
+              </button>
+            </div>
+          )}
           <GetraMap
             datasetKey={datasetId}
             focusBounds={searchFocusBounds}
@@ -3293,9 +3800,12 @@ export function GetraDashboard() {
             selectedId={primaryMode === "merchant" ? selectedId : null}
             propertyCandidates={primaryMode === "business-space" ? propertyCandidates : []}
             selectedPropertyId={primaryMode === "business-space" ? selectedPropertyId : null}
+            accessibilityEvidence={primaryMode === "accessibility" ? accessibilityEvidence : []}
+            selectedAccessibilityEvidenceId={primaryMode === "accessibility" ? selectedAccessibilityEvidenceId : null}
             userLocation={userLocation}
             onSelect={handleSelect}
             onSelectProperty={loadSelectedPropertyDetail}
+            onSelectAccessibilityEvidence={loadSelectedAccessibilityEvidenceDetail}
             onClearSelection={handleClearSelection}
             onViewportChange={handleViewportChange}
             contextualLayerData={contextualLayerData}
@@ -3318,6 +3828,9 @@ export function GetraDashboard() {
             analyticsCollection={analyticsCollection}
             analyticsMode={analyticsMode}
             onSelectAnalyticsRegion={setSelectedAnalyticsRegionId}
+            mapPickMode={mapPickMode}
+            manualRouteStart={manualRouteStart}
+            onMapPick={handleMapPick}
           />
         </section>
 
@@ -3339,6 +3852,12 @@ export function GetraDashboard() {
               detail={selectedPropertyDetail}
               fallback={propertyCandidates.find((candidate) => candidate.id === selectedPropertyId) ?? null}
               loading={propertyDetailLoading}
+            />
+          ) : primaryMode === "accessibility" ? (
+            <AccessibilityEvidenceDetailPanel
+              detail={selectedAccessibilityEvidenceDetail}
+              fallback={accessibilityEvidence.find((evidence) => evidence.id === selectedAccessibilityEvidenceId) ?? null}
+              loading={accessibilityDetailLoading}
             />
           ) : selectedMerchant ? (
             <>
@@ -3362,6 +3881,32 @@ export function GetraDashboard() {
                   {" · "}
                   {selectedMerchant.category}
                 </p>
+              </div>
+
+              <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRouteDestinationId(selectedMerchant.id);
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    backgroundColor: routeDestination?.id === selectedMerchant.id ? "#334155" : "#0284c7",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.5rem"
+                  }}
+                  disabled={routeDestination?.id === selectedMerchant.id}
+                >
+                  <Route size={16} /> {routeDestination?.id === selectedMerchant.id ? "Sudah menjadi tujuan" : "Jadikan tujuan rute"}
+                </button>
               </div>
 
               {/* Profile Poster Promotional Placement (Additive Phase 9) */}
@@ -3483,7 +4028,7 @@ export function GetraDashboard() {
                 <h4>
                   Catatan
                 </h4>
-                <p className="limitation-box">
+                <p className="limitation-box" style={{ color: "#cbd5e1" }}>
                   {selectedMerchant.limitation}
                 </p>
               </section>

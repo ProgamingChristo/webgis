@@ -20,7 +20,7 @@ export const accessibilityEvidenceIdSchema = z
   .max(220)
   .regex(/^(MAPID_ACTIVITY|GETRA_COMMUNITY):[A-Za-z0-9._:-]+$/);
 
-export const accessibilityEvidenceQuerySchema = z.object({
+const accessibilityQueryBaseSchema = z.object({
   west: queryNumber(longitudeSchema),
   south: queryNumber(latitudeSchema),
   east: queryNumber(longitudeSchema),
@@ -29,19 +29,35 @@ export const accessibilityEvidenceQuerySchema = z.object({
   category: z.enum(ACCESSIBILITY_EVIDENCE_CATEGORIES).optional(),
   validation_status: z.enum(ACCESSIBILITY_VALIDATION_STATUSES).optional(),
   days: z.coerce.number().int().positive().max(365).optional(),
-  limit: queryNumber(z.number().int().positive().max(250)).default(100),
-  offset: queryNumber(z.number().int().nonnegative().max(10_000)).default(0),
-}).strict().superRefine((value, context) => {
-  if (value.west >= value.east || value.south >= value.north) {
-    context.addIssue({ code: "custom", message: "bbox ordering is invalid" });
-  }
-  if (value.east - value.west > 10 || value.north - value.south > 10) {
-    context.addIssue({ code: "custom", message: "bbox is too large" });
-  }
 });
 
-export const accessibilityNeedQuerySchema = accessibilityEvidenceQuerySchema
-  .omit({ limit: true, offset: true });
+function refineAccessibilityBbox<T extends z.ZodTypeAny>(schema: T) {
+  return schema.superRefine((value, context) => {
+    const query = value as {
+      west: number;
+      south: number;
+      east: number;
+      north: number;
+    };
+    if (query.west >= query.east || query.south >= query.north) {
+      context.addIssue({ code: "custom", message: "bbox ordering is invalid" });
+    }
+    if (query.east - query.west > 10 || query.north - query.south > 10) {
+      context.addIssue({ code: "custom", message: "bbox is too large" });
+    }
+  });
+}
+
+export const accessibilityEvidenceQuerySchema = refineAccessibilityBbox(
+  accessibilityQueryBaseSchema.extend({
+  limit: queryNumber(z.number().int().positive().max(250)).default(100),
+  offset: queryNumber(z.number().int().nonnegative().max(10_000)).default(0),
+  }).strict(),
+);
+
+export const accessibilityNeedQuerySchema = refineAccessibilityBbox(
+  accessibilityQueryBaseSchema.strict(),
+);
 
 export const accessibilityReviewRequestSchema = z.object({
   validation_status: z.enum(ACCESSIBILITY_VALIDATION_STATUSES),

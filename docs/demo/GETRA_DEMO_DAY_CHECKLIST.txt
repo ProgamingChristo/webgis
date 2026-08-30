@@ -1,0 +1,8 @@
+GETRA DEMO DAY CHECKLIST
+[x] Environment: Production Build
+[x] Accounts: 5 personas ready
+[x] DB: Seeded with Golden Data
+[x] API: Latency < 200ms
+[x] Basemap: Working
+[x] AI: Connected
+[x] Fallback: Prepared

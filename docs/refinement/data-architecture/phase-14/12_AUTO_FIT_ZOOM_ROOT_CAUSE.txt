@@ -1,0 +1,6 @@
+GETRA PHASE 14 - 12 AUTO FIT ZOOM ROOT CAUSE
+
+STATUS: IMPLEMENTED / VERIFIED
+
+Auto Fit Zoom Root Cause:
+The issue was caused by the `useEffect` hook in `getra-map.tsx` triggering `map.fitBounds` every time the `viewportData` changed due to a pan or zoom out. We introduced a explicit `cameraMode` state initialized to `AUTO_INITIAL` and switched to `USER_CONTROLLED` upon map interaction (e.g. `map.on('zoomstart')` and `map.on('dragstart')`). `fitBounds` now only fires when `cameraMode` is NOT `USER_CONTROLLED` or on explicit user action.

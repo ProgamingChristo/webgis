@@ -1,0 +1,13 @@
+GETRA FRONTEND MANUAL TEST GUIDE
+1. Login as USER
+2. Go to Map, search for "Bakso"
+3. Verify pins appear.
+4. Click route, verify network path.
+5. Switch to UMKM mode, verify private dashboard.
+6. Switch to Business Space, verify property cards.
+
+[Phase 14 Guide]
+1. Drag map away from GPS location, verify map does not snap back.
+2. Click "Gunakan titik ini", verify nearby UMKMs fetch for new point.
+3. Click "Kembali ke lokasi saya", verify map centers on actual GPS.
+4. Verify rating filter does not exist to prevent false claims.

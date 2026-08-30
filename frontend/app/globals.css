@@ -2525,6 +2525,61 @@ select:focus-visible {
     0 0 0 5px rgba(251, 146, 60, 0.28);
 }
 
+.accessibility-marker-anchor {
+  z-index: 18 !important;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+}
+
+.accessibility-marker {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.45),
+    0 0 0 4px rgba(37, 99, 235, 0.2);
+  cursor: pointer;
+}
+
+.accessibility-marker::before {
+  position: absolute;
+  inset: -8px;
+  content: "";
+}
+
+.accessibility-marker[data-status="NEEDS_REVIEW"] {
+  background: #d97706;
+}
+
+.accessibility-marker[data-status="CONFIRMED"] {
+  background: #059669;
+}
+
+.accessibility-marker[data-status="STALE"] {
+  background: #64748b;
+}
+
+.accessibility-marker--selected {
+  width: 30px;
+  height: 30px;
+  border-color: #fff;
+  box-shadow:
+    0 5px 16px rgba(0, 0, 0, 0.5),
+    0 0 0 5px rgba(59, 130, 246, 0.28);
+}
+
 .transit-marker {
   width: 22px;
   height: 22px;
@@ -2772,7 +2827,7 @@ select:focus-visible {
 
 .primary-map-mode {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   margin: 12px 0;
   padding: 5px;
@@ -2797,7 +2852,8 @@ select:focus-visible {
   color: var(--getra-primary);
 }
 
-.property-search-panel {
+.property-search-panel,
+.accessibility-search-panel {
   display: grid;
   gap: 10px;
   margin-bottom: 12px;
@@ -2808,12 +2864,14 @@ select:focus-visible {
 }
 
 .property-search-panel label,
+.accessibility-search-panel label,
 .property-filter-grid label {
   display: grid;
   gap: 6px;
 }
 
 .property-search-panel span,
+.accessibility-search-panel span,
 .property-filter-grid span {
   color: var(--getra-ink-soft);
   font-size: 10px;
@@ -2824,6 +2882,8 @@ select:focus-visible {
 
 .property-search-panel input,
 .property-search-panel select,
+.accessibility-search-panel input,
+.accessibility-search-panel select,
 .property-filter-grid input,
 .property-filter-grid select {
   width: 100%;
@@ -2847,6 +2907,44 @@ select:focus-visible {
 
 .property-result-row .score-box strong {
   font-size: 11px;
+}
+
+.accessibility-result-row .score-box strong {
+  font-size: 11px;
+}
+
+.accessibility-panel-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.accessibility-panel-heading strong {
+  display: block;
+  color: var(--getra-ink);
+  font-size: 13px;
+}
+
+.accessibility-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.accessibility-summary span {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border: 1px solid var(--getra-line);
+  border-radius: 6px;
+  background: rgba(8, 20, 31, 0.74);
+  text-transform: none;
+}
+
+.accessibility-summary strong {
+  color: var(--getra-primary);
+  font-size: 14px;
 }
 
 .media-gallery {

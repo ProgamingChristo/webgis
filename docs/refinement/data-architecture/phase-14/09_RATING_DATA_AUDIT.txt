@@ -1,0 +1,6 @@
+GETRA PHASE 14 - 09 RATING DATA AUDIT
+
+STATUS: IMPLEMENTED / VERIFIED
+
+Rating Data Audit:
+No actual internal GETRA rating source exists for UMKM. Ratings from Premium/Menu Go are external. We will only display ratings if explicitly returned by the source provider. Since we don't have a reliable rating DB table in the current schema, Rating filter is set to NOT AVAILABLE to prevent fabricated AI ratings.

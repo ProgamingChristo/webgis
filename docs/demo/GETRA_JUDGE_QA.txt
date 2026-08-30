@@ -1,0 +1,12 @@
+GETRA JUDGE Q&A
+Q: What makes GETRA different from Google Maps?
+A: GETRA integrates business space analysis, UMKM intelligence, and network-aware multi-source observations instead of just pins.
+
+Q: Where does AI operate?
+A: AI is restricted to intent routing and grounding interpretation of GIS calculations.
+
+Q: How is walking time calculated?
+A: Deterministic network-based pgRouting, not haversine distance.
+
+Q: Does GETRA predict profit?
+A: No, it provides structured Retail Gap and Demand observations.

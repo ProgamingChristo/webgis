@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-28T02:54:49.258Z",
+  "generated_at": "2026-08-30T05:36:57.740Z",
   "browser": "Chrome headless via puppeteer-core",
   "flows": {
     "default_state": {
@@ -12,7 +12,7 @@
     "property": {
       "http_status": 200,
       "popup": {
-        "text": "PROPERTY OBSERVATIONRumahKategori: RumahJenis: DijualAlamat: Jalan Kembang Sakti, Kembangan West Jakarta, Kembangan Selatan, Kembangan, Jakarta Barat, IndonesiaWaktu: Waktu observasi belum tersediaStatus: Observasi sumberSumber: MAPID Properti Go",
+        "text": "PROPERTY OBSERVATIONRukoKategori: RukoJenis: DijualAlamat: Jalan Profesor Doktor Satrio 241, Karet Kuningan South Jakarta, Setiabudi, IndonesiaWaktu: Waktu observasi belum tersediaStatus: Observasi sumberSumber: MAPID Properti Go",
         "heading_present": true,
         "image_alt": "Foto tampak depan properti",
         "image_present": true
@@ -22,22 +22,22 @@
     "transaction": {
       "http_status": 200,
       "popup": {
-        "text": "TRANSACTION OBSERVATIONWarung makan bang AndiKategori: Warung/kaki limaPembayaran: QRISWaktu: Waktu observasi belum tersediaStatus: Observasi sumberSumber: MAPID Struk Go",
+        "text": "TRANSACTION OBSERVATIONOmah AngloKategori: RestoranPembayaran: QRISWaktu: Waktu observasi belum tersediaStatus: Observasi sumberSumber: MAPID Struk Go",
         "heading_present": true,
         "image_alt": "Foto bukti struk",
         "image_present": true
       },
-      "count": 148
+      "count": 167
     },
     "activities": {
       "http_status": 200,
       "popup": {
-        "text": "FIELD OBSERVATIONKondisi Sekitar Halte Non-BRT Komplek ALJenis observasi: Observasi lapanganKeterangan: Pada 27 Agustus 2026,pukul 15.45 WIB, Halte Non-BRT Komplek AL terlihat sebagai titik pemberhentian yang sudah memiliki bangunan halte dan tempat duduk untuk pengguna yang menunggu bus. Jalur menuju halte juga dilengkapi guiding block. Keberadaan pepohonan di sekitar trotoar membuat area halte terasa cukup teduh dan nyaman untuk dilalui pedestrian.\nSaat menunggu, pengguna dapat menggunakan tempat duduk yang tersedia di dalam halte. Namun, dari sisi keamanan belum terdapat CCTV maupun petugas keamanan di sekitar halte. #SIGmassITWaktu: Diamati 27 Agu 2026Status: Observasi sumberSumber: MAPID Activities",
+        "text": "FIELD OBSERVATIONTrotoar di Sekitar Terminal Bus Transjakarta Pulo GadungJenis observasi: Observasi lapanganKeterangan: Area depan terminal bus transjakarta Pulo Gadung dipenuhi bus biru yang terparkir berjejeran. Trotoar di sekitar terminal tersebut sempit dan tidak layak. Bahkan di beberapa titik trotoar tidak ada. Terlihat juga sampah yang dibuang di pinggir jalan. Hal ini jelas membuat pejalan kaki tidak nyaman. #TimKaloMenangKitaJogetWaktu: Diamati 27 Agu 2026Status: Observasi sumberSumber: MAPID Activities",
         "heading_present": true,
         "image_alt": "Foto observasi lapangan",
         "image_present": true
       },
-      "count": 60,
+      "count": 125,
       "categories": [
         "UNCLASSIFIED"
       ]
@@ -49,8 +49,8 @@
       "merchant_visible": "true",
       "merchant_count": 3,
       "property_count": 130,
-      "transaction_count": 148,
-      "activities_count": 60,
+      "transaction_count": 167,
+      "activities_count": 125,
       "boundary_count": 1,
       "query": "bakso Jakarta Selatan"
     },
@@ -84,9 +84,9 @@
       {
         "source": "STRUK_GO",
         "status": 200,
-        "payload_bytes": 101702,
-        "returned_features": 148,
-        "total_available": 148,
+        "payload_bytes": 115057,
+        "returned_features": 167,
+        "total_available": 167,
         "bbox": {
           "west": 106.67526,
           "south": -6.37471,
@@ -99,14 +99,29 @@
       {
         "source": "ACTIVITIES",
         "status": 200,
-        "payload_bytes": 82757,
-        "returned_features": 60,
-        "total_available": 60,
+        "payload_bytes": 158069,
+        "returned_features": 125,
+        "total_available": 125,
         "bbox": {
           "west": 106.67526,
           "south": -6.37471,
           "east": 106.98054,
           "north": -6.03185
+        },
+        "bounded": true,
+        "safe_body": true
+      },
+      {
+        "source": "STRUK_GO",
+        "status": 200,
+        "payload_bytes": 60954,
+        "returned_features": 90,
+        "total_available": 90,
+        "bbox": {
+          "west": 106.71928,
+          "south": -6.37708,
+          "east": 106.88491,
+          "north": -6.19109
         },
         "bounded": true,
         "safe_body": true
@@ -127,11 +142,11 @@
         "safe_body": true
       },
       {
-        "source": "STRUK_GO",
+        "source": "ACTIVITIES",
         "status": 200,
-        "payload_bytes": 54921,
-        "returned_features": 81,
-        "total_available": 81,
+        "payload_bytes": 77912,
+        "returned_features": 58,
+        "total_available": 58,
         "bbox": {
           "west": 106.71928,
           "south": -6.37708,
@@ -142,15 +157,15 @@
         "safe_body": true
       },
       {
-        "source": "ACTIVITIES",
+        "source": "PROPERTI_GO",
         "status": 200,
-        "payload_bytes": 40341,
-        "returned_features": 28,
-        "total_available": 28,
+        "payload_bytes": 33665,
+        "returned_features": 35,
+        "total_available": 35,
         "bbox": {
-          "west": 106.71928,
+          "west": 106.76128,
           "south": -6.37708,
-          "east": 106.88491,
+          "east": 106.92691,
           "north": -6.19109
         },
         "bounded": true,
@@ -159,28 +174,13 @@
       {
         "source": "STRUK_GO",
         "status": 200,
-        "payload_bytes": 60240,
-        "returned_features": 89,
-        "total_available": 89,
+        "payload_bytes": 65629,
+        "returned_features": 97,
+        "total_available": 97,
         "bbox": {
-          "west": 106.75794,
+          "west": 106.76128,
           "south": -6.37708,
-          "east": 106.92357,
-          "north": -6.19109
-        },
-        "bounded": true,
-        "safe_body": true
-      },
-      {
-        "source": "PROPERTI_GO",
-        "status": 200,
-        "payload_bytes": 36412,
-        "returned_features": 38,
-        "total_available": 38,
-        "bbox": {
-          "west": 106.75794,
-          "south": -6.37708,
-          "east": 106.92357,
+          "east": 106.92691,
           "north": -6.19109
         },
         "bounded": true,
@@ -189,29 +189,14 @@
       {
         "source": "ACTIVITIES",
         "status": 200,
-        "payload_bytes": 32966,
-        "returned_features": 21,
-        "total_available": 21,
+        "payload_bytes": 70537,
+        "returned_features": 51,
+        "total_available": 51,
         "bbox": {
-          "west": 106.75794,
+          "west": 106.76128,
           "south": -6.37708,
-          "east": 106.92357,
+          "east": 106.92691,
           "north": -6.19109
-        },
-        "bounded": true,
-        "safe_body": true
-      },
-      {
-        "source": "PROPERTI_GO",
-        "status": 200,
-        "payload_bytes": 32850,
-        "returned_features": 34,
-        "total_available": 34,
-        "bbox": {
-          "west": 106.75481,
-          "south": -6.35306,
-          "east": 106.9267,
-          "north": -6.21512
         },
         "bounded": true,
         "safe_body": true
@@ -219,13 +204,73 @@
       {
         "source": "STRUK_GO",
         "status": 200,
-        "payload_bytes": 49014,
-        "returned_features": 72,
-        "total_available": 72,
+        "payload_bytes": 10459,
+        "returned_features": 15,
+        "total_available": 15,
         "bbox": {
-          "west": 106.75481,
+          "west": 106.80045,
+          "south": -6.33971,
+          "east": 106.88774,
+          "north": -6.22847
+        },
+        "bounded": true,
+        "safe_body": true
+      },
+      {
+        "source": "PROPERTI_GO",
+        "status": 200,
+        "payload_bytes": 26447,
+        "returned_features": 27,
+        "total_available": 27,
+        "bbox": {
+          "west": 106.80045,
+          "south": -6.33971,
+          "east": 106.88774,
+          "north": -6.22847
+        },
+        "bounded": true,
+        "safe_body": true
+      },
+      {
+        "source": "ACTIVITIES",
+        "status": 200,
+        "payload_bytes": 24557,
+        "returned_features": 16,
+        "total_available": 16,
+        "bbox": {
+          "west": 106.80045,
+          "south": -6.33971,
+          "east": 106.88774,
+          "north": -6.22847
+        },
+        "bounded": true,
+        "safe_body": true
+      },
+      {
+        "source": "STRUK_GO",
+        "status": 200,
+        "payload_bytes": 54363,
+        "returned_features": 80,
+        "total_available": 80,
+        "bbox": {
+          "west": 106.75815,
           "south": -6.35306,
-          "east": 106.9267,
+          "east": 106.93004,
+          "north": -6.21512
+        },
+        "bounded": true,
+        "safe_body": true
+      },
+      {
+        "source": "PROPERTI_GO",
+        "status": 200,
+        "payload_bytes": 29261,
+        "returned_features": 30,
+        "total_available": 30,
+        "bbox": {
+          "west": 106.75815,
+          "south": -6.35306,
+          "east": 106.93004,
           "north": -6.21512
         },
         "bounded": true,
@@ -234,13 +279,13 @@
       {
         "source": "ACTIVITIES",
         "status": 200,
-        "payload_bytes": 26553,
-        "returned_features": 17,
-        "total_available": 17,
+        "payload_bytes": 50817,
+        "returned_features": 36,
+        "total_available": 36,
         "bbox": {
-          "west": 106.75481,
+          "west": 106.75815,
           "south": -6.35306,
-          "east": 106.9267,
+          "east": 106.93004,
           "north": -6.21512
         },
         "bounded": true,
@@ -253,9 +298,9 @@
         "returned_features": 29,
         "total_available": 29,
         "bbox": {
-          "west": 106.76622,
+          "west": 106.76956,
           "south": -6.3624,
-          "east": 106.91529,
+          "east": 106.91862,
           "north": -6.20578
         },
         "bounded": true,
@@ -264,13 +309,13 @@
       {
         "source": "STRUK_GO",
         "status": 200,
-        "payload_bytes": 45832,
-        "returned_features": 67,
-        "total_available": 67,
+        "payload_bytes": 51865,
+        "returned_features": 76,
+        "total_available": 76,
         "bbox": {
-          "west": 106.76622,
+          "west": 106.76956,
           "south": -6.3624,
-          "east": 106.91529,
+          "east": 106.91862,
           "north": -6.20578
         },
         "bounded": true,
@@ -279,13 +324,13 @@
       {
         "source": "ACTIVITIES",
         "status": 200,
-        "payload_bytes": 32965,
-        "returned_features": 21,
-        "total_available": 21,
+        "payload_bytes": 60486,
+        "returned_features": 43,
+        "total_available": 43,
         "bbox": {
-          "west": 106.76622,
+          "west": 106.76956,
           "south": -6.3624,
-          "east": 106.91529,
+          "east": 106.91862,
           "north": -6.20578
         },
         "bounded": true,
@@ -332,7 +377,6 @@
     "media_alt": true
   },
   "console_errors": [
-    "Failed to load resource: the server responded with a status of 400 ()",
     "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
   ],
   "failed_requests": [],

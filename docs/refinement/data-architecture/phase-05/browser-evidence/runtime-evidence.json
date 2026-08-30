@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-08-28T02:46:25.435Z",
+  "generated_at": "2026-08-30T05:36:06.915Z",
   "browser": "Chrome headless via puppeteer-core",
   "console_errors": [],
   "failed_requests": [],
   "flows": {
     "initial_viewport": {
-      "duration_ms": 7081,
+      "duration_ms": 7815,
       "status": 200,
-      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=&scope=CURRENT_VIEWPORT",
-      "payload_bytes": 105366,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=&scope=CURRENT_VIEWPORT&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT",
+      "payload_bytes": 111915,
       "safe_body": true,
       "total": 715,
       "returned": 100,
@@ -27,7 +27,19 @@
             "north": -6.031847590790221
           }
         },
-        "category": null
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": null
+        },
+        "origin": {
+          "longitude": 106.8278985,
+          "latitude": -6.2033015,
+          "source": "SELECTED_POINT"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
       },
       "unique_merchant_count": 100,
       "result_region_ids": [
@@ -38,10 +50,10 @@
       ]
     },
     "keyword_current_viewport": {
-      "duration_ms": 1086,
+      "duration_ms": 1338,
       "status": 200,
-      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=bakso&scope=CURRENT_VIEWPORT",
-      "payload_bytes": 9032,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=bakso&scope=CURRENT_VIEWPORT&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT",
+      "payload_bytes": 9743,
       "safe_body": true,
       "total": 5,
       "returned": 5,
@@ -60,7 +72,19 @@
             "north": -6.031847590790221
           }
         },
-        "category": null
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": null
+        },
+        "origin": {
+          "longitude": 106.8278985,
+          "latitude": -6.2033015,
+          "source": "SELECTED_POINT"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
       },
       "unique_merchant_count": 5,
       "result_region_ids": [
@@ -69,10 +93,10 @@
       ]
     },
     "location_only": {
-      "duration_ms": 1374,
+      "duration_ms": 1361,
       "status": 200,
-      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=Jakarta+Selatan&scope=CURRENT_VIEWPORT",
-      "payload_bytes": 101863,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.6752582713421&south=-6.37471210157949&east=106.98053872866006&north=-6.031847590790221&limit=100&offset=0&q=Jakarta+Selatan&scope=CURRENT_VIEWPORT&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT",
+      "payload_bytes": 108677,
       "safe_body": true,
       "total": 237,
       "returned": 100,
@@ -93,7 +117,19 @@
             "north": -6.202663
           }
         },
-        "category": null
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": null
+        },
+        "origin": {
+          "longitude": 106.8278985,
+          "latitude": -6.2033015,
+          "source": "SELECTED_POINT"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
       },
       "unique_merchant_count": 100,
       "result_region_ids": [
@@ -101,10 +137,10 @@
       ]
     },
     "keyword_location": {
-      "duration_ms": 998,
+      "duration_ms": 1173,
       "status": 200,
-      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.71928398443077&south=-6.377080701803095&east=106.88491001556315&north=-6.191092420078462&limit=100&offset=0&q=bakso+Jakarta+Selatan&scope=REGION&region_ids=jakarta-selatan",
-      "payload_bytes": 6391,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.71928398443077&south=-6.377080701803095&east=106.88491001556315&north=-6.191092420078462&limit=100&offset=0&q=bakso+Jakarta+Selatan&scope=REGION&region_ids=jakarta-selatan&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT",
+      "payload_bytes": 7219,
       "safe_body": true,
       "total": 3,
       "returned": 3,
@@ -125,7 +161,19 @@
             "north": -6.202663
           }
         },
-        "category": null
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": null
+        },
+        "origin": {
+          "longitude": 106.8278985,
+          "latitude": -6.2033015,
+          "source": "SELECTED_POINT"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
       },
       "unique_merchant_count": 3,
       "result_region_ids": [
@@ -133,10 +181,10 @@
       ]
     },
     "keyword_other_location": {
-      "duration_ms": 976,
+      "duration_ms": 1070,
       "status": 200,
-      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.71928398443151&south=-6.377080701801262&east=106.88491001556395&north=-6.191092420076615&limit=100&offset=0&q=soto+Jakarta+Barat&scope=REGION&region_ids=jakarta-selatan",
-      "payload_bytes": 3497,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.71928398443151&south=-6.377080701801262&east=106.88491001556395&north=-6.191092420076615&limit=100&offset=0&q=soto+Jakarta+Barat&scope=REGION&region_ids=jakarta-selatan&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT",
+      "payload_bytes": 4201,
       "safe_body": true,
       "total": 1,
       "returned": 1,
@@ -157,7 +205,19 @@
             "north": -6.095124
           }
         },
-        "category": null
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": null
+        },
+        "origin": {
+          "longitude": 106.8278985,
+          "latitude": -6.2033015,
+          "source": "SELECTED_POINT"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
       },
       "unique_merchant_count": 1,
       "result_region_ids": [
@@ -165,10 +225,10 @@
       ]
     },
     "multi_region": {
-      "duration_ms": 924,
+      "duration_ms": 1078,
       "status": 200,
-      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.67459423270174&south=-6.252988563625834&east=106.8399097672924&north=-6.067305164681002&limit=100&offset=0&q=bakso&scope=MULTI_REGION&region_ids=jakarta-barat%2Cjakarta-selatan%2Cjakarta-timur",
-      "payload_bytes": 6858,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.67459423270174&south=-6.252988563625834&east=106.8399097672924&north=-6.067305164681002&limit=100&offset=0&q=bakso&scope=MULTI_REGION&region_ids=jakarta-barat%2Cjakarta-selatan%2Cjakarta-timur&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT",
+      "payload_bytes": 8144,
       "safe_body": true,
       "total": 3,
       "returned": 3,
@@ -191,7 +251,19 @@
             "north": -6.095124
           }
         },
-        "category": null
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": null
+        },
+        "origin": {
+          "longitude": 106.8278985,
+          "latitude": -6.2033015,
+          "source": "SELECTED_POINT"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
       },
       "unique_merchant_count": 3,
       "result_region_ids": [
@@ -199,10 +271,10 @@
       ]
     },
     "search_this_area": {
-      "duration_ms": 874,
+      "duration_ms": 1030,
       "status": 200,
-      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75144223371137&south=-6.4154238209122525&east=107.07717121312027&north=-6.049613721862585&limit=100&offset=0&q=bakso&scope=CURRENT_VIEWPORT",
-      "payload_bytes": 9038,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75151178580222&south=-6.412194240944729&east=107.07201751257071&north=-6.052249895008728&limit=100&offset=0&q=bakso&scope=CURRENT_VIEWPORT&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT",
+      "payload_bytes": 9747,
       "safe_body": true,
       "total": 5,
       "returned": 5,
@@ -215,13 +287,25 @@
           "type": "CURRENT_VIEWPORT",
           "region_ids": [],
           "bounds": {
-            "west": 106.75144223371137,
-            "south": -6.4154238209122525,
-            "east": 107.07717121312027,
-            "north": -6.049613721862585
+            "west": 106.75151178580222,
+            "south": -6.412194240944729,
+            "east": 107.07201751257071,
+            "north": -6.052249895008728
           }
         },
-        "category": null
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": null
+        },
+        "origin": {
+          "longitude": 106.8278985,
+          "latitude": -6.2033015,
+          "source": "SELECTED_POINT"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
       },
       "unique_merchant_count": 5,
       "result_region_ids": [
@@ -230,10 +314,10 @@
       ]
     },
     "empty_result": {
-      "duration_ms": 898,
+      "duration_ms": 749,
       "status": 200,
-      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75144223371137&south=-6.4154238209122525&east=107.07717121312027&north=-6.049613721862585&limit=100&offset=0&q=nonexistentmerchantxyz&scope=CURRENT_VIEWPORT",
-      "payload_bytes": 1928,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75151178580222&south=-6.412194240944729&east=107.07201751257071&north=-6.052249895008728&limit=100&offset=0&q=nonexistentmerchantxyz&scope=CURRENT_VIEWPORT&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT",
+      "payload_bytes": 2343,
       "safe_body": true,
       "total": 0,
       "returned": 0,
@@ -246,23 +330,35 @@
           "type": "CURRENT_VIEWPORT",
           "region_ids": [],
           "bounds": {
-            "west": 106.75144223371137,
-            "south": -6.4154238209122525,
-            "east": 107.07717121312027,
-            "north": -6.049613721862585
+            "west": 106.75151178580222,
+            "south": -6.412194240944729,
+            "east": 107.07201751257071,
+            "north": -6.052249895008728
           }
         },
-        "category": null
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": null
+        },
+        "origin": {
+          "longitude": 106.8278985,
+          "latitude": -6.2033015,
+          "source": "SELECTED_POINT"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
       },
       "unique_merchant_count": 0,
       "result_region_ids": []
     },
     "stale_aborted_response_observed": true,
     "stale_final": {
-      "duration_ms": 757,
+      "duration_ms": 736,
       "status": 200,
-      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75144223371137&south=-6.4154238209122525&east=107.07717121312027&north=-6.049613721862585&limit=100&offset=0&q=soto&scope=CURRENT_VIEWPORT",
-      "payload_bytes": 7562,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75151178580222&south=-6.412194240944729&east=107.07201751257071&north=-6.052249895008728&limit=100&offset=0&q=soto&scope=CURRENT_VIEWPORT&origin_longitude=106.8278985&origin_latitude=-6.261049999999&origin_source=SELECTED_POINT",
+      "payload_bytes": 8218,
       "safe_body": true,
       "total": 4,
       "returned": 4,
@@ -275,13 +371,25 @@
           "type": "CURRENT_VIEWPORT",
           "region_ids": [],
           "bounds": {
-            "west": 106.75144223371137,
-            "south": -6.4154238209122525,
-            "east": 107.07717121312027,
-            "north": -6.049613721862585
+            "west": 106.75151178580222,
+            "south": -6.412194240944729,
+            "east": 107.07201751257071,
+            "north": -6.052249895008728
           }
         },
-        "category": null
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": null
+        },
+        "origin": {
+          "longitude": 106.8278985,
+          "latitude": -6.261049999999,
+          "source": "SELECTED_POINT"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
       },
       "unique_merchant_count": 4,
       "result_region_ids": [
@@ -292,10 +400,10 @@
     },
     "stale_visible_query": "soto",
     "keyboard_submit": {
-      "duration_ms": 986,
+      "duration_ms": 1106,
       "status": 200,
-      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75144223371137&south=-6.4154238209122525&east=107.07717121312027&north=-6.049613721862585&limit=100&offset=0&q=bakso&scope=CURRENT_VIEWPORT",
-      "payload_bytes": 9038,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75151178580222&south=-6.412194240944729&east=107.07201751257071&north=-6.052249895008728&limit=100&offset=0&q=bakso&scope=CURRENT_VIEWPORT&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT",
+      "payload_bytes": 9747,
       "safe_body": true,
       "total": 5,
       "returned": 5,
@@ -308,13 +416,25 @@
           "type": "CURRENT_VIEWPORT",
           "region_ids": [],
           "bounds": {
-            "west": 106.75144223371137,
-            "south": -6.4154238209122525,
-            "east": 107.07717121312027,
-            "north": -6.049613721862585
+            "west": 106.75151178580222,
+            "south": -6.412194240944729,
+            "east": 107.07201751257071,
+            "north": -6.052249895008728
           }
         },
-        "category": null
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": null
+        },
+        "origin": {
+          "longitude": 106.8278985,
+          "latitude": -6.2033015,
+          "source": "SELECTED_POINT"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
       },
       "unique_merchant_count": 5,
       "result_region_ids": [
@@ -323,14 +443,14 @@
       ]
     },
     "manual_filter": {
-      "available": true,
-      "type": "checkbox"
+      "available": false,
+      "type": null
     },
     "clear_search": {
-      "duration_ms": 1409,
+      "duration_ms": 1496,
       "status": 200,
-      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75144223371137&south=-6.4154238209122525&east=107.07717121312027&north=-6.049613721862585&limit=100&offset=0&q=&scope=CURRENT_VIEWPORT",
-      "payload_bytes": 105737,
+      "request_url": "http://localhost:8080/api/merchants/canonical?west=106.75151178580222&south=-6.412194240944729&east=107.07201751257071&north=-6.052249895008728&limit=100&offset=0&q=&scope=CURRENT_VIEWPORT&origin_longitude=106.8278985&origin_latitude=-6.2033015&origin_source=SELECTED_POINT",
+      "payload_bytes": 112284,
       "safe_body": true,
       "total": 714,
       "returned": 100,
@@ -343,13 +463,25 @@
           "type": "CURRENT_VIEWPORT",
           "region_ids": [],
           "bounds": {
-            "west": 106.75144223371137,
-            "south": -6.4154238209122525,
-            "east": 107.07717121312027,
-            "north": -6.049613721862585
+            "west": 106.75151178580222,
+            "south": -6.412194240944729,
+            "east": 107.07201751257071,
+            "north": -6.052249895008728
           }
         },
-        "category": null
+        "category": null,
+        "constraints": {
+          "budget": null,
+          "opening": null,
+          "walking": null
+        },
+        "origin": {
+          "longitude": 106.8278985,
+          "latitude": -6.2033015,
+          "source": "SELECTED_POINT"
+        },
+        "parser": "DETERMINISTIC",
+        "confidence": "HIGH"
       },
       "unique_merchant_count": 100,
       "result_region_ids": [
@@ -396,5 +528,8 @@
     "whole_jakarta_default_found": false,
     "canonical_ids_deduplicated": true
   },
-  "expected_validation_console_errors": 1
+  "expected_validation_console_errors": 1,
+  "limitations": {
+    "manual_open_verified_filter_available": false
+  }
 }

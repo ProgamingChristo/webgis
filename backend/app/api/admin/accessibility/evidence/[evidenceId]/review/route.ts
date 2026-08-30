@@ -22,11 +22,31 @@ type Params = {
   params: Promise<{ evidenceId: string }>;
 };
 
-export function createAdminAccessibilityEvidenceReviewHandler() {
+type AdminAccessibilityReviewRouteService = Pick<
+  AccessibilityEvidenceService,
+  "review"
+>;
+
+export interface AdminAccessibilityEvidenceReviewDependencies {
+  authorize: typeof requireRole;
+  createService: (authorization: string) => AdminAccessibilityReviewRouteService;
+}
+
+const defaultDependencies: AdminAccessibilityEvidenceReviewDependencies = {
+  authorize: requireRole,
+  createService: (authorization) =>
+    new AccessibilityEvidenceService(
+      new AccessibilityEvidenceRepository(getRequestSupabaseClient(authorization)),
+    ),
+};
+
+export function createAdminAccessibilityEvidenceReviewHandler(
+  dependencies: AdminAccessibilityEvidenceReviewDependencies = defaultDependencies,
+) {
   return async (request: NextRequest, context: Params) => {
     const requestId = getRequestId(request);
     return withApiLogger(request, requestId, async () => {
-      await requireRole(request, "ADMIN");
+      await dependencies.authorize(request, "ADMIN");
       const authorization = request.headers.get("Authorization");
       if (!authorization) throw new ApplicationError("UNAUTHORIZED");
       const { evidenceId } = await context.params;
@@ -34,9 +54,7 @@ export function createAdminAccessibilityEvidenceReviewHandler() {
       const body = await readBoundedJsonBody(request, 8_192);
       const parsed = accessibilityReviewRequestSchema.safeParse(body);
       if (!parsed.success) throw new ApplicationError("VALIDATION_ERROR");
-      const service = new AccessibilityEvidenceService(
-        new AccessibilityEvidenceRepository(getRequestSupabaseClient(authorization)),
-      );
+      const service = dependencies.createService(authorization);
       return createSuccessResponse(requestId, await service.review(id, parsed.data));
     });
   };

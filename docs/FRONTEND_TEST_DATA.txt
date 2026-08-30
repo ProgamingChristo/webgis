@@ -1,0 +1,10 @@
+GETRA FRONTEND TEST DATA
+- Commuter Origin: [-6.200000, 106.816666]
+- Merchant Golden: "Bakso Wonogiri Premium"
+- Business Space: "Ruko Thamrin A1"
+- Categories: "Bakso", "Kopi"
+- AI Prompt: "bakso di bawah 30 ribu, 10 menit jalan kaki"
+
+[Phase 14 Test Data]
+- Exploration Point: Tebet, Jakarta Selatan [-6.2250, 106.8400]
+- Rating: N/A (unrated source)
