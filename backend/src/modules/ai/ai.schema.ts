@@ -40,6 +40,14 @@ export const AiProvenanceSchema = z.object({
 });
 export type AiProvenance = z.infer<typeof AiProvenanceSchema>;
 
+export const AiMapActionSchema = z.object({
+  type: z.literal("FOCUS_ENTITY"),
+  entity_type: z.enum(["TRANSPORT_NODE", "UMKM"]),
+  entity_id: z.string(),
+  label: z.string().optional(),
+});
+export type AiMapAction = z.infer<typeof AiMapActionSchema>;
+
 export const AiFactBaseSchema = z.object({
   intent: AiIntentEnum,
   limitations: z.array(z.string()).default([]),
@@ -94,6 +102,8 @@ export const AiAskResponseSchema = z.object({
   intent: AiIntentEnum,
   limitations: z.array(z.string()),
   evidence: z.array(AiProvenanceSchema),
+  map_action: AiMapActionSchema.optional(),
+  provider: z.string().optional(),
 });
 export type AiAskResponse = z.infer<typeof AiAskResponseSchema>;
 

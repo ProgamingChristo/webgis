@@ -42,7 +42,7 @@ export function AdvertisingEligibilityGate({
   );
 
   if (loading) {
-    return notice("Memeriksa akses Advertising Manager…", "GETRA sedang memvalidasi mode UMKM dan kepemilikan merchant.");
+    return notice("Memeriksa akses Advertising & Promosi...", "GETRA sedang memvalidasi mode UMKM dan kepemilikan merchant.");
   }
 
   if (error) {
@@ -70,9 +70,9 @@ export function AdvertisingEligibilityGate({
 
   switch (eligibility.reason) {
     case "UNAUTHENTICATED":
-      return notice("Login diperlukan", "Silakan login untuk mengakses Advertising Manager.");
+      return notice("Login diperlukan", "Silakan login untuk mengakses Advertising & Promosi.");
     case "UMKM_MODE_REQUIRED":
-      return notice("Mode UMKM diperlukan", "Aktifkan mode UMKM pada profil untuk menggunakan Advertising Manager.");
+      return notice("Mode UMKM diperlukan", "Aktifkan mode UMKM pada profil untuk menggunakan Advertising & Promosi.");
     case "OWNERSHIP_REQUIRED":
       return (
         <div className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-5 sm:p-6">
@@ -81,7 +81,7 @@ export function AdvertisingEligibilityGate({
             <div>
               <p className="font-bold text-amber-100">Klaim kepemilikan merchant diperlukan</p>
               <p className="mt-1 text-xs leading-5 text-amber-200/80">
-                Akun Anda belum terdaftar sebagai pemilik merchant ini. Anda dapat mengklaim merchant ini sekarang untuk langsung mulai mengelola campaign iklan.
+                Akun Anda belum terdaftar sebagai pemilik merchant ini. Ajukan klaim terlebih dahulu agar promosi spasial hanya dikelola oleh owner yang sah.
               </p>
             </div>
           </div>
@@ -99,20 +99,20 @@ export function AdvertisingEligibilityGate({
               onClick={handleClaim}
               className="rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 px-5 py-2.5 text-xs font-black text-slate-950 transition hover:brightness-110 disabled:opacity-50"
             >
-              {claiming ? "Memproses klaim..." : "Klaim & Kelola Toko Ini"}
+              {claiming ? "Memproses klaim..." : "Klaim Usaha Ini"}
             </button>
           </div>
         </div>
       );
     case "OWNERSHIP_PENDING":
-      return notice("Klaim sedang ditinjau", "Advertising Manager akan tersedia setelah kepemilikan diverifikasi.");
+      return notice("Klaim sedang ditinjau", "Advertising & Promosi akan tersedia setelah kepemilikan diverifikasi.");
     case "MERCHANT_INACTIVE":
       return notice("Merchant sedang tidak aktif");
     case "GEOMETRY_INVALID":
-      return notice("Lokasi merchant belum valid", "Lengkapi koordinat merchant sebelum membuat campaign.");
+      return notice("Lokasi merchant belum valid", "Lengkapi koordinat merchant sebelum membuat promosi spasial.");
     case "PROFILE_INCOMPLETE":
       return notice("Profil merchant belum lengkap");
     default:
-      return notice("Merchant belum memenuhi syarat untuk beriklan");
+      return notice("Merchant belum memenuhi syarat untuk promosi spasial");
   }
 }

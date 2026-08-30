@@ -1330,6 +1330,16 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     purpose: "Create draft merchant submission",
   },
   {
+    method: "POST",
+    path: "/api/umkm/merchant-submissions/photo",
+    classification: "AUTHENTICATED",
+    role: "AUTHENTICATED",
+    rateLimit: "mutation",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_CONTENT_HEADERS,
+    purpose: "Upload merchant submission photo to Supabase Storage",
+  },
+  {
     method: "GET",
     path: "/api/umkm/merchant-submissions/[id]",
     classification: "AUTHENTICATED",

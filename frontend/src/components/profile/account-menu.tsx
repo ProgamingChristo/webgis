@@ -193,7 +193,7 @@ export function AccountMenu({
               className="account-menu__advertising-link"
             >
               <Megaphone size={16} />
-              Advertising UMKM
+              Promosi UMKM
             </button>
           ) : null}
 

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Store, ShieldCheck, Megaphone, Plus } from "lucide-react";
+import { Store, ShieldCheck, Megaphone, Plus, SearchCheck } from "lucide-react";
 import { OwnedMerchantBrief } from "../types/umkm-workspace.types";
 
 interface OwnedMerchantListProps {
@@ -16,16 +16,16 @@ export function OwnedMerchantList({ merchants }: OwnedMerchantListProps) {
         <div className="w-14 h-14 rounded-full bg-slate-700/50 flex items-center justify-center text-slate-400 mb-3">
           <Store size={28} />
         </div>
-        <h3 className="text-base font-semibold text-slate-200">Belum Ada Merchant Terverifikasi</h3>
+        <h3 className="text-base font-semibold text-slate-200">Belum ada usaha yang Anda kelola.</h3>
         <p className="text-xs text-slate-400 max-w-sm mt-1 mb-5">
-          Daftarkan usaha UMKM Anda agar tercatat di GETRA dan dapat memanfaatkan fitur promosi transit.
+          Daftarkan usaha baru atau klaim usaha yang sudah tersedia di GETRA.
         </p>
         <Link
           href="/umkm/merchants/new"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-lg shadow-emerald-950/40 transition-colors"
         >
           <Plus size={15} />
-          Tambah UMKM ke GETRA
+          Daftarkan / Klaim Usaha
         </Link>
       </div>
     );
@@ -65,14 +65,15 @@ export function OwnedMerchantList({ merchants }: OwnedMerchantListProps) {
               href="#umkm-intelligence-title"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/40 text-emerald-300 text-xs font-semibold transition-colors hover:bg-emerald-500/10"
             >
-              Insight
+              <SearchCheck size={13} />
+              Discoverability
             </a>
             <Link
               href={`/umkm/advertising?merchantId=${merchant.id}`}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/90 hover:bg-blue-600 text-white text-xs font-semibold shadow-sm transition-colors"
             >
               <Megaphone size={13} />
-              Kelola Iklan
+              Promosikan
             </Link>
           </div>
         </div>

@@ -29,9 +29,9 @@ export default function AdvertisingPage() {
 
   return (
     <GetraAppShell
-      description="Kelola campaign, materi promosi, penargetan radius, dan readiness iklan untuk merchant UMKM."
-      eyebrow="GETRA Advertising"
-      title="Advertising Manager"
+      description="Kelola Sponsored Pin, promo card kontekstual, creative, targeting, schedule, dan analytics interaksi."
+      eyebrow="GETRA Spatial Promotion"
+      title="Advertising & Promosi"
       tone="umkm"
     >
     <div className="advertising-theme text-slate-100">
@@ -41,21 +41,21 @@ export default function AdvertisingPage() {
             <div className="flex items-center gap-2">
               <span className="flex size-2 rounded-full bg-cyan-400 animate-pulse" />
               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-300">
-                GETRA for Business
+                GETRA Spatial Promotion
               </p>
             </div>
             <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
-              Advertising Manager
+              Advertising & Promosi
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-              Kelola campaign, materi promosi, dan target wilayah untuk merchant yang sudah terverifikasi.
+              Kelola campaign berbasis lokasi, waktu, konteks pencarian, dan area target untuk merchant terverifikasi.
             </p>
           </div>
           <Link
-            href="/app"
+            href="/umkm"
             className="mt-5 inline-flex min-h-10 items-center justify-center rounded-xl border border-cyan-400/25 px-4 text-xs font-bold text-cyan-200 transition hover:border-cyan-300 hover:bg-cyan-400/10 sm:mt-0"
           >
-            ← Kembali ke dashboard
+            Kembali ke UMKM Workspace
           </Link>
         </header>
 
@@ -97,7 +97,7 @@ export default function AdvertisingPage() {
                         <p className="mt-2 font-mono text-[10px] text-slate-500">{m.id}</p>
                       </div>
                       <div className="mt-3 flex items-center justify-end text-xs font-bold text-emerald-400 group-hover:translate-x-1 transition-transform">
-                        Kelola Iklan <ChevronRight className="size-3 ml-1" />
+                        Kelola Promosi <ChevronRight className="size-3 ml-1" />
                       </div>
                     </button>
                   ))}
@@ -117,7 +117,7 @@ export default function AdvertisingPage() {
                   Campaign hanya dapat dikelola untuk merchant yang terhubung melalui ownership canonical atau klaim yang telah disetujui.
                 </p>
                 <Link href="/umkm/merchants/new" className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-cyan-400/30 px-4 text-xs font-bold text-cyan-200">
-                  Ajukan merchant
+                  Daftarkan / Klaim Usaha
                 </Link>
               </section>
             ) : null}

@@ -6,9 +6,9 @@ import { UmkmWorkspace } from "@/src/features/umkm-workspace";
 export default function UmkmWorkspacePage() {
   return (
     <GetraAppShell
-      description="Kelola merchant, submission, promosi, dan konteks usaha lokal tanpa meninggalkan ekosistem GETRA."
+      description="Kelola profil usaha, discoverability, intelligence lokasi, dan promosi spasial tanpa mengubah role akun."
       eyebrow="GETRA for Business"
-      title="Pusat Manajemen & Aktivasi UMKM"
+      title="UMKM Workspace"
       tone="umkm"
     >
       <UmkmWorkspace />

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import type { EChartsOption } from "echarts";
 import {
   AlertTriangle, BarChart3, BrainCircuit, CheckCircle2, Clock3,
@@ -70,8 +69,7 @@ export function UmkmIntelligenceDashboard({ merchants }: { merchants: Array<{ id
 
   if (merchants.length === 0) return <section className="umkm-intelligence-empty" data-ownership-state="EMPTY">
     <Store size={24} aria-hidden="true" />
-    <div><h2>Intelligence menunggu merchant terverifikasi</h2><p>Mode UMKM tidak memberikan ownership. Ajukan merchant, lalu tunggu persetujuan sebelum insight privat tersedia.</p></div>
-    <Link href="/umkm/merchants/new">Ajukan merchant</Link>
+    <div><h2>Intelligence menunggu ownership terverifikasi</h2><p>Mode UMKM membuka workspace, tetapi tidak otomatis memberi kepemilikan usaha. Daftarkan atau klaim usaha terlebih dahulu sebelum insight privat tersedia.</p></div>
   </section>;
 
   return <section className="umkm-intelligence" aria-labelledby="umkm-intelligence-title" data-merchant-id={effectiveId ?? ""} data-window-days={days}>

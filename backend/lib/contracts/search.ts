@@ -7,7 +7,7 @@ export const stakeholderSchema = z.enum([
   "government",
 ]);
 
-export const aiProviderSchema = z.enum(["openai", "claude", "fallback"]);
+export const aiProviderSchema = z.enum(["openai", "claude", "sub2api", "fallback"]);
 
 export const searchIntentSchema = z.object({
   stakeholder: stakeholderSchema.default("commuter"),

@@ -17,7 +17,7 @@ export function UmkmWorkspaceSummaryView({ summary }: UmkmWorkspaceSummaryProps)
           <Store size={24} />
         </div>
         <div>
-          <p className="text-xs text-slate-400 font-medium">Merchant Terverifikasi</p>
+          <p className="text-xs text-slate-400 font-medium">Usaha Dikelola</p>
           <p className="text-2xl font-bold text-white mt-0.5">{summary.verified_merchants_count}</p>
         </div>
       </div>
@@ -28,7 +28,7 @@ export function UmkmWorkspaceSummaryView({ summary }: UmkmWorkspaceSummaryProps)
           <Clock size={24} />
         </div>
         <div>
-          <p className="text-xs text-slate-400 font-medium">Pengajuan / Draft</p>
+          <p className="text-xs text-slate-400 font-medium">Draft / Verifikasi</p>
           <p className="text-2xl font-bold text-white mt-0.5">{summary.pending_submissions_count}</p>
         </div>
       </div>
@@ -39,7 +39,7 @@ export function UmkmWorkspaceSummaryView({ summary }: UmkmWorkspaceSummaryProps)
           <Megaphone size={24} />
         </div>
         <div>
-          <p className="text-xs text-slate-400 font-medium">Campaign Iklan Aktif</p>
+          <p className="text-xs text-slate-400 font-medium">Promosi Spasial Aktif</p>
           <p className="text-2xl font-bold text-white mt-0.5">{summary.active_campaigns_count}</p>
         </div>
       </div>

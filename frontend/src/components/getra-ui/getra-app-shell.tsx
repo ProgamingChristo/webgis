@@ -65,12 +65,12 @@ const NAV_ITEMS = [
   },
   {
     href: "/umkm/advertising",
-    label: "Advertising",
+    label: "Promosi",
     icon: Megaphone,
   },
   {
     href: "/umkm/advertising/analytics",
-    label: "Analytics",
+    label: "Analytics Promosi",
     icon: BarChart3,
   },
   {

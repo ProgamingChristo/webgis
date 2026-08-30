@@ -60,3 +60,23 @@ export interface CreateSubmissionResult {
     nearby_merchant_name?: string;
   };
 }
+
+export interface ClaimableMerchant {
+  id: string;
+  name: string;
+  category: string;
+  address?: string;
+  longitude: number;
+  latitude: number;
+  source: string;
+  status: "surveyed" | "verified";
+  observedPrice?: string;
+  mobility?: string;
+  observedAt?: string;
+}
+
+export interface ClaimableMerchantSearchResult {
+  merchants: ClaimableMerchant[];
+  total_available: number;
+  has_more: boolean;
+}

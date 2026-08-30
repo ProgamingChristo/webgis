@@ -3,6 +3,7 @@ import {
   type AiAskRequest,
   type AiAskResponse,
   type AiIntent,
+  type AiMapAction,
   IntentClassificationSchema,
   GroundedGenerationSchema,
 } from "./ai.schema";
@@ -21,7 +22,7 @@ export class AiService {
     const intent = await this.determineIntent(question, history);
 
     // 2. Fetch Facts based on intent
-    const { facts, provenance, limitations } = await this.fetchGroundingFacts(intent, context);
+    const { facts, provenance, limitations, mapAction } = await this.fetchGroundingFacts(intent, context);
 
     // 3. Generate Answer
     const answer = await this.generateAnswer(question, intent, facts, active_experience, history);
@@ -31,6 +32,8 @@ export class AiService {
       intent,
       limitations: [...limitations, ...answer.limitations_mentioned],
       evidence: provenance,
+      map_action: mapAction,
+      provider: answer.provider,
     };
   }
 
@@ -64,6 +67,7 @@ export class AiService {
     const supabase = getRequestSupabaseClient(this.authorization);
     const limitations: string[] = [];
     const provenance: { source: string; dataset: string }[] = [];
+    let mapAction: AiMapAction | undefined;
     let facts: Record<string, unknown> = {};
 
     switch (intent) {
@@ -91,9 +95,17 @@ export class AiService {
           const stop = nearStops.items[0];
           facts = {
             stop_name: stop.name,
-            distance_m: null,
+            distance_m: Number.isFinite(Number((stop as any).distance_meters))
+              ? Number((stop as any).distance_meters)
+              : null,
             corridor: stop.corridor_id,
             accessibility_status: "INSUFFICIENT", // Default fallback if no clear data
+          };
+          mapAction = {
+            entity_id: stop.id,
+            entity_type: "TRANSPORT_NODE",
+            label: stop.name,
+            type: "FOCUS_ENTITY",
           };
           provenance.push({ source: "GETRA Canonical", dataset: "Transport Nodes" });
         } else {
@@ -126,6 +138,30 @@ export class AiService {
         break;
 
       case "UMKM_POI":
+        if (context?.selected_entity_id) {
+          const umkmRepo = new UmkmRepository(supabase);
+          const merchant = await umkmRepo.findById(context.selected_entity_id);
+
+          if (merchant) {
+            facts = {
+              merchant_name: merchant.name,
+              category: merchant.category ?? null,
+              status: merchant.provenance?.validation_status ?? null,
+              price_evidence_available: false,
+            };
+            mapAction = {
+              entity_id: merchant.id,
+              entity_type: "UMKM",
+              label: merchant.name,
+              type: "FOCUS_ENTITY",
+            };
+            provenance.push({ source: "GETRA Canonical", dataset: "UMKM" });
+          } else {
+            limitations.push("Merchant terpilih tidak ditemukan pada data canonical GETRA.");
+          }
+          break;
+        }
+        // Fall through to nearby area facts when no selected merchant is available.
       case "GENERAL_AREA":
       default:
         // Provide basic area facts
@@ -148,7 +184,7 @@ export class AiService {
         break;
     }
 
-    return { facts, provenance, limitations };
+    return { facts, provenance, limitations, mapAction };
   }
 
   private async generateAnswer(
@@ -191,9 +227,13 @@ ${JSON.stringify(facts, null, 2)}
       return {
         answer: formatDeterministicAnswer(intent, facts),
         limitations_mentioned: ["Penjelasan AI tidak tersedia; jawaban ini dibuat langsung dari fakta terverifikasi."],
+        provider: "deterministic",
       };
     }
-    return response.data;
+    return {
+      ...response.data,
+      provider: response.source,
+    };
   }
 }
 

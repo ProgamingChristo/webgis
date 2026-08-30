@@ -30,7 +30,7 @@ export function UMKMContext({
           href="/umkm/advertising"
         >
           <Megaphone size={13} />
-          Advertising Manager →
+          Advertising & Promosi
         </Link>
       </div>
       {children}

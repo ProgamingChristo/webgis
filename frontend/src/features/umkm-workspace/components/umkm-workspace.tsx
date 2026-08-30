@@ -3,7 +3,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Plus,
   RefreshCw,
   AlertTriangle,
   ArrowLeft,
@@ -15,7 +14,6 @@ import { UmkmWorkspaceSummary } from "../types/umkm-workspace.types";
 import { UmkmWorkspaceSummaryView } from "./umkm-workspace-summary";
 import { OwnedMerchantList } from "./owned-merchant-list";
 import { SubmissionSummary } from "./submission-summary";
-import { UmkmQuickActions } from "./umkm-quick-actions";
 import { UmkmIntelligenceDashboard } from "@/src/features/umkm-intelligence";
 
 export function UmkmWorkspace() {
@@ -115,10 +113,10 @@ export function UmkmWorkspace() {
             <span className="text-xs font-semibold text-emerald-400">Workspace UMKM</span>
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">
-            Pusat Manajemen & Aktivasi UMKM
+            UMKM Workspace
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Kelola identitas usaha, pengajuan katalog, kampanye promosi transit, dan analitik performa.
+            Kelola profil usaha, kesiapan discoverability, intelligence lokasi, dan promosi spasial GETRA.
           </p>
         </div>
 
@@ -132,13 +130,6 @@ export function UmkmWorkspace() {
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
             <span className="hidden sm:inline">Segarkan</span>
           </button>
-          <Link
-            href="/umkm/merchants/new"
-            className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-lg shadow-emerald-950/40 flex items-center gap-1.5 transition-colors"
-          >
-            <Plus size={15} />
-            Tambah UMKM
-          </Link>
         </div>
       </div>
 
@@ -151,12 +142,6 @@ export function UmkmWorkspace() {
         category: merchant.category,
       }))} /> : null}
 
-      {/* Quick Action Navigation Cards */}
-      <div>
-        <h3 className="text-sm font-semibold text-slate-200 mb-3.5">Menu & Layanan Utama</h3>
-        <UmkmQuickActions />
-      </div>
-
       {/* Main Two Column Layout: Owned Merchants & Submissions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left 2 Cols: Owned Merchants */}
@@ -165,15 +150,17 @@ export function UmkmWorkspace() {
             <div>
               <h3 className="text-sm font-semibold text-white">Merchant Saya</h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Usaha terverifikasi yang Anda kelola pada platform GETRA.
+                Usaha yang kepemilikannya sudah terverifikasi dan dapat Anda kelola.
               </p>
             </div>
-            <Link
-              href="/umkm/merchants/new"
-              className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
-            >
-              + Tambah Usaha
-            </Link>
+            {(summary?.owned_merchants.length ?? 0) > 0 ? (
+              <Link
+                href="/umkm/merchants/new"
+                className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                + Daftarkan / Klaim Usaha Lain
+              </Link>
+            ) : null}
           </div>
 
           <OwnedMerchantList merchants={summary?.owned_merchants || []} />
