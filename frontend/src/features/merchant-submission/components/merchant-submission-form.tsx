@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
@@ -11,15 +11,19 @@ import {
   Search,
   Send,
   Store,
+  Trash2,
   Upload,
 } from "lucide-react";
 import Link from "next/link";
 import { MerchantMapPicker } from "./merchant-submission-map-picker";
+import { MerchantDescriptionAssistant } from "./merchant-description-assistant";
 import { MerchantSubmissionService } from "../services/merchant-submission.service";
 import {
   ClaimableMerchant,
   CreateMerchantSubmissionInput,
   MerchantSubmissionRecord,
+  MerchantOperatingHours,
+  MerchantBusinessInfo,
 } from "../types/merchant-submission.types";
 
 interface MerchantSubmissionFormProps {
@@ -38,6 +42,22 @@ const CATEGORY_OPTIONS = [
   "Lainnya",
 ];
 
+const OPERATING_DAYS = [
+  ["monday", "Senin"], ["tuesday", "Selasa"], ["wednesday", "Rabu"],
+  ["thursday", "Kamis"], ["friday", "Jumat"], ["saturday", "Sabtu"], ["sunday", "Minggu"],
+] as const;
+
+const DEFAULT_COORDINATES: [number, number] = [106.827153, -6.175392];
+
+function initialOperatingHours(value: MerchantSubmissionRecord["opening_hours"] | undefined): MerchantOperatingHours {
+  return Object.fromEntries(OPERATING_DAYS.map(([key]) => {
+    const stored = value?.[key];
+    return [key, stored && typeof stored === "object"
+      ? { is_closed: Boolean(stored.is_closed), opens_at: stored.opens_at || "08:00", closes_at: stored.closes_at || "21:00" }
+      : { is_closed: false, opens_at: "08:00", closes_at: "21:00" }];
+  }));
+}
+
 export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormProps) {
   const router = useRouter();
   const [mode, setMode] = useState<OnboardingMode>(initialData ? "REGISTER" : "CHOICE");
@@ -46,21 +66,108 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
   const [category, setCategory] = useState(initialData?.category || CATEGORY_OPTIONS[0]);
   const [description, setDescription] = useState(initialData?.description || "");
   const [address, setAddress] = useState(initialData?.address || "");
+  const [openingHours, setOpeningHours] = useState<MerchantOperatingHours>(() => initialOperatingHours(initialData?.opening_hours));
   const [coordinates, setCoordinates] = useState<[number, number]>(
-    initialData?.location?.coordinates || [106.827153, -6.175392],
+    initialData?.location?.coordinates || DEFAULT_COORDINATES,
   );
   const [storedImageUrl, setStoredImageUrl] = useState(initialData?.image_url || "");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState(initialData?.image_url || "");
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState(initialData?.image_url || "");
+  const photoObjectUrlRef = useRef<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+  const [menuPhotoFile, setMenuPhotoFile] = useState<File | null>(null);
+  const [menuPhotoUrl, setMenuPhotoUrl] = useState(initialData?.public_media?.menu_urls?.[0] || "");
+  const [menuPhotoPreviewUrl, setMenuPhotoPreviewUrl] = useState(initialData?.public_media?.menu_urls?.[0] || "");
+  const menuObjectUrlRef = useRef<string | null>(null);
+  const menuPhotoInputRef = useRef<HTMLInputElement | null>(null);
+  const [contactPhone, setContactPhone] = useState(initialData?.business_info?.contact_phone || "");
+  const [priceRange, setPriceRange] = useState<MerchantBusinessInfo["price_range"]>(initialData?.business_info?.price_range || null);
+  const [paymentMethods, setPaymentMethods] = useState<MerchantBusinessInfo["payment_methods"]>(initialData?.business_info?.payment_methods || ["CASH"]);
 
   const [claimQuery, setClaimQuery] = useState(initialData?.name || "");
   const [claimResults, setClaimResults] = useState<ClaimableMerchant[]>([]);
   const [claimSearched, setClaimSearched] = useState(false);
+  const [selectedClaimMerchant, setSelectedClaimMerchant] = useState<ClaimableMerchant | null>(null);
+  const [claimContactName, setClaimContactName] = useState("");
+  const [claimContactPhone, setClaimContactPhone] = useState("");
+  const [claimRelationship, setClaimRelationship] = useState<"OWNER" | "MANAGER" | "AUTHORIZED_REPRESENTATIVE">("OWNER");
+  const [claimStatement, setClaimStatement] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [claimingId, setClaimingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+  const [formResetVersion, setFormResetVersion] = useState(0);
+
+  useEffect(() => () => {
+    if (photoObjectUrlRef.current) URL.revokeObjectURL(photoObjectUrlRef.current);
+    if (menuObjectUrlRef.current) URL.revokeObjectURL(menuObjectUrlRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (!showClearConfirmation) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !submitting) setShowClearConfirmation(false);
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [showClearConfirmation, submitting]);
+
+  const hasRegistrationInput = Boolean(
+    initialData ||
+    name.trim() ||
+    description.trim() ||
+    address.trim() ||
+    storedImageUrl ||
+    uploadedPhotoUrl ||
+    photoFile ||
+    menuPhotoUrl ||
+    menuPhotoFile ||
+    contactPhone.trim() ||
+    priceRange ||
+    paymentMethods.some((method) => method !== "CASH") ||
+    paymentMethods.length !== 1 ||
+    coordinates[0] !== DEFAULT_COORDINATES[0] ||
+    coordinates[1] !== DEFAULT_COORDINATES[1] ||
+    JSON.stringify(openingHours) !== JSON.stringify(initialOperatingHours(undefined))
+  );
+
+  const handleClearRegistrationForm = () => {
+    if (photoObjectUrlRef.current) {
+      URL.revokeObjectURL(photoObjectUrlRef.current);
+      photoObjectUrlRef.current = null;
+    }
+    if (menuObjectUrlRef.current) {
+      URL.revokeObjectURL(menuObjectUrlRef.current);
+      menuObjectUrlRef.current = null;
+    }
+    if (photoInputRef.current) photoInputRef.current.value = "";
+    if (menuPhotoInputRef.current) menuPhotoInputRef.current.value = "";
+
+    setName("");
+    setCategory(CATEGORY_OPTIONS[0]);
+    setDescription("");
+    setAddress("");
+    setOpeningHours(initialOperatingHours(undefined));
+    setCoordinates([...DEFAULT_COORDINATES]);
+    setStoredImageUrl("");
+    setPhotoFile(null);
+    setUploadedPhotoUrl("");
+    setPhotoPreviewUrl("");
+    setMenuPhotoFile(null);
+    setMenuPhotoUrl("");
+    setMenuPhotoPreviewUrl("");
+    setContactPhone("");
+    setPriceRange(null);
+    setPaymentMethods(["CASH"]);
+    setError(null);
+    setDuplicateWarning(null);
+    setFormResetVersion((current) => current + 1);
+    setShowClearConfirmation(false);
+  };
 
   const validateRegistration = (requirePhoto: boolean): boolean => {
     if (!name.trim() || name.trim().length < 2) {
@@ -79,8 +186,20 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
       setError("Titik lokasi usaha belum valid. Klik peta atau gunakan lokasi Anda.");
       return false;
     }
+    const invalidDay = OPERATING_DAYS.find(([key]) => {
+      const hours = openingHours[key];
+      return !hours?.is_closed && (!hours?.opens_at || !hours?.closes_at || hours.opens_at >= hours.closes_at);
+    });
+    if (invalidDay) {
+      setError(`Jam buka ${invalidDay[1]} harus lebih awal dari jam tutup.`);
+      return false;
+    }
     if (requirePhoto && !photoFile && !uploadedPhotoUrl && !storedImageUrl) {
       setError("Foto utama tempat usaha wajib diupload sebelum ajukan verifikasi.");
+      return false;
+    }
+    if (contactPhone.trim() && contactPhone.trim().length < 8) {
+      setError("Nomor kontak usaha minimal 8 karakter.");
       return false;
     }
     setError(null);
@@ -98,6 +217,14 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
       setPhotoFile(null);
     }
 
+    let resolvedMenuUrl = menuPhotoUrl || null;
+    if (menuPhotoFile) {
+      const upload = await MerchantSubmissionService.uploadPhoto(menuPhotoFile);
+      resolvedMenuUrl = upload.image_url;
+      setMenuPhotoUrl(upload.image_url);
+      setMenuPhotoFile(null);
+    }
+
     return {
       name: name.trim(),
       category: category.trim(),
@@ -106,6 +233,17 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
       location: {
         type: "Point",
         coordinates,
+      },
+      opening_hours: openingHours,
+      public_media: {
+        storefront_url: resolvedImageUrl,
+        menu_urls: resolvedMenuUrl ? [resolvedMenuUrl] : [],
+        product_urls: [],
+      },
+      business_info: {
+        contact_phone: contactPhone.trim() || null,
+        price_range: priceRange,
+        payment_methods: paymentMethods,
       },
       image_url: resolvedImageUrl,
     };
@@ -133,10 +271,25 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
   };
 
   const handleClaimMerchant = async (merchant: ClaimableMerchant) => {
+    if (claimContactName.trim().length < 2 || claimContactPhone.trim().length < 8) {
+      setError("Nama dan nomor kontak verifikasi wajib diisi.");
+      return;
+    }
+    if (claimStatement.trim().length < 20) {
+      setError("Jelaskan bukti hubungan Anda dengan usaha ini minimal 20 karakter.");
+      return;
+    }
     try {
       setClaimingId(merchant.id);
       setError(null);
-      await MerchantSubmissionService.claimMerchant(merchant.id);
+      await MerchantSubmissionService.claimMerchant(merchant.id, {
+        evidence: {
+          contactName: claimContactName.trim(),
+          contactPhone: claimContactPhone.trim(),
+          relationship: claimRelationship,
+          statement: claimStatement.trim(),
+        },
+      });
       router.push("/umkm");
     } catch (err: any) {
       console.error("[MerchantSubmissionForm] Claim merchant error:", err);
@@ -209,7 +362,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="mx-auto max-w-4xl px-0 py-3 sm:px-2 sm:py-6">
       <div className="mb-6">
         <Link
           href="/umkm"
@@ -220,15 +373,15 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
         </Link>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl">
+      <div className="min-w-0 rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl sm:p-8">
         <div className="border-b border-slate-800 pb-5 mb-6">
           <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-300">
             UMKM onboarding
           </p>
-          <h1 className="mt-2 text-xl font-bold text-white tracking-tight">
+          <h1 className="mt-2 break-words text-xl font-bold leading-7 tracking-tight text-white">
             {mode === "REGISTER" ? "Daftarkan Usaha Baru" : "Daftarkan / Klaim Usaha"}
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="mt-1 break-words text-xs leading-5 text-slate-400">
             Cari data existing GETRA, MAPID, atau Menu Go terlebih dahulu agar tidak membuat merchant duplikat.
           </p>
         </div>
@@ -319,18 +472,18 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                       key={merchant.id}
                       className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4"
                     >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-sm font-semibold text-white">{merchant.name}</h3>
-                            <span className="rounded-full border border-cyan-500/30 bg-cyan-950/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-cyan-200">
+                      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-center">
+                            <h3 className="break-words text-sm font-semibold leading-5 text-white">{merchant.name}</h3>
+                            <span className="shrink-0 whitespace-nowrap rounded-full border border-cyan-500/30 bg-cyan-950/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-cyan-200">
                               {merchant.source || "GETRA"}
                             </span>
                           </div>
-                          <p className="mt-1 text-xs text-slate-400">{merchant.category}</p>
-                          <p className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
-                            <MapPin size={13} />
-                            {merchant.address || "Alamat belum tersedia"}
+                          <p className="mt-1 break-words text-xs leading-5 text-slate-400">{merchant.category}</p>
+                          <p className="mt-2 flex min-w-0 items-start gap-1.5 text-xs leading-5 text-slate-500">
+                            <MapPin className="mt-0.5 shrink-0" size={13} />
+                            <span className="break-words">{merchant.address || "Alamat belum tersedia"}</span>
                           </p>
                           {merchant.mobility ? (
                             <p className="mt-1 text-[11px] text-amber-200">
@@ -341,12 +494,15 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                         </div>
                         <button
                           type="button"
-                          onClick={() => handleClaimMerchant(merchant)}
+                          onClick={() => {
+                            setSelectedClaimMerchant(merchant);
+                            setError(null);
+                          }}
                           disabled={claimingId !== null}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-950/30 px-4 py-2.5 text-xs font-semibold text-emerald-100 transition-colors hover:bg-emerald-900/50 disabled:opacity-50"
+                          className="inline-flex w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-emerald-500/40 bg-emerald-950/30 px-4 py-2.5 text-xs font-semibold text-emerald-100 transition-colors hover:bg-emerald-900/50 disabled:opacity-50 sm:w-auto"
                         >
                           <BadgeCheck size={14} />
-                          {claimingId === merchant.id ? "Mengajukan..." : "Klaim Usaha Ini"}
+                          {selectedClaimMerchant?.id === merchant.id ? "Dipilih" : "Klaim Usaha Ini"}
                         </button>
                       </div>
                     </article>
@@ -367,6 +523,87 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                   </div>
                 )}
               </div>
+            ) : null}
+
+            {selectedClaimMerchant ? (
+              <section className="rounded-2xl border border-emerald-500/30 bg-emerald-950/10 p-4 sm:p-5" aria-labelledby="claim-evidence-title">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">Merchant dipilih</p>
+                  <h2 id="claim-evidence-title" className="mt-1 break-words text-base font-semibold text-white">
+                    {selectedClaimMerchant.name}
+                  </h2>
+                  <p className="mt-1 break-words text-xs leading-5 text-slate-400">
+                    {selectedClaimMerchant.category} · {selectedClaimMerchant.address || "Alamat belum tersedia"}
+                  </p>
+                </div>
+
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <label className="block min-w-0 text-xs font-semibold text-slate-200">
+                    Nama kontak verifikasi
+                    <input
+                      className="mt-1.5 w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white outline-none focus:border-emerald-500"
+                      value={claimContactName}
+                      onChange={(event) => setClaimContactName(event.target.value)}
+                      maxLength={120}
+                    />
+                  </label>
+                  <label className="block min-w-0 text-xs font-semibold text-slate-200">
+                    Nomor kontak
+                    <input
+                      className="mt-1.5 w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white outline-none focus:border-emerald-500"
+                      value={claimContactPhone}
+                      onChange={(event) => setClaimContactPhone(event.target.value)}
+                      inputMode="tel"
+                      maxLength={32}
+                    />
+                  </label>
+                  <label className="block min-w-0 text-xs font-semibold text-slate-200 sm:col-span-2">
+                    Hubungan dengan usaha
+                    <select
+                      className="mt-1.5 w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white outline-none focus:border-emerald-500"
+                      value={claimRelationship}
+                      onChange={(event) => setClaimRelationship(event.target.value as typeof claimRelationship)}
+                    >
+                      <option value="OWNER">Pemilik</option>
+                      <option value="MANAGER">Pengelola</option>
+                      <option value="AUTHORIZED_REPRESENTATIVE">Perwakilan resmi</option>
+                    </select>
+                  </label>
+                  <label className="block min-w-0 text-xs font-semibold text-slate-200 sm:col-span-2">
+                    Bukti kepemilikan atau pengelolaan
+                    <textarea
+                      className="mt-1.5 w-full resize-y rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm leading-6 text-white outline-none focus:border-emerald-500"
+                      rows={4}
+                      value={claimStatement}
+                      onChange={(event) => setClaimStatement(event.target.value)}
+                      placeholder="Jelaskan hubungan Anda dengan usaha dan bukti yang dapat diverifikasi admin GETRA. Informasi ini tidak dipublikasikan."
+                      maxLength={1000}
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    className="min-h-10 rounded-xl border border-slate-700 px-4 text-xs font-semibold text-slate-200"
+                    onClick={() => setSelectedClaimMerchant(null)}
+                    disabled={claimingId !== null}
+                  >
+                    Ganti Merchant
+                  </button>
+                  <button
+                    type="button"
+                    className="min-h-10 rounded-xl bg-emerald-600 px-5 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+                    onClick={() => void handleClaimMerchant(selectedClaimMerchant)}
+                    disabled={claimingId !== null}
+                  >
+                    {claimingId ? "Mengirim Klaim..." : "Kirim untuk Review"}
+                  </button>
+                </div>
+                <p className="mt-3 text-[11px] leading-5 text-slate-500">
+                  Bukti klaim hanya tersedia untuk Anda dan reviewer berwenang; tidak masuk galeri publik merchant.
+                </p>
+              </section>
             ) : null}
 
             <div className="border-t border-slate-800 pt-5">
@@ -431,16 +668,18 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-200 mb-1.5">
+                <label className="mb-1.5 block text-xs font-semibold text-slate-200" htmlFor="merchant-description">
                   Deskripsi Usaha & Produk/Layanan Unggulan
                 </label>
-                <textarea
-                  rows={3}
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  placeholder="Jelaskan menu, produk, layanan, atau keunggulan usaha Anda untuk komuter pejalan kaki."
-                  className="w-full resize-none rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white outline-none transition-all placeholder-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                <MerchantDescriptionAssistant
+                  businessName={name}
+                  category={category}
                   disabled={submitting}
+                  id="merchant-description"
+                  key={`merchant-description-${formResetVersion}`}
+                  onChange={setDescription}
+                  priceRange={priceRange ?? null}
+                  value={description}
                 />
               </div>
             </section>
@@ -463,19 +702,128 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
 
               <MerchantMapPicker
                 initialCoordinates={coordinates}
+                key={`merchant-map-${formResetVersion}`}
                 onCoordinatesChange={setCoordinates}
               />
             </section>
 
             <section className="space-y-4">
-              <SectionHeader title="Bukti" description="Upload foto utama tempat usaha atau produk. URL manual tidak dipakai untuk merchant." />
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <SectionHeader title="Jam Operasional" description="Atur jadwal per hari. Jadwal lintas tengah malam belum didukung." />
+                <button
+                  type="button"
+                  className="self-start text-xs font-semibold text-cyan-300 hover:text-cyan-200 sm:self-auto"
+                  onClick={() => {
+                    const monday = openingHours.monday;
+                    if (!monday) return;
+                    setOpeningHours(Object.fromEntries(OPERATING_DAYS.map(([key]) => [key, { ...monday }])));
+                  }}
+                >
+                  Terapkan Senin ke semua hari
+                </button>
+              </div>
+              <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/50">
+                {OPERATING_DAYS.map(([key, label]) => {
+                  const hours = openingHours[key];
+                  return (
+                    <div className="grid min-w-0 gap-3 border-b border-slate-800 p-3 last:border-b-0 sm:grid-cols-[110px_minmax(0,1fr)_auto] sm:items-center" key={key}>
+                      <strong className="text-xs text-slate-200">{label}</strong>
+                      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+                        <input
+                          aria-label={`Jam buka ${label}`}
+                          className="min-w-0 rounded-lg border border-slate-700 bg-slate-900 px-2 py-2 text-xs text-white disabled:opacity-40"
+                          type="time"
+                          value={hours?.opens_at || "08:00"}
+                          disabled={hours?.is_closed}
+                          onChange={(event) => setOpeningHours((current) => ({ ...current, [key]: { ...current[key], opens_at: event.target.value } }))}
+                        />
+                        <span className="text-xs text-slate-500">–</span>
+                        <input
+                          aria-label={`Jam tutup ${label}`}
+                          className="min-w-0 rounded-lg border border-slate-700 bg-slate-900 px-2 py-2 text-xs text-white disabled:opacity-40"
+                          type="time"
+                          value={hours?.closes_at || "21:00"}
+                          disabled={hours?.is_closed}
+                          onChange={(event) => setOpeningHours((current) => ({ ...current, [key]: { ...current[key], closes_at: event.target.value } }))}
+                        />
+                      </div>
+                      <label className="inline-flex items-center gap-2 whitespace-nowrap text-xs text-slate-400">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(hours?.is_closed)}
+                          onChange={(event) => setOpeningHours((current) => ({ ...current, [key]: { ...current[key], is_closed: event.target.checked } }))}
+                        />
+                        Tutup
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="space-y-4">
+              <SectionHeader title="Informasi Usaha" description="Informasi kontak dan transaksi membantu profil usaha lebih lengkap." />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-xs font-semibold text-slate-200">
+                  Nomor kontak usaha
+                  <input
+                    className="mt-1.5 w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white outline-none focus:border-emerald-500"
+                    value={contactPhone}
+                    onChange={(event) => setContactPhone(event.target.value)}
+                    inputMode="tel"
+                    maxLength={32}
+                    placeholder="Contoh: 0812..."
+                  />
+                </label>
+                <label className="block text-xs font-semibold text-slate-200">
+                  Kisaran harga
+                  <select
+                    className="mt-1.5 w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white outline-none focus:border-emerald-500"
+                    value={priceRange || ""}
+                    onChange={(event) => setPriceRange((event.target.value || null) as MerchantBusinessInfo["price_range"])}
+                  >
+                    <option value="">Belum ditentukan</option>
+                    <option value="BUDGET">Terjangkau</option>
+                    <option value="STANDARD">Menengah</option>
+                    <option value="PREMIUM">Premium</option>
+                  </select>
+                </label>
+              </div>
+              <fieldset>
+                <legend className="text-xs font-semibold text-slate-200">Metode pembayaran</legend>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {(["CASH", "QRIS", "DEBIT", "TRANSFER"] as const).map((method) => (
+                    <label className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 text-xs text-slate-300" key={method}>
+                      <input
+                        type="checkbox"
+                        checked={paymentMethods.includes(method)}
+                        onChange={(event) => setPaymentMethods((current) => event.target.checked ? [...new Set([...current, method])] : current.filter((item) => item !== method))}
+                      />
+                      {method === "CASH" ? "Tunai" : method}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            </section>
+
+            <section className="space-y-4">
+              <SectionHeader title="Media Publik" description="Foto berikut tampil pada profil merchant dan terpisah dari bukti ownership privat." />
               <div>
                 <label className="block text-xs font-semibold text-slate-200 mb-1.5">
                   Foto Utama Tempat Usaha / Produk <span className="text-rose-400">*</span>
                 </label>
                 <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-700 bg-slate-950 px-4 py-5 text-center transition-colors hover:border-emerald-500/70 hover:bg-slate-900">
+                  {photoPreviewUrl ? (
+                    // Preview can be a temporary blob URL, so Next Image optimization is not applicable.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={photoPreviewUrl}
+                      alt="Preview foto utama usaha"
+                      className="mb-2 h-40 w-full rounded-lg object-cover sm:h-52"
+                    />
+                  ) : null}
                   <Upload size={18} className="text-emerald-400" />
-                  <span className="text-xs font-semibold text-slate-200">
+                  <span className="max-w-full break-all text-xs font-semibold leading-5 text-slate-200">
                     {photoFile ? photoFile.name : storedImageUrl ? "Ganti foto utama" : "Upload Foto"}
                   </span>
                   <span className="text-[11px] text-slate-500">
@@ -486,12 +834,22 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                     accept="image/jpeg,image/png,image/webp"
                     className="sr-only"
                     disabled={submitting}
+                    ref={photoInputRef}
                     onChange={(event) => {
                       const file = event.target.files?.[0] ?? null;
+                      if (photoObjectUrlRef.current) {
+                        URL.revokeObjectURL(photoObjectUrlRef.current);
+                        photoObjectUrlRef.current = null;
+                      }
                       setPhotoFile(file);
                       if (file) {
+                        const previewUrl = URL.createObjectURL(file);
+                        photoObjectUrlRef.current = previewUrl;
+                        setPhotoPreviewUrl(previewUrl);
                         setUploadedPhotoUrl("");
                         setStoredImageUrl("");
+                      } else {
+                        setPhotoPreviewUrl(storedImageUrl);
                       }
                     }}
                   />
@@ -502,22 +860,65 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                   </p>
                 ) : null}
               </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-200 mb-1.5">Foto menu (opsional)</label>
+                <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-700 bg-slate-950 px-4 py-5 text-center hover:border-cyan-500/70">
+                  {menuPhotoPreviewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={menuPhotoPreviewUrl} alt="Preview foto menu" className="mb-2 h-40 w-full rounded-lg object-cover sm:h-52" />
+                  ) : null}
+                  <Upload size={18} className="text-cyan-300" />
+                  <span className="max-w-full break-all text-xs font-semibold leading-5 text-slate-200">{menuPhotoFile?.name || (menuPhotoUrl ? "Ganti foto menu" : "Upload Foto Menu")}</span>
+                  <span className="text-[11px] text-slate-500">Menu Go yang sudah terhubung tetap dipertahankan. JPG, PNG, atau WEBP; maksimal 5 MB.</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="sr-only"
+                    disabled={submitting}
+                    ref={menuPhotoInputRef}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0] ?? null;
+                      if (menuObjectUrlRef.current) URL.revokeObjectURL(menuObjectUrlRef.current);
+                      setMenuPhotoFile(file);
+                      if (file) {
+                        const previewUrl = URL.createObjectURL(file);
+                        menuObjectUrlRef.current = previewUrl;
+                        setMenuPhotoPreviewUrl(previewUrl);
+                        setMenuPhotoUrl("");
+                      } else {
+                        setMenuPhotoPreviewUrl(menuPhotoUrl);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
             </section>
 
-            <div className="pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <Link
-                href="/umkm"
-                className="w-full rounded-xl bg-slate-800 px-4 py-2.5 text-center text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-700 sm:w-auto"
-              >
-                Batal
-              </Link>
+            <div className="flex flex-col gap-3 border-t border-slate-800 pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                <Link
+                  href="/umkm"
+                  className="w-full rounded-xl bg-slate-800 px-4 py-2.5 text-center text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-700 sm:w-auto"
+                >
+                  Batal
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setShowClearConfirmation(true)}
+                  disabled={submitting || !hasRegistrationInput}
+                  className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-950/15 px-4 text-xs font-semibold text-rose-200 transition-colors hover:border-rose-400/50 hover:bg-rose-950/30 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+                >
+                  <Trash2 size={14} />
+                  Bersihkan Form
+                </button>
+              </div>
 
-              <div className="w-full sm:w-auto flex items-center gap-3">
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                 <button
                   type="button"
                   onClick={handleSaveDraft}
                   disabled={submitting}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-slate-700 disabled:opacity-50"
+                  className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 text-xs font-semibold text-white transition-colors hover:bg-slate-700 disabled:opacity-50 sm:w-auto"
                 >
                   <Save size={14} />
                   <span>Simpan Draft</span>
@@ -527,7 +928,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                   type="button"
                   onClick={handleSubmitForReview}
                   disabled={submitting}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-semibold text-white shadow-lg shadow-emerald-950/40 transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                  className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-xs font-semibold text-white shadow-lg shadow-emerald-950/40 transition-colors hover:bg-emerald-500 disabled:opacity-50 sm:w-auto"
                 >
                   <Send size={14} />
                   <span>{submitting ? "Memproses..." : "Ajukan Verifikasi"}</span>
@@ -537,6 +938,53 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
           </form>
         ) : null}
       </div>
+
+      {showClearConfirmation ? (
+        <div
+          aria-labelledby="clear-merchant-form-title"
+          aria-modal="true"
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
+          role="dialog"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl sm:p-6">
+            <div className="flex items-start gap-3">
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-950/60 text-rose-300">
+                <Trash2 size={18} />
+              </span>
+              <div className="min-w-0">
+                <h2 className="break-words text-base font-bold leading-6 text-white" id="clear-merchant-form-title">
+                  Bersihkan semua input?
+                </h2>
+                <p className="mt-1 text-xs leading-5 text-slate-400">
+                  {initialData
+                    ? "Semua input di layar, lokasi, jadwal, dan foto akan dikosongkan. Draft tersimpan tidak berubah sampai Anda menyimpannya kembali."
+                    : "Semua input, lokasi, jadwal, dan foto yang belum disimpan akan dihapus dan tidak dapat dipulihkan."}
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                autoFocus
+                type="button"
+                onClick={() => setShowClearConfirmation(false)}
+                disabled={submitting}
+                className="min-h-10 rounded-xl border border-slate-700 bg-slate-800 px-4 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700 disabled:opacity-50"
+              >
+                Kembali
+              </button>
+              <button
+                type="button"
+                onClick={handleClearRegistrationForm}
+                disabled={submitting}
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-rose-600 px-4 text-xs font-semibold text-white transition-colors hover:bg-rose-500 disabled:opacity-50"
+              >
+                <Trash2 size={14} />
+                Ya, Bersihkan Form
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

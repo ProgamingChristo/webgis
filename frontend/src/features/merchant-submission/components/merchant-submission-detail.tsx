@@ -100,24 +100,24 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
         </Link>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+      <div className="min-w-0 space-y-6 rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl sm:p-8">
         {/* Header with Title & Status */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1.5">
-              <h1 className="text-xl font-bold text-white tracking-tight">{submission.name}</h1>
+        <div className="flex flex-col gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:items-center">
+              <h1 className="min-w-0 break-words text-xl font-bold leading-7 tracking-tight text-white">{submission.name}</h1>
               <MerchantSubmissionStatusBadge status={submission.status} />
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="mt-2 break-words text-xs leading-5 text-slate-400">
               Kategori: <strong className="text-slate-200">{submission.category}</strong> • Dibuat: {new Date(submission.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">
             {submission.status === "DRAFT" ? (
               <Link
                 href={`/umkm/merchants/new?edit=${submission.id}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors"
+                className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-500 sm:flex-none"
               >
                 <Edit size={13} />
                 Lanjutkan Edit
@@ -129,7 +129,7 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
                 type="button"
                 onClick={handleCancel}
                 disabled={cancelling}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/20 text-xs font-semibold transition-colors disabled:opacity-50"
+                className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-rose-500/20 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-rose-300 transition-colors hover:bg-slate-700 disabled:opacity-50 sm:flex-none"
               >
                 <XCircle size={13} />
                 {cancelling ? "Membatalkan..." : "Batalkan Pengajuan"}
@@ -139,7 +139,7 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
             {submission.status === "APPROVED" && submission.canonical_merchant_id ? (
               <Link
                 href={`/umkm/advertising?merchantId=${submission.canonical_merchant_id}`}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-colors shadow-lg shadow-emerald-950/40"
+                className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-emerald-950/40 transition-colors hover:bg-emerald-500 sm:flex-none"
               >
                 <Megaphone size={14} />
                 Pasang Iklan Merchant
@@ -189,12 +189,12 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
             <span className="text-slate-400">Alamat Lengkap</span>
-            <p className="text-slate-200 font-medium">{submission.address || "Tidak dicantumkan"}</p>
+            <p className="break-words text-slate-200 font-medium">{submission.address || "Tidak dicantumkan"}</p>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
             <span className="text-slate-400">Titik Koordinat PostGIS</span>
-            <p className="text-slate-200 font-mono font-medium">
+            <p className="break-all text-slate-200 font-mono font-medium">
               Lng: {lng.toFixed(6)}, Lat: {lat.toFixed(6)}
             </p>
           </div>
@@ -202,7 +202,7 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
           {submission.description ? (
             <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1 sm:col-span-2">
               <span className="text-slate-400">Deskripsi Usaha</span>
-              <p className="text-slate-200 leading-relaxed">{submission.description}</p>
+              <p className="break-words text-slate-200 leading-relaxed">{submission.description}</p>
             </div>
           ) : null}
 

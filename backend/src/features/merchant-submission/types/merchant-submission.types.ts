@@ -15,6 +15,8 @@ export interface CreateMerchantSubmissionInput {
     coordinates: [number, number]; // [longitude, latitude]
   };
   opening_hours?: Record<string, any>;
+  public_media?: { storefront_url?: string | null; menu_urls: string[]; product_urls: string[] };
+  business_info?: { contact_phone?: string | null; price_range?: string | null; payment_methods: string[] };
   image_url?: string | null;
 }
 
@@ -28,6 +30,8 @@ export interface UpdateMerchantSubmissionInput {
     coordinates: [number, number]; // [longitude, latitude]
   };
   opening_hours?: Record<string, any>;
+  public_media?: { storefront_url?: string | null; menu_urls: string[]; product_urls: string[] };
+  business_info?: { contact_phone?: string | null; price_range?: string | null; payment_methods: string[] };
   image_url?: string | null;
 }
 
@@ -43,6 +47,8 @@ export interface MerchantSubmissionRecord {
     coordinates: [number, number];
   };
   opening_hours: Record<string, any>;
+  public_media: { storefront_url?: string | null; menu_urls: string[]; product_urls: string[] };
+  business_info: { contact_phone?: string | null; price_range?: string | null; payment_methods: string[] };
   image_url: string | null;
   status: MerchantSubmissionStatus;
   canonical_merchant_id: string | null;

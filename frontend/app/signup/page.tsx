@@ -17,6 +17,7 @@ import {
   type BrowserAuthSession,
 } from "@/src/lib/auth-client";
 import { GetraLogo } from "@/src/components/getra-ui";
+import { getGetraApiUrl } from "@/src/lib/api-base-url";
 
 import styles from "../auth.module.css";
 
@@ -108,7 +109,7 @@ export default function SignupPage() {
     try {
       const response =
         await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
+          getGetraApiUrl("/api/auth/register"),
           {
             method:
               "POST",

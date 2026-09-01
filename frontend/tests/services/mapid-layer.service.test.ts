@@ -39,4 +39,22 @@ describe("mapidLayerService canonical viewport", () => {
     expect(path).not.toContain("mapid");
     expect(path).not.toContain("x-api-key");
   });
+
+  it("searches canonical destinations globally without sending a bbox", async () => {
+    const controller = new AbortController();
+    apiGet.mockResolvedValue({ merchants: [] });
+
+    await mapidLayerService.searchCanonicalMerchants("  donut  ", {
+      limit: 8,
+      signal: controller.signal,
+    });
+
+    const [path, options] = apiGet.mock.calls[0] ?? [];
+    expect(path).toContain("q=donut");
+    expect(path).toContain("scope=GLOBAL");
+    expect(path).toContain("limit=8");
+    expect(path).not.toContain("west=");
+    expect(path).not.toContain("bbox");
+    expect(options).toEqual({ signal: controller.signal });
+  });
 });

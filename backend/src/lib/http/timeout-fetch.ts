@@ -2,6 +2,13 @@ import "server-only";
 
 export type FetchImplementation = typeof fetch;
 
+export class HttpTimeoutError extends Error {
+  constructor() {
+    super("HTTP_TIMEOUT");
+    this.name = "HttpTimeoutError";
+  }
+}
+
 export function createTimeoutFetch(
   timeoutMs: number,
   fetchImplementation: FetchImplementation = globalThis.fetch,
@@ -21,13 +28,20 @@ export function createTimeoutFetch(
       upstreamSignal?.addEventListener("abort", forwardAbort, { once: true });
     }
 
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
 
     try {
       return await fetchImplementation(input, {
         ...init,
         signal: controller.signal,
       });
+    } catch (error) {
+      if (timedOut && !upstreamSignal?.aborted) throw new HttpTimeoutError();
+      throw error;
     } finally {
       clearTimeout(timeout);
       upstreamSignal?.removeEventListener("abort", forwardAbort);

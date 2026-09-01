@@ -2,9 +2,11 @@ import { NextRequest } from "next/server";
 import { describe, expect, it, vi } from "vitest";
 
 import { createGraphHealthHandler } from "@/app/api/internal/routing/graph-health/route";
+import { createRoutingProviderHealthHandler } from "@/app/api/internal/routing/provider-health/route";
 import { createRoutingHandler } from "@/app/api/routing/route";
 import { createServiceAreaHandler } from "@/app/api/spatial/service-area/route";
 import { ApplicationError } from "@/src/lib/errors";
+import { HttpTimeoutError } from "@/src/lib/http/timeout-fetch";
 
 vi.mock("server-only", () => ({}));
 
@@ -35,13 +37,19 @@ describe("Phase 08 commuter spatial routes", () => {
       authorize: vi.fn().mockResolvedValue("user-id"),
       checkLimit: vi.fn(),
       route: vi.fn().mockResolvedValue({
-        status: "ROUTABLE",
+        route_status: "ROUTABLE",
+        reason_code: null,
+        mode: "walking",
         distance_meters: 70.3,
-        network_distance_meters: 55,
-        access_distance_meters: 15.3,
         duration_seconds: 51,
         geometry: { type: "LineString", coordinates: [[106.787, -6.284], [106.786, -6.283]] },
-        walking_speed_mps: 1.4,
+        maneuvers: [],
+        engine: "valhalla",
+        warnings: [],
+        has_toll: false,
+        has_highway: false,
+        has_ferry: false,
+        source: "OPENSTREETMAP",
       }),
     })(post("/api/routing", {
       origin: point,
@@ -52,8 +60,10 @@ describe("Phase 08 commuter spatial routes", () => {
     expect(response.status).toBe(200);
     expect(body.data).toMatchObject({
       route_status: "ROUTABLE",
-      analysis_method: "pgrouting_network_route",
-      route_source: "pgr_dijkstra",
+      reason_code: null,
+      analysis_method: "navigation_route",
+      route_source: "valhalla",
+      mode: "walking",
       duration_seconds: 51,
     });
     expect(body.data.geometry.type).toBe("LineString");
@@ -66,7 +76,7 @@ describe("Phase 08 commuter spatial routes", () => {
     const response = await createRoutingHandler({
       authorize: vi.fn().mockResolvedValue("private-actor-id"),
       checkLimit: vi.fn(),
-      route: vi.fn().mockResolvedValue({ status: "UNROUTABLE" }),
+      route: vi.fn().mockResolvedValue(failedRoute("walking")),
       recordRoute,
     })(post("/api/routing", {
       origin: point,
@@ -85,12 +95,53 @@ describe("Phase 08 commuter spatial routes", () => {
     const response = await createRoutingHandler({
       authorize: vi.fn().mockResolvedValue("user-id"),
       checkLimit: vi.fn(),
-      route: vi.fn().mockResolvedValue({ status: "UNROUTABLE" }),
+      route: vi.fn().mockResolvedValue(failedRoute("walking")),
     })(post("/api/routing", { origin: point, destination: point, mode: "walking" }));
     const body = await response.json();
     expect(body.data.route_status).toBe("UNROUTABLE");
     expect(body.data.geometry).toBeNull();
     expect(body.data.limitation_flags).toContain("NO_FABRICATED_ROUTE");
+  });
+
+  it("returns a safe timeout reason when the provider does not answer", async () => {
+    const response = await createRoutingHandler({
+      authorize: vi.fn().mockResolvedValue("user-id"),
+      checkLimit: vi.fn(),
+      route: vi.fn().mockRejectedValue(new HttpTimeoutError()),
+    })(post("/api/routing", { origin: point, destination: point, mode: "car" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data).toMatchObject({
+      route_status: "SERVICE_UNAVAILABLE",
+      reason_code: "ROUTING_TIMEOUT",
+      geometry: null,
+    });
+    expect(body.data.limitation_flags).toContain("NO_FABRICATED_ROUTE");
+  });
+
+  it("rejects invalid coordinates and unsupported modes before calling the provider", async () => {
+    const route = vi.fn();
+    const handler = createRoutingHandler({
+      authorize: vi.fn().mockResolvedValue("user-id"),
+      checkLimit: vi.fn(),
+      route,
+    });
+
+    const invalidCoordinate = await handler(post("/api/routing", {
+      origin: { latitude: -91, longitude: 106.8 },
+      destination: point,
+      mode: "car",
+    }));
+    const invalidMode = await handler(post("/api/routing", {
+      origin: point,
+      destination: point,
+      mode: "bicycle",
+    }));
+
+    expect(invalidCoordinate.status).toBe(400);
+    expect(invalidMode.status).toBe(400);
+    expect(route).not.toHaveBeenCalled();
   });
 
   it("validates and returns reachable network edges for service area", async () => {
@@ -125,4 +176,40 @@ describe("Phase 08 commuter spatial routes", () => {
     expect(response.status).toBe(200);
     expect((await response.json()).data.edge_count).toBe(81_346);
   });
+
+  it("returns provider readiness diagnostics without exposing its URL", async () => {
+    const response = await createRoutingProviderHealthHandler({
+      authorize: vi.fn().mockResolvedValue("user-id"),
+      checkHealth: vi.fn().mockResolvedValue({
+        provider: "valhalla",
+        status: "UNAVAILABLE",
+        configured: true,
+        reachable: false,
+        reason_code: "ROUTING_PROVIDER_UNREACHABLE",
+      }),
+    })(new NextRequest("http://localhost/api/internal/routing/provider-health"));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.reason_code).toBe("ROUTING_PROVIDER_UNREACHABLE");
+    expect(JSON.stringify(body)).not.toMatch(/routing_base_url|valhalla:8002/i);
+  });
 });
+
+function failedRoute(mode: "walking" | "motorcycle" | "car") {
+  return {
+    route_status: "UNROUTABLE" as const,
+    reason_code: "NO_ROUTE_FOUND" as const,
+    mode,
+    distance_meters: null,
+    duration_seconds: null,
+    geometry: null,
+    maneuvers: [],
+    engine: "valhalla" as const,
+    warnings: ["Tidak ditemukan rute untuk mode ini."],
+    has_toll: false,
+    has_highway: false,
+    has_ferry: false,
+    source: "OPENSTREETMAP" as const,
+  };
+}

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { GetraAppShell } from "@/src/components/getra-ui/getra-app-shell";
+import { GetraAppShell } from "@/src/components/getra-ui";
 import { useAuth } from "@/src/components/providers/AuthProvider";
 import {
   adminMissionSyncService,

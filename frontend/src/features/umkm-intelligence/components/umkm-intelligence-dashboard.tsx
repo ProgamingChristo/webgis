@@ -69,7 +69,7 @@ export function UmkmIntelligenceDashboard({ merchants }: { merchants: Array<{ id
 
   if (merchants.length === 0) return <section className="umkm-intelligence-empty" data-ownership-state="EMPTY">
     <Store size={24} aria-hidden="true" />
-    <div><h2>Intelligence menunggu ownership terverifikasi</h2><p>Mode UMKM membuka workspace, tetapi tidak otomatis memberi kepemilikan usaha. Daftarkan atau klaim usaha terlebih dahulu sebelum insight privat tersedia.</p></div>
+    <div><h2>Intelligence menunggu ownership terverifikasi</h2><p>Mode UMKM tidak memberikan ownership otomatis. Daftarkan atau klaim usaha terlebih dahulu sebelum insight privat tersedia.</p></div>
   </section>;
 
   return <section className="umkm-intelligence" aria-labelledby="umkm-intelligence-title" data-merchant-id={effectiveId ?? ""} data-window-days={days}>

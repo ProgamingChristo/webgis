@@ -4,9 +4,9 @@ import { MerchantClaimService, OwnedMerchantSummary } from "../services/merchant
 export function useUserMerchants() {
   const [ownedMerchants, setOwnedMerchants] = useState<OwnedMerchantSummary[]>([]);
   const [recommendedMerchants, setRecommendedMerchants] = useState<OwnedMerchantSummary[]>([]);
+  const [ineligibleMerchants, setIneligibleMerchants] = useState<OwnedMerchantSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [claiming, setClaiming] = useState(false);
 
   const fetchMerchants = useCallback(async () => {
     try {
@@ -14,6 +14,7 @@ export function useUserMerchants() {
       const res = await MerchantClaimService.getMyMerchants();
       setOwnedMerchants(res.ownedMerchants || []);
       setRecommendedMerchants(res.recommendedMerchants || []);
+      setIneligibleMerchants(res.ineligibleMerchants || []);
       setError(null);
     } catch (err: any) {
       setError(err.message || "Failed to load merchants");
@@ -21,23 +22,6 @@ export function useUserMerchants() {
       setLoading(false);
     }
   }, []);
-
-  const claimMerchant = useCallback(
-    async (merchantId: string) => {
-      try {
-        setClaiming(true);
-        await MerchantClaimService.claimMerchant(merchantId);
-        await fetchMerchants();
-        return true;
-      } catch (err: any) {
-        setError(err.message || "Failed to claim merchant");
-        return false;
-      } finally {
-        setClaiming(false);
-      }
-    },
-    [fetchMerchants]
-  );
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -50,10 +34,9 @@ export function useUserMerchants() {
   return {
     ownedMerchants,
     recommendedMerchants,
+    ineligibleMerchants,
     loading,
     error,
-    claiming,
-    claimMerchant,
     refetch: fetchMerchants,
   };
 }

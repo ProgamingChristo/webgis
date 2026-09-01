@@ -49,6 +49,31 @@ function query(input: Record<string, unknown>) {
 }
 
 describe("global search intent", () => {
+  it("keeps global merchant eligibility independent from two different viewports", () => {
+    const nearViewport = resolveGlobalSearchIntent(query({
+      q: "donut",
+      scope: "GLOBAL",
+    }), regions);
+    const distantViewport = resolveGlobalSearchIntent(query({
+      q: "DONUT",
+      scope: "GLOBAL",
+      west: 107.2,
+      south: -6.8,
+      east: 107.4,
+      north: -6.6,
+    }), regions);
+
+    expect(nearViewport).toMatchObject({
+      keyword: "donut",
+      scope: { type: "GLOBAL", region_ids: [] },
+    });
+    expect(distantViewport).toMatchObject({
+      keyword: "donut",
+      scope: { type: "GLOBAL", region_ids: [] },
+    });
+    expect(distantViewport.scope.bounds).toEqual(nearViewport.scope.bounds);
+  });
+
   it("uses current viewport for keyword-only search", () => {
     const result = resolveGlobalSearchIntent(query({ q: "  Bakso  " }), regions);
     expect(result.keyword).toBe("bakso");

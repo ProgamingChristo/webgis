@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const AiIntentEnum = z.enum([
+  "ASSISTANT_IDENTITY",
   "GENERAL_AREA",
   "NEAREST_TRANSIT",
   "WALKING_ROUTE",
@@ -103,7 +104,7 @@ export const AiAskResponseSchema = z.object({
   limitations: z.array(z.string()),
   evidence: z.array(AiProvenanceSchema),
   map_action: AiMapActionSchema.optional(),
-  provider: z.string().optional(),
+  provider: z.enum(["sub2api", "deterministic"]),
 });
 export type AiAskResponse = z.infer<typeof AiAskResponseSchema>;
 

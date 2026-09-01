@@ -17,6 +17,7 @@ export interface ApiSecurityConfig {
   appEnv: AppEnvironment;
   maxJsonBodyBytes: number;
   rateLimits: {
+    ai: RateLimitRule;
     api: RateLimitRule;
     auth_general: RateLimitRule;
     auth_register: RateLimitRule;
@@ -34,6 +35,8 @@ export interface ApiSecurityEnvironmentInput {
   APP_ENV?: string;
   FRONTEND_ALLOWED_ORIGINS?: string;
   RATE_LIMIT_API_MAX_REQUESTS?: string;
+  RATE_LIMIT_AI_MAX_REQUESTS?: string;
+  RATE_LIMIT_AI_WINDOW_MS?: string;
   RATE_LIMIT_AUTH_REGISTER_MAX_REQUESTS?: string;
   RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS?: string;
   RATE_LIMIT_AUTH_GENERAL_MAX_REQUESTS?: string;
@@ -68,6 +71,14 @@ const environmentSchema = z
     RATE_LIMIT_API_MAX_REQUESTS: z.preprocess(
       blankToUndefined,
       z.coerce.number().int().positive().max(100_000).optional(),
+    ),
+    RATE_LIMIT_AI_MAX_REQUESTS: z.preprocess(
+      blankToUndefined,
+      z.coerce.number().int().positive().max(1_000).default(15),
+    ),
+    RATE_LIMIT_AI_WINDOW_MS: z.preprocess(
+      blankToUndefined,
+      z.coerce.number().int().min(60_000).max(3_600_000).default(600_000),
     ),
     RATE_LIMIT_AUTH_REGISTER_MAX_REQUESTS: z.preprocess(
       blankToUndefined,
@@ -158,6 +169,10 @@ export function parseApiSecurityConfig(
     appEnv: parsed.data.APP_ENV,
     maxJsonBodyBytes: parsed.data.API_MAX_JSON_BODY_BYTES,
     rateLimits: {
+      ai: {
+        limit: parsed.data.RATE_LIMIT_AI_MAX_REQUESTS,
+        windowMs: parsed.data.RATE_LIMIT_AI_WINDOW_MS,
+      },
       api: { limit: parsed.data.RATE_LIMIT_API_MAX_REQUESTS ?? (isDev ? 1000 : 60), windowMs },
       auth_register: { limit: parsed.data.RATE_LIMIT_AUTH_REGISTER_MAX_REQUESTS ?? (isDev ? 100 : 5), windowMs },
       auth_login: { limit: parsed.data.RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS ?? (isDev ? 100 : 10), windowMs },
@@ -183,6 +198,8 @@ export function loadApiSecurityConfig(): ApiSecurityConfig {
     APP_ENV: process.env.APP_ENV,
     FRONTEND_ALLOWED_ORIGINS: process.env.FRONTEND_ALLOWED_ORIGINS,
     RATE_LIMIT_API_MAX_REQUESTS: process.env.RATE_LIMIT_API_MAX_REQUESTS,
+    RATE_LIMIT_AI_MAX_REQUESTS: process.env.RATE_LIMIT_AI_MAX_REQUESTS,
+    RATE_LIMIT_AI_WINDOW_MS: process.env.RATE_LIMIT_AI_WINDOW_MS,
     RATE_LIMIT_AUTH_REGISTER_MAX_REQUESTS: process.env.RATE_LIMIT_AUTH_REGISTER_MAX_REQUESTS,
     RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS: process.env.RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS,
     RATE_LIMIT_AUTH_GENERAL_MAX_REQUESTS: process.env.RATE_LIMIT_AUTH_GENERAL_MAX_REQUESTS,

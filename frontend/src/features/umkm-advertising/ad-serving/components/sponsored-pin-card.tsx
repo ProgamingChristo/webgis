@@ -43,7 +43,7 @@ export function SponsoredPinCard({
           Sponsored
         </span>
 
-        <span className="truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">
+        <span className="min-w-0 break-words text-right text-[11px] font-medium leading-4 text-slate-500 line-clamp-2 dark:text-slate-400">
           {merchant_category}
         </span>
       </div>
@@ -67,7 +67,7 @@ export function SponsoredPinCard({
 
       <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
         <Store className="w-3.5 h-3.5 shrink-0" />
-        <span className="truncate">{merchant_name}</span>
+        <span className="min-w-0 break-words leading-5 line-clamp-2">{merchant_name}</span>
       </p>
 
       {/* Description */}

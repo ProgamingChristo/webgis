@@ -6,7 +6,7 @@ import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
 import { requireAuthenticatedUser } from "@/src/lib/auth";
 import { withApiLogger } from "@/src/lib/api-logger";
 import { createOptionsHandler } from "@/src/lib/api-security";
-import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
+import { createClaimSchema } from "@/src/features/merchant-ownership";
 import { z } from "zod";
 
 const merchantIdSchema = z.string().uuid();
@@ -57,7 +57,16 @@ export async function POST(
 
     const merchantId = parsedMerchantId.data;
     const userId = await requireAuthenticatedUser(req);
-    const supabase = getServiceRoleSupabaseClient();
+    const authHeader = req.headers.get("Authorization")!;
+    const supabase = getRequestSupabaseClient(authHeader);
+    const body = await req.json().catch(() => ({}));
+    const parsedClaim = createClaimSchema.safeParse({ ...body, merchantId });
+    if (!parsedClaim.success) {
+      return NextResponse.json(
+        { success: false, error: { message: parsedClaim.error.issues[0]?.message || "Bukti klaim belum lengkap." } },
+        { status: 400 },
+      );
+    }
 
     // 1. Verify merchant exists
     const { data: merchant, error: merchantError } = await supabase
@@ -81,28 +90,17 @@ export async function POST(
       });
     }
 
-    const { data: existingClaim } = await supabase
-      .from("merchant_claims")
-      .select("status")
-      .eq("merchant_id", merchantId)
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (!existingClaim) {
-      const { error: claimError } = await supabase.from("merchant_claims").insert({
-        merchant_id: merchantId,
-        user_id: userId,
-        status: "PENDING",
-        evidence: { method: "user_claim_request" },
-      });
-      if (claimError) throw claimError;
-    }
+    const { error: claimError } = await supabase.rpc("submit_merchant_claim", {
+      p_merchant_id: merchantId,
+      p_evidence: parsedClaim.data.evidence,
+      p_note: parsedClaim.data.note,
+    });
+    if (claimError) throw claimError;
 
     return createSuccessResponse(reqId, {
       merchantId,
       isOwned: false,
-      claimStatus: existingClaim?.status ?? "PENDING",
+      claimStatus: "PENDING",
     });
   });
 }

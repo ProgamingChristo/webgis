@@ -10,7 +10,10 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const frontendUrl = process.env.GETRA_FRONTEND_URL || "http://localhost:3000";
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const apiUrl =
+  process.env.NEXT_PUBLIC_GETRA_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:8080";
 const chromePath =
   process.env.GETRA_CHROME_PATH ||
   process.env.CHROME_PATH ||

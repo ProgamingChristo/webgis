@@ -2078,6 +2078,7 @@ export type Database = {
       merchant_submissions: {
         Row: {
           address: string | null
+          business_info: Json
           canonical_merchant_id: string | null
           category: string
           created_at: string
@@ -2087,6 +2088,7 @@ export type Database = {
           location: unknown
           name: string
           opening_hours: Json
+          public_media: Json
           review_note: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -2096,6 +2098,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          business_info?: Json
           canonical_merchant_id?: string | null
           category: string
           created_at?: string
@@ -2105,6 +2108,7 @@ export type Database = {
           location: unknown
           name: string
           opening_hours?: Json
+          public_media?: Json
           review_note?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -2114,6 +2118,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          business_info?: Json
           canonical_merchant_id?: string | null
           category?: string
           created_at?: string
@@ -2123,6 +2128,7 @@ export type Database = {
           location?: unknown
           name?: string
           opening_hours?: Json
+          public_media?: Json
           review_note?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -4510,6 +4516,18 @@ export type Database = {
         Args: { claim_id: string; review_note?: string }
         Returns: string
       }
+      approve_merchant_submission: {
+        Args: { p_review_note?: string; p_submission_id: string }
+        Returns: string
+      }
+      reject_merchant_submission: {
+        Args: { p_review_note: string; p_submission_id: string }
+        Returns: string
+      }
+      submit_merchant_claim: {
+        Args: { p_evidence: Json; p_merchant_id: string; p_note?: string }
+        Returns: string
+      }
       assert_community_contribution_admin_v1: { Args: never; Returns: string }
       award_community_contribution_points_v1: {
         Args: { p_contribution_id: string }
@@ -5979,7 +5997,7 @@ export type Database = {
         Returns: Json
       }
       reject_merchant_claim: {
-        Args: { claim_id: string; review_note?: string }
+        Args: { claim_id: string; review_note: string }
         Returns: string
       }
       remove_community_reaction_v1: {

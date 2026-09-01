@@ -5,6 +5,15 @@ export type MerchantSubmissionStatus =
   | "REJECTED"
   | "CANCELLED";
 
+export type MerchantOperatingHours = Record<string, {
+  is_closed: boolean;
+  opens_at: string | null;
+  closes_at: string | null;
+}>;
+
+export type MerchantPublicMedia = { storefront_url?: string | null; menu_urls: string[]; product_urls: string[] };
+export type MerchantBusinessInfo = { contact_phone?: string | null; price_range?: "BUDGET" | "STANDARD" | "PREMIUM" | null; payment_methods: Array<"CASH" | "QRIS" | "DEBIT" | "TRANSFER"> };
+
 export interface CreateMerchantSubmissionInput {
   name: string;
   category: string;
@@ -14,7 +23,9 @@ export interface CreateMerchantSubmissionInput {
     type: "Point";
     coordinates: [number, number]; // [longitude, latitude]
   };
-  opening_hours?: Record<string, any>;
+  opening_hours?: MerchantOperatingHours;
+  public_media: MerchantPublicMedia;
+  business_info: MerchantBusinessInfo;
   image_url?: string | null;
 }
 
@@ -27,7 +38,9 @@ export interface UpdateMerchantSubmissionInput {
     type: "Point";
     coordinates: [number, number];
   };
-  opening_hours?: Record<string, any>;
+  opening_hours?: MerchantOperatingHours;
+  public_media?: MerchantPublicMedia;
+  business_info?: MerchantBusinessInfo;
   image_url?: string | null;
 }
 
@@ -42,7 +55,9 @@ export interface MerchantSubmissionRecord {
     type: "Point";
     coordinates: [number, number];
   };
-  opening_hours: Record<string, any>;
+  opening_hours: MerchantOperatingHours;
+  public_media: MerchantPublicMedia;
+  business_info: MerchantBusinessInfo;
   image_url: string | null;
   status: MerchantSubmissionStatus;
   canonical_merchant_id: string | null;

@@ -338,8 +338,158 @@ select:focus-visible {
 .getra-app-nav {
   display: flex;
   min-width: 0;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 6px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+}
+
+.getra-global-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: grid;
+  min-height: 64px;
+  grid-template-columns: minmax(140px, 180px) auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(10px, 1.4vw, 20px);
+  border-bottom: 1px solid rgba(129, 211, 230, 0.14);
+  background: rgba(4, 10, 16, 0.94);
+  padding: 8px clamp(12px, 1.8vw, 26px);
+  backdrop-filter: blur(22px);
+}
+
+.getra-global-header__brand,
+.getra-global-header__brand img {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.getra-global-header__brand img {
+  width: auto;
+  height: 44px;
+}
+
+.getra-global-nav,
+.getra-global-header__actions,
+.getra-global-header__context {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.getra-global-nav { gap: 4px; }
+.getra-global-header__actions { justify-content: flex-end; gap: 8px; }
+
+.getra-global-nav__item,
+.getra-utility-menu__trigger,
+.getra-global-header__menu {
+  display: inline-flex;
+  min-height: 38px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 0 11px;
+  color: #8aa0b4;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 850;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.getra-global-nav__item:hover,
+.getra-global-nav__item--active {
+  border-color: rgba(34, 211, 238, 0.28);
+  background: rgba(34, 211, 238, 0.08);
+  color: #d8fbff;
+}
+
+.getra-utility-menu { position: relative; }
+.getra-utility-menu__trigger,
+.getra-global-header__menu {
+  border-color: rgba(129, 211, 230, 0.16);
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+}
+
+.getra-utility-menu__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 70;
+  display: grid;
+  width: min(280px, calc(100vw - 24px));
+  gap: 5px;
+  border: 1px solid rgba(129, 211, 230, 0.18);
+  border-radius: 16px;
+  background: rgba(5, 11, 18, 0.98);
+  padding: 8px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.42);
+}
+
+.getra-utility-menu__panel a,
+.getra-utility-menu__logout {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 9px;
+  border-radius: 10px;
+  padding: 0 10px;
+  color: #c7d5e1;
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: none;
+}
+.getra-utility-menu__logout { width: 100%; border: 0; background: transparent; cursor: pointer; }
+.getra-utility-menu__panel a:hover,
+.getra-utility-menu__logout:hover { background: rgba(34, 211, 238, 0.08); color: #d8fbff; }
+.getra-utility-menu__label { padding: 8px 10px 3px; color: #657b8f; font-size: 10px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+.getra-global-header__menu { display: none; }
+
+.getra-context-nav {
+  position: sticky;
+  top: 64px;
+  z-index: 38;
+  border-bottom: 1px solid rgba(129, 211, 230, 0.12);
+  background: rgba(5, 11, 18, 0.9);
+  backdrop-filter: blur(18px);
+}
+.getra-context-nav__inner {
+  display: flex;
+  width: min(1480px, calc(100% - 28px));
+  min-width: 0;
+  margin: 0 auto;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 7px 0;
+  scrollbar-width: none;
+}
+.getra-context-nav__inner::-webkit-scrollbar { display: none; }
+.getra-context-nav a {
+  display: inline-flex;
+  min-height: 36px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  border-radius: 10px;
+  padding: 0 11px;
+  color: #8aa0b4;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.getra-context-nav a:hover,
+.getra-context-nav__item--active { background: var(--getra-primary-soft); color: var(--getra-primary-hover); }
+
+.getra-app-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .getra-app-nav__item,
@@ -378,6 +528,8 @@ select:focus-visible {
 
 .getra-app-actions {
   display: flex;
+  min-width: 0;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: end;
   gap: 10px;
@@ -470,6 +622,9 @@ select:focus-visible {
 
 .getra-app-main {
   min-width: 0;
+  width: min(1480px, calc(100% - 28px));
+  margin: 0 auto;
+  padding: 22px 0 34px;
 }
 
 .getra-app-page-header {
@@ -487,6 +642,10 @@ select:focus-visible {
   backdrop-filter: blur(18px);
 }
 
+.getra-app-page-header > div:first-child {
+  min-width: 0;
+}
+
 .getra-app-page-header span {
   color: var(--getra-primary);
   font-size: 11px;
@@ -499,8 +658,9 @@ select:focus-visible {
   max-width: 820px;
   margin: 8px 0 0;
   font-size: clamp(28px, 4vw, 48px);
-  line-height: 0.98;
+  line-height: 1.08;
   letter-spacing: -0.045em;
+  overflow-wrap: anywhere;
 }
 
 .getra-app-page-header p {
@@ -509,6 +669,7 @@ select:focus-visible {
   color: #a7bdd0;
   font-size: 14px;
   line-height: 1.7;
+  overflow-wrap: anywhere;
 }
 
 .getra-app-page-actions {
@@ -516,7 +677,14 @@ select:focus-visible {
 }
 
 .getra-app-content {
+  min-width: 0;
   margin-top: 18px;
+}
+
+.getra-app-content img,
+.getra-app-content video,
+.getra-app-content canvas {
+  max-width: 100%;
 }
 
 .getra-app-drawer {
@@ -1132,7 +1300,7 @@ select:focus-visible {
 
 .workspace-grid {
   display: grid;
-  grid-template-columns: 360px minmax(0, 1fr) 340px;
+  grid-template-columns: clamp(280px, 22vw, 330px) minmax(0, 1fr) clamp(300px, 23vw, 350px);
   height: calc(100vh - 64px);
   min-height: 620px;
 }
@@ -1584,20 +1752,17 @@ select:focus-visible {
 }
 
 .route-search-result strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: 11px;
-  line-height: 1.2;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .route-search-result span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: var(--getra-ink-soft);
   font-size: 10px;
+  line-height: 1.4;
   letter-spacing: 0;
+  overflow-wrap: anywhere;
   text-transform: none;
 }
 
@@ -1731,6 +1896,10 @@ select:focus-visible {
   gap: 8px;
 }
 
+.route-actions > :last-child:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
 .route-primary-button,
 .route-secondary-button {
   min-height: 38px;
@@ -1765,6 +1934,186 @@ select:focus-visible {
   border-left: 3px solid var(--getra-action);
   background: rgba(154, 242, 74, 0.07);
   color: var(--getra-ink);
+}
+
+.route-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+  gap: 7px;
+}
+
+.route-mode {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 92px;
+  align-content: start;
+  gap: 3px;
+  padding: 10px 8px;
+  border: 1px solid var(--getra-line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--getra-ink-soft);
+  text-align: left;
+  cursor: pointer;
+}
+
+.route-mode > svg {
+  color: var(--getra-primary);
+}
+
+.route-mode span {
+  font-size: 10px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.route-mode strong {
+  color: var(--getra-ink);
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.route-mode small {
+  font-size: 9px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.route-mode em {
+  width: max-content;
+  max-width: 100%;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: rgba(154, 242, 74, 0.1);
+  color: var(--getra-action);
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.route-selection-card {
+  display: grid;
+  gap: 5px;
+  margin: 16px 0;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #1e293b;
+}
+
+.route-selection-card--empty {
+  border-style: dashed;
+  background: #0f172a;
+}
+
+.route-selection-card__label {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.route-selection-card--empty .route-selection-card__label {
+  color: #64748b;
+}
+
+.route-selection-card__title {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 6px;
+  color: #eef8fa;
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.route-selection-card__title svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #ef4444;
+}
+
+.route-selection-card__meta {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.route-selection-card--empty .route-selection-card__meta {
+  color: #94a3b8;
+}
+
+.route-selection-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.route-selection-card__action {
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 5px;
+  background: #0284c7;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+  white-space: normal;
+  cursor: pointer;
+}
+
+.route-selection-card__action--danger {
+  background: #b91c1c;
+}
+
+.route-mode--active {
+  border-color: rgba(34, 211, 238, 0.55);
+  background: rgba(34, 211, 238, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.08);
+}
+
+.route-maneuvers {
+  margin-top: 8px;
+  border-top: 1px solid var(--getra-line);
+  padding-top: 8px;
+}
+
+.route-maneuvers summary {
+  color: var(--getra-primary);
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.route-maneuvers ol {
+  display: grid;
+  gap: 7px;
+  max-height: 180px;
+  margin: 8px 0 0;
+  padding-left: 20px;
+  overflow: auto;
+}
+
+.route-maneuvers li {
+  padding-left: 2px;
+  color: var(--getra-ink-soft);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.route-maneuvers li small {
+  display: block;
+  color: var(--getra-ink-muted);
 }
 
 .route-result strong,
@@ -3014,6 +3363,14 @@ select:focus-visible {
 }
 
 @media (max-width: 1180px) {
+  .getra-global-header {
+    grid-template-columns: minmax(140px, 170px) auto minmax(0, 1fr);
+  }
+
+  .getra-global-header__context {
+    display: none;
+  }
+
   .workspace-grid {
     grid-template-columns: 320px minmax(0, 1fr);
   }
@@ -3036,6 +3393,22 @@ select:focus-visible {
 }
 
 @media (max-width: 1024px) {
+  .getra-global-header {
+    min-height: 64px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 8px 12px;
+  }
+
+  .getra-global-header__brand img { height: 42px; }
+  .getra-global-nav,
+  .getra-global-header__context,
+  .getra-global-header__actions > :not(.getra-global-header__menu) { display: none; }
+  .getra-global-header__menu { display: inline-flex; }
+  .getra-global-header__actions { grid-column: 2; }
+  .getra-context-nav { top: 64px; }
+  .getra-app-main { width: min(100% - 20px, 1480px); padding-top: 14px; }
+
   .getra-app-topbar {
     min-height: 72px;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -3194,6 +3567,10 @@ select:focus-visible {
 }
 
 @media (max-width: 760px) {
+  .getra-global-header__menu span { display: none; }
+  .getra-global-header__menu { width: 42px; padding: 0; }
+  .getra-context-nav__inner { width: calc(100% - 20px); }
+
   .getra-app-topbar {
     min-height: 66px;
     grid-template-columns: 1fr auto;
@@ -3218,12 +3595,22 @@ select:focus-visible {
 
   .getra-app-page-header {
     border-radius: 24px;
-    padding: 20px;
+    padding: 18px;
   }
 
   .getra-app-page-header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .getra-app-page-header h1 {
+    font-size: clamp(24px, 8vw, 34px);
+    line-height: 1.12;
+  }
+
+  .getra-app-page-header p {
+    font-size: 13px;
+    line-height: 1.6;
   }
 
   .getra-app-content {
@@ -3296,6 +3683,21 @@ select:focus-visible {
   .route-quick-actions,
   .route-choice-actions {
     grid-template-columns: 1fr;
+  }
+
+  .route-mode-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .route-mode {
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+    align-items: center;
+    min-height: 54px;
+  }
+
+  .route-mode small,
+  .route-mode em {
+    grid-column: 2 / -1;
   }
 
   .route-summary-card {

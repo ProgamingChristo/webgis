@@ -90,6 +90,21 @@ describe("canonical merchant read route", () => {
     expect(JSON.stringify(await response.json())).not.toContain("private-actor-id");
   });
 
+  it("accepts global destination search without a viewport or region", async () => {
+    const search = vi.fn().mockResolvedValue(searchResult([], 0));
+    const response = await createCanonicalMerchantHandler({
+      authorize: vi.fn().mockResolvedValue("user-id"),
+      search,
+    })(new NextRequest("http://localhost/api/merchants/canonical?q=donut&scope=GLOBAL"));
+
+    expect(response.status).toBe(200);
+    expect(search).toHaveBeenCalledWith(expect.objectContaining({
+      q: "donut",
+      scope: "GLOBAL",
+      region_ids: [],
+    }));
+  });
+
   it("rejects missing, inverted, duplicate, and unknown viewport parameters", async () => {
     const search = vi.fn();
     const handler = createCanonicalMerchantHandler({

@@ -59,12 +59,12 @@ export function ContextualBanner({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <Megaphone className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <h4 className="text-sm font-bold text-slate-100 truncate">
+            <h4 className="break-words text-sm font-bold leading-5 text-slate-100 line-clamp-2">
               {banner.headline}
             </h4>
           </div>
 
-          <p className="text-xs font-semibold text-amber-300/90 mt-0.5">
+          <p className="mt-0.5 break-words text-xs font-semibold leading-5 text-amber-300/90 line-clamp-2">
             {banner.merchant_name}
           </p>
 
@@ -77,7 +77,7 @@ export function ContextualBanner({
       </div>
 
       {/* Action Footer */}
-      <div className="mt-3 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
+      <div className="mt-3 flex flex-col items-stretch gap-2 border-t border-slate-800/80 pt-2.5 sm:flex-row sm:items-center sm:justify-between">
         <span className="text-[10px] text-slate-500 italic">
           Iklan terverifikasi GETRA
         </span>
@@ -102,7 +102,7 @@ export function ContextualBanner({
             }
             onCtaClick?.(banner, banner.cta_type);
           }}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 px-3 py-1.5 text-xs font-bold text-slate-950 shadow hover:from-amber-500 hover:to-amber-400 transition"
+          className="inline-flex min-h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 px-3 py-1.5 text-xs font-bold text-slate-950 shadow transition hover:from-amber-500 hover:to-amber-400"
         >
           {banner.cta_type === "REQUEST_ROUTE" ? (
             <>

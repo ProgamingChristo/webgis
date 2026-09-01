@@ -1,5 +1,6 @@
 import { apiClient } from "@/src/lib/api-client";
 import { authenticatedFetch } from "@/src/lib/auth-client";
+import { getGetraApiUrl } from "@/src/lib/api-base-url";
 import {
   CreateMerchantSubmissionInput,
   UpdateMerchantSubmissionInput,
@@ -8,10 +9,19 @@ import {
   ClaimableMerchantSearchResult,
 } from "../types/merchant-submission.types";
 
+const DKI_SEARCH_BOUNDS = {
+  west: "106.68",
+  south: "-6.4",
+  east: "107.03",
+  north: "-6.02",
+};
+
 export class MerchantSubmissionService {
   static async searchClaimableMerchants(query: string): Promise<ClaimableMerchantSearchResult> {
     const params = new URLSearchParams({
+      ...DKI_SEARCH_BOUNDS,
       q: query,
+      scope: "CURRENT_VIEWPORT",
       limit: "8",
       offset: "0",
     });
@@ -21,10 +31,29 @@ export class MerchantSubmissionService {
     );
   }
 
-  static async claimMerchant(merchantId: string): Promise<{ isOwned: boolean; merchantId: string }> {
-    return apiClient.post<{ isOwned: boolean; merchantId: string }>(
+  static async claimMerchant(
+    merchantId: string,
+    input: {
+      evidence: {
+        contactName: string;
+        contactPhone: string;
+        relationship: "OWNER" | "MANAGER" | "AUTHORIZED_REPRESENTATIVE";
+        statement: string;
+      };
+      note?: string;
+    },
+  ): Promise<{
+    isOwned: boolean;
+    merchantId: string;
+    claimStatus: "PENDING" | "APPROVED" | "REJECTED";
+  }> {
+    return apiClient.post<{
+      isOwned: boolean;
+      merchantId: string;
+      claimStatus: "PENDING" | "APPROVED" | "REJECTED";
+    }>(
       `/api/merchants/${merchantId}/ownership`,
-      {},
+      input,
     );
   }
 
@@ -40,13 +69,8 @@ export class MerchantSubmissionService {
     const formData = new FormData();
     formData.append("photo", file);
 
-    const baseUrl =
-      process.env.NEXT_PUBLIC_API_URL ||
-      process.env.NEXT_PUBLIC_GETRA_API_URL ||
-      "http://localhost:8080";
-
     const response = await authenticatedFetch(
-      `${baseUrl}/api/umkm/merchant-submissions/photo`,
+      getGetraApiUrl("/api/umkm/merchant-submissions/photo"),
       {
         method: "POST",
         body: formData,

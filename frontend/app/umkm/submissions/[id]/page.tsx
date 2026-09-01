@@ -3,6 +3,7 @@
 import { use } from "react";
 import { Suspense } from "react";
 import { MerchantSubmissionDetail } from "@/src/features/merchant-submission";
+import { GetraAppShell } from "@/src/components/getra-ui";
 
 export default function MerchantSubmissionDetailPage({
   params,
@@ -12,7 +13,7 @@ export default function MerchantSubmissionDetailPage({
   const { id } = use(params);
 
   return (
-    <main className="min-h-screen bg-slate-900 text-slate-100">
+    <GetraAppShell tone="umkm">
       <Suspense
         fallback={
           <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
@@ -23,6 +24,6 @@ export default function MerchantSubmissionDetailPage({
       >
         <MerchantSubmissionDetail submissionId={id} />
       </Suspense>
-    </main>
+    </GetraAppShell>
   );
 }

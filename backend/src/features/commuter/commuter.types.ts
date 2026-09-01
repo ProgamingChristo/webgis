@@ -18,7 +18,7 @@ export interface StructuredCommuterIntent {
   keyword: string | null;
   location_text: string | null;
   scope: {
-    type: "CURRENT_VIEWPORT" | "REGION" | "MULTI_REGION";
+    type: "GLOBAL" | "CURRENT_VIEWPORT" | "REGION" | "MULTI_REGION";
     region_ids: string[];
     bounds: SearchBounds;
   };

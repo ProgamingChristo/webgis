@@ -163,7 +163,7 @@ export function MerchantMapPicker({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
           <MapPin size={14} className="text-emerald-400" />
           Titik Lokasi Usaha (Klik peta atau geser pin)
@@ -190,7 +190,7 @@ export function MerchantMapPicker({
         <div ref={containerRef} className="w-full h-full" />
       </div>
 
-      <div className="flex items-center justify-between text-[11px] text-slate-400 bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+      <div className="flex flex-col gap-1 rounded-lg border border-slate-800 bg-slate-950/60 p-2 text-[11px] leading-5 text-slate-400 sm:flex-row sm:items-center sm:justify-between">
         <span>Koordinat Terpilih:</span>
         <span className="font-mono text-slate-200 font-medium">
           Lng: {coords[0].toFixed(6)}, Lat: {coords[1].toFixed(6)}

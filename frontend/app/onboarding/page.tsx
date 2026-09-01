@@ -12,6 +12,7 @@ import {
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authenticatedFetch } from "@/src/lib/auth-client";
+import { getGetraApiUrl } from "@/src/lib/api-base-url";
 import styles from "./onboarding.module.css";
 
 const STAKEHOLDER_MODES = [
@@ -83,7 +84,7 @@ export default function OnboardingPage() {
       try {
         const res =
           await authenticatedFetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/onboarding`,
+            getGetraApiUrl("/api/onboarding"),
             {
               method:
                 "POST",

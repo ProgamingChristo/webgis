@@ -1,0 +1,40 @@
+services:
+  getra-backend:
+    environment:
+      ROUTING_PROVIDER: valhalla
+      ROUTING_BASE_URL: http://valhalla:8002
+      ROUTING_TIMEOUT_MS: "12000"
+      ROUTING_CACHE_TTL_MS: "300000"
+    depends_on:
+      valhalla:
+        condition: service_healthy
+
+  valhalla:
+    image: ghcr.io/valhalla/valhalla-scripted:3.8.3@sha256:24ef7955899dececb94e26c6dfb89d64fabfae875f980432694b0261eb6c251b
+    init: true
+    ports:
+      # Host access is only for local diagnostics. The backend reaches Valhalla
+      # by service name on the Compose network, never through a public port.
+      - "${VALHALLA_BIND_ADDRESS:-127.0.0.1}:${VALHALLA_PORT:-8002}:8002"
+    environment:
+      build_admins: "True"
+      build_time_zones: "True"
+      build_transit: "False"
+      build_tar: "True"
+      force_rebuild: "${VALHALLA_FORCE_REBUILD:-False}"
+      server_threads: "${VALHALLA_SERVER_THREADS:-2}"
+      serve_tiles: "True"
+      tileset_name: jabodetabek_tiles
+      use_tiles_ignore_pbf: "True"
+    volumes:
+      - ./routing-data:/custom_files
+    restart: unless-stopped
+    stop_grace_period: 60s
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "curl --fail --silent http://127.0.0.1:8002/status >/dev/null || exit 1"
+      interval: 15s
+      timeout: 5s
+      start_period: 30m
+      retries: 5

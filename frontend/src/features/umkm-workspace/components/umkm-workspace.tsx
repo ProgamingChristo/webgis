@@ -6,6 +6,10 @@ import {
   RefreshCw,
   AlertTriangle,
   ArrowLeft,
+  Bot,
+  Lock,
+  Megaphone,
+  SearchCheck,
 } from "lucide-react";
 import { useAuth } from "@/src/components/providers/AuthProvider";
 import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
@@ -96,31 +100,26 @@ export function UmkmWorkspace() {
     );
   }
 
+  const hasVerifiedMerchant = (summary?.owned_merchants.length ?? 0) > 0;
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
+    <div className="mx-auto max-w-6xl space-y-7 py-2 sm:py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+        <div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-2">
             <Link
-              href="/"
-              className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+              href="/app"
+              className="inline-flex min-w-0 items-center gap-1 text-xs font-semibold text-slate-400 transition-colors hover:text-slate-200"
             >
-              <ArrowLeft size={13} />
-              General WebGIS
+              <ArrowLeft className="shrink-0" size={13} />
+              <span className="break-words">General WebGIS</span>
             </Link>
-            <span className="text-slate-600">•</span>
-            <span className="text-xs font-semibold text-emerald-400">Workspace UMKM</span>
+            <span aria-hidden className="text-slate-600">/</span>
+            <span className="break-words text-xs font-semibold text-emerald-400">Workspace UMKM</span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            UMKM Workspace
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Kelola profil usaha, kesiapan discoverability, intelligence lokasi, dan promosi spasial GETRA.
-          </p>
         </div>
 
-        <div className="flex items-center gap-3 self-start sm:self-center">
+        <div className="flex shrink-0 items-center gap-3">
           <button
             onClick={loadWorkspace}
             type="button"
@@ -136,17 +135,19 @@ export function UmkmWorkspace() {
       {/* Metrics Summary */}
       {summary ? <UmkmWorkspaceSummaryView summary={summary} /> : null}
 
-      {summary ? <UmkmIntelligenceDashboard merchants={summary.owned_merchants.map((merchant) => ({
+      <UmkmFeatureOverview hasVerifiedMerchant={hasVerifiedMerchant} />
+
+      {summary && hasVerifiedMerchant ? <UmkmIntelligenceDashboard merchants={summary.owned_merchants.map((merchant) => ({
         id: merchant.id,
         name: merchant.name,
         category: merchant.category,
       }))} /> : null}
 
       {/* Main Two Column Layout: Owned Merchants & Submissions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 gap-7 xl:grid-cols-5">
         {/* Left 2 Cols: Owned Merchants */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="scroll-mt-32 space-y-4 xl:col-span-3" id="usaha-saya">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h3 className="text-sm font-semibold text-white">Merchant Saya</h3>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -156,7 +157,7 @@ export function UmkmWorkspace() {
             {(summary?.owned_merchants.length ?? 0) > 0 ? (
               <Link
                 href="/umkm/merchants/new"
-                className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+                className="inline-flex shrink-0 self-start text-xs font-semibold text-emerald-400 transition-colors hover:text-emerald-300 sm:self-auto"
               >
                 + Daftarkan / Klaim Usaha Lain
               </Link>
@@ -167,19 +168,102 @@ export function UmkmWorkspace() {
         </div>
 
         {/* Right Col: Recent Submissions */}
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4 xl:col-span-2">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold text-white">Status Pengajuan</h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Daftar pengajuan merchant baru Anda.
+                Pantau proses pendaftaran dan klaim usaha Anda.
               </p>
             </div>
           </div>
 
-          <SubmissionSummary submissions={summary?.recent_submissions || []} />
+          <SubmissionSummary
+            submissions={summary?.recent_submissions || []}
+            claims={summary?.recent_claims || []}
+          />
         </div>
       </div>
     </div>
+  );
+}
+
+function UmkmFeatureOverview({ hasVerifiedMerchant }: { hasVerifiedMerchant: boolean }) {
+  const features = [
+    {
+      title: "Profil & Discoverability",
+      description: "Lengkapi data usaha, foto, produk atau layanan, jam operasional, dan kesiapan ditemukan komuter.",
+      icon: SearchCheck,
+      href: null,
+    },
+    {
+      title: "Spatial Intelligence / AI Copilot",
+      description: "Baca konteks demand sekitar, kompetisi, dan insight lokasi yang sudah dihitung GETRA.",
+      icon: Bot,
+      href: null,
+    },
+    {
+      title: "Advertising & Promosi",
+      description: "Kelola Sponsored Pin, promo card kontekstual, creative, schedule, dan analytics campaign.",
+      icon: Megaphone,
+      href: "/umkm/advertising",
+    },
+  ];
+
+  return (
+    <section className="space-y-4">
+      <div>
+        <h2 className="text-sm font-semibold text-white">Fitur UMKM</h2>
+        <p className="mt-0.5 text-xs text-slate-400">
+          Modul bisnis aktif setelah kepemilikan usaha terverifikasi.
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {features.map((feature) => {
+          const Icon = feature.icon;
+          const locked = !hasVerifiedMerchant;
+
+          return (
+            <article
+              className="min-w-0 rounded-2xl border border-slate-800 bg-slate-900/45 p-4 sm:p-5"
+              key={feature.title}
+            >
+              <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-between">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-slate-700 bg-slate-950 text-cyan-200">
+                  <Icon size={19} />
+                </span>
+                {locked ? (
+                  <span className="inline-flex shrink-0 whitespace-nowrap rounded-full border border-slate-700 bg-slate-950 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
+                    <Lock className="mr-1.5" size={11} />
+                    Menunggu Verifikasi
+                  </span>
+                ) : (
+                  <span className="inline-flex shrink-0 whitespace-nowrap rounded-full border border-emerald-500/30 bg-emerald-950/35 px-2.5 py-1 text-[11px] font-semibold text-emerald-200">
+                    Aktif
+                  </span>
+                )}
+              </div>
+
+              <h3 className="mt-4 break-words text-sm font-bold leading-5 text-white">{feature.title}</h3>
+              <p className="mt-2 break-words text-xs leading-5 text-slate-400">
+                {locked
+                  ? "Fitur bisnis tersedia setelah kepemilikan usaha diverifikasi."
+                  : feature.description}
+              </p>
+
+              {!locked && feature.href ? (
+                <Link
+                  className="mt-4 inline-flex text-xs font-semibold text-cyan-300 transition hover:text-cyan-200"
+                  href={feature.href}
+                >
+                  Buka Modul
+                </Link>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+    </section>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { authenticatedFetch } from "@/src/lib/auth-client";
+import { getGetraApiUrl } from "@/src/lib/api-base-url";
 
 interface ApiSuccess<T> {
   success: true;
@@ -19,22 +20,13 @@ type ApiEnvelope<T> =
   | ApiSuccess<T>
   | ApiFailure;
 
-function getApiBaseUrl(): string {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_URL ||
-    process.env.NEXT_PUBLIC_GETRA_API_URL ||
-    "http://localhost:8080";
-
-  return baseUrl;
-}
-
 async function request<T>(
   path: string,
   init: RequestInit,
 ): Promise<T> {
   const response =
     await authenticatedFetch(
-      `${getApiBaseUrl()}${path}`,
+      getGetraApiUrl(path),
       init,
     );
 

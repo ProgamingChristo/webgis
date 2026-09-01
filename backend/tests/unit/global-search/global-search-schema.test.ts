@@ -3,6 +3,16 @@ import { describe, expect, it } from "vitest";
 import { globalSearchQuerySchema } from "@/src/features/global-search/global-search.schema";
 
 describe("global search query schema", () => {
+  it("accepts a non-empty global merchant query without viewport coordinates", () => {
+    const parsed = globalSearchQuerySchema.parse({
+      q: "  Donut  ",
+      scope: "GLOBAL",
+      region_ids: "",
+    });
+    expect(parsed).toMatchObject({ q: "Donut", scope: "GLOBAL", region_ids: [] });
+    expect(parsed.west).toBeUndefined();
+  });
+
   it("accepts strict bbox pagination and normalizes region arrays", () => {
     const parsed = globalSearchQuerySchema.parse({
       q: "bakso",
@@ -25,6 +35,8 @@ describe("global search query schema", () => {
     { q: "bakso", scope: "MULTI_REGION", region_ids: "jakarta-barat" },
     { q: "bakso", scope: "MULTI_REGION", region_ids: "jakarta-barat,jakarta-barat" },
     { q: "bakso", scope: "REGION", region_ids: "jakarta-barat,jakarta-timur" },
+    { q: "", scope: "GLOBAL", region_ids: "" },
+    { q: "donut", scope: "GLOBAL", region_ids: "jakarta-barat" },
     { q: "bakso", west: 106, south: -6, east: 107, north: -5, limit: 101 },
     { q: "bakso", west: 106, south: -6, east: 107, north: -5, sql: "drop table" },
   ])("rejects unsafe or ambiguous contracts", (input) => {

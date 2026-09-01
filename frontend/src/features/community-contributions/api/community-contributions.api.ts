@@ -1,6 +1,7 @@
 "use client";
 
 import { authenticatedFetch } from "@/src/lib/auth-client";
+import { getGetraApiBaseUrl } from "@/src/lib/api-base-url";
 import type {
   CommunityContribution,
   CommunityContributionHistoryFilters,
@@ -28,15 +29,7 @@ type ApiFailureEnvelope = {
   };
 };
 
-function getApiBaseUrl(): string {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-
-  if (!baseUrl) {
-    throw new Error("NEXT_PUBLIC_API_URL belum dikonfigurasi.");
-  }
-
-  return baseUrl;
-}
+const getApiBaseUrl = getGetraApiBaseUrl;
 
 function readFailureMessage(json: ApiFailureEnvelope, fallback: string) {
   if (json.error?.code === "CONTRIBUTION_RATE_LIMITED") {
@@ -66,7 +59,7 @@ export async function createCommunityContribution(
   input: CreateCommunityContributionPayload,
 ): Promise<CommunityContribution> {
   const response = await authenticatedFetch(
-    `${getApiBaseUrl()}/api/community/contributions`,
+    `${getGetraApiBaseUrl()}/api/community/contributions`,
     {
       method: "POST",
       headers: {
@@ -110,7 +103,7 @@ export async function getCommunityContributionHistory(
   }
 
   const response = await authenticatedFetch(
-    `${getApiBaseUrl()}/api/community/contributions?${params.toString()}`,
+    `${getGetraApiBaseUrl()}/api/community/contributions?${params.toString()}`,
     {
       method: "GET",
     },
@@ -144,7 +137,7 @@ export async function getCommunityContributionMapFeatures(
   });
 
   const response = await authenticatedFetch(
-    `${getApiBaseUrl()}/api/community/contributions/map?${params.toString()}`,
+    `${getGetraApiBaseUrl()}/api/community/contributions/map?${params.toString()}`,
     { method: "GET" },
   );
   const json =
@@ -170,7 +163,7 @@ export async function searchContributionMerchants(
     query,
   });
   const response = await authenticatedFetch(
-    `${getApiBaseUrl()}/api/community/contributions/merchants?${params.toString()}`,
+    `${getGetraApiBaseUrl()}/api/community/contributions/merchants?${params.toString()}`,
     {
       method: "GET",
     },

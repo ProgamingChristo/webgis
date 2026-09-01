@@ -5,6 +5,8 @@ import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
 import { requireAuthenticatedUser } from "@/src/lib/auth";
 import { withApiLogger } from "@/src/lib/api-logger";
 import { createOptionsHandler } from "@/src/lib/api-security";
+import { MerchantOwnershipService } from "@/src/features/merchant-ownership";
+import { AdvertisingEligibilityService } from "@/src/features/umkm-advertising";
 
 export const maxDuration = 15;
 
@@ -31,8 +33,19 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       );
     }
 
+    const ownershipService = new MerchantOwnershipService(supabase);
+    const eligibilityService = new AdvertisingEligibilityService(supabase, ownershipService);
+    const eligibility = await Promise.all((owned || []).map(async (merchant) => ({
+      merchant,
+      result: await eligibilityService.checkEligibility(userId, merchant.id),
+    })));
+
     return createSuccessResponse(reqId, {
-      ownedMerchants: owned || [],
+      ownedMerchants: eligibility.filter((item) => item.result.eligible).map((item) => item.merchant),
+      ineligibleMerchants: eligibility.filter((item) => !item.result.eligible).map((item) => ({
+        ...item.merchant,
+        reason: item.result.eligible ? null : item.result.reason,
+      })),
       recommendedMerchants: [],
     });
   });

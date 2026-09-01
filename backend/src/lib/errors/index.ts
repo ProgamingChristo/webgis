@@ -28,6 +28,11 @@ export const applicationErrorCodes = [
   "SPATIAL_NETWORK_NOT_READY",
   "SPATIAL_REQUEST_TOO_LARGE",
   "ROUTING_GRAPH_NOT_AVAILABLE",
+  "AI_PROVIDER_CONFIGURATION",
+  "AI_PROVIDER_UPSTREAM",
+  "AI_PROVIDER_UNAVAILABLE",
+  "AI_PROVIDER_INVALID_RESPONSE",
+  "AI_PROVIDER_TIMEOUT",
 ] as const;
 
 export type ApplicationErrorCode = (typeof applicationErrorCodes)[number];
@@ -36,6 +41,11 @@ const publicMessages: Record<ApplicationErrorCode, string> = {
   CONFLICT: "Resource conflict",
   AUTH_EMAIL_ALREADY_EXISTS: "Email is already registered",
   AUTH_EMAIL_CONFIRMATION_REQUIRED: "Email verification is still enabled",
+  AI_PROVIDER_CONFIGURATION: "Provider AI belum tersedia. Periksa konfigurasi server.",
+  AI_PROVIDER_INVALID_RESPONSE: "Provider AI mengembalikan respons yang tidak valid.",
+  AI_PROVIDER_TIMEOUT: "Provider AI tidak merespons tepat waktu. Silakan coba lagi.",
+  AI_PROVIDER_UNAVAILABLE: "Provider AI sementara tidak tersedia. Silakan coba lagi nanti.",
+  AI_PROVIDER_UPSTREAM: "Provider AI menolak permintaan. Silakan coba lagi nanti.",
   CORS_ORIGIN_DENIED: "Request origin is not allowed",
   CORS_PREFLIGHT_DENIED: "CORS preflight request is not allowed",
   CONTRIBUTION_DUPLICATE: "A similar report was submitted recently",
@@ -68,6 +78,11 @@ const httpStatuses: Record<ApplicationErrorCode, number> = {
   CONFLICT: 409,
   AUTH_EMAIL_ALREADY_EXISTS: 409,
   AUTH_EMAIL_CONFIRMATION_REQUIRED: 409,
+  AI_PROVIDER_CONFIGURATION: 503,
+  AI_PROVIDER_INVALID_RESPONSE: 502,
+  AI_PROVIDER_TIMEOUT: 504,
+  AI_PROVIDER_UNAVAILABLE: 503,
+  AI_PROVIDER_UPSTREAM: 502,
   CORS_ORIGIN_DENIED: 403,
   CORS_PREFLIGHT_DENIED: 403,
   CONTRIBUTION_DUPLICATE: 409,
@@ -104,6 +119,52 @@ export class ApplicationError extends Error {
   ) {
     super(message);
     this.name = "ApplicationError";
+  }
+}
+
+export type AiProviderErrorCategory =
+  | "configuration"
+  | "invalid_response"
+  | "timeout"
+  | "unavailable"
+  | "upstream";
+
+export interface AiProviderErrorOptions {
+  category: AiProviderErrorCategory;
+  provider: "sub2api";
+  upstreamCode?: string;
+  upstreamMessage?: string;
+  upstreamStatus?: number;
+}
+
+const providerErrorCodes: Record<AiProviderErrorCategory, ApplicationErrorCode> = {
+  configuration: "AI_PROVIDER_CONFIGURATION",
+  invalid_response: "AI_PROVIDER_INVALID_RESPONSE",
+  timeout: "AI_PROVIDER_TIMEOUT",
+  unavailable: "AI_PROVIDER_UNAVAILABLE",
+  upstream: "AI_PROVIDER_UPSTREAM",
+};
+
+export class AiProviderError extends ApplicationError {
+  readonly category: AiProviderErrorCategory;
+  readonly provider: "sub2api";
+  readonly upstreamCode?: string;
+  readonly upstreamMessage?: string;
+  readonly upstreamStatus?: number;
+
+  constructor(options: AiProviderErrorOptions) {
+    const code = providerErrorCodes[options.category];
+    super(
+      code,
+      publicMessages[code],
+      options.category === "timeout" || options.category === "unavailable",
+    );
+    this.name = "AiProviderError";
+    this.category = options.category;
+    this.provider = options.provider;
+    this.upstreamCode = options.upstreamCode;
+    this.upstreamMessage = options.upstreamMessage;
+    this.upstreamStatus = options.upstreamStatus;
   }
 }
 

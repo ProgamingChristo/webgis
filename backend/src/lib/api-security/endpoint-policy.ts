@@ -8,6 +8,7 @@ export type ApiEndpointClassification =
 export type ApiRateLimitProfile =
   | "none"
   | "auth"
+  | "ai"
   | "api"
   | "mutation"
   | "spatial";
@@ -91,10 +92,20 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     path: "/api/ai/ask",
     classification: "AUTHENTICATED",
     role: "AUTHENTICATED",
-    rateLimit: "api",
+    rateLimit: "ai",
     cors: "allowlist",
     allowedRequestHeaders: AUTH_CONTENT_HEADERS,
     purpose: "Grounded GETRA AI question answering",
+  },
+  {
+    method: "POST",
+    path: "/api/ai/merchant-description",
+    classification: "AUTHENTICATED",
+    role: "AUTHENTICATED",
+    rateLimit: "ai",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_CONTENT_HEADERS,
+    purpose: "Authenticated UMKM merchant-description writing assistance",
   },
 
   // Auth
@@ -167,6 +178,16 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     cors: "allowlist",
     allowedRequestHeaders: AUTH_HEADERS,
     purpose: "Read aggregate pedestrian graph health diagnostics",
+  },
+  {
+    method: "GET",
+    path: "/api/internal/routing/provider-health",
+    classification: "AUTHENTICATED",
+    role: "AUTHENTICATED",
+    rateLimit: "spatial",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_HEADERS,
+    purpose: "Read safe Valhalla provider connectivity diagnostics",
   },
 
   // Community
@@ -819,7 +840,7 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     rateLimit: "spatial",
     cors: "allowlist",
     allowedRequestHeaders: AUTH_CONTENT_HEADERS,
-    purpose: "Pedestrian routing from origin to destination coordinates",
+    purpose: "Walking, motorcycle, or car navigation from origin to destination coordinates",
   },
   {
     method: "POST",
@@ -1408,6 +1429,36 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     cors: "allowlist",
     allowedRequestHeaders: AUTH_CONTENT_HEADERS,
     purpose: "Admin reject merchant submission",
+  },
+  {
+    method: "GET",
+    path: "/api/admin/merchant-claims",
+    classification: "ADMIN",
+    role: "ADMIN",
+    rateLimit: "api",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_HEADERS,
+    purpose: "Admin list pending merchant ownership claims",
+  },
+  {
+    method: "POST",
+    path: "/api/admin/merchant-claims/[id]/approve",
+    classification: "ADMIN",
+    role: "ADMIN",
+    rateLimit: "mutation",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_CONTENT_HEADERS,
+    purpose: "Admin approve merchant ownership claim",
+  },
+  {
+    method: "POST",
+    path: "/api/admin/merchant-claims/[id]/reject",
+    classification: "ADMIN",
+    role: "ADMIN",
+    rateLimit: "mutation",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_CONTENT_HEADERS,
+    purpose: "Admin reject merchant ownership claim",
   },
   {
     method: "GET",

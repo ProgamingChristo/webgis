@@ -17,6 +17,7 @@ tests
 docs
 supabase
 deployment
+routing-data
 
 # Local editor and agent metadata.
 .vscode

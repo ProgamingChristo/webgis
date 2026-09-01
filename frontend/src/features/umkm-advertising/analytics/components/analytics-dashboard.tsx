@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, RefreshCw, BarChart3, AlertTriangle } from "lucide-react";
+import { ArrowLeft, RefreshCw, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/src/components/providers/AuthProvider";
 import { apiClient } from "@/src/lib/api-client";
 import { CampaignAnalyticsDTO } from "../types/campaign-analytics.types";
@@ -121,7 +121,7 @@ export function AnalyticsDashboard() {
 
   if (campaigns.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6 py-3 sm:py-6">
         <div className="flex items-center gap-2 mb-4">
           <Link
             href="/umkm"
@@ -137,31 +137,17 @@ export function AnalyticsDashboard() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Link
-              href="/umkm"
-              className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-200 transition-colors"
-            >
-              <ArrowLeft size={13} />
-              Workspace UMKM
-            </Link>
-            <span className="text-slate-600">•</span>
-            <span className="text-xs font-semibold text-blue-400">Advertising Analytics</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <BarChart3 size={24} className="text-blue-400" />
-            Laporan Interaksi Campaign
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Pantau efektivitas media promosi transit berdasarkan respon interaksi komuter secara real-time.
-          </p>
-        </div>
+    <div className="mx-auto max-w-6xl space-y-6 py-3 sm:py-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+        <Link
+          href="/umkm/advertising"
+          className="inline-flex min-w-0 items-center gap-1.5 text-xs font-semibold text-slate-400 transition-colors hover:text-slate-200"
+        >
+          <ArrowLeft className="shrink-0" size={13} />
+          <span className="break-words">Kembali ke Advertising & Promosi</span>
+        </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           <button
             type="button"
             onClick={loadAnalytics}

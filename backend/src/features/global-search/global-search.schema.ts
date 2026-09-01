@@ -78,6 +78,9 @@ export const globalSearchQuerySchema = z.object({
   if (value.scope === "MULTI_REGION" && value.region_ids.length < 2) {
     context.addIssue({ code: "custom", message: "multi-region scope requires multiple regions" });
   }
+  if (value.scope === "GLOBAL" && (!value.q.trim() || value.region_ids.length > 0)) {
+    context.addIssue({ code: "custom", message: "global scope requires a query and no regions" });
+  }
   if (new Set(value.region_ids).size !== value.region_ids.length) {
     context.addIssue({ code: "custom", message: "region identifiers must be unique" });
   }

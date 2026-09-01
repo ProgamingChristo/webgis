@@ -38,6 +38,11 @@ export class AiService {
   }
 
   private async determineIntent(question: string, history?: AiAskRequest["history"]): Promise<AiIntent> {
+    const deterministicIntent = classifyIntentDeterministically(question, history);
+    if (deterministicIntent === "ASSISTANT_IDENTITY") {
+      return deterministicIntent;
+    }
+
     let inputContext = "";
     if (history && history.length > 0) {
       inputContext += "Conversation History:\n";
@@ -52,6 +57,7 @@ export class AiService {
       schema: IntentClassificationSchema,
       schemaName: "intent_classification",
       instructions: `You are a classifier for the GETRA spatial analytics system. Classify the user's question into one of the following intents:
+- ASSISTANT_IDENTITY: Greetings or questions about whether this is GETRA AI, who the assistant is, or what it can do.
 - GENERAL_AREA: Questions about what is in the area generally.
 - NEAREST_TRANSIT: Questions specifically about the closest public transit (bus, train, etc.).
 - WALKING_ROUTE: Questions about walking distance, route, or how to get somewhere.
@@ -60,22 +66,31 @@ export class AiService {
       input: inputContext,
     });
 
-    return response?.data.intent ?? classifyIntentDeterministically(question, history);
+    return response?.data.intent ?? deterministicIntent;
   }
 
   private async fetchGroundingFacts(intent: AiIntent, context: AiAskRequest["context"]) {
-    const supabase = getRequestSupabaseClient(this.authorization);
     const limitations: string[] = [];
     const provenance: { source: string; dataset: string }[] = [];
     let mapAction: AiMapAction | undefined;
     let facts: Record<string, unknown> = {};
 
     switch (intent) {
-      case "NEAREST_TRANSIT":
+      case "ASSISTANT_IDENTITY": {
+        facts = {
+          assistant_name: "Asisten GETRA AI",
+          capabilities: ["rute", "area", "akses", "transit", "titik peta", "UMKM"],
+          grounding_policy: "Jawaban analisis menggunakan data GETRA yang tersedia.",
+        };
+        break;
+      }
+
+      case "NEAREST_TRANSIT": {
         if (!context?.origin) {
           limitations.push("Lokasi asal tidak tersedia untuk mencari transit terdekat.");
           break;
         }
+        const supabase = getRequestSupabaseClient(this.authorization);
         const transportRepo = new TransportNodeRepository(supabase);
         const nearStops = await transportRepo.findNear(
           {
@@ -112,12 +127,14 @@ export class AiService {
           limitations.push("Tidak ada transit dalam radius 1.5km.");
         }
         break;
+      }
 
-      case "WALKING_ROUTE":
+      case "WALKING_ROUTE": {
         if (!context?.origin || !context?.destination) {
           limitations.push("Lokasi asal atau tujuan tidak tersedia untuk menghitung rute.");
           break;
         }
+        const supabase = getRequestSupabaseClient(this.authorization);
         const routingService = new CommuterNetworkRepository(supabase);
         try {
           const route = await routingService.route(
@@ -136,9 +153,11 @@ export class AiService {
           limitations.push("Rute tidak dapat ditemukan pada jaringan pedestrian yang tersedia.");
         }
         break;
+      }
 
-      case "UMKM_POI":
+      case "UMKM_POI": {
         if (context?.selected_entity_id) {
+          const supabase = getRequestSupabaseClient(this.authorization);
           const umkmRepo = new UmkmRepository(supabase);
           const merchant = await umkmRepo.findById(context.selected_entity_id);
 
@@ -159,13 +178,15 @@ export class AiService {
           } else {
             limitations.push("Merchant terpilih tidak ditemukan pada data canonical GETRA.");
           }
-          break;
+        } else {
+          limitations.push("Pilih merchant pada peta agar GETRA dapat menjelaskan usaha tersebut.");
         }
-        // Fall through to nearby area facts when no selected merchant is available.
-      case "GENERAL_AREA":
-      default:
-        // Provide basic area facts
+        break;
+      }
+
+      case "GENERAL_AREA": {
         if (context?.origin) {
+          const supabase = getRequestSupabaseClient(this.authorization);
           const umkmRepo = new UmkmRepository(supabase);
           const nearbyUmkm = await umkmRepo.findNearby({
             lat: context.origin.latitude,
@@ -182,6 +203,14 @@ export class AiService {
           limitations.push("Lokasi tidak tersedia.");
         }
         break;
+      }
+
+      case "UNKNOWN": {
+        facts = {
+          supported_topics: ["rute", "transit terdekat", "kondisi area", "UMKM pada titik peta"],
+        };
+        break;
+      }
     }
 
     return { facts, provenance, limitations, mapAction };
@@ -193,7 +222,11 @@ export class AiService {
     facts: Record<string, unknown>,
     activeExperience: string,
     history?: AiAskRequest["history"]
-  ) {
+  ): Promise<{
+    answer: string;
+    limitations_mentioned: string[];
+    provider: "sub2api" | "deterministic";
+  }> {
     let inputContext = "";
     if (history && history.length > 0) {
       inputContext += "Conversation History:\n";
@@ -232,7 +265,7 @@ ${JSON.stringify(facts, null, 2)}
     }
     return {
       ...response.data,
-      provider: response.source,
+      provider: response.source === "sub2api" ? "sub2api" : "deterministic",
     };
   }
 }
@@ -245,6 +278,12 @@ function classifyIntentDeterministically(
   const recentContext = history?.slice(-2).map((item) => item.content).join(" ").toLocaleLowerCase("id-ID") ?? "";
   const combined = `${recentContext} ${current}`;
 
+  if (
+    /^(halo|hai|hi|hello)[!.?\s]*$/u.test(current.trim()) ||
+    /kamu siapa|siapa kamu|asisten (?:aku|saya)|getra ai|apakah kamu ai|kamu ai|apa yang (?:bisa|dapat) kamu (?:lakukan|bantu)/u.test(current)
+  ) {
+    return "ASSISTANT_IDENTITY";
+  }
   if (/jalan kaki|berapa lama|rute|route|duration|durasi/.test(current)) return "WALKING_ROUTE";
   if (/paling dekat|terdekat|nearest|stasiun|halte|transit/.test(combined)) return "NEAREST_TRANSIT";
   if (/umkm|merchant|usaha|toko|warung|poi/.test(combined)) return "UMKM_POI";
@@ -253,6 +292,14 @@ function classifyIntentDeterministically(
 }
 
 function formatDeterministicAnswer(intent: AiIntent, facts: Record<string, unknown>): string {
+  if (intent === "ASSISTANT_IDENTITY") {
+    return "Ya, saya Asisten GETRA AI. Saya membantu menjelaskan rute, area, akses, transit, titik peta, dan UMKM berdasarkan data GETRA yang tersedia.";
+  }
+
+  if (intent === "UNKNOWN") {
+    return "Saya belum dapat menghubungkan pertanyaan itu ke analisis spasial. Anda dapat menanyakan rute, transit terdekat, kondisi area, atau UMKM pada titik peta.";
+  }
+
   if (intent === "NEAREST_TRANSIT" && typeof facts.stop_name === "string") {
     const distance = typeof facts.distance_m === "number" ? `, sekitar ${Math.round(facts.distance_m)} meter dari titik asal` : "";
     return `Transit terdekat yang ditemukan adalah ${facts.stop_name}${distance}.`;

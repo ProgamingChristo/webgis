@@ -29,7 +29,7 @@ export function AiPanel({
   selectedEntityId,
   studyAreaId,
 }: AiPanelProps) {
-  const { state, messages, error, askQuestion, clearChat } = useAi();
+  const { state, messages, error, provider, askQuestion, clearChat } = useAi();
   const [question, setQuestion] = useState("");
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -102,6 +102,11 @@ export function AiPanel({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {provider && state === "SUCCESS" && (
+            <span className="whitespace-nowrap rounded-full border border-cyan-300/20 bg-cyan-300/[0.07] px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-cyan-100">
+              {provider === "sub2api" ? "AI terhubung" : "Mode fallback data"}
+            </span>
+          )}
           <span className="rounded-full border border-lime-300/25 bg-lime-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-lime-200">
             {contextLabel}
           </span>
@@ -227,7 +232,11 @@ export function AiPanel({
 
       <p className="mt-3 flex items-center gap-2 text-[10px] font-medium text-slate-500">
         <Sparkles size={12} className="text-cyan-200" />
-        Jawaban dihitung dari fakta GIS & data terverifikasi, lalu diinterpretasi AI.
+        {provider === "sub2api"
+          ? "Jawaban menggunakan fakta GIS terverifikasi dan interpretasi AI."
+          : provider === "deterministic"
+            ? "Jawaban dibuat langsung dari fakta GIS terverifikasi tanpa interpretasi AI."
+            : "Jawaban dibatasi oleh fakta GIS dan data GETRA yang tersedia."}
       </p>
     </section>
   );

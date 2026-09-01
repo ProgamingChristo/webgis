@@ -6,7 +6,9 @@ process.loadEnvFile("frontend/.env.local");
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const apiUrl =
+  process.env.NEXT_PUBLIC_GETRA_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL;
 
 if (!supabaseUrl || !serviceKey || !anonKey) {
   throw new Error("Missing Supabase URL/service/publishable key in local env.");
@@ -524,7 +526,7 @@ try {
     );
     record("API invalid bbox denied", bad.status === 400 ? "PASS" : "FAIL", String(bad.status));
   } else {
-    record("API checks", "NOT_VERIFIED", "NEXT_PUBLIC_API_URL missing");
+    record("API checks", "NOT_VERIFIED", "NEXT_PUBLIC_GETRA_API_URL missing");
   }
 } finally {
   await cleanup();

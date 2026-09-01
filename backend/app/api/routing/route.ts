@@ -6,11 +6,17 @@ import { requireAuthenticatedUser } from "@/src/lib/auth";
 import { rateLimiter } from "@/src/lib/rate-limit";
 import { getRequestId } from "@/src/lib/request-id";
 import { readBoundedJsonBody } from "@/src/lib/spatial/request";
-import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
-import { CommuterNetworkRepository } from "@/src/features/commuter";
 import { AnalyticsEventService } from "@/src/features/demand-intelligence";
+import {
+  getRoutingProvider,
+  routingFailureCodeFromError,
+  type NavigationRouteRequest,
+  type NavigationRouteResult,
+} from "@/src/features/routing";
+import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
 import { parseRoutingRequest } from "@/src/modules/spatial/spatial.schema";
 import { createOptionsHandler } from "@/src/lib/api-security";
+import { logger } from "@/src/lib/logger";
 
 export const runtime = "nodejs";
 export const maxDuration = 15;
@@ -18,16 +24,14 @@ export const maxDuration = 15;
 export interface RoutingRouteDependencies {
   authorize: typeof requireAuthenticatedUser;
   checkLimit: typeof rateLimiter.checkLimit;
-  route: CommuterNetworkRepository["route"];
+  route: (input: NavigationRouteRequest, signal?: AbortSignal) => Promise<NavigationRouteResult>;
   recordRoute?: (actorId: string, merchantId: string, outcome: string) => Promise<void>;
 }
 
 const routingDependencies: RoutingRouteDependencies = {
   authorize: requireAuthenticatedUser,
   checkLimit: rateLimiter.checkLimit.bind(rateLimiter),
-  route: (origin, destination) => new CommuterNetworkRepository(
-    getServiceRoleSupabaseClient(),
-  ).route(origin, destination),
+  route: (input, signal) => getRoutingProvider().route(input, signal),
   recordRoute: (actorId, merchantId, outcome) => new AnalyticsEventService(
     getServiceRoleSupabaseClient(),
   ).recordRoute(actorId, merchantId, outcome),
@@ -44,46 +48,46 @@ export function createRoutingHandler(dependencies: RoutingRouteDependencies = ro
     const body = await readBoundedJsonBody(request, 10_240);
     const input = parseRoutingRequest(body);
 
-    const result = await dependencies.route(
-      {
-        latitude: input.origin.latitude,
-        longitude: input.origin.longitude,
-        source: "EXPLICIT_ORIGIN",
-      },
-      input.destination,
-    );
-
-    if (input.destination_merchant_id) {
-      await dependencies.recordRoute?.(userId, input.destination_merchant_id, result.status);
-    }
-
-    if (result.status !== "ROUTABLE") {
-      return createSuccessResponse(requestId, {
-        route_status: result.status ?? "UNROUTABLE",
-        analysis_method: "pgrouting_network_route",
+    let result: NavigationRouteResult;
+    try {
+      result = await dependencies.route({
+        origin: input.origin,
+        destination: input.destination,
+        mode: input.mode,
+      }, request.signal);
+    } catch (error) {
+      const reasonCode = routingFailureCodeFromError(error, request.signal);
+      logger.error("[ROUTING] Provider request failed", {
+        request_id: requestId,
+        error_code: reasonCode,
+        mode: input.mode,
+      });
+      result = {
+        mode: input.mode,
+        reason_code: reasonCode,
+        route_status: "SERVICE_UNAVAILABLE",
         distance_meters: null,
-        network_distance_meters: null,
-        access_distance_meters: null,
         duration_seconds: null,
         geometry: null,
-        limitation_flags: ["NO_FABRICATED_ROUTE"],
-        route_source: "pgr_dijkstra",
-        source: "GETRA_PEDESTRIAN_NETWORK",
-      });
+        maneuvers: [],
+        engine: "valhalla",
+        warnings: ["Layanan navigasi sedang tidak tersedia."],
+        has_toll: false,
+        has_highway: false,
+        has_ferry: false,
+        source: "OPENSTREETMAP",
+      };
+    }
+
+    if (input.destination_merchant_id) {
+      await dependencies.recordRoute?.(userId, input.destination_merchant_id, result.route_status);
     }
 
     return createSuccessResponse(requestId, {
-      route_status: "ROUTABLE",
-      analysis_method: "pgrouting_network_route",
-      distance_meters: Number(result.distance_meters),
-      network_distance_meters: Number(result.network_distance_meters),
-      access_distance_meters: Number(result.access_distance_meters),
-      duration_seconds: Number(result.duration_seconds),
-      geometry: result.geometry,
-      limitation_flags: ["BOUNDED_NETWORK_SNAP"],
-      route_source: "pgr_dijkstra",
-      source: "GETRA_PEDESTRIAN_NETWORK",
-      walking_speed_mps: Number(result.walking_speed_mps),
+      ...result,
+      analysis_method: "navigation_route",
+      limitation_flags: result.route_status === "ROUTABLE" ? [] : ["NO_FABRICATED_ROUTE"],
+      route_source: result.engine,
     });
   });
   };

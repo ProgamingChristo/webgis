@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/src/lib/logger";
 import { createErrorResponse } from "@/src/lib/api-response";
-import { ApplicationError, toApplicationError } from "@/src/lib/errors";
+import { AiProviderError, ApplicationError, toApplicationError } from "@/src/lib/errors";
 import {
   applyCorsHeaders,
   evaluateActualCors,
@@ -74,6 +74,20 @@ export async function withApiLogger(
     if (error && typeof error === "object" && "name" in error && error.name === "RateLimitExceededError") {
        
       logPayload.source = (error as any).source as string;
+    }
+
+    if (error instanceof AiProviderError) {
+      logPayload.provider = error.provider;
+      logPayload.provider_error_category = error.category;
+      if (error.upstreamStatus !== undefined) {
+        logPayload.upstream_status = error.upstreamStatus;
+      }
+      if (error.upstreamCode) {
+        logPayload.upstream_code = error.upstreamCode;
+      }
+      if (error.upstreamMessage) {
+        logPayload.upstream_message = error.upstreamMessage;
+      }
     }
     
     logger.error(`[API] ${method} ${path} - Failed`, logPayload);

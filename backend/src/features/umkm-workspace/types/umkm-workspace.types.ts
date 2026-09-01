@@ -18,10 +18,23 @@ export interface SubmissionBrief {
   updated_at: string;
 }
 
+export interface MerchantClaimBrief {
+  id: string;
+  merchant_id: string;
+  merchant_name: string;
+  category: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  address: string | null;
+  note: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+}
+
 export interface UmkmWorkspaceSummary {
   verified_merchants_count: number;
   pending_submissions_count: number;
   active_campaigns_count: number;
   owned_merchants: OwnedMerchantBrief[];
   recent_submissions: SubmissionBrief[];
+  recent_claims: MerchantClaimBrief[];
 }

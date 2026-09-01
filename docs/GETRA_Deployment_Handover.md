@@ -1,47 +1,36 @@
 # GETRA Deployment Handover
 
-This document outlines the final pre-deployment considerations and mechanisms for GETRA Phase 13.
-> **IMPORTANT: Phase 13 does not automatically deploy to production.** This is a handover artifact.
+GETRA production uses a Vercel frontend plus a Dockerized backend and private
+Valhalla service on a VPS. It does not require Google Maps routing billing.
 
-## Production Status
+- Frontend: Vercel project rooted at `frontend`.
+- Backend: `getra-backend` image built from the root `Dockerfile`.
+- Routing: pinned Valhalla container with graph data mounted from `routing-data`.
+- Database: remote Supabase; no PostgreSQL container is created.
+- Canonical instructions: [`VERCEL_DEPLOYMENT.md`](./VERCEL_DEPLOYMENT.md) and
+  [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md).
 
-- **Deployment Method**: PM2 / Docker (Refer to `ecosystem.config.cjs` and `Dockerfile` in root/backend)
-- **Status**: PARTIALLY VERIFIED. The application structure natively supports containerized and process-managed deployments, but the final cloud deployment topology is dependent on user provisioning.
+Production deployment is not performed automatically. VPS provisioning, DNS,
+TLS, Vercel linkage, graph build, and hosted smoke tests require the real target
+infrastructure and remain unverified until executed there.
 
-## Frontend (Next.js) Build
-```bash
-cd frontend
-npm install
-npm run build
-npm start # Production mode
-```
-- Ensure `NEXT_PUBLIC_API_URL` points to the *production* backend URL, not `http://localhost:8080`.
+## Security handoff
 
-## Backend Build
-```bash
-cd backend
-npm install
-npm run build
-npm start # Starts the built output
-```
-- Ensure `FRONTEND_ALLOWED_ORIGINS` includes the *production* frontend origin.
+- Keep Sub2API, Midtrans server, and Supabase privileged keys only in the ignored
+  VPS environment file.
+- Keep backend and Valhalla host bindings on `127.0.0.1`; publish only HTTPS via
+  a trusted reverse proxy.
+- Use exact production origins for `APP_BASE_URL` and
+  `FRONTEND_ALLOWED_ORIGINS`.
+- Email confirmation is currently disabled. Before public launch, decide the
+  intended policy, configure Supabase SMTP/templates if enabling it, and rerun
+  signup, login, callback, and onboarding E2E checks.
 
-## Email Confirmation Warning
-> **PRE-PRODUCTION AUTH DECISION**
-> Current status: Email confirmation is **temporarily disabled**.
-> Before public production launch:
-> 1. Decide whether to enforce email confirmation.
-> 2. Configure the SMTP email templates/provider in Supabase.
-> 3. Re-run signup/login/onboarding E2E testing to verify the redirect flow.
+## Data and rollback handoff
 
-## Secrets & Configurations
-- **Production Secrets**: Use platform-specific secret management (e.g. Vercel secrets, Docker secrets).
-- **NEVER** expose the `SUPABASE_SERVICE_ROLE_KEY` or `AI_API_KEY` in the frontend bundle or client-side environments.
-
-## Database Migrations
-- Perform `supabase db push --dry-run` to preview changes on the production linked instance.
-- **Do not** use `supabase db reset --linked`. Always roll forward safely.
-
-## Rollback & Backups
-- Application code can be rolled back via git tagging/Docker image tagging.
-- Database rollbacks involving dropped columns or tables are destructive. Rely on Supabase automated point-in-time recovery capabilities if configured. Restoring a production database should be a last resort requiring strict review. (RESTORE PROCEDURE: NOT TESTED).
+- Preview migrations with the approved Supabase workflow. Never run
+  `supabase db reset --linked`.
+- Roll application revisions back only when compatible with the deployed schema.
+- Record the OSM extract date used to create the Valhalla graph.
+- Database restore is a last-resort incident action. Restore rehearsal remains
+  `NOT VERIFIED` unless deployment evidence says otherwise.

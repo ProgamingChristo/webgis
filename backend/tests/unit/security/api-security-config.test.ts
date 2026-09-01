@@ -24,6 +24,7 @@ describe("API security configuration", () => {
       appEnv: "development",
       maxJsonBodyBytes: 65_536,
       rateLimits: {
+        ai: { limit: 15, windowMs: 600_000 },
         api: { limit: 1000, windowMs: 60_000 },
         auth_general: { limit: 1000, windowMs: 60_000 },
         auth_register: { limit: 100, windowMs: 60_000 },
@@ -46,6 +47,8 @@ describe("API security configuration", () => {
         FRONTEND_ALLOWED_ORIGINS:
           " https://web.getra.example,https://admin.getra.example,https://web.getra.example ",
         RATE_LIMIT_API_MAX_REQUESTS: "101",
+        RATE_LIMIT_AI_MAX_REQUESTS: "12",
+        RATE_LIMIT_AI_WINDOW_MS: "540000",
         RATE_LIMIT_AUTH_REGISTER_MAX_REQUESTS: "7",
         RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS: "7",
         RATE_LIMIT_AUTH_GENERAL_MAX_REQUESTS: "7",
@@ -65,6 +68,7 @@ describe("API security configuration", () => {
         appEnv,
         maxJsonBodyBytes: 32_768,
         rateLimits: {
+          ai: { limit: 12, windowMs: 540_000 },
           api: { limit: 101, windowMs: 45_000 },
           auth_general: { limit: 7, windowMs: 45_000 },
           auth_register: { limit: 7, windowMs: 45_000 },
@@ -109,6 +113,8 @@ describe("API security configuration", () => {
     { key: "RATE_LIMIT_WINDOW_MS", value: "3600001" },
     { key: "RATE_LIMIT_AUTH_MAX_REQUESTS", value: "0" },
     { key: "RATE_LIMIT_API_MAX_REQUESTS", value: "100001" },
+    { key: "RATE_LIMIT_AI_MAX_REQUESTS", value: "1001" },
+    { key: "RATE_LIMIT_AI_WINDOW_MS", value: "59999" },
     { key: "RATE_LIMIT_MUTATION_MAX_REQUESTS", value: "not-a-number" },
     { key: "RATE_LIMIT_SPATIAL_MAX_REQUESTS", value: "1.5" },
     { key: "SUPABASE_REQUEST_TIMEOUT_MS", value: "999" },

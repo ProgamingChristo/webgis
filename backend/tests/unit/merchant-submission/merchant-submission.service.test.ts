@@ -8,6 +8,7 @@ describe("MerchantSubmissionService", () => {
   beforeEach(() => {
     mockSupabase = {
       from: vi.fn(),
+      rpc: vi.fn(),
     };
     service = new MerchantSubmissionService(mockSupabase);
   });
@@ -167,6 +168,7 @@ describe("MerchantSubmissionService", () => {
     const subId = "sub-123";
     const submitterId = "user-umkm";
 
+    mockSupabase.rpc.mockResolvedValue({ data: "merchant-created-1", error: null });
     mockSupabase.from.mockImplementation((table: string) => {
       if (table === "profiles") {
         return {
@@ -184,7 +186,7 @@ describe("MerchantSubmissionService", () => {
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
+              maybeSingle: vi.fn().mockResolvedValue({
                 data: {
                   id: subId,
                   submitted_by: submitterId,
@@ -193,40 +195,12 @@ describe("MerchantSubmissionService", () => {
                   address: "Jl. Kebon Jeruk",
                   category: "Makanan & Minuman",
                   location: "POINT(106.78 -6.18)",
-                  status: "PENDING_REVIEW",
+                  status: "APPROVED",
+                  reviewed_by: adminId,
+                  canonical_merchant_id: "merchant-created-1",
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
                 },
-                error: null,
-              }),
-            }),
-          }),
-          update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              select: vi.fn().mockReturnValue({
-                single: vi.fn().mockResolvedValue({
-                  data: {
-                    id: subId,
-                    submitted_by: submitterId,
-                    name: "Warung Kopi Selamat",
-                    category: "Makanan & Minuman",
-                    status: "APPROVED",
-                    canonical_merchant_id: "merchant-created-1",
-                    location: "POINT(106.78 -6.18)",
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                  },
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        };
-      }
-      if (table === "merchants") {
-        return {
-          insert: vi.fn().mockReturnValue({
-            select: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: { id: "merchant-created-1" },
                 error: null,
               }),
             }),

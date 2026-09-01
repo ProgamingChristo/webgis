@@ -12,6 +12,7 @@ export type AdvertisingEligibilityResult =
         | "OWNERSHIP_REQUIRED"
         | "OWNERSHIP_PENDING"
         | "MERCHANT_INACTIVE"
+        | "MERCHANT_UNVERIFIED"
         | "GEOMETRY_INVALID"
         | "PROFILE_INCOMPLETE";
     };

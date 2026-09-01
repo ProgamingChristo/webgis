@@ -75,12 +75,12 @@ export class AdvertisingEligibilityService {
     }
 
     // 4. Merchant Active/Eligible
-    if (
-      merchant.publish_status === "HIDDEN" ||
-      merchant.publish_status === "ARCHIVED" ||
-      merchant.verification_status === "REJECTED"
-    ) {
+    if (merchant.publish_status !== "PUBLISHED") {
       return { eligible: false, reason: "MERCHANT_INACTIVE" };
+    }
+
+    if (merchant.verification_status !== "VERIFIED") {
+      return { eligible: false, reason: "MERCHANT_UNVERIFIED" };
     }
 
     // 5. Merchant Geometry Valid

@@ -38,8 +38,12 @@ export class GlobalSearchService {
       intent.constraints.budget || intent.constraints.opening || intent.constraints.walking,
     );
     const candidateLimit = intent.constraints.walking ? MAX_WALKING_CANDIDATES : 100;
+    const globalScope = intent.scope.type === "GLOBAL";
     const page = await new CanonicalMerchantReadService(this.supabase).list({
-      ...intent.scope.bounds,
+      west: globalScope ? undefined : intent.scope.bounds.west,
+      south: globalScope ? undefined : intent.scope.bounds.south,
+      east: globalScope ? undefined : intent.scope.bounds.east,
+      north: globalScope ? undefined : intent.scope.bounds.north,
       limit: hasHardConstraints ? candidateLimit : query.limit,
       offset: hasHardConstraints ? 0 : query.offset,
       keyword: intent.keyword,
@@ -180,7 +184,8 @@ export function resolveGlobalSearchIntent(
       throw new ApplicationError("VALIDATION_ERROR", "Wilayah tidak ditemukan.");
     }
 
-    let scopeType: ResolvedSearchIntent["scope"]["type"] = "CURRENT_VIEWPORT";
+    let scopeType: ResolvedSearchIntent["scope"]["type"] =
+      query.scope === "GLOBAL" ? "GLOBAL" : "CURRENT_VIEWPORT";
     if (locationRegion || regionIds.length === 1) scopeType = "REGION";
     if (!locationRegion && regionIds.length > 1) scopeType = "MULTI_REGION";
     if (query.scope === "MULTI_REGION" && regionIds.length < 2) {
@@ -191,7 +196,10 @@ export function resolveGlobalSearchIntent(
     }
 
     let bounds: SearchBounds;
-    if (scopeType === "CURRENT_VIEWPORT") {
+    if (scopeType === "GLOBAL") {
+      bounds = { west: -180, south: -90, east: 180, north: 90 };
+      regionIds = [];
+    } else if (scopeType === "CURRENT_VIEWPORT") {
       if (
         query.west === undefined || query.south === undefined ||
         query.east === undefined || query.north === undefined

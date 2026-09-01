@@ -17,8 +17,10 @@ describe("Docker deployment configuration", () => {
     expect(dockerfile).toContain("AS deps");
     expect(dockerfile).toContain("AS builder");
     expect(dockerfile).toContain("AS runner");
+    expect(dockerfile).toContain("COPY frontend/package.json ./frontend/package.json");
+    expect(dockerfile).toContain("COPY backend/package.json ./backend/package.json");
     expect(dockerfile).toContain("RUN npm ci");
-    expect(dockerfile).toContain("RUN npm run build");
+    expect(dockerfile).toContain("RUN npm run build -w backend");
     expect(dockerfile).toContain("/app/backend/.next/standalone");
     expect(dockerfile).toContain("/app/backend/.next/static");
     expect(dockerfile).toContain("USER node");
@@ -48,6 +50,7 @@ describe("Docker deployment configuration", () => {
       "tests",
       "docs",
       "supabase",
+      "routing-data",
     ]) {
       expect(dockerignore).toContain(ignoredPath);
     }
@@ -57,8 +60,10 @@ describe("Docker deployment configuration", () => {
 
   it("uses a conflict-free host port, bounded healthcheck, and restart policy", () => {
     const compose = readProjectFile("docker-compose.yml");
+    const routingCompose = readProjectFile("docker-compose.routing.yml");
     const productionCompose = readProjectFile("docker-compose.prod.yml");
 
+    expect(compose).toContain("${GETRA_BIND_ADDRESS:-127.0.0.1}");
     expect(compose).toContain('${GETRA_DOCKER_PORT:-3002}:3000');
     expect(compose).toContain("target: runner");
     expect(compose).toContain("restart: unless-stopped");
@@ -68,6 +73,10 @@ describe("Docker deployment configuration", () => {
     expect(productionCompose).toContain("APP_ENV: production");
     expect(productionCompose).toContain("no-new-privileges:true");
     expect(productionCompose).toContain("- ALL");
+    expect(routingCompose).toContain("ghcr.io/valhalla/valhalla-scripted:3.8.3@sha256:");
+    expect(routingCompose).toContain("ROUTING_BASE_URL: http://valhalla:8002");
+    expect(routingCompose).toContain("${VALHALLA_BIND_ADDRESS:-127.0.0.1}");
+    expect(routingCompose).toContain("condition: service_healthy");
   });
 
   it("contains placeholders only and never embeds credentials or secret build arguments", () => {

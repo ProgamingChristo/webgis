@@ -15,6 +15,12 @@ describe("Merchant Submission Schemas", () => {
         type: "Point",
         coordinates: [106.78, -6.18],
       },
+      opening_hours: Object.fromEntries(
+        ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+          .map((day) => [day, { is_closed: false, opens_at: "08:00", closes_at: "21:00" }]),
+      ),
+      public_media: { storefront_url: null, menu_urls: [], product_urls: [] },
+      business_info: { contact_phone: null, price_range: null, payment_methods: ["CASH"] },
     };
 
     const parsed = createMerchantSubmissionSchema.safeParse(valid);

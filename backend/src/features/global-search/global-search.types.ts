@@ -5,6 +5,7 @@ import type {
 } from "@/src/features/commuter/commuter.types";
 
 export const SEARCH_SCOPE_TYPES = [
+  "GLOBAL",
   "CURRENT_VIEWPORT",
   "REGION",
   "MULTI_REGION",

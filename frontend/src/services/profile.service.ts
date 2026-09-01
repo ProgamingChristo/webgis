@@ -5,6 +5,7 @@ import {
   type PublicProfile,
   type UserContext,
 } from "@/src/lib/auth-client";
+import { getGetraApiUrl } from "@/src/lib/api-base-url";
 
 export interface ProfileUpdatePayload {
   display_name?: string;
@@ -58,7 +59,7 @@ export const profileService = {
 
     const response =
       await authenticatedFetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/profile/avatar`,
+        getGetraApiUrl("/api/profile/avatar"),
         {
           method: "POST",
           body: formData,
@@ -78,7 +79,7 @@ export const profileService = {
 
   async getOwnProfile() {
     const response = await authenticatedFetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/profile`,
+      getGetraApiUrl("/api/profile"),
     );
 
     return readJson<UserContext["profile"]>(
@@ -91,7 +92,7 @@ export const profileService = {
     payload: ProfileUpdatePayload,
   ) {
     const response = await authenticatedFetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/profile`,
+      getGetraApiUrl("/api/profile"),
       {
         method: "PATCH",
         headers: {
@@ -121,7 +122,7 @@ export const profileService = {
     }
 
     const response = await authenticatedFetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/profiles${
+      `${getGetraApiUrl("/api/profiles")}${
         params.size > 0 ? `?${params.toString()}` : ""
       }`,
     );
@@ -138,7 +139,7 @@ export const profileService = {
     id: string,
   ) {
     const response = await authenticatedFetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/profiles/${id}`,
+      getGetraApiUrl(`/api/profiles/${id}`),
     );
 
     return readJson<PublicProfile>(

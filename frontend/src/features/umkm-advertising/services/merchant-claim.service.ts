@@ -7,22 +7,17 @@ export interface OwnedMerchantSummary {
   publish_status: string;
   verification_status: string;
   isOwnedByMe?: boolean;
+  reason?: string | null;
 }
 
 export interface MyMerchantsResponse {
   ownedMerchants: OwnedMerchantSummary[];
   recommendedMerchants: OwnedMerchantSummary[];
+  ineligibleMerchants?: OwnedMerchantSummary[];
 }
 
 export class MerchantClaimService {
   static async getMyMerchants(): Promise<MyMerchantsResponse> {
     return apiClient.get<MyMerchantsResponse>("/api/umkm/advertising/my-merchants");
-  }
-
-  static async claimMerchant(merchantId: string): Promise<{ isOwned: boolean; merchantId: string }> {
-    return apiClient.post<{ isOwned: boolean; merchantId: string }>(
-      `/api/merchants/${merchantId}/ownership`,
-      {}
-    );
   }
 }

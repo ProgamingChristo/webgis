@@ -21,6 +21,7 @@ const makeConfig = (
     auth_register: { limit: number; windowMs: number };
     auth_login: { limit: number; windowMs: number };
     auth_general: { limit: number; windowMs: number };
+    ai: { limit: number; windowMs: number };
     api: { limit: number; windowMs: number };
     mutation: { limit: number; windowMs: number };
     spatial: { limit: number; windowMs: number };
@@ -29,6 +30,7 @@ const makeConfig = (
   trustProxy: overrides.trustProxy ?? false,
   appEnv: overrides.appEnv ?? "production",
   rateLimits: {
+    ai: overrides.ai ?? { limit: 2, windowMs: 2_500 },
     auth_register: overrides.auth_register ?? { limit: 2, windowMs: 2_500 },
     auth_login: overrides.auth_login ?? { limit: 2, windowMs: 2_500 },
     auth_general: overrides.auth_general ?? { limit: 2, windowMs: 2_500 },
@@ -67,6 +69,7 @@ describe("InMemoryRateLimiter", () => {
 
   it.each([
     ["auth:login", "auth", 1],
+    ["user-id:ai:merchant-description", "ai", 5],
     ["user-id:api:profile", "api", 2],
     ["user-id:mutation:profile", "mutation", 3],
     ["user-id:spatial:nearby", "spatial", 4],
@@ -77,6 +80,7 @@ describe("InMemoryRateLimiter", () => {
         clock: () => now,
         config: makeConfig({
           auth_login: { limit: 1, windowMs: 60_000 },
+          ai: { limit: 5, windowMs: 600_000 },
           api: { limit: 2, windowMs: 60_000 },
           mutation: { limit: 3, windowMs: 60_000 },
           spatial: { limit: 4, windowMs: 60_000 },

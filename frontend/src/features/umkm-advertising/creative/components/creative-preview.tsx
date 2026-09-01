@@ -21,7 +21,7 @@ export function CreativePreview({ creative, merchantName }: CreativePreviewProps
       <div className="p-3 border-b border-gray-100 flex items-center gap-2">
         <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold text-gray-900 truncate">{merchantName}</div>
+          <div className="break-words text-sm font-semibold leading-5 text-gray-900 line-clamp-2">{merchantName}</div>
           <div className="text-xs text-gray-500">Sponsored</div>
         </div>
       </div>
@@ -44,9 +44,9 @@ export function CreativePreview({ creative, merchantName }: CreativePreviewProps
 
       {/* Content */}
       <div className="p-3">
-        <h4 className="font-bold text-gray-900 text-base mb-1">{creative.headline || "Headline"}</h4>
+        <h4 className="mb-1 break-words text-base font-bold leading-6 text-gray-900">{creative.headline || "Headline"}</h4>
         {creative.description && (
-          <p className="text-sm text-gray-600 mb-3">{creative.description}</p>
+          <p className="mb-3 break-words text-sm leading-6 text-gray-600">{creative.description}</p>
         )}
         
         {/* CTA */}

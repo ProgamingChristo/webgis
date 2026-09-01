@@ -47,7 +47,7 @@ const baseState: CommunityContributionFormState = {
 describe("Community Contribution Phase 2 UI", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.NEXT_PUBLIC_API_URL = "https://api.example.test";
+    process.env.NEXT_PUBLIC_GETRA_API_URL = "https://api.example.test";
   });
 
   it("renders all six report choices and the explicit location controls", () => {

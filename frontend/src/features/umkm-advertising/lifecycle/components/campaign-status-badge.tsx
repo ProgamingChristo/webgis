@@ -50,21 +50,21 @@ export function CampaignStatusBadge({
         };
       case "ACTIVE":
         return {
-          label: "Aktif Berjalan",
+          label: "Aktif",
           icon: PlayCircle,
           bg: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800",
           dot: "bg-emerald-500 animate-pulse",
         };
       case "PAUSED":
         return {
-          label: "Dijeda (Paused)",
+          label: "Dijeda",
           icon: PauseCircle,
           bg: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800",
           dot: "bg-amber-500",
         };
       case "ENDED":
         return {
-          label: "Selesai (Ended)",
+          label: "Berakhir",
           icon: CheckCheck,
           bg: "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800/80 dark:text-zinc-400 dark:border-zinc-700",
           dot: "bg-zinc-400",
@@ -97,7 +97,7 @@ export function CampaignStatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center rounded-full border shadow-sm ${config.bg} ${sizeClasses[size]} ${className}`}
+      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border shadow-sm ${config.bg} ${sizeClasses[size]} ${className}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`} />
       {showIcon && <IconComponent className="h-3.5 w-3.5 flex-shrink-0" />}

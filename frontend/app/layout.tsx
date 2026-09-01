@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 
 import { AuthProvider } from "@/src/components/providers/AuthProvider";
 import { StakeholderProvider } from "@/src/components/providers/StakeholderProvider";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "GETRA — Geo-Enabled Transit & Retail Analytics",
@@ -22,7 +19,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id">
-      <body className={inter.className}>
+      <body>
         <AuthProvider>
           <StakeholderProvider>
             {children}

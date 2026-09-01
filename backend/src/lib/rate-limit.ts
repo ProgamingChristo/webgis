@@ -59,6 +59,10 @@ function selectPolicy(identifier: string): RateLimitPolicy {
     return "spatial";
   }
 
+  if (identifier.includes(":ai:")) {
+    return "ai";
+  }
+
   if (identifier.includes(":mutation:")) {
     return "mutation";
   }

@@ -8,7 +8,7 @@ export default function UmkmWorkspacePage() {
     <GetraAppShell
       description="Kelola profil usaha, discoverability, intelligence lokasi, dan promosi spasial tanpa mengubah role akun."
       eyebrow="GETRA for Business"
-      title="UMKM Workspace"
+      title="Pusat Manajemen & Aktivasi UMKM"
       tone="umkm"
     >
       <UmkmWorkspace />

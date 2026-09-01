@@ -47,10 +47,10 @@ export interface CanonicalMerchantPage {
 }
 
 export interface CanonicalMerchantViewportQuery {
-  west: number;
-  south: number;
-  east: number;
-  north: number;
+  west?: number;
+  south?: number;
+  east?: number;
+  north?: number;
   limit: number;
   offset: number;
   keyword?: string | null;
@@ -65,10 +65,10 @@ export class CanonicalMerchantReadService {
     const { data: pageRows, error: pageError } = await this.supabase.rpc(
       "search_canonical_merchants_v1",
       {
-        p_west: query.west,
-        p_south: query.south,
-        p_east: query.east,
-        p_north: query.north,
+        p_west: query.west ?? null,
+        p_south: query.south ?? null,
+        p_east: query.east ?? null,
+        p_north: query.north ?? null,
         p_limit: query.limit,
         p_offset: query.offset,
         p_region_ids: query.regionIds?.length ? query.regionIds : null,

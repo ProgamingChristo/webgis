@@ -1,4 +1,5 @@
 import { authenticatedFetch } from "@/src/lib/auth-client";
+import { getGetraApiUrl } from "@/src/lib/api-base-url";
 import type {
   BusinessCategorySlug,
   BusinessSpaceCandidateDetail,
@@ -51,20 +52,20 @@ export const businessSpaceService = {
       params.set("north", String(query.bbox.north));
     }
     return readData<BusinessSpaceCandidateList>(
-      await authenticatedFetch(`${process.env.NEXT_PUBLIC_API_URL}/api/business-space/candidates?${params}`, { signal }),
+      await authenticatedFetch(`${getGetraApiUrl("/api/business-space/candidates")}?${params}`, { signal }),
     );
   },
 
   async detail(candidateId: string, query: Pick<CandidateQuery, "category" | "days">, signal?: AbortSignal) {
     const params = new URLSearchParams({ category: query.category, days: String(query.days), region_id: "jakarta-selatan" });
     return readData<BusinessSpaceCandidateDetail>(
-      await authenticatedFetch(`${process.env.NEXT_PUBLIC_API_URL}/api/business-space/candidates/${candidateId}?${params}`, { signal }),
+      await authenticatedFetch(`${getGetraApiUrl(`/api/business-space/candidates/${candidateId}`)}?${params}`, { signal }),
     );
   },
 
   async compare(candidateIds: string[], category: BusinessCategorySlug, days: 7 | 30) {
     return readData<BusinessSpaceComparison>(
-      await authenticatedFetch(`${process.env.NEXT_PUBLIC_API_URL}/api/business-space/compare`, {
+      await authenticatedFetch(getGetraApiUrl("/api/business-space/compare"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ candidate_ids: candidateIds, category, days }),
@@ -74,7 +75,7 @@ export const businessSpaceService = {
 
   async insight(candidateIds: string[], category: BusinessCategorySlug, days: 7 | 30, question?: string) {
     return readData<BusinessSpaceInsight>(
-      await authenticatedFetch(`${process.env.NEXT_PUBLIC_API_URL}/api/business-space/insight`, {
+      await authenticatedFetch(getGetraApiUrl("/api/business-space/insight"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ candidate_ids: candidateIds, category, days, question }),

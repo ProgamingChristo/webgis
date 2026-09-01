@@ -5,10 +5,15 @@ import { PaymentRepository } from "../repositories/payment.repository";
 import { MidtransClient } from "../providers/midtrans/midtrans.client";
 import { mapMidtransStatusToPaymentStatus } from "../providers/midtrans/midtrans.mapper";
 import { canTransitionPaymentStatus } from "../constants/payment.constants";
+import { AdvertisingEligibilityService } from "../../services/advertising-eligibility.service";
+import { MerchantOwnershipService } from "@/src/features/merchant-ownership";
+import { CampaignLifecycleService } from "../../lifecycle/services/campaign-lifecycle.service";
 
 export class PaymentStatusService {
   private repo: PaymentRepository;
   private midtransClient: MidtransClient;
+  private eligibilityService: AdvertisingEligibilityService;
+  private lifecycleService: CampaignLifecycleService;
 
   constructor(
     private readonly supabase: SupabaseClient<any>,
@@ -16,9 +21,18 @@ export class PaymentStatusService {
   ) {
     this.repo = new PaymentRepository(supabase);
     this.midtransClient = midtransClient || new MidtransClient();
+    this.eligibilityService = new AdvertisingEligibilityService(
+      supabase,
+      new MerchantOwnershipService(supabase)
+    );
+    this.lifecycleService = new CampaignLifecycleService(supabase);
   }
 
-  private async verifyCampaignOwnership(campaignId: string, userId: string): Promise<void> {
+  private async verifyCampaignAccess(
+    campaignId: string,
+    userId: string,
+    allowAdminRead: boolean
+  ): Promise<string> {
     const { data: campaign, error: cError } = await this.supabase
       .from("ad_campaigns")
       .select("merchant_id")
@@ -29,35 +43,37 @@ export class PaymentStatusService {
       throw new ApplicationError("NOT_FOUND", "Campaign tidak ditemukan.");
     }
 
-    const { data: merchant, error: mError } = await this.supabase
-      .from("merchants")
-      .select("owner_id")
-      .eq("id", campaign.merchant_id)
-      .single();
+    if (allowAdminRead) {
+      const { data: profile } = await this.supabase
+        .from("profiles")
+        .select("account_role")
+        .eq("id", userId)
+        .single();
 
-    if (mError || !merchant) {
-      throw new ApplicationError("NOT_FOUND", "Merchant campaign tidak ditemukan.");
+      if (profile?.account_role === "ADMIN") {
+        return campaign.merchant_id;
+      }
     }
 
-    const { data: profile } = await this.supabase
-      .from("profiles")
-      .select("account_role")
-      .eq("id", userId)
-      .single();
+    const eligibility = await this.eligibilityService.checkEligibility(
+      userId,
+      campaign.merchant_id
+    );
 
-    const isOwner = merchant.owner_id === userId;
-    const isAdmin = profile?.account_role === "ADMIN";
-
-    if (!isOwner && !isAdmin) {
+    if (!eligibility.eligible) {
       throw new ApplicationError(
         "FORBIDDEN",
-        "Akses ditolak: Anda tidak memiliki izin untuk melihat status pembayaran campaign ini."
+        eligibility.reason === "OWNERSHIP_PENDING"
+          ? "Verifikasi kepemilikan merchant masih ditinjau."
+          : "Akses ditolak: Anda bukan pemilik aktif merchant yang eligible untuk advertising."
       );
     }
+
+    return campaign.merchant_id;
   }
 
   async getPaymentStatus(campaignId: string, userId: string): Promise<PaymentStatusDTO> {
-    await this.verifyCampaignOwnership(campaignId, userId);
+    await this.verifyCampaignAccess(campaignId, userId, true);
 
     const latest = await this.repo.getLatestPaymentOrderByCampaignId(campaignId);
 
@@ -91,7 +107,7 @@ export class PaymentStatusService {
   }
 
   async refreshPaymentStatus(campaignId: string, userId: string): Promise<PaymentStatusDTO> {
-    await this.verifyCampaignOwnership(campaignId, userId);
+    const merchantId = await this.verifyCampaignAccess(campaignId, userId, false);
 
     const latest = await this.repo.getLatestPaymentOrderByCampaignId(campaignId);
 
@@ -132,11 +148,10 @@ export class PaymentStatusService {
         });
 
         if (newStatus === "PAID") {
-          await this.supabase
-            .from("ad_campaigns")
-            .update({ status: "ACTIVE", updated_at: new Date().toISOString() })
-            .eq("id", campaignId)
-            .in("status", ["DRAFT", "PENDING"]);
+          // Payment alone must never force an ineligible or incomplete campaign
+          // ACTIVE. The lifecycle service reuses canonical merchant eligibility
+          // and derives DRAFT/READY/SCHEDULED/ACTIVE from actual readiness.
+          await this.lifecycleService.getLifecycleState(merchantId, campaignId);
         }
 
         return {

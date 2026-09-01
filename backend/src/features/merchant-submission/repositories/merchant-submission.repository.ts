@@ -35,6 +35,8 @@ function mapRowToRecord(row: any): MerchantSubmissionRecord {
     address: row.address || null,
     location: parsePoint(row.location),
     opening_hours: row.opening_hours || {},
+    public_media: row.public_media || { menu_urls: [], product_urls: [] },
+    business_info: row.business_info || { payment_methods: [] },
     image_url: row.image_url || null,
     status: row.status,
     canonical_merchant_id: row.canonical_merchant_id || null,
@@ -66,6 +68,8 @@ export class MerchantSubmissionRepository {
         address: input.address || null,
         location: geomStr,
         opening_hours: input.opening_hours || {},
+        public_media: input.public_media || { menu_urls: [], product_urls: [] },
+        business_info: input.business_info || { payment_methods: [] },
         image_url: input.image_url || null,
         status: "DRAFT",
       })
@@ -178,72 +182,19 @@ export class MerchantSubmissionRepository {
     adminId: string,
     note?: string
   ): Promise<{ submission: MerchantSubmissionRecord; merchant_id: string }> {
-    // 1. Fetch submission
-    const { data: sub, error: subError } = await this.supabase
-      .from("merchant_submissions")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (subError || !sub) {
-      throw new Error("Pengajuan tidak ditemukan.");
-    }
-
-    if (sub.status !== "PENDING_REVIEW") {
-      throw new Error(`Pengajuan tidak dapat disetujui karena berstatus ${sub.status}.`);
-    }
-
-    // 2. Create canonical merchant
-    const parsedLoc = parsePoint(sub.location);
-    const [lng, lat] = parsedLoc.coordinates;
-    const geomStr = `SRID=4326;POINT(${lng} ${lat})`;
-
-    const { data: merchant, error: mError } = await this.supabase
-      .from("merchants")
-      .insert({
-        name: sub.name,
-        description: sub.description,
-        address: sub.address,
-        location: geomStr,
-        opening_hours: sub.opening_hours || {},
-        owner_id: sub.submitted_by,
-        publish_status: "PUBLISHED",
-        verification_status: "VERIFIED",
-        metadata: {
-          submitted_from_id: sub.id,
-          approved_by: adminId,
-          approved_at: new Date().toISOString(),
-          category_label: sub.category,
-        },
-      })
-      .select("id")
-      .single();
-
-    if (mError || !merchant) {
-      throw mError || new Error("Gagal membuat data merchant terverifikasi.");
-    }
-
-    // 3. Mark submission as APPROVED
-    const { data: updatedSub, error: updateError } = await this.supabase
-      .from("merchant_submissions")
-      .update({
-        status: "APPROVED",
-        canonical_merchant_id: merchant.id,
-        reviewed_by: adminId,
-        reviewed_at: new Date().toISOString(),
-        review_note: note || "Disetujui oleh admin.",
-      })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (updateError || !updatedSub) {
-      throw updateError || new Error("Gagal memperbarui status pengajuan menjadi APPROVED.");
+    const { data: merchantId, error } = await this.supabase.rpc("approve_merchant_submission", {
+      p_submission_id: id,
+      p_review_note: note || undefined,
+    });
+    if (error || !merchantId) throw error || new Error("Gagal menyetujui pengajuan merchant.");
+    const updatedSub = await this.findById(id);
+    if (!updatedSub || updatedSub.reviewed_by !== adminId) {
+      throw new Error("Identitas reviewer pengajuan tidak konsisten.");
     }
 
     return {
-      submission: mapRowToRecord(updatedSub),
-      merchant_id: merchant.id,
+      submission: updatedSub,
+      merchant_id: merchantId,
     };
   }
 
@@ -252,23 +203,13 @@ export class MerchantSubmissionRepository {
     adminId: string,
     note: string
   ): Promise<MerchantSubmissionRecord> {
-    const { data, error } = await this.supabase
-      .from("merchant_submissions")
-      .update({
-        status: "REJECTED",
-        reviewed_by: adminId,
-        reviewed_at: new Date().toISOString(),
-        review_note: note,
-      })
-      .eq("id", id)
-      .eq("status", "PENDING_REVIEW")
-      .select()
-      .single();
-
-    if (error || !data) {
-      throw error || new Error("Gagal menolak pengajuan merchant.");
-    }
-
-    return mapRowToRecord(data);
+    const { error } = await this.supabase.rpc("reject_merchant_submission", {
+      p_submission_id: id,
+      p_review_note: note,
+    });
+    if (error) throw error;
+    const updated = await this.findById(id);
+    if (!updated || updated.reviewed_by !== adminId) throw new Error("Identitas reviewer pengajuan tidak konsisten.");
+    return updated;
   }
 }

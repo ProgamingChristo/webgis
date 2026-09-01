@@ -6,27 +6,25 @@ import {
   Bot,
   Building2,
   CalendarDays,
+  Car,
   Coffee,
   Database,
   Layers3,
   LocateFixed,
-  LogOut,
   MapPinned,
-  Megaphone,
   Phone,
+  Footprints,
+  Bike,
   Route,
   Search,
   ShieldCheck,
   Target,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 import { StakeholderModeSwitcher } from "@/src/components/stakeholder/stakeholder-mode-switcher";
 import { StakeholderContextShell } from "@/src/components/stakeholder/stakeholder-context-shell";
-import { useAuth } from "@/src/components/providers/AuthProvider";
-import { GetraLogo } from "@/src/components/getra-ui";
-import { AccountMenu } from "@/src/components/profile/account-menu";
+import { GetraGlobalHeader } from "@/src/components/getra-ui";
 import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
 import { AiPanel } from "@/components/ai/ai-panel";
 import { CommunityNotificationsMenu } from "@/src/features/community/components/notifications/community-notifications-menu";
@@ -35,6 +33,8 @@ import { GetraMap } from "@/components/getra-map";
 import { useFairDiscovery, FairDiscoveryResults } from "@/src/features/fair-discovery";
 import { useProfilePoster, ProfilePoster } from "@/src/features/umkm-advertising";
 import { useRouting } from "@/src/hooks/use-routing";
+import { useDestinationMerchantSearch } from "@/src/features/routing/hooks/use-destination-merchant-search";
+import type { RoutingMode } from "@/src/services/routing.service";
 import {
   mapidLayerService,
   type CanonicalMerchantLayer,
@@ -61,7 +61,6 @@ import {
   COFFEE_SHOP_SOURCE_NAME,
   COFFEE_SHOPS,
 } from "@/data/coffee-shops-jakarta-barat";
-import { authenticatedFetch, clearAuthSession } from "@/src/lib/auth-client";
 import { commuterService, type WalkingServiceArea } from "@/src/services/commuter.service";
 import type { Merchant, UserLocation } from "@/types/getra";
 import { useDemandIntelligence } from "@/src/features/demand-intelligence/hooks/use-demand-intelligence";
@@ -262,6 +261,25 @@ function formatDistance(
   }
 
   return `${Math.round(meters)} m`;
+}
+
+function routeModeLabel(mode: RoutingMode) {
+  return mode === "walking" ? "Jalan kaki" : mode === "motorcycle" ? "Motor" : "Mobil";
+}
+
+function routeModeDescription(mode: RoutingMode) {
+  return mode === "walking" ? "pedestrian" : mode === "motorcycle" ? "sepeda motor" : "mobil";
+}
+
+function routeStatusLabel(status?: "ROUTABLE" | "UNROUTABLE" | "OUTSIDE_GRAPH" | "SERVICE_UNAVAILABLE") {
+  if (status === "OUTSIDE_GRAPH") return "Di luar cakupan";
+  if (status === "SERVICE_UNAVAILABLE") return "Layanan terganggu";
+  if (status === "UNROUTABLE") return "Tidak ada jalur";
+  return "Belum dihitung";
+}
+
+function isTransitPlace(label: string) {
+  return /\b(stasiun|halte|terminal|transit)\b/i.test(label);
 }
 
 function freshnessLabel(value: string | null | undefined) {
@@ -808,8 +826,18 @@ function findRouteSearchResults(
   );
 }
 
-function deduplicateMerchants(merchants: Merchant[]): Merchant[] {
+function deduplicateMerchants<T extends Merchant>(merchants: T[]): T[] {
   return [...new Map(merchants.map((merchant) => [merchant.id, merchant])).values()];
+}
+
+export function merchantFocusBounds(merchant: Pick<Merchant, "latitude" | "longitude">) {
+  const padding = 0.006;
+  return {
+    west: merchant.longitude - padding,
+    south: merchant.latitude - padding,
+    east: merchant.longitude + padding,
+    north: merchant.latitude + padding,
+  };
 }
 
 function calculateMerchantBounds(
@@ -899,23 +927,7 @@ function calculateMerchantOrigin(
 }
 
 export function GetraDashboard() {
-  const router =
-    useRouter();
-
-  const {
-    context: authContext,
-  } = useAuth();
-
   const { activeExperience } = useStakeholder();
-
-  const isAdmin =
-    authContext?.profile
-      ?.account_role ===
-    "ADMIN";
-
-  const isUmkm =
-    authContext?.stakeholder_modes?.includes("UMKM") ||
-    activeExperience === "UMKM";
 
   const [
     datasetId,
@@ -1016,12 +1028,6 @@ export function GetraDashboard() {
   ] =
     useState(false);
 
-  const [
-    loggingOut,
-    setLoggingOut,
-  ] =
-    useState(false);
-
   const [mapPickMode, setMapPickMode] = useState<"NONE" | "ROUTE_START">("NONE");
   const [manualRouteStart, setManualRouteStart] = useState<{ latitude: number; longitude: number } | null>(null);
 
@@ -1077,6 +1083,8 @@ export function GetraDashboard() {
       null,
     );
 
+  const [routeDestinationMerchant, setRouteDestinationMerchant] = useState<Merchant | null>(null);
+
   const [
     originSearch,
     setOriginSearch,
@@ -1101,6 +1109,10 @@ export function GetraDashboard() {
   const {
     state: routingState,
     route,
+    routes,
+    activeMode,
+    recommendedMode,
+    setActiveMode,
     error: routingError,
     requestRoute,
     clearRoute,
@@ -1119,6 +1131,13 @@ export function GetraDashboard() {
         mapidMerchants,
       ],
     );
+
+  const [destinationSearchActive, setDestinationSearchActive] = useState(false);
+  const {
+    results: canonicalDestinationResults,
+    loading: destinationSearchLoading,
+    error: destinationSearchError,
+  } = useDestinationMerchantSearch(destinationSearch, destinationSearchActive);
 
   const activeAdminImportedLayer =
     useMemo(() => {
@@ -1586,8 +1605,16 @@ export function GetraDashboard() {
       userLocation,
     ]);
 
+  const mapMerchants = useMemo<LocatedMerchant[]>(
+    () => deduplicateMerchants<LocatedMerchant>([
+      ...merchants,
+      ...(routeDestinationMerchant ? [routeDestinationMerchant] : []),
+    ]),
+    [merchants, routeDestinationMerchant],
+  );
+
   const selectedMerchant =
-    merchants.find(
+    mapMerchants.find(
       (merchant) =>
         merchant.id ===
         selectedId,
@@ -1617,21 +1644,12 @@ export function GetraDashboard() {
       ],
     );
 
-  const destinationSearchResults =
-    useMemo(
-      () =>
-        findRouteSearchResults(
-          merchants,
-          destinationSearch,
-        ),
-      [
-        merchants,
-        destinationSearch,
-      ],
-    );
+  const destinationSearchResults = destinationSearchActive
+    ? canonicalDestinationResults
+    : [];
 
   const routeDestination =
-    merchants.find(
+    routeDestinationMerchant ?? mapMerchants.find(
       (merchant) =>
         merchant.id ===
         routeDestinationId,
@@ -1711,7 +1729,9 @@ export function GetraDashboard() {
 
   const clearRouteDestination = useCallback(() => {
     setRouteDestinationId(null);
+    setRouteDestinationMerchant(null);
     setDestinationSearch("");
+    setDestinationSearchActive(false);
     setPendingRouteChoice(null);
     clearRoute();
   }, [clearRoute]);
@@ -2063,8 +2083,10 @@ export function GetraDashboard() {
   const submitGlobalSearch = useCallback(() => {
     clearRoute();
     setRouteDestinationId(null);
+    setRouteDestinationMerchant(null);
     setSelectedId(null);
     setDestinationSearch("");
+    setDestinationSearchActive(false);
     setDatasetId("all-areas");
     setViewMode("dataset");
     void executeCanonicalSearch({
@@ -2161,6 +2183,7 @@ export function GetraDashboard() {
     setAccessibilityEvidence([]);
     setAccessibilityNeed(null);
     setRouteDestinationId(null);
+    setRouteDestinationMerchant(null);
     clearRoute();
     void executePropertySearch({
       bbox: currentViewportRef.current ?? datasetBounds,
@@ -2188,6 +2211,7 @@ export function GetraDashboard() {
     setSelectedPropertyDetail(null);
     setPropertyCandidates([]);
     setRouteDestinationId(null);
+    setRouteDestinationMerchant(null);
     clearRoute();
     void executeAccessibilitySearch(currentViewportRef.current ?? datasetBounds);
   }, [clearRoute, datasetBounds, executeAccessibilitySearch]);
@@ -2314,12 +2338,14 @@ export function GetraDashboard() {
         setRouteDestinationId(
           null,
         );
+        setRouteDestinationMerchant(null);
         setOriginSearch(
           "",
         );
         setDestinationSearch(
           "",
         );
+        setDestinationSearchActive(false);
         setPendingRouteChoice(
           null,
         );
@@ -2350,6 +2376,7 @@ export function GetraDashboard() {
             routeDestination.longitude,
         },
         routeDestination.id,
+        { originNearTransit: isTransitPlace(routeOrigin.label) },
       );
     }, [
       requestRoute,
@@ -2364,11 +2391,13 @@ export function GetraDashboard() {
     if (!alternative || alternative.id === routeDestination?.id) return;
     setSelectedId(alternative.id);
     setRouteDestinationId(alternative.id);
+    setRouteDestinationMerchant(alternative);
     setDestinationSearch(alternative.name);
+    setDestinationSearchActive(false);
     void requestRoute(routeOrigin.coordinate, {
       latitude: alternative.latitude,
       longitude: alternative.longitude,
-    }, alternative.id);
+    }, alternative.id, { originNearTransit: isTransitPlace(routeOrigin.label) });
   }, [merchants, requestRoute, routeDestination?.id, routeOrigin]);
 
   const handleRouteChoice =
@@ -2410,17 +2439,22 @@ export function GetraDashboard() {
         setRouteDestinationId(
           merchant.id,
         );
+        setRouteDestinationMerchant(merchant);
         setSelectedId(
           merchant.id,
         );
         setDestinationSearch(
           merchant.name,
         );
+        setDestinationSearchActive(false);
+        suppressNextViewportRef.current = true;
+        setSearchFocusBounds(merchantFocusBounds(merchant));
+        setSearchFocusKey((key) => key + 1);
         if (routingState !== "IDLE" && routeOrigin) {
           void requestRoute(routeOrigin.coordinate, {
             latitude: merchant.latitude,
             longitude: merchant.longitude,
-          }, merchant.id);
+          }, merchant.id, { originNearTransit: isTransitPlace(routeOrigin.label) });
         }
       }
 
@@ -2566,144 +2600,12 @@ export function GetraDashboard() {
     setMapPickMode("NONE");
   }, []);
 
-  useEffect(() => {
-    const requestId =
-      window.setTimeout(
-        handleLocateUser,
-        0,
-      );
-
-    return () => {
-      window.clearTimeout(
-        requestId,
-      );
-    };
-  }, [handleLocateUser]);
-
-  const handleLogout =
-    useCallback(async () => {
-      if (loggingOut) return;
-
-      setLoggingOut(
-        true,
-      );
-
-      try {
-        try {
-          await authenticatedFetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`,
-            {
-              method:
-                "POST",
-            },
-          );
-        } catch {
-          // Browser logout must still clear its local session if the API is down.
-        }
-
-        await clearAuthSession();
-        router.replace(
-          "/login",
-        );
-        router.refresh();
-      } catch {
-        setLoggingOut(
-          false,
-        );
-      }
-    }, [
-      loggingOut,
-      router,
-    ]);
-
   return (
     <main className="workspace">
-      <header className="topbar">
-        <div className="brand">
-          <GetraLogo className="workspace-brand-logo" />
-        </div>
-
-        <StakeholderModeSwitcher />
-
-        <div className="topbar-actions">
-          {isAdmin ? (
-            <button
-              className="admin-nav-button"
-              type="button"
-              onClick={() =>
-                router.push(
-                  "/admin/import",
-                )
-              }
-            >
-              <Database size={15} />
-              Import data
-            </button>
-          ) : null}
-
-          {isUmkm ? (
-            <button
-              className="umkm-ads-nav-button"
-              type="button"
-              onClick={() =>
-                router.push(
-                  "/umkm/advertising",
-                )
-              }
-              title="Buka Dasbor Iklan & Promosi UMKM"
-            >
-              <Megaphone size={15} />
-              Advertising UMKM
-            </button>
-          ) : null}
-
-          <button
-            className="business-space-nav-button"
-            type="button"
-            onClick={() =>
-              router.push(
-                "/business-space",
-              )
-            }
-          >
-            <Building2 size={15} />
-            Business Space
-          </button>
-
-          <div className="pilot-badge">
-            <ShieldCheck size={15} />
-            {datasetId ===
-            "all-areas"
-              ? "All data"
-              : isAdminImportDataset(
-                  datasetId,
-                )
-                ? "Import"
-                : datasetId ===
-                  "mapid-food-jakarta-pusat"
-                ? "MAPID 2025"
-                : "GeoJSON Q2 2026"}
-          </div>
-
-          <AccountMenu
-            context={authContext}
-          />
-
-          <CommunityNotificationsMenu />
-
-          <button
-            className="logout-button"
-            type="button"
-            onClick={handleLogout}
-            disabled={loggingOut}
-          >
-            <LogOut size={15} />
-            {loggingOut
-              ? "Keluar..."
-              : "Keluar"}
-          </button>
-        </div>
-      </header>
+      <GetraGlobalHeader
+        contextActions={<StakeholderModeSwitcher />}
+        utilities={<CommunityNotificationsMenu />}
+      />
 
       <StakeholderContextShell>
         <section className="workspace-grid">
@@ -3008,15 +2910,24 @@ export function GetraDashboard() {
                   placeholder="Cari nama, brand, alamat, kecamatan..."
                   type="search"
                   value={destinationSearch}
-                  onChange={(event) =>
-                    setDestinationSearch(
-                      event.target.value,
-                    )
-                  }
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setDestinationSearch(value);
+                    setDestinationSearchActive(true);
+                    if (routeDestination && value.trim() !== routeDestination.name) {
+                      setRouteDestinationId(null);
+                      setRouteDestinationMerchant(null);
+                      clearRoute();
+                    }
+                  }}
                 />
               </div>
               <div className="route-search-results">
-                {destinationSearchResults.length >
+                {destinationSearchLoading ? (
+                  <p className="route-search-empty" aria-live="polite">
+                    Mencari tujuan di seluruh data GETRA...
+                  </p>
+                ) : destinationSearchResults.length >
                 0 ? (
                   destinationSearchResults.map(
                     (merchant) => (
@@ -3048,7 +2959,11 @@ export function GetraDashboard() {
                       </button>
                     ),
                   )
-                ) : destinationSearch.trim() ? (
+                ) : destinationSearchError ? (
+                  <p className="route-search-empty" role="alert">
+                    Pencarian tujuan sedang tidak tersedia.
+                  </p>
+                ) : destinationSearchActive && destinationSearch.trim().length >= 2 ? (
                   <p className="route-search-empty">
                     Tujuan tidak ditemukan.
                   </p>
@@ -3057,27 +2972,28 @@ export function GetraDashboard() {
             </div>
 
             {routeDestination ? (
-              <div style={{ marginTop: "1.5rem", marginBottom: "1rem", padding: "0.75rem", backgroundColor: "#1e293b", borderRadius: "8px", border: "1px solid #334155" }}>
-                <span style={{ display: "block", fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>TUJUAN</span>
-                <strong style={{ display: "block", fontSize: "0.9rem", color: "#eef8fa", marginBottom: "0.25rem" }}>
-                  <MapPinned size={14} style={{ display: "inline-block", marginRight: "4px", verticalAlign: "middle", color: "#ef4444" }}/>
-                  {routeDestination.name}
+              <div className="route-selection-card">
+                <span className="route-selection-card__label">Tujuan</span>
+                <strong className="route-selection-card__title">
+                  <MapPinned size={14} aria-hidden="true" />
+                  <span>{routeDestination.name}</span>
                 </strong>
-                <p style={{ margin: 0, fontSize: "0.8rem", color: "#cbd5e1", marginLeft: "18px" }}>
+                <p className="route-selection-card__meta">
                   {routeDestination.district ?? routeDestination.city ?? `${routeDestination.latitude.toFixed(5)}, ${routeDestination.longitude.toFixed(5)}`}
                 </p>
-                <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
+                <div className="route-selection-card__actions">
                   <button type="button" onClick={() => {
+                    setDestinationSearchActive(true);
                     const input = document.querySelector('.route-search-box--destination input') as HTMLInputElement;
                     input?.focus();
-                  }} style={{ fontSize: "0.75rem", backgroundColor: "#0284c7", color: "white", padding: "0.3rem 0.6rem", borderRadius: "4px", border: "none", cursor: "pointer" }}>Ganti tujuan</button>
-                  <button type="button" onClick={clearRouteDestination} style={{ fontSize: "0.75rem", backgroundColor: "#b91c1c", color: "white", padding: "0.3rem 0.6rem", borderRadius: "4px", border: "none", cursor: "pointer" }}>Batal / Hapus tujuan</button>
+                  }} className="route-selection-card__action">Ganti tujuan</button>
+                  <button type="button" onClick={clearRouteDestination} className="route-selection-card__action route-selection-card__action--danger">Batal / Hapus tujuan</button>
                 </div>
               </div>
             ) : (
-              <div style={{ marginTop: "1.5rem", marginBottom: "1rem", padding: "0.75rem", backgroundColor: "#0f172a", borderRadius: "8px", border: "1px dashed #334155" }}>
-                <span style={{ display: "block", fontSize: "0.7rem", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>TUJUAN</span>
-                <p style={{ margin: 0, fontSize: "0.8rem", color: "#94a3b8" }}>Belum ada tujuan dipilih.</p>
+              <div className="route-selection-card route-selection-card--empty">
+                <span className="route-selection-card__label">Tujuan</span>
+                <p className="route-selection-card__meta">Belum ada tujuan dipilih.</p>
               </div>
             )}
 
@@ -3115,20 +3031,59 @@ export function GetraDashboard() {
               </button>
             </div>
 
+            {routingState === "SUCCESS" || routingState === "NO_ROUTE" ? (
+              <div className="route-mode-grid" aria-label="Pilihan moda rute">
+                {(["walking", "motorcycle", "car"] as const).map((mode) => {
+                  const option = routes[mode];
+                  const available = option?.route_status === "ROUTABLE";
+                  const Icon = mode === "walking" ? Footprints : mode === "motorcycle" ? Bike : Car;
+                  return (
+                    <button
+                      aria-pressed={activeMode === mode}
+                      className={activeMode === mode ? "route-mode route-mode--active" : "route-mode"}
+                      key={mode}
+                      type="button"
+                      onClick={() => setActiveMode(mode)}
+                    >
+                      <Icon size={15} aria-hidden="true" />
+                      <span>{routeModeLabel(mode)}</span>
+                      <strong>
+                        {available && option.duration_seconds !== null
+                          ? `${Math.max(1, Math.ceil(option.duration_seconds / 60))} mnt`
+                          : "Tidak tersedia"}
+                      </strong>
+                      <small>
+                        {available && option.distance_meters !== null
+                          ? formatDistance(option.distance_meters)
+                          : routeStatusLabel(option?.route_status)}
+                      </small>
+                      {recommendedMode === mode && available ? <em>Disarankan</em> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
+
             {route && route.distance_meters !== null ? (
-              <div
-                className="route-result"
-              >
-                <strong>
-                  {formatDistance(
-                    route.distance_meters,
-                  )}
-                  {" | "}
-                  {routeDurationMinutes} menit
-                </strong>
+              <div className="route-result">
+                <strong>{routeModeLabel(activeMode)} · {formatDistance(route.distance_meters)} · {routeDurationMinutes} menit</strong>
                 <span>
-                  Rute berjalan kaki dihitung dari jaringan pedestrian GETRA.
+                  Navigasi {routeModeDescription(activeMode)} dihitung Valhalla dari jaringan jalan OpenStreetMap.
                 </span>
+                {route.has_toll ? <small>Rute ini menggunakan jalan tol.</small> : null}
+                {route.maneuvers.length > 0 ? (
+                  <details className="route-maneuvers">
+                    <summary>Lihat petunjuk ({route.maneuvers.length})</summary>
+                    <ol>
+                      {route.maneuvers.map((maneuver, index) => (
+                        <li key={`${maneuver.type ?? "step"}-${index}`}>
+                          <span>{maneuver.instruction}</span>
+                          {maneuver.distance_meters > 0 ? <small>{formatDistance(maneuver.distance_meters)}</small> : null}
+                        </li>
+                      ))}
+                    </ol>
+                  </details>
+                ) : null}
               </div>
             ) : null}
 
@@ -3598,7 +3553,14 @@ export function GetraDashboard() {
                 onRequestRoute={(item) => {
                   const coords = (item as any).geometry?.coordinates || [(item as any).longitude, (item as any).latitude];
                   if (coords && coords.length >= 2) {
-                    setRouteDestinationId((item as any).id || (item as any).merchant_id);
+                    const itemId = (item as any).id || (item as any).merchant_id;
+                    const match = mapMerchants.find((merchant) => merchant.id === itemId);
+                    setRouteDestinationId(itemId);
+                    setRouteDestinationMerchant(match ?? null);
+                    if (match) {
+                      setDestinationSearch(match.name);
+                      setDestinationSearchActive(false);
+                    }
                   }
                 }}
               />
@@ -3787,7 +3749,7 @@ export function GetraDashboard() {
             datasetKey={datasetId}
             focusBounds={searchFocusBounds}
             focusKey={searchFocusKey}
-            merchants={primaryMode === "merchant" ? merchants : []}
+            merchants={primaryMode === "merchant" ? mapMerchants : []}
             selectedId={primaryMode === "merchant" ? selectedId : null}
             propertyCandidates={primaryMode === "business-space" ? propertyCandidates : []}
             selectedPropertyId={primaryMode === "business-space" ? selectedPropertyId : null}
@@ -3879,6 +3841,20 @@ export function GetraDashboard() {
                   type="button"
                   onClick={() => {
                     setRouteDestinationId(selectedMerchant.id);
+                    setRouteDestinationMerchant(selectedMerchant);
+                    setDestinationSearch(selectedMerchant.name);
+                    setDestinationSearchActive(false);
+                    if (routeOrigin) {
+                      void requestRoute(
+                        routeOrigin.coordinate,
+                        {
+                          latitude: selectedMerchant.latitude,
+                          longitude: selectedMerchant.longitude,
+                        },
+                        selectedMerchant.id,
+                        { originNearTransit: isTransitPlace(routeOrigin.label) },
+                      );
+                    }
                   }}
                   style={{
                     width: "100%",
@@ -3896,7 +3872,7 @@ export function GetraDashboard() {
                   }}
                   disabled={routeDestination?.id === selectedMerchant.id}
                 >
-                  <Route size={16} /> {routeDestination?.id === selectedMerchant.id ? "Sudah menjadi tujuan" : "Jadikan tujuan rute"}
+                  <Route size={16} /> {routeDestination?.id === selectedMerchant.id ? "Sudah menjadi tujuan" : routeOrigin ? "Lihat pilihan rute" : "Jadikan tujuan rute"}
                 </button>
               </div>
 
@@ -3908,6 +3884,9 @@ export function GetraDashboard() {
                     onRequestRoute={() => {
                       if (selectedMerchant) {
                         setRouteDestinationId(selectedMerchant.id);
+                        setRouteDestinationMerchant(selectedMerchant);
+                        setDestinationSearch(selectedMerchant.name);
+                        setDestinationSearchActive(false);
                       }
                     }}
                   />

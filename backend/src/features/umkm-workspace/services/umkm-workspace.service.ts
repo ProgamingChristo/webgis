@@ -1,11 +1,16 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { UmkmWorkspaceSummary, OwnedMerchantBrief, SubmissionBrief } from "../types/umkm-workspace.types";
+import {
+  MerchantClaimBrief,
+  OwnedMerchantBrief,
+  SubmissionBrief,
+  UmkmWorkspaceSummary,
+} from "../types/umkm-workspace.types";
 
 export class UmkmWorkspaceService {
   constructor(private readonly supabase: SupabaseClient<any>) {}
 
   async getWorkspaceSummary(userId: string): Promise<UmkmWorkspaceSummary> {
-    // Canonical ownership and approved claims are the only private-workspace grants.
+    // Canonical owner_id is active authority. Claims are workflow/audit history only.
     const { data: ownedMerchants, error: ownedError } = await this.supabase
       .from("merchants")
       .select("id, name, address, description, metadata, publish_status, verification_status")
@@ -16,30 +21,34 @@ export class UmkmWorkspaceService {
       throw new Error("Gagal mengambil data merchant.");
     }
 
-    const { data: approvedClaims, error: claimError } = await this.supabase
+    const { data: recentClaims, error: recentClaimsError } = await this.supabase
       .from("merchant_claims")
-      .select("merchant_id")
+      .select("id, merchant_id, status, note, created_at, reviewed_at")
       .eq("user_id", userId)
-      .eq("status", "APPROVED");
-    if (claimError) {
-      console.error("[UmkmWorkspaceService] Error fetching approved claims:", claimError);
-      throw new Error("Gagal memverifikasi akses merchant.");
+      .in("status", ["PENDING", "REJECTED"])
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (recentClaimsError) {
+      console.error("[UmkmWorkspaceService] Error fetching merchant claims:", recentClaimsError);
     }
 
-    const claimIds = [...new Set((approvedClaims ?? []).map((claim: any) => claim.merchant_id))];
-    let claimedMerchants: any[] = [];
-    if (claimIds.length > 0) {
+    const visibleClaimMerchantIds = [...new Set((recentClaims ?? []).map((claim: any) => claim.merchant_id))];
+    const allClaimMerchantIds = visibleClaimMerchantIds;
+    let claimMerchants: any[] = [];
+    if (allClaimMerchantIds.length > 0) {
       const { data, error } = await this.supabase
         .from("merchants")
         .select("id, name, address, description, metadata, publish_status, verification_status")
-        .in("id", claimIds);
-      if (error) throw new Error("Gagal mengambil merchant dengan klaim disetujui.");
-      claimedMerchants = data ?? [];
+        .in("id", allClaimMerchantIds);
+      if (error) throw new Error("Gagal mengambil merchant dari klaim ownership.");
+      claimMerchants = data ?? [];
     }
 
-    const authorizedMerchants = [...new Map(
-      [...(ownedMerchants ?? []), ...claimedMerchants].map((merchant: any) => [merchant.id, merchant]),
-    ).values()];
+    const merchantByClaimId = new Map(
+      claimMerchants.map((merchant: any) => [merchant.id, merchant]),
+    );
+    const authorizedMerchants = ownedMerchants ?? [];
     const merchantIds = authorizedMerchants.map((merchant: any) => merchant.id);
 
     // 2. Fetch Active Campaigns Count
@@ -86,9 +95,23 @@ export class UmkmWorkspaceService {
     }
 
     const submissionsList = (submissions || []) as SubmissionBrief[];
+    const claimsList: MerchantClaimBrief[] = (recentClaims || []).map((claim: any) => {
+      const merchant = merchantByClaimId.get(claim.merchant_id);
+      return {
+        id: claim.id,
+        merchant_id: claim.merchant_id,
+        merchant_name: merchant?.name ?? "Merchant tidak ditemukan",
+        category: readCategory(merchant?.metadata, merchant?.description),
+        status: claim.status,
+        address: merchant?.address ?? null,
+        note: claim.note ?? null,
+        created_at: claim.created_at,
+        reviewed_at: claim.reviewed_at ?? null,
+      };
+    });
     const pendingCount = submissionsList.filter(
       (s) => s.status === "PENDING_REVIEW" || s.status === "DRAFT"
-    ).length;
+    ).length + claimsList.filter((claim) => claim.status === "PENDING").length;
 
     return {
       verified_merchants_count: mappedOwnedMerchants.length,
@@ -96,6 +119,7 @@ export class UmkmWorkspaceService {
       active_campaigns_count: activeCampaignsCount,
       owned_merchants: mappedOwnedMerchants,
       recent_submissions: submissionsList,
+      recent_claims: claimsList,
     };
   }
 }

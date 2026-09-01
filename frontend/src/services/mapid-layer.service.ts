@@ -45,6 +45,7 @@ export interface CommuterSearchMetadata {
 }
 
 export type GlobalSearchScope =
+  | "GLOBAL"
   | "CURRENT_VIEWPORT"
   | "REGION"
   | "MULTI_REGION";
@@ -133,6 +134,22 @@ export const mapidLayerService = {
       params.set("origin_latitude", String(options.origin.latitude));
       params.set("origin_source", options.origin.source);
     }
+    return apiClient.get<CanonicalMerchantLayer>(
+      `/api/merchants/canonical?${params.toString()}`,
+      { signal: options.signal },
+    );
+  },
+
+  async searchCanonicalMerchants(
+    query: string,
+    options: Pick<CanonicalMerchantSearchOptions, "limit" | "offset" | "signal"> = {},
+  ): Promise<CanonicalMerchantLayer> {
+    const params = new URLSearchParams({
+      q: query.trim(),
+      scope: "GLOBAL",
+      limit: String(options.limit ?? 10),
+      offset: String(options.offset ?? 0),
+    });
     return apiClient.get<CanonicalMerchantLayer>(
       `/api/merchants/canonical?${params.toString()}`,
       { signal: options.signal },

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { CampaignTarget, TargetType, GeoJSONFeature, StudyAreaSummary } from "../types/targeting.types";
 import { TargetingTypeSelector } from "./targeting-type-selector";
 import { RadiusTargetingForm } from "./radius-targeting-form";
@@ -144,9 +145,9 @@ export function TargetingEditor({
           )}
 
           {feedbackSuccess && (
-            <div className="p-3 bg-emerald-50 text-emerald-800 text-xs rounded-md border border-emerald-200 flex items-center space-x-1.5 font-medium">
-              <span>✅</span>
-              <span>{feedbackSuccess}</span>
+            <div className="flex items-start gap-2 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-xs font-medium leading-5 text-emerald-800">
+              <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span className="break-words">{feedbackSuccess}</span>
             </div>
           )}
 
@@ -180,9 +181,9 @@ export function TargetingEditor({
 
         {/* Right Column: Map Preview */}
         <div className="lg:col-span-7 space-y-2">
-          <div className="flex justify-between items-center text-xs text-gray-500 font-semibold px-1">
-            <span>Peta Preview Jangkauan Promosi</span>
-            <span className="text-emerald-700 font-bold">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs font-semibold text-gray-500">
+            <span className="break-words">Peta Preview Jangkauan Promosi</span>
+            <span className="shrink-0 whitespace-nowrap font-bold text-emerald-700">
               {selectedType === "RADIUS" ? `${radiusMeters} Meter` : "Zona Poligon"}
             </span>
           </div>

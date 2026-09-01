@@ -16,6 +16,7 @@ import {
   type BrowserAuthSession,
 } from "@/src/lib/auth-client";
 import { GetraLogo } from "@/src/components/getra-ui";
+import { getGetraApiUrl } from "@/src/lib/api-base-url";
 
 import styles from "../auth.module.css";
 
@@ -101,7 +102,7 @@ export default function LoginPage() {
     try {
       const response =
         await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
+          getGetraApiUrl("/api/auth/login"),
           {
             method:
               "POST",
@@ -176,17 +177,13 @@ export default function LoginPage() {
           ? error.message
           : "Login gagal.";
 
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_URL ??
-        "backend GETRA";
-
       setErrorMessage(
         email.trim().endsWith(
           "@example.co",
         )
           ? "Email fixture kurang huruf m: gunakan @example.com, bukan @example.co."
           : rawMessage === "Failed to fetch"
-            ? `Backend GETRA belum bisa dijangkau di ${apiBaseUrl}. Pastikan backend berjalan di port 8080, lalu coba login lagi.`
+            ? "Backend GETRA belum bisa dijangkau. Periksa NEXT_PUBLIC_GETRA_API_URL dan pastikan backend aktif."
             : rawMessage,
       );
     } finally {

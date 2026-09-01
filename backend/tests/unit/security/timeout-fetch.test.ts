@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { createTimeoutFetch } from "@/src/lib/http/timeout-fetch";
+import { createTimeoutFetch, HttpTimeoutError } from "@/src/lib/http/timeout-fetch";
 
 const TEST_URL = "https://upstream.test/resource";
 
@@ -50,9 +50,7 @@ describe("timeout fetch", () => {
       fetchImplementation as typeof fetch,
     );
     const operation = timeoutFetch(TEST_URL);
-    const rejection = expect(operation).rejects.toMatchObject({
-      name: "AbortError",
-    });
+    const rejection = expect(operation).rejects.toBeInstanceOf(HttpTimeoutError);
 
     await vi.advanceTimersByTimeAsync(249);
     expect(fetchImplementation).toHaveBeenCalledOnce();

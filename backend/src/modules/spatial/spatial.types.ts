@@ -148,7 +148,7 @@ export interface RoutingRequest {
   constraints?: RoutingConstraints;
   destination: Coordinate;
   destination_merchant_id?: string;
-  mode: "walking";
+  mode: "walking" | "motorcycle" | "car";
   origin: Coordinate;
 }
 

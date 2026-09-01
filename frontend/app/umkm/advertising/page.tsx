@@ -10,7 +10,7 @@ import { useUserMerchants } from "@/src/features/umkm-advertising/hooks/use-user
 export default function AdvertisingPage() {
   const [activeMerchantId, setActiveMerchantId] = useState<string | null>(null);
 
-  const { ownedMerchants, refetch } = useUserMerchants();
+  const { ownedMerchants, ineligibleMerchants, loading, error, refetch } = useUserMerchants();
 
   // If user has owned merchants and no activeMerchantId is set yet, auto-select first one
   useEffect(() => {
@@ -36,33 +36,20 @@ export default function AdvertisingPage() {
     >
     <div className="advertising-theme text-slate-100">
       <div className="mx-auto max-w-5xl space-y-6">
-        <header className="rounded-2xl border border-cyan-400/20 bg-slate-950/85 p-6 shadow-2xl shadow-cyan-950/20 backdrop-blur sm:flex sm:items-end sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="flex size-2 rounded-full bg-cyan-400 animate-pulse" />
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-300">
-                GETRA Spatial Promotion
-              </p>
-            </div>
-            <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
-              Advertising & Promosi
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-              Kelola campaign berbasis lokasi, waktu, konteks pencarian, dan area target untuk merchant terverifikasi.
-            </p>
-          </div>
-          <Link
-            href="/umkm"
-            className="mt-5 inline-flex min-h-10 items-center justify-center rounded-xl border border-cyan-400/25 px-4 text-xs font-bold text-cyan-200 transition hover:border-cyan-300 hover:bg-cyan-400/10 sm:mt-0"
-          >
-            Kembali ke UMKM Workspace
-          </Link>
-        </header>
-
         {!activeMerchantId ? (
           <div className="space-y-6">
+            {loading ? (
+              <section className="rounded-2xl border border-slate-800 bg-slate-950/80 p-6 text-sm text-slate-300">
+                Memeriksa merchant yang memenuhi syarat promosi...
+              </section>
+            ) : null}
+            {error ? (
+              <section className="rounded-2xl border border-rose-500/25 bg-rose-950/20 p-6 text-sm text-rose-200" role="alert">
+                {error}
+              </section>
+            ) : null}
             {/* Owned Merchants List */}
-            {ownedMerchants.length > 0 && (
+            {!loading && !error && ownedMerchants.length > 0 && (
               <section className="rounded-2xl border border-emerald-400/25 bg-slate-950/80 p-5 shadow-xl sm:p-6">
                 <div className="flex items-center gap-2">
                   <Store className="size-4 text-emerald-400" />
@@ -83,18 +70,18 @@ export default function AdvertisingPage() {
                       className="group flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-900/90 p-4 text-left transition hover:border-emerald-400/60 hover:bg-slate-900"
                     >
                       <div>
-                        <div className="flex items-center justify-between">
-                          <strong className="text-sm font-bold text-slate-100 group-hover:text-emerald-300">
+                        <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+                          <strong className="min-w-0 break-words text-sm font-bold leading-5 text-slate-100 group-hover:text-emerald-300">
                             {m.name}
                           </strong>
-                          <span className="flex items-center gap-1 rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                          <span className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                             <CheckCircle2 className="size-3" /> Terdaftar
                           </span>
                         </div>
                         {m.address && (
-                          <p className="mt-1 text-xs text-slate-400 line-clamp-1">{m.address}</p>
+                          <p className="mt-1 break-words text-xs leading-5 text-slate-400 line-clamp-2">{m.address}</p>
                         )}
-                        <p className="mt-2 font-mono text-[10px] text-slate-500">{m.id}</p>
+                        <p className="mt-2 break-all font-mono text-[10px] text-slate-500">{m.id}</p>
                       </div>
                       <div className="mt-3 flex items-center justify-end text-xs font-bold text-emerald-400 group-hover:translate-x-1 transition-transform">
                         Kelola Promosi <ChevronRight className="size-3 ml-1" />
@@ -105,7 +92,7 @@ export default function AdvertisingPage() {
               </section>
             )}
 
-            {ownedMerchants.length === 0 ? (
+            {!loading && !error && ownedMerchants.length === 0 ? (
               <section className="rounded-2xl border border-cyan-400/20 bg-slate-950/80 p-5 shadow-xl sm:p-6">
                 <div className="flex items-center gap-2">
                   <Store className="size-4 text-cyan-400" />
@@ -114,7 +101,9 @@ export default function AdvertisingPage() {
                   </h2>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-slate-400">
-                  Campaign hanya dapat dikelola untuk merchant yang terhubung melalui ownership canonical atau klaim yang telah disetujui.
+                  {ineligibleMerchants.length > 0
+                    ? eligibilityMessage(ineligibleMerchants[0]?.reason)
+                    : "Campaign hanya dapat dikelola untuk merchant dengan ownership canonical aktif dan status terverifikasi."}
                 </p>
                 <Link href="/umkm/merchants/new" className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-cyan-400/30 px-4 text-xs font-bold text-cyan-200">
                   Daftarkan / Klaim Usaha
@@ -161,4 +150,12 @@ export default function AdvertisingPage() {
     </div>
     </GetraAppShell>
   );
+}
+
+function eligibilityMessage(reason?: string | null) {
+  if (reason === "MERCHANT_UNVERIFIED") return "Usaha milik Anda belum terverifikasi untuk promosi.";
+  if (reason === "MERCHANT_INACTIVE") return "Usaha milik Anda sedang tidak aktif atau belum dipublikasikan.";
+  if (reason === "GEOMETRY_INVALID") return "Lokasi usaha belum valid untuk promosi spasial.";
+  if (reason === "UMKM_MODE_REQUIRED") return "Mode UMKM perlu diaktifkan sebelum mengelola promosi.";
+  return "Anda belum memiliki usaha terverifikasi yang dapat dikelola untuk promosi.";
 }

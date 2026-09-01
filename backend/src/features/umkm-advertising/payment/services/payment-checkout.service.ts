@@ -4,44 +4,32 @@ import { DEFAULT_SANDBOX_TEST_AMOUNT_IDR } from "../constants/payment.constants"
 import { CreateCheckoutDTO } from "../types/payment.types";
 import { PaymentRepository } from "../repositories/payment.repository";
 import { MidtransClient } from "../providers/midtrans/midtrans.client";
+import { MerchantOwnershipService } from "@/src/features/merchant-ownership";
+import { AdvertisingEligibilityService } from "../../services/advertising-eligibility.service";
 
 export class PaymentCheckoutService {
   private repo: PaymentRepository;
   private midtransClient: MidtransClient;
+  private eligibilityService: AdvertisingEligibilityService;
 
   constructor(
     private readonly supabase: SupabaseClient<any>,
-    midtransClient?: MidtransClient
+    midtransClient?: MidtransClient,
+    eligibilityService?: AdvertisingEligibilityService
   ) {
     this.repo = new PaymentRepository(supabase);
     this.midtransClient = midtransClient || new MidtransClient();
+    this.eligibilityService =
+      eligibilityService ||
+      new AdvertisingEligibilityService(
+        supabase,
+        new MerchantOwnershipService(supabase)
+      );
   }
 
   async createCheckout(campaignId: string, userId: string): Promise<CreateCheckoutDTO> {
-    // 1. Verify UMKM Stakeholder Mode or Admin
-    const { data: modes } = await this.supabase
-      .from("user_stakeholder_modes")
-      .select("mode")
-      .eq("user_id", userId);
-
-    const hasUmkmMode = (modes || []).some((m: any) => m.mode === "UMKM");
-
-    const { data: profile } = await this.supabase
-      .from("profiles")
-      .select("account_role")
-      .eq("id", userId)
-      .single();
-
-    const isAdmin = profile?.account_role === "ADMIN";
-
-    if (!hasUmkmMode && !isAdmin) {
-      throw new ApplicationError(
-        "FORBIDDEN",
-        "Akses ditolak: Stakeholder mode UMKM diperlukan untuk pembayaran campaign."
-      );
-    }
-
-    // 2. Fetch Campaign & Validate Merchant Ownership
+    // 1. Resolve the campaign first; authorization is evaluated against its
+    // canonical merchant below, never against claim history or UI state.
     const { data: campaign, error: cError } = await this.supabase
       .from("ad_campaigns")
       .select("id, name, status, merchant_id")
@@ -59,20 +47,31 @@ export class PaymentCheckoutService {
       );
     }
 
-    const { data: merchant, error: mError } = await this.supabase
-      .from("merchants")
-      .select("id, name, owner_id")
-      .eq("id", campaign.merchant_id)
-      .single();
+    // 2. Reuse the single server-side advertising policy. This enforces UMKM
+    // mode, canonical active ownership, verification, publication, and geometry.
+    const eligibility = await this.eligibilityService.checkEligibility(
+      userId,
+      campaign.merchant_id
+    );
 
-    if (mError || !merchant) {
-      throw new ApplicationError("NOT_FOUND", "Merchant campaign tidak ditemukan.");
-    }
+    if (!eligibility.eligible) {
+      const eligibilityMessages: Record<string, string> = {
+        UNAUTHENTICATED: "Autentikasi diperlukan untuk pembayaran campaign.",
+        UMKM_MODE_REQUIRED:
+          "Stakeholder mode UMKM diperlukan untuk pembayaran campaign.",
+        MERCHANT_NOT_FOUND: "Merchant campaign tidak ditemukan.",
+        OWNERSHIP_PENDING: "Verifikasi kepemilikan merchant masih ditinjau.",
+        OWNERSHIP_REQUIRED:
+          "Anda bukan pemilik aktif merchant yang terkait dengan campaign ini.",
+        MERCHANT_INACTIVE: "Merchant belum dipublikasikan.",
+        MERCHANT_UNVERIFIED: "Merchant belum terverifikasi.",
+        GEOMETRY_INVALID: "Lokasi merchant belum valid untuk promosi.",
+      };
 
-    if (merchant.owner_id !== userId && !isAdmin) {
       throw new ApplicationError(
         "FORBIDDEN",
-        "Akses ditolak: Anda bukan pemilik merchant yang terkait dengan campaign ini."
+        eligibilityMessages[eligibility.reason || ""] ||
+          "Merchant belum memenuhi syarat untuk pembayaran campaign."
       );
     }
 

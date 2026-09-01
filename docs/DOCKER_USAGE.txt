@@ -1,324 +1,120 @@
-GETRA BACKEND - DOCKER USAGE
-================================
+GETRA BACKEND + VALHALLA - DOCKER USAGE
+========================================
 
-Tanggal pembaruan: 2026-08-16 (Asia/Jakarta)
+Tanggal pembaruan: 2026-08-31 (Asia/Jakarta)
 
-TUJUAN
-------
-Dokumen ini menjelaskan cara membangun dan menjalankan GETRA Backend sebagai
-Next.js standalone production server. Container hanya menjalankan backend;
-PostgreSQL tidak dibuat di dalam Compose karena database tetap Supabase remote.
+ARSITEKTUR
+----------
+Production menggunakan satu stack Docker Compose di VPS:
 
-1. PREREQUISITE
----------------
-- Docker Engine atau Docker Desktop dengan daemon yang aktif.
-- Docker Compose v2 (`docker compose`).
-- File `.env.local` yang ada hanya pada host, di-ignore Git, dan memuat minimal:
+  reverse proxy HTTPS -> getra-backend:3000 -> valhalla:8002
 
-    NEXT_PUBLIC_SUPABASE_URL=<nilai runtime>
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<nilai runtime>
+Frontend tetap dibangun di Vercel. Database tetap Supabase remote. Compose tidak
+membuat PostgreSQL dan routing tidak memakai Google Maps API.
 
-- Untuk browser frontend lokal, isi allowlist origin secara eksplisit bila
-  default Compose tidak sesuai:
+PORT DAN NETWORK
+----------------
+Secara default port host hanya terikat ke loopback:
 
-    APP_ENV=development
-    APP_BASE_URL=http://localhost:3002
-    FRONTEND_ALLOWED_ORIGINS=http://localhost:3000
-    TRUST_PROXY=false
+  127.0.0.1:3002 -> getra-backend:3000
+  127.0.0.1:8002 -> valhalla:8002
 
-Jangan memasukkan service-role key, password database, MAPID key, atau secret
-lain ke Dockerfile, build argument, image label, Compose YAML, atau Git.
+Backend memanggil `http://valhalla:8002` melalui network Compose. Jangan membuka
+port 8002 ke internet. Di production, port 3002 juga harus tetap tertutup dari
+internet dan hanya diteruskan oleh Nginx/Caddy/reverse proxy HTTPS pada host.
 
-Sebelum menjalankan container, validasi Compose tanpa mencetak environment yang
-telah diekspansi:
+ENVIRONMENT
+-----------
+Gunakan root `.env.local` yang di-ignore Git sebagai sumber interpolasi Compose.
+Jangan menaruh secret di Dockerfile, build argument, Compose YAML, atau Git.
 
-  docker compose --env-file .env.local config --quiet
-
-2. BUILD IMAGE
---------------
-Cara melalui npm script:
-
-  npm run docker:build
-
-Cara langsung dengan tag eksplisit:
-
-  docker build --tag getra-backend:local .
-
-Dockerfile menggunakan tiga stage:
-
-  deps -> npm ci
-  builder -> npm run build
-  runner -> .next/standalone + .next/static
-
-Runtime menggunakan image `node:22-bookworm-slim`, menjalankan `node server.js`,
-dan tidak menggunakan `next dev`. `.env*`, `.git`, tests, docs, Supabase local
-artifacts, dan development workspace tidak masuk build context.
-
-STATUS VERIFIKASI SAAT DOKUMEN DIBUAT:
-Docker build nyata SUDAH DIJALANKAN tetapi FAILED sebelum stage build karena
-Docker Desktop Linux Engine `_ping` membalas HTTP 500. Image belum tersedia;
-keberadaan Dockerfile bukan bukti build berhasil.
-
-3. START CONTAINER
-------------------
-Build bila perlu lalu start background:
-
-  npm run docker:start
-
-Equivalent:
-
-  docker compose --env-file .env.local up -d --build
-
-Default mapping adalah:
-
-  host 3002 -> container 3000
-
-Port 3002 dipilih agar tidak mengganggu PM2/Next lokal yang dapat menggunakan
-port 3000 atau development server lain. Override hanya pada host bila perlu:
-
-  GETRA_DOCKER_PORT=3010
-
-Container hanya mengekspos port aplikasi 3000. Tidak ada port PostgreSQL.
-
-4. STOP CONTAINER
------------------
-Hentikan dan hapus resource Compose milik project ini:
-
-  npm run docker:stop
-
-Equivalent:
-
-  docker compose --env-file .env.local down
-
-Perintah tersebut tidak mereset Supabase, tidak menghapus schema remote, dan
-tidak boleh diganti dengan `supabase db reset --linked`.
-
-5. RESTART CONTAINER
---------------------
-Restart manual:
-
-  npm run docker:restart
-
-Equivalent:
-
-  docker compose --env-file .env.local restart
-
-Compose memakai `restart: unless-stopped`, sehingga process/container yang crash
-akan dicoba dijalankan kembali oleh Docker. Status `unhealthy` sendiri tidak
-otomatis me-restart container; healthcheck memberi visibility terhadap readiness.
-
-STATUS VERIFIKASI SAAT DOKUMEN DIBUAT:
-BLOCKED: container belum dapat dibuat karena daemon HTTP 500.
-
-6. STATUS
----------
-
-  npm run docker:status
-
-Equivalent:
-
-  docker compose --env-file .env.local ps
-
-Periksa kolom STATUS/HEALTH. Kondisi yang diharapkan setelah startup selesai
-adalah `Up ... (healthy)`. Jangan menyatakan healthy hanya karena process `Up`.
-
-7. LOGS
--------
-Ikuti 100 baris log terakhir:
-
-  npm run docker:logs
-
-Atau:
-
-  docker compose --env-file .env.local logs --tail 100
-  docker compose --env-file .env.local logs -f --tail 100
-
-Jangan menyalin output environment, Authorization header, JWT, password,
-publishable key, service-role key, atau secret provider ke laporan/log bersama.
-
-8. HEALTHCHECK
---------------
-Dockerfile dan Compose memanggil dari dalam container:
-
-  GET http://127.0.0.1:3000/api/health
-
-Probe memiliki timeout 4 detik; Compose menjalankannya setiap 30 detik, timeout
-healthcheck 5 detik, start period 30 detik, dan tiga retries. Endpoint melakukan
-probe Supabase yang nyata. Ia hanya mengembalikan `database: connected` setelah
-request ke data plane Supabase berhasil; host, user database, connection string,
-dan credential tidak dikembalikan.
-
-Smoke test dari host pada port default:
-
-  curl.exe -i http://127.0.0.1:3002/api/health
-
-Expected HTTP 200 ketika Supabase dapat diakses. HTTP 503 atau status container
-unhealthy berarti dependency readiness belum terpenuhi.
-
-READINESS DAN LIVENESS
-----------------------
-`/api/health` adalah readiness check: process harus hidup dan konektivitas
-Supabase harus berhasil. Phase ini tidak menambah endpoint liveness terpisah.
-Alasannya, kebutuhan container saat ini adalah memastikan backend siap melayani
-request yang bergantung pada Supabase, bukan hanya memastikan PID masih ada.
-Docker tetap dapat melihat process exit dan menerapkan restart policy. Jika kelak
-orchestrator memerlukan probe terpisah, tambahkan `/api/live` melalui phase/matrix
-terdokumentasi tanpa melemahkan `/api/health`.
-
-STATUS VERIFIKASI SAAT DOKUMEN DIBUAT:
-BLOCKED: container/port 3002 tidak tersedia. Health PM2 port 3000 dan npm dev
-port 3001 lulus, tetapi keduanya tidak dihitung sebagai Docker health.
-
-9. ENVIRONMENT VARIABLES
-------------------------
-Required runtime:
+Required backend application configuration:
 
   NEXT_PUBLIC_SUPABASE_URL
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  APP_ENV=production
+  APP_BASE_URL=<origin API HTTPS resmi>
+  FRONTEND_ALLOWED_ORIGINS=<origin frontend Vercel yang eksak>
+  GETRA_BIND_ADDRESS=127.0.0.1
+  GETRA_DOCKER_PORT=3002
+  VALHALLA_BIND_ADDRESS=127.0.0.1
 
-Deployment/security:
+Set `TRUST_PROXY=true` hanya bila reverse proxy tepercaya menimpa forwarded
+headers dan akses langsung ke backend diblokir. Secret feature-specific seperti
+`SUB2API_API_KEY`, `MIDTRANS_SERVER_KEY`, dan Supabase privileged key tetap hanya
+berada pada host/container backend. Jangan memakai prefix `NEXT_PUBLIC_` untuk
+secret.
 
-  APP_ENV
-  APP_BASE_URL
-  FRONTEND_ALLOWED_ORIGINS
-  TRUST_PROXY
-  GETRA_DOCKER_PORT                 (Compose-only)
+ROUTING DATA
+------------
+`routing-data/jabodetabek.osm.pbf` wajib tersedia dan berukuran masuk akal.
+Jalankan `npm run routing:validate` sebelum start. File PBF, graph tiles, config,
+dan arsip Valhalla adalah runtime artifact besar yang di-ignore Git.
 
-Operational API security:
+Perbarui PBF secara terjadwal dari sumber OSM tepercaya, catat tanggal extract,
+dan gunakan `VALHALLA_FORCE_REBUILD=True` hanya pada start pertama setelah PBF
+diganti. Kembalikan ke `False` untuk restart rutin.
 
-  API_MAX_JSON_BODY_BYTES
-  SUPABASE_REQUEST_TIMEOUT_MS
-  RATE_LIMIT_WINDOW_MS
-  RATE_LIMIT_AUTH_MAX_REQUESTS
-  RATE_LIMIT_API_MAX_REQUESTS
-  RATE_LIMIT_MUTATION_MAX_REQUESTS
-  RATE_LIMIT_SPATIAL_MAX_REQUESTS
+PRODUCTION COMMANDS
+-------------------
+Validasi tanpa mencetak environment yang sudah diekspansi:
 
-Spatial operational caps:
+  npm run docker:prod:config
 
-  SPATIAL_MAX_RADIUS_METERS
-  SPATIAL_MAX_BBOX_LATITUDE_DEGREES
-  SPATIAL_MAX_BBOX_LONGITUDE_DEGREES
-  DEFAULT_WALKING_SPEED_MPS
-
-Optional/reserved server-only:
-
-  SUPABASE_SERVICE_ROLE_KEY
-  MAPID_BASE_URL
-  MAPID_API_KEY
-  MAPID_TIMEOUT_MS
-
-Blank optional variables memakai default tervalidasi. Nilai default dan batasnya
-dijelaskan pada `docs/PUBLIC_API_SECURITY.txt`. Nama `NEXT_PUBLIC_` hanya boleh
-digunakan untuk konfigurasi yang memang aman diketahui browser; database password,
-service-role key, dan MAPID key tidak boleh memakai prefix tersebut.
-
-10. DEVELOPMENT MODE
---------------------
-Hot reload manual tetap tersedia dan tidak diganti Docker:
-
-  npm run dev
-
-Persistent backend existing tetap tersedia melalui PM2:
-
-  npm run process:start
-  npm run process:status
-  npm run process:logs
-  npm run process:restart
-  npm run process:stop
-
-Lihat `docs/RUNNING_BACKEND.txt`. Jangan menjalankan dua process pada host port
-yang sama. Container default 3002 sengaja dipisahkan.
-
-11. PRODUCTION-LIKE MODE
-------------------------
-Compose base menjalankan artifact production standalone, tetapi default
-`APP_ENV=development` memudahkan simulasi lokal HTTP. Untuk policy production,
-gunakan override production di belakang reverse proxy/ingress HTTPS:
-
-  docker compose --env-file <ignored-env-file> \
-    -f docker-compose.yml -f docker-compose.prod.yml config --quiet
-
-  docker compose --env-file <ignored-env-file> \
-    -f docker-compose.yml -f docker-compose.prod.yml up -d --build
-
-Atau dengan `.env.local`:
+Build dan start backend plus Valhalla, lalu tunggu keduanya healthy:
 
   npm run docker:prod:start
 
-Production override mewajibkan nilai eksplisit:
+Observability dan stop:
 
-  APP_BASE_URL=<HTTPS origin resmi; belum ditetapkan>
-  FRONTEND_ALLOWED_ORIGINS=<origin frontend resmi; belum ditetapkan>
+  npm run docker:prod:status
+  npm run docker:prod:logs
+  npm run docker:prod:stop
 
-Tidak ada URL staging/production yang ditentukan oleh repository. Jangan mengisi
-placeholder dengan domain tebakan. `APP_ENV=production` menolak APP_BASE_URL HTTP.
-TLS diterminasi oleh platform/reverse proxy; tidak ada self-signed certificate
-dalam repository. Override juga menambahkan `no-new-privileges` dan membuang
-semua Linux capabilities.
+Start pertama dapat memerlukan hingga puluhan menit karena Valhalla membangun
+graph. Script menunggu maksimal 40 menit. Jangan menganggap stack siap hanya
+karena process berstatus `Up`; kedua service harus `healthy`.
 
-12. TROUBLESHOOTING
--------------------
+LOCAL DEVELOPMENT
+-----------------
+`npm run dev` tetap merupakan jalur hot reload. Untuk backend development pada
+host ditambah Valhalla container, start service Valhalla dari overlay routing dan
+set `ROUTING_BASE_URL=http://127.0.0.1:8002` di `backend/.env.local`.
 
-Docker daemon tidak merespons:
+Untuk menjalankan backend production artifact dan Valhalla secara lokal:
 
-  docker version
-  docker info
+  npm run routing:start
 
-Pastikan Docker Desktop/Engine aktif. Error CLI atau timeout daemon bukan error
-GETRA image. Jangan mengklaim build berhasil sampai daemon benar-benar membangun
-image.
+Host binding default tetap loopback. Override `GETRA_BIND_ADDRESS` atau
+`VALHALLA_BIND_ADDRESS` hanya bila kebutuhan network sudah ditinjau.
 
-Compose menolak variable required:
+HEALTH DAN SMOKE
+----------------
+Backend readiness:
 
-Periksa `.env.local` tanpa mencetak nilainya. Pastikan dua variable Supabase
-required ada dan tidak kosong. Pada override production, APP_BASE_URL dan
-FRONTEND_ALLOWED_ORIGINS juga wajib.
-
-Environment validation gagal:
-
-- APP_ENV hanya development, staging, atau production.
-- APP_BASE_URL staging/production harus HTTPS origin tanpa path/query/hash.
-- FRONTEND_ALLOWED_ORIGINS adalah daftar origin eksak dipisahkan koma; wildcard,
-  `null`, path, query, fragment, userinfo, dan karakter kontrol ditolak.
-- TRUST_PROXY hanya `true` atau `false`.
-- Angka limit/timeout harus berada dalam batas validator.
-
-Container `Up` tetapi `unhealthy`:
-
-  docker compose --env-file .env.local ps
-  docker compose --env-file .env.local logs --tail 100
   curl.exe -i http://127.0.0.1:3002/api/health
 
-Periksa konektivitas outbound ke Supabase dan environment, tanpa menampilkan
-credential. Readiness sengaja gagal jika Supabase tidak dapat dijangkau.
+Valhalla readiness:
 
-Port host bentrok:
+  curl.exe -i http://127.0.0.1:8002/status
 
-Set `GETRA_DOCKER_PORT` pada file ignored atau environment shell ke port lain.
-Jangan mematikan process user lain secara destruktif.
+Backend health mencakup konektivitas Supabase. Valhalla health memeriksa endpoint
+status provider. HTTP 503/unhealthy harus diselesaikan sebelum traffic dialihkan.
+Routing failure harus menghasilkan state unavailable/no-route terkontrol, bukan
+garis lurus atau estimasi yang dibuat-buat.
 
-CORS 403:
+IMAGE SECURITY
+--------------
+- Multi-stage image, runtime Next.js standalone.
+- Valhalla 3.8.3 memakai multi-architecture manifest digest yang dipin.
+- Runtime user `node`, bukan root.
+- `no-new-privileges` dan seluruh Linux capabilities dibuang pada override prod.
+- Environment dan documentation tidak masuk build context.
+- Graceful stop backend 30 detik dan Valhalla 60 detik.
+- Reverse proxy direkomendasikan oleh panduan self-hosting Next.js dan wajib untuk
+  topology production GETRA ini.
 
-Pastikan origin browser (scheme + host + port) tercantum persis pada
-FRONTEND_ALLOWED_ORIGINS. `http://localhost:3000` dan
-`http://127.0.0.1:3000` adalah origin berbeda.
-
-Rate limit 429:
-
-Hormati header `Retry-After`. Untuk multi-replica, process-local limiter saat ini
-harus diganti/ditambah shared store sebelum scale-out.
-
-IMAGE SECURITY CHECKLIST
-------------------------
-- Runtime user: built-in non-root user `node`.
-- Runtime command: `node server.js`.
-- Exposed port: hanya 3000.
-- Secret: hanya runtime environment; tidak ada ARG secret.
-- Build context: `.env*`, `.git`, tests, docs, dan local artifacts diabaikan.
-- Artifact: Next.js standalone, bukan full development workspace.
-- Database: Supabase remote; tidak ada PostgreSQL container/port.
-
-Hasil pemeriksaan image nyata (runtime user, history, contents, port, dan secret
-scan) BLOCKED sampai daemon pulih dan build/run Docker berhasil. Static tests
-telah memverifikasi Dockerfile memakai USER node dan hanya EXPOSE 3000.
+Production deployment aktual, DNS/TLS, firewall, graph build, image inspection,
+dan hosted smoke test hanya boleh disebut PASS setelah dijalankan pada VPS target.
+Lihat juga docs/VERCEL_DEPLOYMENT.md, docs/DEPLOYMENT_RUNBOOK.md, dan
+docs/ROUTING_NAVIGATION.md.

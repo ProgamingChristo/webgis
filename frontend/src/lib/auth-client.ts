@@ -3,6 +3,7 @@
 import {
   getBrowserSupabaseClient,
 } from "@/src/lib/supabase/browser";
+import { getGetraApiUrl } from "@/src/lib/api-base-url";
 
 const AUTH_OPERATION_TIMEOUT_MS = 10_000;
 
@@ -154,7 +155,7 @@ export interface UserContext {
 
 export async function getUserContext(): Promise<UserContext | null> {
   try {
-    const response = await authenticatedFetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`);
+    const response = await authenticatedFetch(getGetraApiUrl("/api/auth/me"));
     if (!response.ok) return null;
 
     const json = await response.json();

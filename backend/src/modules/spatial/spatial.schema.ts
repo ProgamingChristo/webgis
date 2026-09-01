@@ -21,6 +21,7 @@ import {
   latitudeSchema,
   longitudeSchema,
 } from "@/src/schemas/spatial.schema";
+import { ROUTING_MODES } from "@/src/features/routing/routing.types";
 
 const queryNumber = (schema: z.ZodNumber) =>
   z.preprocess(
@@ -172,7 +173,7 @@ export const routingRequestSchema = z
       .optional(),
     destination: coordinateSchema,
     destination_merchant_id: z.string().uuid().optional(),
-    mode: z.literal("walking"),
+    mode: z.enum(ROUTING_MODES),
     origin: coordinateSchema,
   })
   .strict();

@@ -1,5 +1,10 @@
 import { useState, useCallback } from "react";
-import { AiService, AiAskRequest, AiAskMessage } from "../services/ai.service";
+import {
+  AiService,
+  type AiAskMessage,
+  type AiAskRequest,
+  type AiAskResponse,
+} from "../services/ai.service";
 
 type AiState = "IDLE" | "LOADING" | "SUCCESS" | "ERROR";
 
@@ -7,10 +12,12 @@ export function useAi() {
   const [state, setState] = useState<AiState>("IDLE");
   const [messages, setMessages] = useState<AiAskMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [provider, setProvider] = useState<AiAskResponse["provider"] | null>(null);
 
   const askQuestion = useCallback(async (req: AiAskRequest) => {
     setState("LOADING");
     setError(null);
+    setProvider(null);
 
     const userMessage: AiAskMessage = { role: "user", content: req.question };
     const history = messages.slice(-8);
@@ -24,9 +31,11 @@ export function useAi() {
       });
       const assistantMessage: AiAskMessage = { role: "assistant", content: res.answer };
       setMessages([...nextMessages, assistantMessage]);
+      setProvider(res.provider);
       setState("SUCCESS");
     } catch (err: any) {
       setError(err.message || "Failed to get AI response");
+      setProvider(null);
       setState("ERROR");
     }
   }, [messages]);
@@ -34,6 +43,7 @@ export function useAi() {
   const clearChat = useCallback(() => {
     setMessages([]);
     setError(null);
+    setProvider(null);
     setState("IDLE");
   }, []);
 
@@ -41,7 +51,8 @@ export function useAi() {
     setState("IDLE");
     setMessages([]);
     setError(null);
+    setProvider(null);
   }, []);
 
-  return { state, messages, error, askQuestion, clearChat, reset };
+  return { state, messages, error, provider, askQuestion, clearChat, reset };
 }

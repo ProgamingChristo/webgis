@@ -1,6 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { mapCanonicalMerchantRow } from "@/src/features/merchant-reconciliation/canonical-merchant-read.service";
+import {
+  CanonicalMerchantReadService,
+  mapCanonicalMerchantRow,
+} from "@/src/features/merchant-reconciliation/canonical-merchant-read.service";
 
 const merchant = {
   id: "canonical-1",
@@ -34,6 +37,22 @@ const links = [
 ];
 
 describe("canonical merchant attribute resolution", () => {
+  it("sends no spatial eligibility filter for global destination search", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [], error: null });
+    const service = new CanonicalMerchantReadService({ rpc } as any);
+
+    await service.list({ keyword: "donut", limit: 8, offset: 0 });
+
+    expect(rpc).toHaveBeenCalledWith("search_canonical_merchants_v1", expect.objectContaining({
+      p_keyword: "donut",
+      p_west: null,
+      p_south: null,
+      p_east: null,
+      p_north: null,
+      p_region_ids: null,
+    }));
+  });
+
   it("keeps Premium identity fields and enriches observational Menu Go fields", () => {
     const observations = new Map([["menu-1", {
       observed_at: "2026-08-26T00:00:00.000Z",

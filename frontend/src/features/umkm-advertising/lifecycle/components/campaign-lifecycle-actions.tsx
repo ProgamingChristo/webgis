@@ -81,20 +81,20 @@ export function CampaignLifecycleActions({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
         {allowedActions.canPause && (
           <button
             type="button"
             disabled={isUpdating}
             onClick={handlePause}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-300 dark:hover:bg-amber-900/60 disabled:opacity-50 transition-colors shadow-sm"
+            className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-300 dark:hover:bg-amber-900/60 disabled:opacity-50 transition-colors shadow-sm sm:flex-none"
           >
             {isUpdating ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
               <Pause className="w-3.5 h-3.5" />
             )}
-            Jeda Campaign (Pause)
+            Jeda Campaign
           </button>
         )}
 
@@ -103,14 +103,14 @@ export function CampaignLifecycleActions({
             type="button"
             disabled={isUpdating}
             onClick={handleResume}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/60 disabled:opacity-50 transition-colors shadow-sm"
+            className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/60 disabled:opacity-50 transition-colors shadow-sm sm:flex-none"
           >
             {isUpdating ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
               <Play className="w-3.5 h-3.5" />
             )}
-            Lanjutkan Tayang (Resume)
+            Lanjutkan Tayang
           </button>
         )}
 
@@ -119,7 +119,7 @@ export function CampaignLifecycleActions({
             type="button"
             disabled={isUpdating}
             onClick={() => setShowCancelModal(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 dark:border-rose-900/60 dark:bg-slate-900 dark:text-rose-400 dark:hover:bg-rose-950/40 disabled:opacity-50 transition-colors shadow-sm ml-auto"
+            className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 dark:border-rose-900/60 dark:bg-slate-900 dark:text-rose-400 dark:hover:bg-rose-950/40 disabled:opacity-50 transition-colors shadow-sm sm:ml-auto sm:flex-none"
           >
             <Trash2 className="w-3.5 h-3.5" />
             Batalkan Campaign
@@ -130,12 +130,12 @@ export function CampaignLifecycleActions({
       {/* Cancel Confirmation Modal */}
       {showCancelModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400 mb-3">
+          <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+            <div className="mb-3 flex items-start gap-3 text-rose-600 dark:text-rose-400">
               <div className="p-2 rounded-full bg-rose-100 dark:bg-rose-950/60">
                 <AlertTriangle className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="break-words text-base font-bold leading-6 text-slate-900 dark:text-white">
                 Konfirmasi Pembatalan Campaign
               </h3>
             </div>
@@ -144,7 +144,7 @@ export function CampaignLifecycleActions({
               Apakah Anda yakin ingin membatalkan campaign ini? Campaign yang dibatalkan akan langsung berhenti tayang dan tidak dapat diaktifkan kembali.
             </p>
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
               <button
                 type="button"
                 disabled={isUpdating}

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { RateLimitExceededError } from "@/src/lib/errors";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AiProviderError, RateLimitExceededError } from "@/src/lib/errors";
 
 const mocks = vi.hoisted(() => ({
   checkLimit: vi.fn(),
@@ -26,10 +26,13 @@ import { POST } from "@/app/api/ai/ask/route";
 
 const TEST_USER_ID = "70000000-0000-4000-8000-000000000001";
 
-function aiRequest(authorization?: string) {
+const originalProvider = process.env.AI_PROVIDER;
+const originalSub2ApiKey = process.env.SUB2API_API_KEY;
+
+function aiRequest(authorization?: string, question = "Apa yang tersedia di area ini?") {
   return new NextRequest("http://localhost/api/ai/ask", {
     body: JSON.stringify({
-      question: "Apa yang tersedia di area ini?",
+      question,
       active_experience: "GENERAL",
     }),
     headers: {
@@ -45,6 +48,13 @@ describe("/api/ai/ask security", () => {
     vi.clearAllMocks();
     mocks.checkLimit.mockResolvedValue(undefined);
     mocks.generateStructured.mockReset();
+  });
+
+  afterEach(() => {
+    if (originalProvider === undefined) delete process.env.AI_PROVIDER;
+    else process.env.AI_PROVIDER = originalProvider;
+    if (originalSub2ApiKey === undefined) delete process.env.SUB2API_API_KEY;
+    else process.env.SUB2API_API_KEY = originalSub2ApiKey;
   });
 
   it("rejects missing bearer token before provider and database grounding work", async () => {
@@ -95,8 +105,57 @@ describe("/api/ai/ask security", () => {
     expect(response.status).toBe(429);
     expect(mocks.checkLimit).toHaveBeenCalledWith(
       expect.any(NextRequest),
-      `${TEST_USER_ID}:ai:ask`,
+      `${TEST_USER_ID}:mutation:ai:ask`,
     );
     expect(mocks.generateStructured).not.toHaveBeenCalled();
+  });
+
+  it("returns a canonical 503 instead of a deterministic answer when explicit Sub2API has no key", async () => {
+    process.env.AI_PROVIDER = "sub2api";
+    delete process.env.SUB2API_API_KEY;
+    const getUser = vi.fn().mockResolvedValue({
+      data: { user: { id: TEST_USER_ID } },
+      error: null,
+    });
+    mocks.getServerSupabaseClient.mockReturnValue({ auth: { getUser } } as unknown as SupabaseClient);
+    mocks.generateStructured.mockRejectedValue(new AiProviderError({
+      category: "configuration",
+      provider: "sub2api",
+    }));
+
+    const response = await POST(aiRequest("Bearer VALID-TOKEN", "Apa yang bisa kamu bantu?"));
+    const body = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(body).toMatchObject({
+      success: false,
+      error: {
+        code: "AI_PROVIDER_CONFIGURATION",
+        message: "Provider AI belum tersedia. Periksa konfigurasi server.",
+      },
+    });
+    expect(JSON.stringify(body)).not.toContain("0 UMKM");
+    expect(body.request_id).toEqual(expect.any(String));
+  });
+
+  it("returns a canonical 504 and never falls back when Sub2API times out", async () => {
+    process.env.AI_PROVIDER = "sub2api";
+    const getUser = vi.fn().mockResolvedValue({
+      data: { user: { id: TEST_USER_ID } },
+      error: null,
+    });
+    mocks.getServerSupabaseClient.mockReturnValue({ auth: { getUser } } as unknown as SupabaseClient);
+    mocks.generateStructured.mockRejectedValue(new AiProviderError({
+      category: "timeout",
+      provider: "sub2api",
+    }));
+
+    const response = await POST(aiRequest("Bearer VALID-TOKEN"));
+    const body = await response.json();
+
+    expect(response.status).toBe(504);
+    expect(body.success).toBe(false);
+    expect(body.error.code).toBe("AI_PROVIDER_TIMEOUT");
+    expect(body.data).toBeUndefined();
   });
 });

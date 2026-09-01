@@ -10,7 +10,7 @@ The AI engine does not guess routes, invent distances, or generate coordinate ge
 1. **User Request**: User sends a natural language query via the frontend AI UI.
 2. **Intent Detection**: The backend `/api/ai/ask` endpoint parses the request to determine if it requires spatial data, transport data, or general instructions.
 3. **Context Grounding (Retrieval)**: Based on the intent, the backend autonomously queries its own internal Spatial/v1 endpoints (e.g., nearest transit nodes, nearby UMKM) to gather factual context.
-4. **AI Processing**: The configured provider is invoked with a strict system prompt containing the structured facts. Production uses `AI_PROVIDER=claude`.
+4. **AI Processing**: The configured provider is invoked with a strict system prompt containing the structured facts. Production uses `AI_PROVIDER=sub2api`, the Responses-compatible `/responses` endpoint, and `claude-sonnet-4-6`.
 5. **Grounded Response**: The AI synthesizes the facts into human-readable text without hallucinating spatial metadata.
 
 ## Security & Protections
@@ -18,11 +18,36 @@ The AI engine does not guess routes, invent distances, or generate coordinate ge
 - **Authentication Boundary**: AI endpoints are secured behind standard Bearer token `USER` sessions.
 - **Prompt Injection Defense**: Inputs are validated against max lengths and schema constraints. System prompts explicitly instruct the model to refuse to deviate from the provided structured facts.
 - **Role Spoofing**: The system does not pass raw internal role flags directly to the LLM to prevent confused deputy attacks.
+- **Paid-resource controls**: AI requests use an authenticated-user fixed window (default 15 requests per 10 minutes) and the merchant-description endpoint rejects a second concurrent request for the same user on the same backend instance.
+
+## UMKM Merchant Description Assistant
+
+`POST /api/ai/merchant-description` is a focused writing-assistant endpoint for
+the existing UMKM registration form. It reuses the same Sub2API Responses adapter,
+Bearer authentication, bounded-body reader, endpoint policy catalog, logger,
+error mapping, and rate limiter as the grounded assistant.
+
+The browser sends only a validated writing mode and bounded merchant context.
+The system instructions are server-owned. `generate` requires a user-supplied
+product or service; the provider is explicitly forbidden from inventing address,
+hours, prices, facilities, certifications, payment methods, history, promotions,
+or quality claims. The response is parsed through a strict JSON schema and the
+browser receives only `{ description }` inside the standard GETRA API envelope.
+
+The assistant is optional. The returned paragraph remains ordinary editable
+form state and does not require a database schema change.
 
 ## Provider Configuration
 
-Provider selection is explicit. Configure `AI_PROVIDER=claude`, `ANTHROPIC_API_KEY`, and `ANTHROPIC_MODEL` in the server runtime. An explicit Claude configuration never silently fails over to another paid provider; an invalid provider value fails clearly.
+Provider selection is explicit. Configure `AI_PROVIDER=sub2api`, `SUB2API_API_KEY`, `SUB2API_MODEL`, `SUB2API_BASE_URL`, and optionally `SUB2API_TIMEOUT_MS` in the backend runtime. The key is server-only. Explicit Sub2API configuration never falls through to OpenAI, Anthropic, or a deterministic answer when configuration, timeout, upstream, parsing, or structured-output validation fails.
+
+When `AI_PROVIDER` is unset or explicitly `deterministic`, GETRA does not probe a paid provider. Successful `/api/ai/ask` responses identify their actual mode as `provider: "sub2api"` or `provider: "deterministic"`.
+
+The merchant-description endpoint does not use deterministic fallback. When the
+paid provider is not configured, it returns the canonical provider-configuration
+error and leaves the user's existing description unchanged in the UI.
 
 ## Troubleshooting
 
-- **AI Unavailable**: Deterministic intent rules and fact formatting return a bounded explanation when verified facts can be retrieved. The map, routing, UMKM, and transport services do not depend on the AI provider. Missing facts are reported as limitations, never fabricated.
+- **Explicit Sub2API unavailable**: The API returns a typed 502, 503, or 504 error. It does not manufacture a deterministic success.
+- **Deterministic mode**: Leave `AI_PROVIDER` unset only for an intentional development/test fallback. Missing facts are reported as limitations, never fabricated.

@@ -1,29 +1,9 @@
 import { z } from "zod";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  claudeConfigured: vi.fn(),
-  claudeGenerate: vi.fn(),
-  openaiConfigured: vi.fn(),
-  openaiGenerate: vi.fn(),
   sub2apiConfigured: vi.fn(),
   sub2apiGenerate: vi.fn(),
-}));
-
-vi.mock("@/lib/ai/anthropic", () => ({
-  anthropicProvider: {
-    id: "claude",
-    isConfigured: mocks.claudeConfigured,
-    generateStructured: mocks.claudeGenerate,
-  },
-}));
-
-vi.mock("@/lib/ai/openai", () => ({
-  openAIProvider: {
-    id: "openai",
-    isConfigured: mocks.openaiConfigured,
-    generateStructured: mocks.openaiGenerate,
-  },
 }));
 
 vi.mock("@/lib/ai/sub2api", () => ({
@@ -35,107 +15,83 @@ vi.mock("@/lib/ai/sub2api", () => ({
 }));
 
 import { generateStructured, getConfiguredProvider } from "@/lib/ai/provider";
+import { AiProviderError } from "@/src/lib/errors";
 
-const schema = z.object({
-  ok: z.boolean(),
-});
+const originalProvider = process.env.AI_PROVIDER;
+const schema = z.object({ ok: z.boolean() });
+const request = {
+  input: "test",
+  instructions: "return json",
+  schema,
+  schemaName: "test_schema",
+};
 
 describe("AI provider selection", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     delete process.env.AI_PROVIDER;
-    mocks.claudeConfigured.mockReturnValue(false);
-    mocks.openaiConfigured.mockReturnValue(false);
     mocks.sub2apiConfigured.mockReturnValue(false);
   });
 
-  it("uses Claude canonically when AI_PROVIDER=claude", async () => {
-    process.env.AI_PROVIDER = "claude";
-    mocks.claudeConfigured.mockReturnValue(true);
-    mocks.openaiConfigured.mockReturnValue(true);
-    mocks.claudeGenerate.mockResolvedValue({ ok: true });
-
-    await expect(
-      generateStructured({
-        input: "test",
-        instructions: "return json",
-        schema,
-        schemaName: "test_schema",
-      }),
-    ).resolves.toEqual({
-      data: { ok: true },
-      source: "claude",
-    });
-
-    expect(mocks.claudeGenerate).toHaveBeenCalledTimes(1);
-    expect(mocks.openaiGenerate).not.toHaveBeenCalled();
-    expect(mocks.sub2apiGenerate).not.toHaveBeenCalled();
-    expect(getConfiguredProvider()).toBe("claude");
+  afterEach(() => {
+    if (originalProvider === undefined) delete process.env.AI_PROVIDER;
+    else process.env.AI_PROVIDER = originalProvider;
   });
 
-  it("does not silently fallback when canonical Claude fails", async () => {
-    process.env.AI_PROVIDER = "claude";
-    mocks.claudeConfigured.mockReturnValue(true);
-    mocks.openaiConfigured.mockReturnValue(true);
-    mocks.claudeGenerate.mockRejectedValue(new Error("provider failed"));
+  it("uses deterministic mode without probing paid providers when AI_PROVIDER is unset", async () => {
+    mocks.sub2apiConfigured.mockReturnValue(true);
 
-    await expect(
-      generateStructured({
-        input: "test",
-        instructions: "return json",
-        schema,
-        schemaName: "test_schema",
-      }),
-    ).rejects.toThrow("provider failed");
-
-    expect(mocks.claudeGenerate).toHaveBeenCalledTimes(1);
-    expect(mocks.openaiGenerate).not.toHaveBeenCalled();
+    await expect(generateStructured(request)).resolves.toBeNull();
+    expect(getConfiguredProvider()).toBe("fallback");
     expect(mocks.sub2apiGenerate).not.toHaveBeenCalled();
   });
 
-  it("uses Sub2API canonically when AI_PROVIDER=sub2api", async () => {
+  it("uses Sub2API exclusively when AI_PROVIDER=sub2api", async () => {
     process.env.AI_PROVIDER = "sub2api";
-    mocks.claudeConfigured.mockReturnValue(true);
-    mocks.openaiConfigured.mockReturnValue(true);
     mocks.sub2apiConfigured.mockReturnValue(true);
     mocks.sub2apiGenerate.mockResolvedValue({ ok: true });
 
-    await expect(
-      generateStructured({
-        input: "test",
-        instructions: "return json",
-        schema,
-        schemaName: "test_schema",
-      }),
-    ).resolves.toEqual({
+    await expect(generateStructured(request)).resolves.toEqual({
       data: { ok: true },
       source: "sub2api",
     });
-
-    expect(mocks.sub2apiGenerate).toHaveBeenCalledTimes(1);
-    expect(mocks.claudeGenerate).not.toHaveBeenCalled();
-    expect(mocks.openaiGenerate).not.toHaveBeenCalled();
     expect(getConfiguredProvider()).toBe("sub2api");
+    expect(mocks.sub2apiGenerate).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps explicit fallback behavior only when no canonical provider is configured", async () => {
-    mocks.openaiConfigured.mockReturnValue(true);
-    mocks.openaiGenerate.mockResolvedValue({ ok: true });
+  it("throws a typed configuration error when explicit Sub2API has no key", async () => {
+    process.env.AI_PROVIDER = "sub2api";
+    mocks.sub2apiConfigured.mockReturnValue(false);
 
-    await expect(
-      generateStructured({
-        input: "test",
-        instructions: "return json",
-        schema,
-        schemaName: "test_schema",
-      }),
-    ).resolves.toEqual({
-      data: { ok: true },
-      source: "openai",
+    const result = generateStructured(request);
+    await expect(result).rejects.toBeInstanceOf(AiProviderError);
+    await expect(result).rejects.toMatchObject({
+      category: "configuration",
+      code: "AI_PROVIDER_CONFIGURATION",
+      provider: "sub2api",
     });
+    expect(mocks.sub2apiGenerate).not.toHaveBeenCalled();
+  });
 
-    expect(mocks.openaiGenerate).toHaveBeenCalledTimes(1);
-    expect(mocks.claudeGenerate).not.toHaveBeenCalled();
+  it("propagates explicit Sub2API failures without deterministic fallback", async () => {
+    process.env.AI_PROVIDER = "sub2api";
+    mocks.sub2apiConfigured.mockReturnValue(true);
+    const providerError = new AiProviderError({
+      category: "unavailable",
+      provider: "sub2api",
+      upstreamStatus: 503,
+    });
+    mocks.sub2apiGenerate.mockRejectedValue(providerError);
+
+    await expect(generateStructured(request)).rejects.toBe(providerError);
+    expect(mocks.sub2apiGenerate).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects unsupported legacy paid-provider modes", async () => {
+    process.env.AI_PROVIDER = "claude";
+    await expect(generateStructured(request)).rejects.toMatchObject({
+      code: "AI_PROVIDER_CONFIGURATION",
+    });
     expect(mocks.sub2apiGenerate).not.toHaveBeenCalled();
   });
 });

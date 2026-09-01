@@ -411,7 +411,7 @@ Fallback avatar memakai initials dari display name jika URL kosong atau image ga
 
 ## 5. Daftar API
 
-Base path backend sesuai konfigurasi `NEXT_PUBLIC_API_URL`.
+Base path backend sesuai konfigurasi canonical `NEXT_PUBLIC_GETRA_API_URL`.
 
 ### 5.1 Public Authenticated Community API
 
@@ -852,13 +852,13 @@ Client memakai:
 
 ```text
 authenticatedFetch
-NEXT_PUBLIC_API_URL
+NEXT_PUBLIC_GETRA_API_URL
 ```
 
-Jika `NEXT_PUBLIC_API_URL` kosong, client melempar error:
+Jika `NEXT_PUBLIC_GETRA_API_URL` dan alias deprecated-nya kosong, client melempar error:
 
 ```text
-NEXT_PUBLIC_API_URL belum dikonfigurasi.
+NEXT_PUBLIC_GETRA_API_URL belum dikonfigurasi dengan URL backend GETRA yang valid.
 ```
 
 Fungsi client utama:
@@ -996,7 +996,7 @@ npm run dev
 Environment penting:
 
 ```text
-NEXT_PUBLIC_API_URL
+NEXT_PUBLIC_GETRA_API_URL
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY

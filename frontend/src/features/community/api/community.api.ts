@@ -1,6 +1,7 @@
 "use client";
 
 import { authenticatedFetch } from "../../../lib/auth-client";
+import { getGetraApiBaseUrl } from "../../../lib/api-base-url";
 import type {
   CommunityComment,
   CommunityCommentResponse,
@@ -51,15 +52,7 @@ type ApiFailureEnvelope = {
   };
 };
 
-function getApiBaseUrl(): string {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-
-  if (!baseUrl) {
-    throw new Error("NEXT_PUBLIC_API_URL belum dikonfigurasi.");
-  }
-
-  return baseUrl;
-}
+const getApiBaseUrl = getGetraApiBaseUrl;
 
 function readFailureMessage(json: ApiFailureEnvelope): string {
   return (

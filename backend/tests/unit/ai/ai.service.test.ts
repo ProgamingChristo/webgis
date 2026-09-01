@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   findNearby: vi.fn(),
   generateStructured: vi.fn(),
   getRequestSupabaseClient: vi.fn(),
-  getRoute: vi.fn(),
+  route: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
@@ -31,10 +31,10 @@ vi.mock("@/src/repositories/umkm.repository", () => ({
     };
   }),
 }));
-vi.mock("@/src/modules/pedestrian-network/routing.service", () => ({
-  RoutingService: vi.fn().mockImplementation(function RoutingService() {
+vi.mock("@/src/features/commuter", () => ({
+  CommuterNetworkRepository: vi.fn().mockImplementation(function CommuterNetworkRepository() {
     return {
-      getRoute: mocks.getRoute,
+      route: mocks.route,
     };
   }),
 }));
@@ -52,14 +52,14 @@ describe("AiService grounding", () => {
           intent: "NEAREST_TRANSIT",
           reasoning: "closest transit question",
         },
-        source: "claude",
+        source: "sub2api",
       })
       .mockResolvedValueOnce({
         data: {
           answer: "Halte terdekat adalah Halte A, jaraknya 123 meter.",
           limitations_mentioned: [],
         },
-        source: "claude",
+        source: "sub2api",
       });
   });
 
@@ -120,7 +120,7 @@ describe("AiService grounding", () => {
         entity_type: "TRANSPORT_NODE",
         type: "FOCUS_ENTITY",
       },
-      provider: "claude",
+      provider: "sub2api",
     });
   });
 
@@ -133,14 +133,14 @@ describe("AiService grounding", () => {
           intent: "UMKM_POI",
           reasoning: "selected business",
         },
-        source: "claude",
+        source: "sub2api",
       })
       .mockResolvedValueOnce({
         data: {
           answer: "Warung A sudah terhubung sebagai entity terpilih.",
           limitations_mentioned: [],
         },
-        source: "claude",
+        source: "sub2api",
       });
     mocks.findById.mockResolvedValue({
       category: "food",
@@ -170,5 +170,71 @@ describe("AiService grounding", () => {
       label: "Warung A",
       type: "FOCUS_ENTITY",
     });
+  });
+
+  it("handles assistant identity without opening Supabase or spatial repositories", async () => {
+    mocks.generateStructured.mockReset().mockResolvedValue(null);
+
+    const result = await new AiService("Bearer VALID").handleAskRequest({
+      active_experience: "GENERAL",
+      question: "kamu asisten aku kan?",
+    });
+
+    expect(result).toMatchObject({
+      intent: "ASSISTANT_IDENTITY",
+      provider: "deterministic",
+    });
+    expect(result.answer).toContain("Asisten GETRA AI");
+    expect(result.answer).not.toContain("0 UMKM");
+    expect(mocks.generateStructured).toHaveBeenCalledTimes(1);
+    expect(mocks.getRequestSupabaseClient).not.toHaveBeenCalled();
+    expect(mocks.findNearby).not.toHaveBeenCalled();
+    expect(mocks.findById).not.toHaveBeenCalled();
+    expect(mocks.findNear).not.toHaveBeenCalled();
+    expect(mocks.route).not.toHaveBeenCalled();
+  });
+
+  it("keeps UNKNOWN separate from GENERAL_AREA and does not query UMKM", async () => {
+    mocks.generateStructured.mockReset().mockResolvedValue(null);
+
+    const result = await new AiService("Bearer VALID").handleAskRequest({
+      active_experience: "GENERAL",
+      context: { origin: { latitude: -6.2, longitude: 106.8 } },
+      question: "Tolong ceritakan lelucon acak",
+    });
+
+    expect(result).toMatchObject({
+      intent: "UNKNOWN",
+      provider: "deterministic",
+    });
+    expect(result.answer).toContain("belum dapat menghubungkan");
+    expect(result.answer).not.toContain("0 UMKM");
+    expect(mocks.getRequestSupabaseClient).not.toHaveBeenCalled();
+    expect(mocks.findNearby).not.toHaveBeenCalled();
+    expect(mocks.findById).not.toHaveBeenCalled();
+    expect(mocks.findNear).not.toHaveBeenCalled();
+    expect(mocks.route).not.toHaveBeenCalled();
+  });
+
+  it("still grounds an explicit GENERAL_AREA question and labels deterministic output", async () => {
+    mocks.generateStructured.mockReset().mockResolvedValue(null);
+    mocks.findNearby.mockResolvedValue([{ id: "merchant-1" }, { id: "merchant-2" }]);
+
+    const result = await new AiService("Bearer VALID").handleAskRequest({
+      active_experience: "GENERAL",
+      context: { origin: { latitude: -6.2, longitude: 106.8 } },
+      question: "Apa yang tersedia di area ini?",
+    });
+
+    expect(mocks.findNearby).toHaveBeenCalledWith({
+      lat: -6.2,
+      lng: 106.8,
+      radiusMeters: 1000,
+    });
+    expect(result).toMatchObject({
+      intent: "GENERAL_AREA",
+      provider: "deterministic",
+    });
+    expect(result.answer).toContain("2 UMKM");
   });
 });

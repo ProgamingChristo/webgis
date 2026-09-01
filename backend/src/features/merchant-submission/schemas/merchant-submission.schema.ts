@@ -15,6 +15,43 @@ export const pointGeometrySchema = z
   })
   .strict();
 
+const operatingDaySchema = z
+  .object({
+    is_closed: z.boolean(),
+    opens_at: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable(),
+    closes_at: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (!value.is_closed && (!value.opens_at || !value.closes_at || value.opens_at >= value.closes_at)) {
+      context.addIssue({ code: "custom", message: "Jam buka harus lebih awal dari jam tutup." });
+    }
+  });
+
+const openingHoursSchema = z
+  .object({
+    monday: operatingDaySchema,
+    tuesday: operatingDaySchema,
+    wednesday: operatingDaySchema,
+    thursday: operatingDaySchema,
+    friday: operatingDaySchema,
+    saturday: operatingDaySchema,
+    sunday: operatingDaySchema,
+  })
+  .strict();
+
+const publicMediaSchema = z.object({
+  storefront_url: z.string().url().max(512).nullable().optional(),
+  menu_urls: z.array(z.string().url().max(512)).max(2),
+  product_urls: z.array(z.string().url().max(512)).max(4),
+}).strict();
+
+const businessInfoSchema = z.object({
+  contact_phone: z.string().trim().min(8).max(32).nullable().optional(),
+  price_range: z.enum(["BUDGET", "STANDARD", "PREMIUM"]).nullable().optional(),
+  payment_methods: z.array(z.enum(["CASH", "QRIS", "DEBIT", "TRANSFER"])).max(4),
+}).strict();
+
 export const createMerchantSubmissionSchema = z
   .object({
     name: z
@@ -40,7 +77,9 @@ export const createMerchantSubmissionSchema = z
       .optional()
       .nullable(),
     location: pointGeometrySchema,
-    opening_hours: z.record(z.string(), z.any()).optional().default({}),
+    opening_hours: openingHoursSchema,
+    public_media: publicMediaSchema,
+    business_info: businessInfoSchema,
     image_url: z
       .string()
       .url({ message: "URL foto usaha harus berformat URL valid." })
@@ -77,7 +116,9 @@ export const updateMerchantSubmissionSchema = z
       .optional()
       .nullable(),
     location: pointGeometrySchema.optional(),
-    opening_hours: z.record(z.string(), z.any()).optional(),
+    opening_hours: openingHoursSchema.optional(),
+    public_media: publicMediaSchema.optional(),
+    business_info: businessInfoSchema.optional(),
     image_url: z
       .string()
       .url({ message: "URL foto usaha harus berformat URL valid." })

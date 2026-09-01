@@ -5,7 +5,7 @@ This checklist is a release gate. Repository tests do not replace staging or ope
 ## Credentials and configuration
 
 - [ ] Provision production Supabase URL, publishable key, and server-only service-role key.
-- [ ] Configure `AI_PROVIDER=claude`, `ANTHROPIC_API_KEY`, and an approved `ANTHROPIC_MODEL`.
+- [ ] Configure backend-only `AI_PROVIDER=sub2api`, `SUB2API_API_KEY`, `SUB2API_MODEL`, `SUB2API_BASE_URL`, and the validated timeout.
 - [ ] Configure MAPID credentials only in the server runtime.
 - [ ] Replace the malformed local `.env.local` file with a UTF-8 deployment environment file.
 - [ ] Confirm production origins, domain, TLS, `APP_BASE_URL`, `FRONTEND_ALLOWED_ORIGINS`, and trusted-proxy policy.

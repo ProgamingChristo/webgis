@@ -4,6 +4,7 @@ import { PaymentCheckoutService } from "@/src/features/umkm-advertising/payment/
 describe("PaymentCheckoutService", () => {
   let mockSupabase: any;
   let mockMidtransClient: any;
+  let mockEligibilityService: any;
   const userId = "user-umkm-123";
   const campaignId = "camp-123";
   const merchantId = "merch-123";
@@ -13,6 +14,13 @@ describe("PaymentCheckoutService", () => {
       createSnapTransaction: vi.fn().mockResolvedValue({
         token: "snap-token-mock-xyz",
         redirect_url: "https://app.sandbox.midtrans.com/snap/v2/vtweb/mock",
+      }),
+    };
+
+    mockEligibilityService = {
+      checkEligibility: vi.fn().mockResolvedValue({
+        eligible: true,
+        merchantId,
       }),
     };
 
@@ -101,7 +109,11 @@ describe("PaymentCheckoutService", () => {
   });
 
   it("creates checkout successfully for verified UMKM owner", async () => {
-    const service = new PaymentCheckoutService(mockSupabase, mockMidtransClient);
+    const service = new PaymentCheckoutService(
+      mockSupabase,
+      mockMidtransClient,
+      mockEligibilityService
+    );
     const result = await service.createCheckout(campaignId, userId);
 
     expect(result).toBeDefined();
@@ -113,56 +125,28 @@ describe("PaymentCheckoutService", () => {
   });
 
   it("rejects user without UMKM mode and non-admin", async () => {
-    mockSupabase.from = vi.fn((table: string) => {
-      if (table === "user_stakeholder_modes") {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-          }),
-        };
-      }
-      if (table === "profiles") {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: { account_role: "USER" },
-                error: null,
-              }),
-            }),
-          }),
-        };
-      }
-      return {};
+    mockEligibilityService.checkEligibility.mockResolvedValue({
+      eligible: false,
+      reason: "UMKM_MODE_REQUIRED",
     });
 
-    const service = new PaymentCheckoutService(mockSupabase, mockMidtransClient);
+    const service = new PaymentCheckoutService(
+      mockSupabase,
+      mockMidtransClient,
+      mockEligibilityService
+    );
     await expect(service.createCheckout(campaignId, userId)).rejects.toThrow(
       /Stakeholder mode UMKM diperlukan/
     );
   });
 
   it("rejects user attempting to checkout campaign of a non-owned merchant", async () => {
+    mockEligibilityService.checkEligibility.mockResolvedValue({
+      eligible: false,
+      reason: "OWNERSHIP_REQUIRED",
+    });
+
     mockSupabase.from = vi.fn((table: string) => {
-      if (table === "user_stakeholder_modes") {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: [{ mode: "UMKM" }], error: null }),
-          }),
-        };
-      }
-      if (table === "profiles") {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: { account_role: "USER" },
-                error: null,
-              }),
-            }),
-          }),
-        };
-      }
       if (table === "ad_campaigns") {
         return {
           select: vi.fn().mockReturnValue({
@@ -175,24 +159,16 @@ describe("PaymentCheckoutService", () => {
           }),
         };
       }
-      if (table === "merchants") {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: { id: merchantId, name: "Other Merchant", owner_id: "other-user-999" },
-                error: null,
-              }),
-            }),
-          }),
-        };
-      }
       return {};
     });
 
-    const service = new PaymentCheckoutService(mockSupabase, mockMidtransClient);
+    const service = new PaymentCheckoutService(
+      mockSupabase,
+      mockMidtransClient,
+      mockEligibilityService
+    );
     await expect(service.createCheckout(campaignId, userId)).rejects.toThrow(
-      /Anda bukan pemilik merchant/
+      /Anda bukan pemilik aktif merchant/
     );
   });
 });
