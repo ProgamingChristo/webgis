@@ -11,7 +11,6 @@ import {
   Search,
   Send,
   Store,
-  Trash2,
   Upload,
 } from "lucide-react";
 import Link from "next/link";
@@ -47,8 +46,6 @@ const OPERATING_DAYS = [
   ["thursday", "Kamis"], ["friday", "Jumat"], ["saturday", "Sabtu"], ["sunday", "Minggu"],
 ] as const;
 
-const DEFAULT_COORDINATES: [number, number] = [106.827153, -6.175392];
-
 function initialOperatingHours(value: MerchantSubmissionRecord["opening_hours"] | undefined): MerchantOperatingHours {
   return Object.fromEntries(OPERATING_DAYS.map(([key]) => {
     const stored = value?.[key];
@@ -68,19 +65,17 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
   const [address, setAddress] = useState(initialData?.address || "");
   const [openingHours, setOpeningHours] = useState<MerchantOperatingHours>(() => initialOperatingHours(initialData?.opening_hours));
   const [coordinates, setCoordinates] = useState<[number, number]>(
-    initialData?.location?.coordinates || DEFAULT_COORDINATES,
+    initialData?.location?.coordinates || [106.827153, -6.175392],
   );
   const [storedImageUrl, setStoredImageUrl] = useState(initialData?.image_url || "");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState(initialData?.image_url || "");
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState(initialData?.image_url || "");
   const photoObjectUrlRef = useRef<string | null>(null);
-  const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [menuPhotoFile, setMenuPhotoFile] = useState<File | null>(null);
   const [menuPhotoUrl, setMenuPhotoUrl] = useState(initialData?.public_media?.menu_urls?.[0] || "");
   const [menuPhotoPreviewUrl, setMenuPhotoPreviewUrl] = useState(initialData?.public_media?.menu_urls?.[0] || "");
   const menuObjectUrlRef = useRef<string | null>(null);
-  const menuPhotoInputRef = useRef<HTMLInputElement | null>(null);
   const [contactPhone, setContactPhone] = useState(initialData?.business_info?.contact_phone || "");
   const [priceRange, setPriceRange] = useState<MerchantBusinessInfo["price_range"]>(initialData?.business_info?.price_range || null);
   const [paymentMethods, setPaymentMethods] = useState<MerchantBusinessInfo["payment_methods"]>(initialData?.business_info?.payment_methods || ["CASH"]);
@@ -98,76 +93,11 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
   const [claimingId, setClaimingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
-  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
-  const [formResetVersion, setFormResetVersion] = useState(0);
 
   useEffect(() => () => {
     if (photoObjectUrlRef.current) URL.revokeObjectURL(photoObjectUrlRef.current);
     if (menuObjectUrlRef.current) URL.revokeObjectURL(menuObjectUrlRef.current);
   }, []);
-
-  useEffect(() => {
-    if (!showClearConfirmation) return;
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !submitting) setShowClearConfirmation(false);
-    };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [showClearConfirmation, submitting]);
-
-  const hasRegistrationInput = Boolean(
-    initialData ||
-    name.trim() ||
-    description.trim() ||
-    address.trim() ||
-    storedImageUrl ||
-    uploadedPhotoUrl ||
-    photoFile ||
-    menuPhotoUrl ||
-    menuPhotoFile ||
-    contactPhone.trim() ||
-    priceRange ||
-    paymentMethods.some((method) => method !== "CASH") ||
-    paymentMethods.length !== 1 ||
-    coordinates[0] !== DEFAULT_COORDINATES[0] ||
-    coordinates[1] !== DEFAULT_COORDINATES[1] ||
-    JSON.stringify(openingHours) !== JSON.stringify(initialOperatingHours(undefined))
-  );
-
-  const handleClearRegistrationForm = () => {
-    if (photoObjectUrlRef.current) {
-      URL.revokeObjectURL(photoObjectUrlRef.current);
-      photoObjectUrlRef.current = null;
-    }
-    if (menuObjectUrlRef.current) {
-      URL.revokeObjectURL(menuObjectUrlRef.current);
-      menuObjectUrlRef.current = null;
-    }
-    if (photoInputRef.current) photoInputRef.current.value = "";
-    if (menuPhotoInputRef.current) menuPhotoInputRef.current.value = "";
-
-    setName("");
-    setCategory(CATEGORY_OPTIONS[0]);
-    setDescription("");
-    setAddress("");
-    setOpeningHours(initialOperatingHours(undefined));
-    setCoordinates([...DEFAULT_COORDINATES]);
-    setStoredImageUrl("");
-    setPhotoFile(null);
-    setUploadedPhotoUrl("");
-    setPhotoPreviewUrl("");
-    setMenuPhotoFile(null);
-    setMenuPhotoUrl("");
-    setMenuPhotoPreviewUrl("");
-    setContactPhone("");
-    setPriceRange(null);
-    setPaymentMethods(["CASH"]);
-    setError(null);
-    setDuplicateWarning(null);
-    setFormResetVersion((current) => current + 1);
-    setShowClearConfirmation(false);
-  };
 
   const validateRegistration = (requirePhoto: boolean): boolean => {
     if (!name.trim() || name.trim().length < 2) {
@@ -676,7 +606,6 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                   category={category}
                   disabled={submitting}
                   id="merchant-description"
-                  key={`merchant-description-${formResetVersion}`}
                   onChange={setDescription}
                   priceRange={priceRange ?? null}
                   value={description}
@@ -702,7 +631,6 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
 
               <MerchantMapPicker
                 initialCoordinates={coordinates}
-                key={`merchant-map-${formResetVersion}`}
                 onCoordinatesChange={setCoordinates}
               />
             </section>
@@ -834,7 +762,6 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                     accept="image/jpeg,image/png,image/webp"
                     className="sr-only"
                     disabled={submitting}
-                    ref={photoInputRef}
                     onChange={(event) => {
                       const file = event.target.files?.[0] ?? null;
                       if (photoObjectUrlRef.current) {
@@ -875,7 +802,6 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                     accept="image/jpeg,image/png,image/webp"
                     className="sr-only"
                     disabled={submitting}
-                    ref={menuPhotoInputRef}
                     onChange={(event) => {
                       const file = event.target.files?.[0] ?? null;
                       if (menuObjectUrlRef.current) URL.revokeObjectURL(menuObjectUrlRef.current);
@@ -894,31 +820,20 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
               </div>
             </section>
 
-            <div className="flex flex-col gap-3 border-t border-slate-800 pt-6 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-                <Link
-                  href="/umkm"
-                  className="w-full rounded-xl bg-slate-800 px-4 py-2.5 text-center text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-700 sm:w-auto"
-                >
-                  Batal
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setShowClearConfirmation(true)}
-                  disabled={submitting || !hasRegistrationInput}
-                  className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-950/15 px-4 text-xs font-semibold text-rose-200 transition-colors hover:border-rose-400/50 hover:bg-rose-950/30 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
-                >
-                  <Trash2 size={14} />
-                  Bersihkan Form
-                </button>
-              </div>
+            <div className="pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <Link
+                href="/umkm"
+                className="w-full rounded-xl bg-slate-800 px-4 py-2.5 text-center text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-700 sm:w-auto"
+              >
+                Batal
+              </Link>
 
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+              <div className="w-full sm:w-auto flex items-center gap-3">
                 <button
                   type="button"
                   onClick={handleSaveDraft}
                   disabled={submitting}
-                  className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 text-xs font-semibold text-white transition-colors hover:bg-slate-700 disabled:opacity-50 sm:w-auto"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-slate-700 disabled:opacity-50"
                 >
                   <Save size={14} />
                   <span>Simpan Draft</span>
@@ -928,7 +843,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                   type="button"
                   onClick={handleSubmitForReview}
                   disabled={submitting}
-                  className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-xs font-semibold text-white shadow-lg shadow-emerald-950/40 transition-colors hover:bg-emerald-500 disabled:opacity-50 sm:w-auto"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-semibold text-white shadow-lg shadow-emerald-950/40 transition-colors hover:bg-emerald-500 disabled:opacity-50"
                 >
                   <Send size={14} />
                   <span>{submitting ? "Memproses..." : "Ajukan Verifikasi"}</span>
@@ -938,53 +853,6 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
           </form>
         ) : null}
       </div>
-
-      {showClearConfirmation ? (
-        <div
-          aria-labelledby="clear-merchant-form-title"
-          aria-modal="true"
-          className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
-          role="dialog"
-        >
-          <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl sm:p-6">
-            <div className="flex items-start gap-3">
-              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-950/60 text-rose-300">
-                <Trash2 size={18} />
-              </span>
-              <div className="min-w-0">
-                <h2 className="break-words text-base font-bold leading-6 text-white" id="clear-merchant-form-title">
-                  Bersihkan semua input?
-                </h2>
-                <p className="mt-1 text-xs leading-5 text-slate-400">
-                  {initialData
-                    ? "Semua input di layar, lokasi, jadwal, dan foto akan dikosongkan. Draft tersimpan tidak berubah sampai Anda menyimpannya kembali."
-                    : "Semua input, lokasi, jadwal, dan foto yang belum disimpan akan dihapus dan tidak dapat dipulihkan."}
-                </p>
-              </div>
-            </div>
-            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <button
-                autoFocus
-                type="button"
-                onClick={() => setShowClearConfirmation(false)}
-                disabled={submitting}
-                className="min-h-10 rounded-xl border border-slate-700 bg-slate-800 px-4 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700 disabled:opacity-50"
-              >
-                Kembali
-              </button>
-              <button
-                type="button"
-                onClick={handleClearRegistrationForm}
-                disabled={submitting}
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-rose-600 px-4 text-xs font-semibold text-white transition-colors hover:bg-rose-500 disabled:opacity-50"
-              >
-                <Trash2 size={14} />
-                Ya, Bersihkan Form
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

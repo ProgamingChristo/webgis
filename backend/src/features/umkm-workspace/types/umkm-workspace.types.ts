@@ -38,3 +38,16 @@ export interface UmkmWorkspaceSummary {
   recent_submissions: SubmissionBrief[];
   recent_claims: MerchantClaimBrief[];
 }
+
+export type ArchiveOwnedMerchantStatus =
+  | "ARCHIVED"
+  | "ALREADY_ARCHIVED"
+  | "ACTIVE_CAMPAIGNS"
+  | "FORBIDDEN"
+  | "NOT_FOUND";
+
+export interface ArchiveOwnedMerchantResult {
+  merchant_id: string;
+  status: ArchiveOwnedMerchantStatus;
+  blocking_campaigns_count: number;
+}

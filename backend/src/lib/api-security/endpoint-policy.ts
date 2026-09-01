@@ -1331,6 +1331,16 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     purpose: "Get UMKM workspace summary",
   },
   {
+    method: "DELETE",
+    path: "/api/umkm/merchants/[id]",
+    classification: "AUTHENTICATED",
+    role: "AUTHENTICATED",
+    rateLimit: "mutation",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_HEADERS,
+    purpose: "Archive an owned published merchant from GETRA",
+  },
+  {
     method: "GET",
     path: "/api/umkm/merchant-submissions",
     classification: "AUTHENTICATED",

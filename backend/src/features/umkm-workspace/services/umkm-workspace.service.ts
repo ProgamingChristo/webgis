@@ -1,5 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import {
+  ArchiveOwnedMerchantResult,
   MerchantClaimBrief,
   OwnedMerchantBrief,
   SubmissionBrief,
@@ -14,7 +15,8 @@ export class UmkmWorkspaceService {
     const { data: ownedMerchants, error: ownedError } = await this.supabase
       .from("merchants")
       .select("id, name, address, description, metadata, publish_status, verification_status")
-      .eq("owner_id", userId);
+      .eq("owner_id", userId)
+      .eq("publish_status", "PUBLISHED");
 
     if (ownedError) {
       console.error("[UmkmWorkspaceService] Error fetching merchants:", ownedError);
@@ -122,6 +124,35 @@ export class UmkmWorkspaceService {
       recent_claims: claimsList,
     };
   }
+
+  async archiveOwnedMerchant(merchantId: string): Promise<ArchiveOwnedMerchantResult> {
+    const { data, error } = await this.supabase.rpc("archive_owned_merchant", {
+      p_merchant_id: merchantId,
+    });
+
+    if (error) {
+      console.error("[UmkmWorkspaceService] Error archiving merchant:", error);
+      throw new Error("Gagal menghapus usaha dari publikasi GETRA.");
+    }
+
+    if (!isArchiveOwnedMerchantResult(data)) {
+      throw new Error("Respons penghapusan usaha tidak valid.");
+    }
+
+    return data;
+  }
+}
+
+function isArchiveOwnedMerchantResult(value: unknown): value is ArchiveOwnedMerchantResult {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const result = value as Record<string, unknown>;
+  return (
+    typeof result.merchant_id === "string" &&
+    typeof result.blocking_campaigns_count === "number" &&
+    ["ARCHIVED", "ALREADY_ARCHIVED", "ACTIVE_CAMPAIGNS", "FORBIDDEN", "NOT_FOUND"].includes(
+      String(result.status),
+    )
+  );
 }
 
 function readCategory(metadata: unknown, description: unknown) {

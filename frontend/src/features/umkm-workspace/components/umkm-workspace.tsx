@@ -15,6 +15,7 @@ import { useAuth } from "@/src/components/providers/AuthProvider";
 import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
 import { UmkmWorkspaceService } from "../services/umkm-workspace.service";
 import { UmkmWorkspaceSummary } from "../types/umkm-workspace.types";
+import { OwnedMerchantBrief } from "../types/umkm-workspace.types";
 import { UmkmWorkspaceSummaryView } from "./umkm-workspace-summary";
 import { OwnedMerchantList } from "./owned-merchant-list";
 import { SubmissionSummary } from "./submission-summary";
@@ -45,6 +46,19 @@ export function UmkmWorkspace() {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  const archiveMerchant = useCallback(async (merchant: OwnedMerchantBrief) => {
+    await UmkmWorkspaceService.archiveOwnedMerchant(merchant.id);
+    setSummary((current) => {
+      if (!current) return current;
+      const ownedMerchants = current.owned_merchants.filter(({ id }) => id !== merchant.id);
+      return {
+        ...current,
+        verified_merchants_count: ownedMerchants.length,
+        owned_merchants: ownedMerchants,
+      };
+    });
   }, []);
 
   useEffect(() => {
@@ -164,7 +178,10 @@ export function UmkmWorkspace() {
             ) : null}
           </div>
 
-          <OwnedMerchantList merchants={summary?.owned_merchants || []} />
+          <OwnedMerchantList
+            merchants={summary?.owned_merchants || []}
+            onArchiveMerchant={archiveMerchant}
+          />
         </div>
 
         {/* Right Col: Recent Submissions */}

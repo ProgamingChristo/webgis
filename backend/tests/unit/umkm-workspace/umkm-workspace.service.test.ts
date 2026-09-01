@@ -8,6 +8,7 @@ describe("UmkmWorkspaceService", () => {
   beforeEach(() => {
     mockSupabase = {
       from: vi.fn(),
+      rpc: vi.fn(),
     };
     service = new UmkmWorkspaceService(mockSupabase);
   });
@@ -18,17 +19,19 @@ describe("UmkmWorkspaceService", () => {
       if (table === "merchants") {
         return {
           select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({
-              data: [
-                {
-                  id: "m-1",
-                  name: "Warung Kopi Selamat",
-                  address: "Jl. Kebon Jeruk",
-                  publish_status: "PUBLISHED",
-                  verification_status: "VERIFIED",
-                },
-              ],
-              error: null,
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    id: "m-1",
+                    name: "Warung Kopi Selamat",
+                    address: "Jl. Kebon Jeruk",
+                    publish_status: "PUBLISHED",
+                    verification_status: "VERIFIED",
+                  },
+                ],
+                error: null,
+              }),
             }),
           }),
         };
@@ -103,7 +106,9 @@ describe("UmkmWorkspaceService", () => {
       if (table === "merchants") {
         return {
           select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            }),
           }),
         };
       }
@@ -149,7 +154,9 @@ describe("UmkmWorkspaceService", () => {
       if (table === "merchants") {
         return {
           select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            }),
             in: vi.fn().mockResolvedValue({
               data: [{
                 id: "claimed-1", name: "Merchant Claimed", address: null,
@@ -200,7 +207,9 @@ describe("UmkmWorkspaceService", () => {
       if (table === "merchants") {
         return {
           select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            }),
             in: vi.fn().mockResolvedValue({
               data: [{
                 id: "donat-dhika",
@@ -263,5 +272,31 @@ describe("UmkmWorkspaceService", () => {
         status: "PENDING",
       }),
     ]);
+  });
+
+  it("archives a merchant through the owner-scoped database function", async () => {
+    mockSupabase.rpc.mockResolvedValue({
+      data: {
+        merchant_id: "6bf67bb7-e7eb-4b0d-9b62-c58f5861ee97",
+        status: "ARCHIVED",
+        blocking_campaigns_count: 0,
+      },
+      error: null,
+    });
+
+    await expect(
+      service.archiveOwnedMerchant("6bf67bb7-e7eb-4b0d-9b62-c58f5861ee97"),
+    ).resolves.toEqual(expect.objectContaining({ status: "ARCHIVED" }));
+    expect(mockSupabase.rpc).toHaveBeenCalledWith("archive_owned_merchant", {
+      p_merchant_id: "6bf67bb7-e7eb-4b0d-9b62-c58f5861ee97",
+    });
+  });
+
+  it("rejects an invalid archive function response", async () => {
+    mockSupabase.rpc.mockResolvedValue({ data: null, error: null });
+
+    await expect(
+      service.archiveOwnedMerchant("6bf67bb7-e7eb-4b0d-9b62-c58f5861ee97"),
+    ).rejects.toThrow("Respons penghapusan usaha tidak valid.");
   });
 });
