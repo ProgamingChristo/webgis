@@ -7,8 +7,9 @@ import type { Coordinate } from "@/src/types/spatial";
 export type RoutingState = "IDLE" | "LOADING" | "ROUTABLE" | "NOT_ROUTABLE" | "SERVICE_UNAVAILABLE" | "ERROR";
 type Snapshot = { identity: object; state: RoutingState; route: RoutingResult | null; error: string | null; authRequired: boolean };
 
-export function useRouting(input: { origin: Coordinate | null; destination: Coordinate | null; destinationMerchantId?: string }) {
-  const [activeMode, setActiveMode] = useState<RoutingMode>("walking");
+export function useRouting(input: { origin: Coordinate | null; destination: Coordinate | null; destinationMerchantId?: string; enabled?: boolean; mode?: RoutingMode }) {
+  const [selectedMode, setActiveMode] = useState<RoutingMode>("walking");
+  const activeMode = input.mode ?? selectedMode;
   const [attempt, setAttempt] = useState(0);
   const [clearedKey, setClearedKey] = useState<string | null>(null);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
@@ -19,7 +20,7 @@ export function useRouting(input: { origin: Coordinate | null; destination: Coor
   const destinationLat = input.destination?.latitude;
   const destinationLon = input.destination?.longitude;
   const merchantId = input.destinationMerchantId;
-  const ready = [originLat, originLon, destinationLat, destinationLon].every(Number.isFinite);
+  const ready = input.enabled !== false && [originLat, originLon, destinationLat, destinationLon].every(Number.isFinite);
   const key = JSON.stringify([originLat, originLon, destinationLat, destinationLon, activeMode, merchantId, attempt]);
   const identity = useMemo(() => ({ key }), [key]);
 

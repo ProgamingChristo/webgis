@@ -39,6 +39,9 @@ import { GetraMap } from "@/components/getra-map";
 import { useFairDiscovery, FairDiscoveryResults } from "@/src/features/fair-discovery";
 import { useProfilePoster, ProfilePoster } from "@/src/features/umkm-advertising";
 import { useRouting } from "@/src/hooks/use-routing";
+import { useActiveJourney } from "@/src/hooks/use-active-journey";
+import { JourneyControls } from "@/src/features/routing/components/journey-controls";
+import { useAuth } from "@/src/components/providers/AuthProvider";
 import { useDestinationMerchantSearch } from "@/src/features/routing/hooks/use-destination-merchant-search";
 import type { RoutingMode } from "@/src/services/routing.service";
 import {
@@ -1690,14 +1693,26 @@ function GeneralGetraDashboard() {
     userLocation,
   ]);
 
-  const {
-    state: routingState, route, activeMode, setActiveMode, error: routingError,
-    authRequired, requestRoute, clearRoute,
-  } = useRouting({
+  const { context: authContext } = useAuth();
+  const [activeMode, setActiveMode] = useState<RoutingMode>("walking");
+  const journey = useActiveJourney(routeDestination, activeMode);
+  const journeyOpen = journey.state !== "PREVIEW" && journey.state !== "STOPPED";
+  const preview = useRouting({
     origin: routeOrigin?.coordinate ?? null,
     destination: routeDestination,
     destinationMerchantId: routeDestination?.id,
+    enabled: !journeyOpen,
+    mode: activeMode,
   });
+  const { requestRoute, clearRoute } = preview;
+  const route = journeyOpen ? journey.route : preview.route;
+  const routingState = journeyOpen ? route ? "ROUTABLE" : journey.state === "ERROR" ? "ERROR" : "LOADING" : preview.state;
+  const routingError = journeyOpen ? journey.error : preview.error;
+  const authRequired = journeyOpen ? journey.authRequired : preview.authRequired;
+  const journeyPosition = journey.position;
+  useEffect(() => {
+    if (!authContext) journey.controller.sessionLost();
+  }, [authContext, journey.controller]);
 
   const routeDurationMinutes =
     route?.duration_seconds !== null && route?.duration_seconds !== undefined
@@ -2466,6 +2481,7 @@ function GeneralGetraDashboard() {
 
   const handleLocateUser =
     useCallback(() => {
+      if (journeyOpen) { journey.controller.focus(); return; }
       setLocationError(
         null,
       );
@@ -2534,7 +2550,7 @@ function GeneralGetraDashboard() {
           maximumAge: 30000,
         },
       );
-    }, [clearRoute]);
+    }, [clearRoute, journeyOpen, journey.controller]);
 
   const handleUseUserLocationAsOrigin =
     useCallback(() => {
@@ -2606,6 +2622,7 @@ function GeneralGetraDashboard() {
   }, [mapPickMode, selectOrigin, selectDestination]);
 
   const resetRouting = useCallback(() => {
+    journey.controller.stop();
     clearRoute();
     setMapPickMode("NONE");
     setManualRouteStart(null);
@@ -2617,7 +2634,7 @@ function GeneralGetraDashboard() {
     setOriginSearch("");
     setDestinationSearch("");
     setDestinationSearchActive(false);
-  }, [clearRoute]);
+  }, [clearRoute, journey.controller]);
 
   return (
     <main className="workspace">
@@ -2802,18 +2819,21 @@ function GeneralGetraDashboard() {
           </section>
 
           <section className={`route-planner ${routingStyles.planner}`} aria-label="Perencana rute" data-routing-state={routingState}>
+            <JourneyControls journey={journey} canStart={Boolean(!journeyOpen && preview.route && authContext && routeDestination)}
+              onStart={() => { setMapPickMode("NONE"); void journey.controller.start(); }} />
             <div className="route-planner__header">
               <div>
                 <span className="eyebrow">
                   Rute commuter
                 </span>
                 <strong>
-                  Mulai dari mana?
+                  {journeyOpen ? `Menuju ${routeDestination?.name ?? "tujuan"}` : "Mulai dari mana?"}
                 </strong>
               </div>
               <Route size={18} />
             </div>
 
+            <fieldset className={routingStyles.journeyFields} disabled={journeyOpen} hidden={journeyOpen}>
             <div className="route-field">
               <span>
                 Titik mulai
@@ -3058,6 +3078,7 @@ function GeneralGetraDashboard() {
               </button>
             </div>
 
+            </fieldset>
             <div className="route-mode-grid" aria-label="Pilihan moda rute">
               {(["walking", "motorcycle", "car"] as const).map((mode) => {
                 const Icon = mode === "walking" ? Footprints : mode === "motorcycle" ? Bike : Car;
@@ -3069,10 +3090,11 @@ function GeneralGetraDashboard() {
                 </button>;
               })}
             </div>
-            {routingState === "LOADING" ? <p className="route-message" role="status">Menghitung rute...</p> : null}
+            {routingState === "LOADING" && !journeyOpen ? <p className="route-message" role="status">Menghitung rute...</p> : null}
 
             {route && route.distance_meters !== null ? (
               <div className="route-result" data-testid="routing-result" aria-live="polite">
+                {journeyOpen ? <small>Sisa perjalanan · pembaruan rute {journey.updatedAt ? new Date(journey.updatedAt).toLocaleTimeString("id-ID") : ""}</small> : null}
                 <strong>{routeModeLabel(activeMode)} · {formatDistance(route.distance_meters)} · {routeDurationMinutes} menit</strong>
                 {route.has_toll ? <small>Rute ini menggunakan jalan tol.</small> : null}
                 {route.maneuvers.length > 0 ? (
@@ -3727,7 +3749,11 @@ function GeneralGetraDashboard() {
             selectedPropertyId={primaryMode === "business-space" ? selectedPropertyId : null}
             accessibilityEvidence={primaryMode === "accessibility" ? accessibilityEvidence : []}
             selectedAccessibilityEvidenceId={primaryMode === "accessibility" ? selectedAccessibilityEvidenceId : null}
-            userLocation={userLocation}
+            userLocation={journeyOpen ? journeyPosition : userLocation}
+            journeyActive={journey.engaged}
+            journeyFollowing={journey.following}
+            journeyFocusKey={journey.focusKey}
+            onJourneyCameraOverride={journey.controller.suspendFollow}
             onSelect={handleSelect}
             onSelectProperty={loadSelectedPropertyDetail}
             onSelectAccessibilityEvidence={loadSelectedAccessibilityEvidenceDetail}
@@ -3738,7 +3764,7 @@ function GeneralGetraDashboard() {
             onContextualLayerChange={handleContextualLayerChange}
             datasetBounds={datasetBounds}
             datasetOrigin={datasetOrigin}
-            routeOriginPoint={routeOriginPoint}
+            routeOriginPoint={journeyOpen ? null : routeOriginPoint}
             routeDestinationPoint={routeDestinationPoint}
             routeGeometry={route?.geometry}
             serviceAreaGeometry={serviceArea?.geometry ?? null}
