@@ -41,9 +41,10 @@ import { useProfilePoster, ProfilePoster } from "@/src/features/umkm-advertising
 import { useRouting } from "@/src/hooks/use-routing";
 import { useActiveJourney } from "@/src/hooks/use-active-journey";
 import { JourneyControls } from "@/src/features/routing/components/journey-controls";
+import { RouteSelectionSheet } from "@/src/features/routing/components/route-selection-sheet";
 import { useAuth } from "@/src/components/providers/AuthProvider";
 import { useDestinationMerchantSearch } from "@/src/features/routing/hooks/use-destination-merchant-search";
-import type { RoutingMode } from "@/src/services/routing.service";
+import type { RoutePreference, RoutingMode } from "@/src/services/routing.service";
 import {
   mapidLayerService,
   type CanonicalMerchantLayer,
@@ -1695,7 +1696,9 @@ function GeneralGetraDashboard() {
 
   const { context: authContext } = useAuth();
   const [activeMode, setActiveMode] = useState<RoutingMode>("walking");
-  const journey = useActiveJourney(routeDestination, activeMode);
+  const [routePreference, setRoutePreference] = useState<RoutePreference>("FASTEST");
+  const [routeSheetOpen, setRouteSheetOpen] = useState(false);
+  const journey = useActiveJourney(routeDestination, activeMode, routePreference);
   const journeyOpen = journey.state !== "PREVIEW" && journey.state !== "STOPPED";
   const preview = useRouting({
     origin: routeOrigin?.coordinate ?? null,
@@ -1703,6 +1706,7 @@ function GeneralGetraDashboard() {
     destinationMerchantId: routeDestination?.id,
     enabled: !journeyOpen,
     mode: activeMode,
+    preference: routePreference,
   });
   const { requestRoute, clearRoute } = preview;
   const route = journeyOpen ? journey.route : preview.route;
@@ -3074,7 +3078,7 @@ function GeneralGetraDashboard() {
                 onClick={handleSmartAlternative}
                 disabled={merchants.length < 2 || routingState === "LOADING"}
               >
-                Alternatif berikutnya
+                Tujuan UMKM berikutnya
               </button>
             </div>
 
@@ -3111,6 +3115,18 @@ function GeneralGetraDashboard() {
                   </details>
                 ) : null}
               </div>
+            ) : null}
+
+            {route && route.distance_meters !== null && !journeyOpen ? (
+              <RouteSelectionSheet
+                route={route}
+                open={routeSheetOpen}
+                onOpenChange={setRouteSheetOpen}
+                onSelect={preview.selectCandidate}
+                preference={routePreference}
+                onPreferenceChange={setRoutePreference}
+                onStart={() => { setRouteSheetOpen(false); setMapPickMode("NONE"); void journey.controller.start(); }}
+              />
             ) : null}
 
             {routingError ? (
@@ -3767,6 +3783,12 @@ function GeneralGetraDashboard() {
             routeOriginPoint={journeyOpen ? null : routeOriginPoint}
             routeDestinationPoint={routeDestinationPoint}
             routeGeometry={route?.geometry}
+            routeCandidates={journeyOpen ? [] : route?.route_candidates ?? []}
+            selectedRouteId={route?.selected_route_id ?? null}
+            onSelectRoute={(routeId) => {
+              const candidate = route?.route_candidates?.find((item) => item.route_id === routeId);
+              if (candidate && !journeyOpen) preview.selectCandidate(candidate);
+            }}
             serviceAreaGeometry={serviceArea?.geometry ?? null}
             importBoundaries={
               visibleImportBoundaries

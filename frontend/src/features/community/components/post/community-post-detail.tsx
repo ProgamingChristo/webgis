@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "@/src/components/providers/AuthProvider";
 
 import type { CommunityComment } from "../../types/community.types";
 import { CommunityShell } from "../community-shell";
@@ -21,6 +22,7 @@ type CommunityPostDetailProps = {
 export function CommunityPostDetail({ postId }: CommunityPostDetailProps) {
   const router = useRouter();
   const detail = useCommunityPostDetail(postId);
+  const { context } = useAuth();
   const [replyTarget, setReplyTarget] = useState<CommunityComment | null>(null);
   const [activeLocation, setActiveLocation] =
     useState<CommunityPostLocation | null>(null);
@@ -92,6 +94,13 @@ export function CommunityPostDetail({ postId }: CommunityPostDetailProps) {
             detail.toggleReaction(reactionType)
           }
           onViewLocation={setActiveLocation}
+          canDelete={context?.profile?.account_role === "ADMIN" || detail.post.authorId === context?.user.id}
+          deleting={detail.deleting}
+          onDelete={async () => {
+            const deleted = await detail.deletePost();
+            if (deleted) router.replace("/community");
+            return deleted;
+          }}
         />
         <div className={styles.commentComposer}>
           <p className={styles.confirmationCopy}>

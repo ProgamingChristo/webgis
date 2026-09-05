@@ -1795,3 +1795,13 @@
     max-height: none;
   }
 }
+.postDelete { position: relative; display: flex; justify-content: flex-end; }
+.iconButton { width: 36px; height: 36px; display: inline-grid; place-items: center; border: 0; background: transparent; color: #475569; border-radius: 4px; }
+.iconButton:hover, .iconButton:focus-visible { background: #e2e8f0; color: #0f172a; }
+.deleteMenuAction { position: absolute; z-index: 4; top: 38px; right: 0; min-width: 170px; display: flex; gap: 8px; align-items: center; padding: 10px 12px; border: 1px solid #fecaca; background: #fff; color: #b91c1c; border-radius: 5px; box-shadow: 0 8px 24px rgba(15,23,42,.16); }
+.deleteDialog { width: min(420px, calc(100vw - 32px)); border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; color: #0f172a; }
+.deleteDialog::backdrop { background: rgba(15,23,42,.6); }
+.deleteDialog h3 { margin: 0 0 8px; }.deleteDialog p { color: #475569; }
+.deleteDialogActions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.deleteDialogActions button { min-height: 42px; padding: 0 14px; border: 1px solid #94a3b8; background: #fff; border-radius: 5px; }
+.deleteDialogActions .dangerButton { border-color: #b91c1c; background: #b91c1c; color: #fff; }

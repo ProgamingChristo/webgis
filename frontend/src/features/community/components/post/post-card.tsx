@@ -15,12 +15,16 @@ import { PostPhoto } from "../media/post-photo";
 import { ReportButton } from "../moderation/report-button";
 import styles from "../community.module.css";
 import { ReactionBar } from "./reaction-bar";
+import { PostDeleteAction } from "./post-delete-action";
 
 type PostCardProps = {
   post: CommunityFeedItem;
   pendingReaction?: CommunityReactionType | null;
   onViewLocation(location: NonNullable<CommunityFeedItem["location"]>): void;
   onToggleReaction?(postId: string, reactionType: CommunityReactionType): void;
+  canDelete?: boolean;
+  deleting?: boolean;
+  onDelete?(postId: string): Promise<boolean>;
 };
 
 export function PostCard({
@@ -28,6 +32,9 @@ export function PostCard({
   pendingReaction = null,
   onViewLocation,
   onToggleReaction,
+  canDelete = false,
+  deleting = false,
+  onDelete,
 }: PostCardProps) {
   return (
     <article className={styles.postCard}>
@@ -55,6 +62,7 @@ export function PostCard({
           </time>
         </header>
         <ReportButton targetId={post.id} targetType="POST" />
+        {canDelete && onDelete ? <PostDeleteAction deleting={deleting} onDelete={() => onDelete(post.id)} /> : null}
         <Link className={styles.postLink} href={`/community/${post.id}`}>
           <p className={styles.postContent}>{post.content}</p>
         </Link>

@@ -148,8 +148,10 @@ export interface RoutingRequest {
   constraints?: RoutingConstraints;
   destination: Coordinate;
   destination_merchant_id?: string;
+  include_alternatives?: boolean;
   mode: "walking" | "motorcycle" | "car";
   origin: Coordinate;
+  route_preference?: "FASTEST" | "UMKM";
 }
 
 export interface RoutingResult {

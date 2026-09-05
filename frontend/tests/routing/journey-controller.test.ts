@@ -6,6 +6,12 @@ import { RoutingClientError, type RoutingMode, type RoutingResult } from "@/src/
 const p1 = { latitude: -6.2151, longitude: 106.6842 };
 const p2 = { latitude: -6.2161, longitude: 106.6852 };
 const destination = { latitude: -6.218, longitude: 106.687 };
+const journeyRequest = (origin: typeof p1, target = destination) => ({
+  origin,
+  destination: target,
+  include_alternatives: true,
+  route_preference: "FASTEST",
+});
 const payload = (mode: RoutingMode = "walking", distance = 600): RoutingResult => ({
   route_status: "ROUTABLE", mode, reason_code: null, distance_meters: distance, duration_seconds: 450,
   geometry: { type: "LineString", coordinates: [[106.6842, -6.2151], [106.685, -6.216], [106.687, -6.218]] },
@@ -53,7 +59,7 @@ describe("active journey lifecycle (controlled provider fixtures, not live accep
     expect(watchPosition.mock.calls[0][2]).toEqual(policy.geolocation);
     expect(controller.getSnapshot().state).toBe("REQUESTING_LOCATION");
     expect(route).not.toHaveBeenCalled(); fix(); await flush();
-    expect(route.mock.calls[0][0]).toEqual({ origin: p1, destination });
+    expect(route.mock.calls[0][0]).toEqual(journeyRequest(p1));
     expect(controller.getSnapshot()).toMatchObject({ state: "ACTIVE", engaged: true, route: { distance_meters: 600 } });
   });
   it.each([1, 2, 3])("handles geolocation error %s without invented position or route", async (code) => {
@@ -88,7 +94,7 @@ describe("active journey lifecycle (controlled provider fixtures, not live accep
     expect(route).toHaveBeenCalledTimes(1);
     await vi.advanceTimersByTimeAsync(14_000);
     expect(route).toHaveBeenCalledTimes(2);
-    expect(route.mock.calls[1][0]).toEqual({ origin: p2, destination });
+    expect(route.mock.calls[1][0]).toEqual(journeyRequest(p2));
     expect(controller.getSnapshot().state).toBe("ACTIVE");
   });
   it("does not reroute for stationary GPS updates even after interval", async () => {
@@ -110,7 +116,7 @@ describe("active journey lifecycle (controlled provider fixtures, not live accep
     await controller.start(); fix(); await flush(); fix(p2);
     controller.configure({ destination, mode: mode === "walking" ? "car" : "walking" });
     controller.configure({ destination, mode }); await flush();
-    expect(route.mock.calls.at(-1)?.[0]).toEqual({ origin: p2, destination });
+    expect(route.mock.calls.at(-1)?.[0]).toEqual(journeyRequest(p2));
     expect(controller.getSnapshot().route?.mode).toBe(mode);
     expect(watchPosition).toHaveBeenCalledTimes(1);
   });
@@ -119,7 +125,7 @@ describe("active journey lifecycle (controlled provider fixtures, not live accep
     const b = { latitude: -6.219, longitude: 106.689 };
     controller.configure({ destination: b, mode: "walking" });
     expect(controller.getSnapshot().route).toBeNull(); await flush();
-    expect(route.mock.calls.at(-1)?.[0]).toEqual({ origin: p1, destination: b });
+    expect(route.mock.calls.at(-1)?.[0]).toEqual(journeyRequest(p1, b));
   });
   it("rate bounds repeated manual refresh", async () => {
     await controller.start(); fix(); await flush();

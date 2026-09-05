@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import { RoutingClientError, routingService, type RoutingMode, type RoutingResult } from "../services/routing.service";
+import { RoutingClientError, routingService, type RoutePreference, type RoutingCandidate, type RoutingMode, type RoutingResult } from "../services/routing.service";
 import type { Coordinate } from "@/src/types/spatial";
 
 export type RoutingState = "IDLE" | "LOADING" | "ROUTABLE" | "NOT_ROUTABLE" | "SERVICE_UNAVAILABLE" | "ERROR";
 type Snapshot = { identity: object; state: RoutingState; route: RoutingResult | null; error: string | null; authRequired: boolean };
 
-export function useRouting(input: { origin: Coordinate | null; destination: Coordinate | null; destinationMerchantId?: string; enabled?: boolean; mode?: RoutingMode }) {
+export function useRouting(input: { origin: Coordinate | null; destination: Coordinate | null; destinationMerchantId?: string; enabled?: boolean; mode?: RoutingMode; preference?: RoutePreference }) {
   const [selectedMode, setActiveMode] = useState<RoutingMode>("walking");
+  const [selectedPreference, setRoutePreference] = useState<RoutePreference>("FASTEST");
+  const routePreference = input.preference ?? selectedPreference;
   const activeMode = input.mode ?? selectedMode;
   const [attempt, setAttempt] = useState(0);
   const [clearedKey, setClearedKey] = useState<string | null>(null);
@@ -21,7 +23,7 @@ export function useRouting(input: { origin: Coordinate | null; destination: Coor
   const destinationLon = input.destination?.longitude;
   const merchantId = input.destinationMerchantId;
   const ready = input.enabled !== false && [originLat, originLon, destinationLat, destinationLon].every(Number.isFinite);
-  const key = JSON.stringify([originLat, originLon, destinationLat, destinationLon, activeMode, merchantId, attempt]);
+  const key = JSON.stringify([originLat, originLon, destinationLat, destinationLon, activeMode, merchantId, routePreference, attempt]);
   const identity = useMemo(() => ({ key }), [key]);
 
   useEffect(() => {
@@ -33,6 +35,8 @@ export function useRouting(input: { origin: Coordinate | null; destination: Coor
       origin: { latitude: originLat!, longitude: originLon! },
       destination: { latitude: destinationLat!, longitude: destinationLon! },
       destination_merchant_id: merchantId,
+      include_alternatives: true,
+      route_preference: routePreference,
     }, activeMode, controller.signal).then((route) => {
       if (controller.signal.aborted || sequence.current !== id) return;
       const routable = route.route_status === "ROUTABLE";
@@ -57,7 +61,7 @@ export function useRouting(input: { origin: Coordinate | null; destination: Coor
       });
     });
     return () => { controller.abort(); };
-  }, [ready, key, identity, clearedKey, originLat, originLon, destinationLat, destinationLon, merchantId, activeMode]);
+  }, [ready, key, identity, clearedKey, originLat, originLon, destinationLat, destinationLon, merchantId, activeMode, routePreference]);
 
   const requestRoute = useCallback(() => setAttempt((value) => value + 1), []);
   const clearRoute = useCallback(() => {
@@ -69,12 +73,17 @@ export function useRouting(input: { origin: Coordinate | null; destination: Coor
 
   // Hide old geometry immediately when input identity changes, before effects run.
   const current = snapshot?.identity === identity ? snapshot : null;
+  const selectCandidate = useCallback((candidate: RoutingCandidate) => {
+    setSnapshot((currentSnapshot) => currentSnapshot?.identity === identity && currentSnapshot.route
+      ? { ...currentSnapshot, route: { ...currentSnapshot.route, ...candidate, selected_route_id: candidate.route_id } }
+      : currentSnapshot);
+  }, [identity]);
   const idle = !ready || key === clearedKey;
   return {
     state: idle ? "IDLE" as const : current?.state ?? "LOADING" as const,
     route: idle ? null : current?.route ?? null,
     error: idle ? null : current?.error ?? null,
     authRequired: !idle && Boolean(current?.authRequired),
-    activeMode, setActiveMode, requestRoute, clearRoute,
+    activeMode, setActiveMode, routePreference, setRoutePreference, selectCandidate, requestRoute, clearRoute,
   };
 }

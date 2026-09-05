@@ -3,6 +3,7 @@ import "server-only";
 import { createTimeoutFetch, type FetchImplementation } from "@/src/lib/http/timeout-fetch";
 import type {
   NavigationManeuver,
+  NavigationRouteCandidate,
   NavigationRouteRequest,
   NavigationRouteResult,
   RoutingMode,
@@ -10,10 +11,14 @@ import type {
 } from "@/src/features/routing/routing.types";
 
 type ValhallaResponse = {
+  alternates?: Array<{ trip?: ValhallaTrip }>;
   error?: string;
   error_code?: number;
   error_message?: string;
-  trip?: {
+  trip?: ValhallaTrip;
+};
+
+type ValhallaTrip = {
     legs?: Array<{
       maneuvers?: Array<{
         instruction?: string;
@@ -33,7 +38,6 @@ type ValhallaResponse = {
       time?: number;
     };
     warnings?: Array<{ description?: string; text?: string }>;
-  };
 };
 
 type ValhallaManeuver = {
@@ -88,6 +92,7 @@ export class ValhallaRoutingProvider implements RoutingProvider {
         directions_type: "instructions",
         language: "id-ID",
         units: "kilometers",
+        alternates: input.includeAlternatives ? 2 : 0,
       }),
       signal,
     });
@@ -117,14 +122,8 @@ function costingOptions(mode: RoutingMode) {
 }
 
 function normalizeRoute(mode: RoutingMode, payload: ValhallaResponse): NavigationRouteResult {
-  const trip = payload.trip;
-  const summary = trip?.summary;
-  const encodedShapes = trip?.legs?.map((leg) => leg.shape).filter(isNonEmptyString) ?? [];
-  const geometry = combineShapes(encodedShapes);
-  const distanceMeters = finiteNumber(summary?.length) * 1_000;
-  const durationSeconds = finiteNumber(summary?.time);
-
-  if (!geometry || distanceMeters <= 0 || durationSeconds <= 0) {
+  const primary = normalizeCandidate(mode, payload.trip, 0, true);
+  if (!primary) {
     return failedRoute(
       mode,
       "SERVICE_UNAVAILABLE",
@@ -132,23 +131,72 @@ function normalizeRoute(mode: RoutingMode, payload: ValhallaResponse): Navigatio
       "ROUTING_PROVIDER_INVALID_RESPONSE",
     );
   }
+  const candidates = [primary, ...(payload.alternates ?? []).flatMap((alternate, index) => {
+    const candidate = normalizeCandidate(mode, alternate.trip, index + 1, false);
+    return candidate ? [candidate] : [];
+  })];
+  return {
+    ...candidateResult(primary),
+    route_candidates: candidates,
+    route_preference: "FASTEST",
+    selected_route_id: primary.route_id,
+    umkm_preference_available: false,
+    umkm_enrichment_status: "NOT_REQUESTED",
+  };
+}
 
+function normalizeCandidate(
+  mode: RoutingMode,
+  trip: ValhallaTrip | undefined,
+  rank: number,
+  primary: boolean,
+): NavigationRouteCandidate | null {
+  const summary = trip?.summary;
+  const encodedShapes = trip?.legs?.map((leg) => leg.shape).filter(isNonEmptyString) ?? [];
+  let geometry: ReturnType<typeof combineShapes>;
+  try {
+    geometry = combineShapes(encodedShapes);
+  } catch {
+    return null;
+  }
+  const distanceMeters = finiteNumber(summary?.length) * 1_000;
+  const durationSeconds = finiteNumber(summary?.time);
+
+  if (!geometry || distanceMeters <= 0 || durationSeconds <= 0) return null;
   return {
     distance_meters: Math.round(distanceMeters),
     duration_seconds: Math.round(durationSeconds),
-    engine: "valhalla",
     geometry,
     has_ferry: Boolean(summary?.has_ferry),
     has_highway: Boolean(summary?.has_highway),
     has_toll: Boolean(summary?.has_toll),
     maneuvers: (trip?.legs ?? []).flatMap((leg) => normalizeManeuvers(leg.maneuvers)),
     mode,
+    is_primary: primary,
+    nearby_umkm_count: null,
+    route_category: primary ? "FASTEST" : "ALTERNATIVE",
+    route_id: `route-${rank}`,
+    route_rank: rank,
+    verified_umkm_count: null,
+    distinct_category_count: null,
+  };
+}
+
+function candidateResult(candidate: NavigationRouteCandidate): NavigationRouteResult {
+  return {
+    distance_meters: candidate.distance_meters,
+    duration_seconds: candidate.duration_seconds,
+    engine: "valhalla",
+    geometry: candidate.geometry,
+    has_ferry: candidate.has_ferry,
+    has_highway: candidate.has_highway,
+    has_toll: candidate.has_toll,
+    maneuvers: candidate.maneuvers,
+    mode: candidate.mode,
     reason_code: null,
     route_status: "ROUTABLE",
     source: "OPENSTREETMAP",
-    warnings: (trip?.warnings ?? [])
-      .map((warning) => warning.description ?? warning.text ?? "")
-      .filter(isNonEmptyString),
+    warnings: [],
   };
 }
 

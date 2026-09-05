@@ -352,6 +352,16 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     purpose: "Read GETRA Community post detail thread header",
   },
   {
+    method: "DELETE",
+    path: "/api/community/posts/[postId]",
+    classification: "AUTHENTICATED",
+    role: "AUTHENTICATED",
+    rateLimit: "mutation",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_HEADERS,
+    purpose: "Soft-delete an owned Community post or administratively moderate one post",
+  },
+  {
     method: "GET",
     path: "/api/community/posts/[postId]/comments",
     classification: "AUTHENTICATED",

@@ -369,6 +369,7 @@ export type CommunityPostRepository = {
   createPost(input: CreateCommunityPostInput): Promise<CommunityFeedItem>;
   listFeed(query: CommunityFeedQuery): Promise<CommunityFeedPage>;
   getPost(postId: string): Promise<CommunityFeedItem>;
+  deletePost(postId: string): Promise<{ deletionActorRole: "OWNER" | "ADMIN" }>;
   listComments(
     postId: string,
     query: CommunityCommentQuery,

@@ -1,7 +1,8 @@
 "use client";
 
-import { syncWalkingRoute } from "@/src/features/routing/route-layer";
+import { bindRouteAlternativeSelection, syncRouteAlternatives, syncWalkingRoute } from "@/src/features/routing/route-layer";
 import { isRouteGeometry } from "@/src/features/routing/route-geometry";
+import type { RoutingCandidate } from "@/src/services/routing.service";
 
 import type * as GeoJSON from "geojson";
 
@@ -86,6 +87,9 @@ type GetraMapProps = {
   routeOriginPoint?: RoutePoint | null;
   routeDestinationPoint?: RoutePoint | null;
   routeGeometry?: GeoJSON.LineString | null;
+  routeCandidates?: RoutingCandidate[];
+  selectedRouteId?: string | null;
+  onSelectRoute?: (routeId: string) => void;
   serviceAreaGeometry?: GeoJSON.MultiLineString | null;
   importBoundaries?: GeoJSON.FeatureCollection<GeoJSON.MultiPolygon> | null;
   administrativeBoundaries?: AdministrativeBoundaryCollection;
@@ -591,6 +595,9 @@ export function GetraMap({
   routeOriginPoint,
   routeDestinationPoint,
   routeGeometry,
+  routeCandidates = [],
+  selectedRouteId = null,
+  onSelectRoute,
   serviceAreaGeometry,
   importBoundaries,
   administrativeBoundaries = { type: "FeatureCollection", features: [] },
@@ -1849,6 +1856,7 @@ export function GetraMap({
         map,
         routeGeometry,
       );
+      syncRouteAlternatives(map, journeyActive ? [] : routeCandidates, selectedRouteId);
       syncWalkingServiceArea(map, serviceAreaGeometry);
     };
 
@@ -1856,6 +1864,7 @@ export function GetraMap({
     updateRoute();
     if (!map.isStyleLoaded()) map.once("idle", updateRoute);
 
+    const candidateGeometries = routeCandidates.map((candidate) => candidate.geometry).filter(isRouteGeometry);
     if (isRouteGeometry(routeGeometry) && !journeyActive) {
       if (lastFocusedRouteGeometry.current !== routeGeometry) {
         lastFocusedRouteGeometry.current = routeGeometry;
@@ -1872,6 +1881,7 @@ export function GetraMap({
             ]);
           },
         );
+        candidateGeometries.forEach((geometry) => geometry.coordinates.forEach((coordinate) => bounds.extend(coordinate)));
 
         if (!bounds.isEmpty()) {
           const container = map.getContainer();
@@ -1897,9 +1907,13 @@ export function GetraMap({
     } else {
       lastFocusedRouteGeometry.current = null;
     }
-    return () => { map.off("idle", updateRoute); };
+    const unbind = onSelectRoute ? bindRouteAlternativeSelection(map, onSelectRoute) : undefined;
+    return () => { map.off("idle", updateRoute); unbind?.(); };
   }, [
     routeGeometry,
+    routeCandidates,
+    selectedRouteId,
+    onSelectRoute,
     serviceAreaGeometry,
     styleRevision,
     journeyActive,

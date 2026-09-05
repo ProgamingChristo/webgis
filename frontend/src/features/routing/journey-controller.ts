@@ -1,4 +1,4 @@
-import { RoutingClientError, parseRoutingResult, type RoutingMode, type RoutingResult, type RoutingRequest } from "@/src/services/routing.service";
+import { RoutingClientError, parseRoutingResult, type RoutePreference, type RoutingMode, type RoutingResult, type RoutingRequest } from "@/src/services/routing.service";
 import type { Coordinate } from "@/src/types/spatial";
 import { JOURNEY_POLICY as policy, proximityMeters, validCoordinate } from "./journey-policy";
 
@@ -8,7 +8,7 @@ export type JourneySnapshot = {
   state: JourneyState; engaged: boolean; position: JourneyFix | null; route: RoutingResult | null;
   error: string | null; authRequired: boolean; following: boolean; updatedAt: number | null; routeKey: string; focusKey: number;
 };
-type Config = { destination: Coordinate | null; mode: RoutingMode };
+type Config = { destination: Coordinate | null; mode: RoutingMode; preference?: RoutePreference };
 type Dependencies = {
   geolocation: () => Pick<Geolocation, "watchPosition" | "clearWatch"> | null;
   authenticated: () => Promise<boolean>;
@@ -140,7 +140,8 @@ export class JourneyController {
     this.emit({ route: null, updatedAt: null, error: null, state: this.lastOrigin ? "REROUTING" : "STARTING" });
     this.lastOrigin = origin;
     void this.deps.route({ origin: { latitude: origin.latitude, longitude: origin.longitude },
-      destination: { latitude: destination.latitude, longitude: destination.longitude } }, mode, controller.signal)
+      destination: { latitude: destination.latitude, longitude: destination.longitude },
+      include_alternatives: true, route_preference: this.config.preference ?? "FASTEST" }, mode, controller.signal)
       .then((value) => {
         if (generation !== this.generation || controller.signal.aborted) return;
         const route = parseRoutingResult(value, mode);
@@ -161,7 +162,7 @@ export class JourneyController {
           route.distance_meters! <= policy.arrivalRouteMeters;
         if (arrived) this.cleanup();
         this.emit({ state: arrived ? "ARRIVED" : "ACTIVE", route, error: null,
-          routeKey: JSON.stringify([destination.latitude, destination.longitude, mode]),
+          routeKey: JSON.stringify([destination.latitude, destination.longitude, mode, this.config.preference ?? "FASTEST"]),
           updatedAt: this.now(), engaged: !arrived, following: !arrived && this.snapshot.following });
       }).catch((error: unknown) => {
         if (generation !== this.generation || controller.signal.aborted) return;

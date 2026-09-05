@@ -21,6 +21,7 @@ export const maxDuration = 15;
 
 type CommunityPostDetailEndpointService = {
   getPost(postId: unknown): Promise<CommunityFeedItem>;
+  deletePost(postId: unknown): Promise<{ deletionActorRole: "OWNER" | "ADMIN" }>;
 };
 
 export type CommunityPostDetailHandlerDependencies = {
@@ -74,4 +75,23 @@ export function createCommunityPostDetailHandler(
 }
 
 export const GET = createCommunityPostDetailHandler();
+export function createCommunityPostDeleteHandler(
+  dependencies: CommunityPostDetailHandlerDependencies = defaultDependencies,
+) {
+  return async function DELETE(
+    request: NextRequest,
+    context: { params: Promise<{ postId: string }> },
+  ): Promise<NextResponse> {
+    const requestId = getRequestId(request);
+    return withApiLogger(request, requestId, async () => {
+      const userId = await dependencies.authenticate(request);
+      await dependencies.rateLimiter.checkLimit(request, `${userId}:community:posts:delete`);
+      const { postId } = await context.params;
+      const result = await dependencies.createService(request).deletePost(postId);
+      return createSuccessResponse(requestId, result);
+    });
+  };
+}
+
+export const DELETE = createCommunityPostDeleteHandler();
 export const OPTIONS = createOptionsHandler("/api/community/posts/[postId]");

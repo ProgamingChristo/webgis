@@ -53,6 +53,42 @@ describe("ValhallaRoutingProvider", () => {
     expect(result.distance_meters).toBeNull();
   });
 
+  it("requests and normalizes only genuine provider alternatives", async () => {
+    const payload = routePayload();
+    const alternate = routePayload().trip;
+    alternate.summary.length = 1.5;
+    alternate.summary.time = 510;
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      ...payload,
+      alternates: [{ trip: alternate }],
+    }), { status: 200 }));
+    const provider = new ValhallaRoutingProvider("http://valhalla:8002", fetchMock, 1_000);
+
+    const result = await provider.route({ ...input, mode: "walking", includeAlternatives: true });
+    const request = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+
+    expect(request.alternates).toBe(2);
+    expect(result.route_candidates).toHaveLength(2);
+    expect(result.route_candidates?.[1]).toMatchObject({
+      route_id: "route-1", route_rank: 1, route_category: "ALTERNATIVE",
+      distance_meters: 1_500, duration_seconds: 510, mode: "walking",
+    });
+  });
+
+  it("discards a malformed alternate while retaining the valid primary", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      ...routePayload(),
+      alternates: [{ trip: { summary: { length: 2, time: 600 }, legs: [{ shape: "?" }] } }],
+    }), { status: 200 }));
+    const provider = new ValhallaRoutingProvider("http://valhalla:8002", fetchMock, 1_000);
+
+    const result = await provider.route({ ...input, mode: "car", includeAlternatives: true });
+
+    expect(result.route_status).toBe("ROUTABLE");
+    expect(result.route_candidates).toHaveLength(1);
+    expect(result.geometry?.coordinates.length).toBeGreaterThan(1);
+  });
+
   it("distinguishes coordinates outside the loaded graph", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
       error_code: 171,
