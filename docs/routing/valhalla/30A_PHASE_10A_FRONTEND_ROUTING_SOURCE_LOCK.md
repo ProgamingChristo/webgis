@@ -113,9 +113,13 @@ env ignore checks, and added-line secret-pattern scan passed. Unit-test session
 strings are explicit fake test fixtures, not deployed credentials. This is a
 scoped release-diff audit, not an audit of all inherited repository history.
 
-Shipping frontend app/components/src were searched for acceptance coordinates,
-Valhalla/private-provider URLs, port 8002 and the VM address: no match.
-Real coordinates and metrics remain in tests and documentation only.
+Shipping routing logic was searched for acceptance coordinates, private-provider
+URLs, port 8002 and the VM address: no match. The repository-wide expanded scan
+also found the pre-existing Jakarta map center (106.8272,-6.1754) in Community,
+Community Contributions and Business Space baseline code. Those are non-routing
+map defaults, not routing A/B constants or Phase 10 additions, and were left
+unchanged. Acceptance route fixtures/metrics remain in tests and documentation;
+user-selected coordinates remain the source of routing requests.
 
 ```text
 HARDCODED_ACCEPTANCE_COORDINATES=NONE
