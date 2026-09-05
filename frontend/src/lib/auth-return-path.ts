@@ -1,17 +1,19 @@
 const fallback = "/app";
+const unsafePathCharacters = /[\\\u0000-\u0020\u007f]/;
+const markdownLinkDelimiter = /\]\s*\(/;
 
 export function safeReturnPath(value: string | null | undefined): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//") || /[\\\u0000-\u0020\u007f]/.test(value)) return fallback;
+  if (!value || !value.startsWith("/") || value.startsWith("//") || unsafePathCharacters.test(value) || markdownLinkDelimiter.test(value)) return fallback;
   try {
     const url = new URL(value, "https://getra.invalid");
     let path = url.pathname;
     for (let i = 0; i < 4; i++) {
-      if (path.startsWith("//") || /[\\\u0000-\u0020\u007f]/.test(path)) return fallback;
+      if (path.startsWith("//") || unsafePathCharacters.test(path) || markdownLinkDelimiter.test(path)) return fallback;
       const decoded = decodeURIComponent(path);
       if (decoded === path) break;
       path = decoded;
     }
-    if (url.origin !== "https://getra.invalid" || path.includes("%") || path.startsWith("//") || /[\\\u0000-\u0020\u007f]/.test(path)) return fallback;
+    if (url.origin !== "https://getra.invalid" || path.includes("%") || path.startsWith("//") || unsafePathCharacters.test(path) || markdownLinkDelimiter.test(path)) return fallback;
     if (["/login", "/signup", "/onboarding"].includes(path.replace(/\/$/, ""))) return fallback;
     return url.pathname + url.search + url.hash;
   } catch { return fallback; }
