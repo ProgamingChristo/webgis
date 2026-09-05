@@ -158,11 +158,13 @@ try {
     assert.equal((await apiRead("/api/admin/mission/sync")).http,200);
     await page.waitForTimeout(2000);await snapshot("mission-desktop");
     const failure=async route=>route.request().method()==="GET"?route.fulfill({status:500,contentType:"application/json",body:JSON.stringify({success:false,error:{code:"DATABASE_ERROR",message:"Uji status gagal"}})}):route.abort();
-    await page.route("**/api/admin/mission/sync",failure);await page.reload();await page.getByText("Uji status gagal",{exact:true}).waitFor();
+    await page.route("**/api/admin/mission/sync",failure);await button("Muat ulang status sinkronisasi").click();await page.getByText("Uji status gagal",{exact:true}).waitFor();
     assert.equal(await page.getByText("Siap",{exact:true}).count(),0);
     assert((await page.locator("body").innerText()).includes("Status belum dapat dipastikan"));
     await snapshot("mission-controlled-error");await page.unroute("**/api/admin/mission/sync",failure);
-    await page.reload();await page.waitForTimeout(2000);assert.equal((await apiRead("/api/admin/mission/sync")).http,200);
+    const recovery=page.waitForResponse(r=>new URL(r.url()).pathname==="/api/admin/mission/sync"&&r.request().method()==="GET");
+    await button("Muat ulang status sinkronisasi").click();assert.equal((await recovery).status(),200);
+    await page.waitForTimeout(1000);assert.equal(await page.getByText("Uji status gagal",{exact:true}).count(),0);
     await page.setViewportSize({width:390,height:844});await snapshot("mission-mobile-recovered");
   });
 } catch(error) { evidence.fatal=clean(error.message).slice(0,500); }
