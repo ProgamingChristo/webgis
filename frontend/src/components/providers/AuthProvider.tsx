@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 
 import { GetraLogo } from "@/src/components/getra-ui";
 import { getUserContext, type UserContext } from "@/src/lib/auth-client";
+import { loginPath, postLoginPath } from "@/src/lib/auth-return-path";
 
 interface AuthContextValue {
   context: UserContext | null;
@@ -54,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const isAdminRoute = pathname.startsWith("/admin");
 
       if (!result && !isPublicRoute && !isApiRoute) {
-        router.replace("/login");
+        router.replace(loginPath(window.location.pathname + window.location.search + window.location.hash));
         return;
       }
 
@@ -68,11 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (result && isAuthEntryRoute) {
-        if (!result.profile?.onboarding_complete) {
-          router.replace("/onboarding");
-        } else {
-          router.replace("/app");
-        }
+        router.replace(postLoginPath(window.location.search, Boolean(result.profile?.onboarding_complete)));
         return;
       }
 

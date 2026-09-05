@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Database, Megaphone, RefreshCw, Store } from "lucide-react";
+import { BarChart3, Database, Megaphone, RefreshCw, ShieldCheck, Store } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -19,6 +19,7 @@ const ADMIN_NAV = [
   { href: "/admin/umkm", label: "Review UMKM", icon: Store },
   { href: "/admin/mission-data", label: "Mission Data", icon: RefreshCw },
   { href: "/admin/import", label: "Import Data", icon: Database },
+  { href: "/admin/community/contributions", label: "Moderasi Kontribusi", icon: ShieldCheck },
 ];
 
 export function GetraAppShell({ actions, children, description, eyebrow = "GETRA Application", title, tone = "general", showContextNavigation = true }: GetraAppShellProps) {

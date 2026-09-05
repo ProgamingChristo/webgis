@@ -1,9 +1,9 @@
 "use client";
 
-import { Building2, Database, LogOut, Menu, RefreshCw, Store, UsersRound, MapPinned, X } from "lucide-react";
+import { Building2, Database, LogOut, Menu, RefreshCw, ShieldCheck, Store, UsersRound, MapPinned, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import { AccountMenu } from "@/src/components/profile/account-menu";
 import { useAuth } from "@/src/components/providers/AuthProvider";
@@ -24,10 +24,25 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
   const { context } = useAuth();
   const { setActiveExperience } = useStakeholder();
   const [menuOpen, setMenuOpen] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const closeTriggerRef = useRef<HTMLButtonElement>(null);
   const [utilityOpen, setUtilityOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const isAdmin = context?.profile?.account_role === "ADMIN";
   const isActive = (href: string) => pathname === href || (href !== "/app" && pathname.startsWith(`${href}/`));
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const dialog = dialogRef.current;
+    const trigger = menuTriggerRef.current;
+    dialog?.showModal();
+    closeTriggerRef.current?.focus();
+    return () => {
+      dialog?.close();
+      if (trigger?.isConnected) trigger.focus();
+    };
+  }, [menuOpen]);
 
   async function handleLogout() {
     if (loggingOut) return;
@@ -79,6 +94,7 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
                   <Link href="/admin/umkm" onClick={closeMenus}><Store size={16} />Review UMKM</Link>
                   <Link href="/admin/mission-data" onClick={closeMenus}><RefreshCw size={16} />Mission Data</Link>
                   <Link href="/admin/import" onClick={closeMenus}><Database size={16} />Import Data</Link>
+                  <Link href="/admin/community/contributions" onClick={closeMenus}><ShieldCheck size={16} />Moderasi Kontribusi</Link>
                 </>
               ) : null}
               <button className="getra-utility-menu__logout" disabled={loggingOut} onClick={handleLogout} type="button">
@@ -88,14 +104,14 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
           ) : null}
         </div>
         <AccountMenu context={context} />
-        <button aria-expanded={menuOpen} aria-label="Buka menu GETRA" className="getra-global-header__menu" onClick={() => setMenuOpen(true)} type="button"><Menu size={18} /><span>Menu</span></button>
+        <button ref={menuTriggerRef} aria-expanded={menuOpen} aria-label="Buka menu GETRA" className="getra-global-header__menu" onClick={() => setMenuOpen(true)} type="button"><Menu size={18} /><span>Menu</span></button>
       </div>
 
       {menuOpen ? (
-        <div className="getra-app-drawer" role="dialog" aria-modal="true" aria-label="Menu GETRA">
-          <button className="getra-app-drawer__backdrop" onClick={closeMenus} type="button" aria-label="Tutup menu" />
+        <dialog ref={dialogRef} className="getra-app-drawer" aria-label="Menu GETRA" onCancel={closeMenus}>
+          <button className="getra-app-drawer__backdrop" onClick={closeMenus} type="button" aria-label="Tutup menu" tabIndex={-1} />
           <section className="getra-app-drawer__panel">
-            <div className="getra-app-drawer__header"><GetraLogo /><button aria-label="Tutup menu" onClick={closeMenus} type="button"><X size={18} /></button></div>
+            <div className="getra-app-drawer__header"><GetraLogo /><button ref={closeTriggerRef} aria-label="Tutup menu" onClick={closeMenus} type="button"><X size={18} /></button></div>
             <nav className="getra-app-drawer__nav" aria-label="Navigasi utama GETRA">
               {GLOBAL_NAV.map((item) => {
                 const Icon = item.icon;
@@ -112,6 +128,7 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
                   <Link href="/admin/umkm" onClick={closeMenus}><Store size={17} />Review UMKM</Link>
                   <Link href="/admin/mission-data" onClick={closeMenus}><RefreshCw size={17} />Mission Data</Link>
                   <Link href="/admin/import" onClick={closeMenus}><Database size={17} />Import Data</Link>
+                  <Link href="/admin/community/contributions" onClick={closeMenus}><ShieldCheck size={17} />Moderasi Kontribusi</Link>
                 </>
               ) : null}
             </nav>
@@ -120,7 +137,7 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
               <button className="getra-app-logout getra-app-drawer__logout" disabled={loggingOut} onClick={handleLogout} type="button"><LogOut size={15} />{loggingOut ? "Keluar..." : "Keluar"}</button>
             </div>
           </section>
-        </div>
+        </dialog>
       ) : null}
     </header>
   );

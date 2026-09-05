@@ -1,4 +1,5 @@
 "use client";
+import { postLoginPath } from "@/src/lib/auth-return-path";
 
 import Link from "next/link";
 
@@ -163,9 +164,7 @@ export default function LoginPage() {
         false;
 
       router.replace(
-        onboardingComplete
-          ? "/app"
-          : "/onboarding",
+        postLoginPath(window.location.search, onboardingComplete),
       );
 
       router.refresh();

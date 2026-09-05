@@ -11,6 +11,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "@/src/components/providers/AuthProvider";
+import { safeReturnPath } from "@/src/lib/auth-return-path";
 import { authenticatedFetch } from "@/src/lib/auth-client";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
 import styles from "./onboarding.module.css";
@@ -40,6 +43,8 @@ type StakeholderMode =
   (typeof STAKEHOLDER_MODES)[number]["id"];
 
 export default function OnboardingPage() {
+  const { context, refresh } = useAuth();
+  const editing = Boolean(context?.profile?.onboarding_complete);
   const router =
     useRouter();
 
@@ -47,7 +52,7 @@ export default function OnboardingPage() {
     selectedModes,
     setSelectedModes,
   ] =
-    useState<StakeholderMode[]>([]);
+    useState<StakeholderMode[]>(() => [...(context?.stakeholder_modes ?? [])]);
 
   const [
     loading,
@@ -115,7 +120,8 @@ export default function OnboardingPage() {
           );
         }
 
-        router.replace("/app");
+        await refresh();
+        router.replace(safeReturnPath(new URLSearchParams(window.location.search).get("returnTo")));
         router.refresh();
       } catch (err: unknown) {
         setErrorMsg(
@@ -195,7 +201,7 @@ export default function OnboardingPage() {
             </span>
 
             <h2>
-              Selesaikan onboarding
+              {editing ? "Kelola pengalaman" : "Selesaikan onboarding"}
             </h2>
 
             <p>
@@ -254,6 +260,7 @@ export default function OnboardingPage() {
                 <button
                   key={mode.id}
                   type="button"
+                  aria-pressed={isSelected}
                   className={`${styles.modeCard} ${isSelected ? styles.selected : ""}`}
                   onClick={() => toggleMode(mode.id)}
                 >
@@ -288,13 +295,13 @@ export default function OnboardingPage() {
           ) : null}
 
           <div className={styles.footer}>
-            <button
+            {editing ? <Link className={styles.skipBtn} href="/settings/profile">Batal</Link> : <button
               className={styles.skipBtn}
               onClick={() => handleSubmit()}
               disabled={loading}
             >
               Lewati, gunakan General
-            </button>
+            </button>}
 
             <button
               className={styles.submitBtn}
