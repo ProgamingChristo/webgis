@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // A separate output directory permits an isolated routing preview beside the owner's dev server.
+  distDir: process.env.GETRA_FRONTEND_DIST_DIR || ".next",
   // Dibutuhkan untuk Docker image Christo
   output: "standalone",
 
