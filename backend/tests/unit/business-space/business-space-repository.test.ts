@@ -45,6 +45,16 @@ describe("Properti Go database geometry and viewport contract", () => {
     expect(select).toHaveBeenCalledWith("id,name,region_type,geometry::json");
   });
 
+  it("normalizes verified PostGIS WGS84 metadata without changing coordinates or accepting another CRS", async () => {
+    const point = { type: "Point", coordinates: [106.72, -6.34] };
+    const query = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn() };
+    const repo = new BusinessSpaceRepository({ from: vi.fn().mockReturnValue(query) } as never);
+    query.maybeSingle.mockResolvedValueOnce({ data: { id: "property-1", geometry: { ...point, crs: { type: "name", properties: { name: "EPSG:4326" } } } }, error: null });
+    expect((await repo.getPropertyObservation("property-1"))?.geometry).toEqual(point);
+    query.maybeSingle.mockResolvedValueOnce({ data: { id: "property-1", geometry: { ...point, crs: { type: "name", properties: { name: "EPSG:3857" } } } }, error: null });
+    await expect(repo.getPropertyObservation("property-1")).rejects.toThrow("CRS");
+  });
+
   it("respects polygon holes, disconnected polygons and boundary points", () => {
     const geometry = { type: "MultiPolygon", coordinates: [
       [[[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]], [[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]],

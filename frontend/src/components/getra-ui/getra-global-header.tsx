@@ -3,7 +3,7 @@
 import { Building2, Database, LogOut, Menu, RefreshCw, ShieldCheck, Store, UsersRound, MapPinned, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from "react";
 
 import { AccountMenu } from "@/src/components/profile/account-menu";
 import { useAuth } from "@/src/components/providers/AuthProvider";
@@ -66,6 +66,19 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
     setUtilityOpen(false);
   }
 
+  function containDrawerFocus(event: KeyboardEvent<HTMLDialogElement>) {
+    if (event.key !== "Tab") return;
+    const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), [tabindex]"))
+      .filter((element) => element.tabIndex >= 0 && element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden");
+    const first = controls[0];
+    const last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault(); last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault(); first?.focus();
+    }
+  }
+
   return (
     <header className="getra-global-header">
       <Link className="getra-global-header__brand" href="/app" aria-label="Buka General GETRA"><GetraLogo /></Link>
@@ -108,7 +121,7 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
       </div>
 
       {menuOpen ? (
-        <dialog ref={dialogRef} className="getra-app-drawer" aria-label="Menu GETRA" onCancel={closeMenus}>
+        <dialog ref={dialogRef} className="getra-app-drawer" aria-label="Menu GETRA" onCancel={closeMenus} onKeyDown={containDrawerFocus}>
           <button className="getra-app-drawer__backdrop" onClick={closeMenus} type="button" aria-label="Tutup menu" tabIndex={-1} />
           <section className="getra-app-drawer__panel">
             <div className="getra-app-drawer__header"><GetraLogo /><button ref={closeTriggerRef} aria-label="Tutup menu" onClick={closeMenus} type="button"><X size={18} /></button></div>
