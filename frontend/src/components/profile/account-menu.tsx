@@ -2,6 +2,7 @@
 
 import {
   BookUser,
+  LogOut,
   Megaphone,
   Settings,
   UsersRound,
@@ -24,6 +25,8 @@ import {
 
 interface AccountMenuProps {
   context: UserContext | null;
+  loggingOut?: boolean;
+  onLogout?: () => void;
 }
 
 function getInitials(
@@ -39,6 +42,8 @@ function getInitials(
 
 export function AccountMenu({
   context,
+  loggingOut = false,
+  onLogout,
 }: AccountMenuProps) {
   const router = useRouter();
   const [open, setOpen] =
@@ -212,6 +217,21 @@ export function AccountMenu({
           <div className="account-menu__username">
             {username}
           </div>
+
+          {onLogout ? (
+            <button
+              className="account-menu__logout"
+              disabled={loggingOut}
+              onClick={() => {
+                setOpen(false);
+                onLogout();
+              }}
+              type="button"
+            >
+              <LogOut size={16} />
+              {loggingOut ? "Keluar..." : "Keluar"}
+            </button>
+          ) : null}
         </div>
       ) : null}
     </div>
