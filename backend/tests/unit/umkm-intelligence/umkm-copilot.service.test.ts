@@ -73,4 +73,20 @@ describe("Phase 10 grounded UMKM Copilot", () => {
     expect(response.status).toBe("DETERMINISTIC_FALLBACK");
     expect(response.answer).toMatch(/Data Readiness|jam operasional/i);
   });
+
+  it("explains market evidence in plain language with its real city scope", async () => {
+    vi.mocked(generateStructured).mockResolvedValue(null);
+    const response = await new UmkmCopilotService().explain(result, "Apa arti data pasar untuk usaha saya?");
+    expect(response.answer).toContain("indeks kebutuhan 62");
+    expect(response.answer).toContain("Bukti cukup tersedia");
+    expect(response.answer).toContain("wilayah kota administratif");
+    expect(response.answer).not.toMatch(/Demand Score|Retail Gap|MODERATE_EVIDENCE|canonical|pgRouting/);
+  });
+
+  it("does not present a market conclusion when any required metric is unavailable", async () => {
+    vi.mocked(generateStructured).mockResolvedValue(null);
+    const response = await new UmkmCopilotService().explain({ ...result, market_context: { ...result.market_context, retail_gap: null } }, "Bagaimana data pasar saya?");
+    expect(response.answer).toContain("belum cukup untuk menyimpulkan peluang pasar");
+    expect(response.answer).not.toContain("null");
+  });
 });

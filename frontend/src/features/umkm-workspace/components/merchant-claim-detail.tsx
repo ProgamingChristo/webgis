@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, BadgeCheck, Clock, XCircle } from "lucide-react";
+import { AlertTriangle, ArrowLeft, BadgeCheck, CheckCircle, Clock, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { UmkmWorkspaceService } from "../services/umkm-workspace.service";
 import type { MerchantClaimBrief } from "../types/umkm-workspace.types";
 
 export function MerchantClaimDetail({ claimId }: { claimId: string }) {
+  return <MerchantClaimRequest key={claimId} claimId={claimId} />;
+}
+
+function MerchantClaimRequest({ claimId }: { claimId: string }) {
   const [claim, setClaim] = useState<MerchantClaimBrief | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,8 +44,13 @@ export function MerchantClaimDetail({ claimId }: { claimId: string }) {
     return <ClaimState error message={error ?? "Klaim tidak ditemukan."} />;
   }
 
+  return <MerchantClaimDetailView claim={claim} />;
+}
+
+export function MerchantClaimDetailView({ claim }: { claim: MerchantClaimBrief }) {
   const pending = claim.status === "PENDING";
-  const Icon = pending ? Clock : XCircle;
+  const approved = claim.status === "APPROVED";
+  const Icon = pending ? Clock : approved ? CheckCircle : XCircle;
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 text-slate-100 sm:px-6 sm:py-12">
@@ -60,9 +69,9 @@ export function MerchantClaimDetail({ claimId }: { claimId: string }) {
               <p className="mt-1 text-sm text-slate-400">Klaim kepemilikan usaha</p>
             </div>
           </div>
-          <span className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${pending ? "border-amber-500/30 bg-amber-950/40 text-amber-200" : "border-rose-500/30 bg-rose-950/40 text-rose-200"}`}>
+          <span className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${pending ? "border-amber-500/30 bg-amber-950/40 text-amber-200" : approved ? "border-emerald-500/30 bg-emerald-950/40 text-emerald-200" : "border-rose-500/30 bg-rose-950/40 text-rose-200"}`}>
             <Icon className="mr-1.5" size={13} />
-            {pending ? "Menunggu Review" : "Ditolak"}
+            {pending ? "Menunggu Review" : approved ? "Disetujui" : "Ditolak"}
           </span>
         </header>
 
@@ -76,7 +85,7 @@ export function MerchantClaimDetail({ claimId }: { claimId: string }) {
         <section className="mt-5">
           <h2 className="text-sm font-semibold text-white">Status pengajuan</h2>
           <p className="mt-2 text-sm leading-6 text-slate-400">
-            {pending ? "Pengajuan sedang diperiksa oleh admin GETRA." : "Pengajuan tidak dapat disetujui."}
+            {pending ? "Pengajuan sedang diperiksa oleh admin GETRA. Pantau halaman ini untuk melihat hasil pemeriksaan." : approved ? "Klaim kepemilikan telah disetujui. Buka Usaha Saya untuk memeriksa kondisi usaha dan langkah berikutnya." : "Pengajuan tidak dapat disetujui. Periksa catatan admin sebelum mengajukan kembali."}
           </p>
           {claim.note ? (
             <div className="mt-4 flex gap-3 rounded-2xl border border-rose-500/25 bg-rose-950/25 p-4 text-sm leading-6 text-rose-100">
@@ -85,6 +94,7 @@ export function MerchantClaimDetail({ claimId }: { claimId: string }) {
             </div>
           ) : null}
         </section>
+        {approved ? <Link className="mt-5 inline-flex w-full justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500 sm:w-auto" href={`/umkm?merchantId=${encodeURIComponent(claim.merchant_id)}`}>Kelola Usaha</Link> : null}
       </article>
     </div>
   );

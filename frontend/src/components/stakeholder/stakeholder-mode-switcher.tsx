@@ -11,7 +11,6 @@ import { ExperienceMode } from "@/src/types/stakeholder.types";
 export function StakeholderModeSwitcher() {
   const { activeExperience, availableExperiences, setActiveExperience } = useStakeholder();
   const router = useRouter();
-  const analyticalModes = availableExperiences.filter((mode) => mode !== "UMKM");
 
   const handleSelect = (mode: ExperienceMode) => {
     setActiveExperience(mode);
@@ -28,10 +27,10 @@ export function StakeholderModeSwitcher() {
   return (
     <nav
       className="stakeholder-switch"
-      aria-label="Mode analisis General"
+      aria-label="Pilih pengalaman aktif GETRA"
       role="tablist"
     >
-      {analyticalModes.map((mode) => {
+      {availableExperiences.map((mode) => {
         const isActive = activeExperience === mode;
         return (
           <button

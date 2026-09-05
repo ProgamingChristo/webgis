@@ -1,175 +1,79 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import {
-  ROUTING_MODES,
-  routingService,
-  type RoutingMode,
-  type RoutingResult,
-} from "../services/routing.service";
+"use client";
+
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { RoutingClientError, routingService, type RoutingMode, type RoutingResult } from "../services/routing.service";
 import type { Coordinate } from "@/src/types/spatial";
-import {
-  recommendRoutingMode,
-  type RoutingRecommendationContext,
-} from "@/src/features/routing/routing-recommendation";
 
-type RoutingState = "IDLE" | "LOADING" | "SUCCESS" | "NO_ROUTE" | "ERROR";
+export type RoutingState = "IDLE" | "LOADING" | "ROUTABLE" | "NOT_ROUTABLE" | "SERVICE_UNAVAILABLE" | "ERROR";
+type Snapshot = { identity: object; state: RoutingState; route: RoutingResult | null; error: string | null; authRequired: boolean };
 
-export function useRouting() {
-  const [state, setState] = useState<RoutingState>("IDLE");
-  const [route, setRoute] = useState<RoutingResult | null>(null);
-  const [routes, setRoutes] = useState<Partial<Record<RoutingMode, RoutingResult>>>({});
-  const [activeMode, setActiveModeState] = useState<RoutingMode>("walking");
-  const [recommendedMode, setRecommendedMode] = useState<RoutingMode | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const activeRequestRef = useRef<{ id: number; controller: AbortController } | null>(null);
-  const requestSequenceRef = useRef(0);
+export function useRouting(input: { origin: Coordinate | null; destination: Coordinate | null; destinationMerchantId?: string }) {
+  const [activeMode, setActiveMode] = useState<RoutingMode>("walking");
+  const [attempt, setAttempt] = useState(0);
+  const [clearedKey, setClearedKey] = useState<string | null>(null);
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const sequence = useRef(0);
+  const controllerRef = useRef<AbortController | null>(null);
+  const originLat = input.origin?.latitude;
+  const originLon = input.origin?.longitude;
+  const destinationLat = input.destination?.latitude;
+  const destinationLon = input.destination?.longitude;
+  const merchantId = input.destinationMerchantId;
+  const ready = [originLat, originLon, destinationLat, destinationLon].every(Number.isFinite);
+  const key = JSON.stringify([originLat, originLon, destinationLat, destinationLon, activeMode, merchantId, attempt]);
+  const identity = useMemo(() => ({ key }), [key]);
 
-  const requestRoute = useCallback(async (
-    origin: Coordinate,
-    destination: Coordinate,
-    destinationMerchantId?: string,
-    context: RoutingRecommendationContext = {},
-  ) => {
-    activeRequestRef.current?.controller.abort();
-    const id = ++requestSequenceRef.current;
+  useEffect(() => {
+    const id = ++sequence.current;
+    if (!ready || key === clearedKey) return;
     const controller = new AbortController();
-    activeRequestRef.current = { id, controller };
-    setState("LOADING");
-    setError(null);
-    setRoute(null);
-    setRoutes({});
-    setRecommendedMode(null);
-
-    try {
-      const settled = await Promise.allSettled(ROUTING_MODES.map((mode) =>
-        routingService.getRoute({
-          origin,
-          destination,
-          destination_merchant_id: destinationMerchantId,
-        }, mode, controller.signal),
-      ));
-      if (activeRequestRef.current?.id !== id) return;
-
-      const nextRoutes: Partial<Record<RoutingMode, RoutingResult>> = {};
-      settled.forEach((entry, index) => {
-        const mode = ROUTING_MODES[index];
-        nextRoutes[mode] = entry.status === "fulfilled"
-          ? entry.value
-          : unavailableRoute(mode);
+    controllerRef.current = controller;
+    void routingService.getRoute({
+      origin: { latitude: originLat!, longitude: originLon! },
+      destination: { latitude: destinationLat!, longitude: destinationLon! },
+      destination_merchant_id: merchantId,
+    }, activeMode, controller.signal).then((route) => {
+      if (controller.signal.aborted || sequence.current !== id) return;
+      const routable = route.route_status === "ROUTABLE";
+      const unavailable = route.route_status === "SERVICE_UNAVAILABLE";
+      setSnapshot({ identity, route: routable ? route : null, authRequired: false,
+        state: routable ? "ROUTABLE" : unavailable ? "SERVICE_UNAVAILABLE" : "NOT_ROUTABLE",
+        error: routable ? null : route.reason_code === "ROUTING_TIMEOUT"
+          ? "Layanan rute tidak merespons tepat waktu. Coba lagi."
+          : unavailable ? "Layanan rute sementara tidak tersedia."
+          : route.route_status === "OUTSIDE_GRAPH" ? "Titik berada di luar cakupan rute."
+          : "Rute tidak ditemukan untuk titik dan moda ini.",
       });
-      const recommendation = recommendRoutingMode(nextRoutes, context);
-      const firstAvailable = recommendation ?? ROUTING_MODES.find((mode) =>
-        nextRoutes[mode]?.route_status === "ROUTABLE" && nextRoutes[mode]?.geometry
-      ) ?? null;
+    }).catch((error: unknown) => {
+      if (controller.signal.aborted || sequence.current !== id) return;
+      const kind = error instanceof RoutingClientError ? error.kind : "UNAVAILABLE";
+      setSnapshot({ identity, route: null, authRequired: kind === "AUTH",
+        state: kind === "AUTH" || kind === "VALIDATION" ? "ERROR" : "SERVICE_UNAVAILABLE",
+        error: kind === "AUTH" ? "Sesi berakhir. Masuk kembali untuk menghitung rute."
+          : kind === "VALIDATION" ? "Koordinat atau pilihan rute tidak valid."
+          : kind === "TIMEOUT" ? "Layanan rute tidak merespons tepat waktu. Coba lagi."
+          : "Layanan rute sementara tidak tersedia.",
+      });
+    });
+    return () => { controller.abort(); };
+  }, [ready, key, identity, clearedKey, originLat, originLon, destinationLat, destinationLon, merchantId, activeMode]);
 
-      setRoutes(nextRoutes);
-      setRecommendedMode(recommendation);
-      if (!firstAvailable) {
-        setState("NO_ROUTE");
-        setError(allModesUnavailableMessage(nextRoutes));
-        return;
-      }
-      setActiveModeState(firstAvailable);
-      setRoute(nextRoutes[firstAvailable] ?? null);
-      setState("SUCCESS");
-    } catch (err: unknown) {
-      if (controller.signal.aborted || activeRequestRef.current?.id !== id) return;
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Terjadi kesalahan saat menghitung rute.";
-
-      setState("ERROR");
-      setError(message);
-    } finally {
-      if (activeRequestRef.current?.id === id) activeRequestRef.current = null;
-    }
-  }, []);
-
+  const requestRoute = useCallback(() => setAttempt((value) => value + 1), []);
   const clearRoute = useCallback(() => {
-    activeRequestRef.current?.controller.abort();
-    activeRequestRef.current = null;
-    setState("IDLE");
-    setRoute(null);
-    setRoutes({});
-    setRecommendedMode(null);
-    setError(null);
-  }, []);
+    controllerRef.current?.abort();
+    sequence.current += 1;
+    setClearedKey(key);
+    setSnapshot(null);
+  }, [key]);
 
-  useEffect(() => () => activeRequestRef.current?.controller.abort(), []);
-
-  const setActiveMode = useCallback((mode: RoutingMode) => {
-    setActiveModeState(mode);
-    const nextRoute = routes[mode];
-    if (nextRoute?.route_status === "ROUTABLE" && nextRoute.geometry) {
-      setRoute(nextRoute);
-      setError(null);
-    } else {
-      setRoute(null);
-      setError(modeUnavailableMessage(mode, nextRoute));
-    }
-  }, [routes]);
-
+  // Hide old geometry immediately when input identity changes, before effects run.
+  const current = snapshot?.identity === identity ? snapshot : null;
+  const idle = !ready || key === clearedKey;
   return {
-    state,
-    route,
-    routes,
-    activeMode,
-    recommendedMode,
-    setActiveMode,
-    error,
-    requestRoute,
-    clearRoute
-  };
-}
-
-function modeUnavailableMessage(mode: RoutingMode, result?: RoutingResult) {
-  const label = mode === "walking" ? "jalan kaki" : mode === "motorcycle" ? "motor" : "mobil";
-  if (result?.reason_code === "ROUTING_TIMEOUT") {
-    return `Layanan rute ${label} tidak merespons tepat waktu. Coba lagi.`;
-  }
-  if (result?.route_status === "OUTSIDE_GRAPH") return `Titik berada di luar cakupan rute ${label}.`;
-  if (result?.route_status === "SERVICE_UNAVAILABLE") return `Layanan rute ${label} sedang tidak tersedia.`;
-  return `Rute ${label} tidak tersedia untuk lokasi ini.`;
-}
-
-function allModesUnavailableMessage(routes: Partial<Record<RoutingMode, RoutingResult>>) {
-  const failures = ROUTING_MODES.map((mode) => routes[mode]).filter(
-    (result): result is RoutingResult => Boolean(result),
-  );
-  if (failures.some((result) => result.reason_code === "ROUTING_TIMEOUT")) {
-    return "Layanan routing tidak merespons tepat waktu. Coba lagi beberapa saat lagi.";
-  }
-  if (failures.every((result) => result.route_status === "OUTSIDE_GRAPH")) {
-    return "Titik awal atau tujuan berada di luar cakupan jaringan routing.";
-  }
-  if (failures.some((result) =>
-    result.reason_code === "ROUTING_PROVIDER_UNCONFIGURED" ||
-    result.reason_code === "ROUTING_PROVIDER_UNREACHABLE" ||
-    result.reason_code === "ROUTING_UPSTREAM_ERROR" ||
-    result.reason_code === "ROUTING_PROVIDER_INVALID_RESPONSE"
-  )) {
-    return "Layanan routing GETRA sedang tidak tersedia. Coba lagi setelah koneksi provider pulih.";
-  }
-  return "Rute belum tersedia untuk lokasi ini pada semua mode transportasi.";
-}
-
-function unavailableRoute(mode: RoutingMode): RoutingResult {
-  return {
-    mode,
-    reason_code: "ROUTING_PROVIDER_UNREACHABLE",
-    route_status: "SERVICE_UNAVAILABLE",
-    analysis_method: "navigation_route",
-    distance_meters: null,
-    duration_seconds: null,
-    geometry: null,
-    maneuvers: [],
-    engine: "valhalla",
-    warnings: ["Layanan navigasi sedang tidak tersedia."],
-    has_toll: false,
-    has_highway: false,
-    has_ferry: false,
-    limitation_flags: ["NO_FABRICATED_ROUTE"],
-    route_source: "valhalla",
-    source: "OPENSTREETMAP",
+    state: idle ? "IDLE" as const : current?.state ?? "LOADING" as const,
+    route: idle ? null : current?.route ?? null,
+    error: idle ? null : current?.error ?? null,
+    authRequired: !idle && Boolean(current?.authRequired),
+    activeMode, setActiveMode, requestRoute, clearRoute,
   };
 }

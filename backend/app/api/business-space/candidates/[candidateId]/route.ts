@@ -3,7 +3,7 @@ import {
   businessSpaceDetailParamsSchema,
   BusinessSpaceRepository,
   BusinessSpaceService,
-  parseBusinessSpaceCandidateQuery,
+  parseBusinessSpaceDetailQuery,
 } from "@/src/features/business-space-intelligence";
 import { withApiLogger } from "@/src/lib/api-logger";
 import { createSuccessResponse } from "@/src/lib/api-response";
@@ -25,13 +25,7 @@ export async function GET(
     await requireAuthenticatedUser(request);
     const params = businessSpaceDetailParamsSchema.safeParse(await context.params);
     if (!params.success) throw new ApplicationError("VALIDATION_ERROR");
-    const query = parseBusinessSpaceCandidateQuery(
-      new URLSearchParams({
-        region_id: request.nextUrl.searchParams.get("region_id") ?? "jakarta-selatan",
-        category: request.nextUrl.searchParams.get("category") ?? "bakso",
-        days: request.nextUrl.searchParams.get("days") ?? "30",
-      }),
-    );
+    const query = parseBusinessSpaceDetailQuery(request.nextUrl.searchParams);
     const service = new BusinessSpaceService(
       new BusinessSpaceRepository(getServiceRoleSupabaseClient()),
     );

@@ -1,5 +1,8 @@
 "use client";
 
+import { syncWalkingRoute } from "@/src/features/routing/route-layer";
+import { isRouteGeometry } from "@/src/features/routing/route-geometry";
+
 import type * as GeoJSON from "geojson";
 
 import {
@@ -89,8 +92,7 @@ type GetraMapProps = {
   onSelectSponsored?: (placement: SponsoredPinDTO) => void;
   onViewportChange?: (bounds: MapViewportBounds) => void;
   onRandomExploration?: () => void;
-  mapPickMode?: "NONE" | "ROUTE_START";
-  manualRouteStart?: { latitude: number; longitude: number } | null;
+  mapPickMode?: "NONE" | "ROUTE_START" | "ROUTE_DESTINATION";
   onMapPick?: (coordinate: { latitude: number; longitude: number }) => void;
   datasetKey: string;
   focusBounds?: MapViewportBounds | null;
@@ -266,11 +268,13 @@ function createRouteEndpointMarker(
 
   badge.textContent =
     kind === "start"
-      ? "START"
-      : "TUJUAN";
+      ? "A · ASAL"
+      : "B · TUJUAN";
 
   element.title =
     label;
+  element.setAttribute("aria-label", `${kind === "start" ? "Asal A" : "Tujuan B"}: ${label}`);
+  element.setAttribute("role", "img");
 
   element.append(
     dot,
@@ -534,138 +538,6 @@ function addJakartaAdminBoundaries(
   }
 }
 
-function toRouteFeatureCollection(
-  routeGeometry?: GeoJSON.LineString | null,
-) {
-  return {
-    type: "FeatureCollection",
-    features: routeGeometry
-      ? [
-          {
-            type: "Feature",
-            properties: {},
-            geometry:
-              routeGeometry,
-          },
-        ]
-      : [],
-  } satisfies GeoJSON.FeatureCollection;
-}
-
-function syncWalkingRoute(
-  map: MapLibreMap,
-  routeGeometry?: GeoJSON.LineString | null,
-) {
-  if (!map.isStyleLoaded()) {
-    return;
-  }
-
-  const routeData =
-    toRouteFeatureCollection(
-      routeGeometry,
-    );
-
-  const source =
-    map.getSource(
-      "walking-route",
-    );
-
-  if (
-    map.getLayer(
-      "walking-route-line",
-    )
-  ) {
-    map.moveLayer(
-      "walking-route-line",
-    );
-  }
-
-  if (
-    map.getLayer(
-      "walking-route-casing",
-    )
-  ) {
-    map.moveLayer(
-      "walking-route-casing",
-      "walking-route-line",
-    );
-  }
-
-  if (source) {
-    (
-      source as unknown as {
-        setData: (
-          data: GeoJSON.FeatureCollection,
-        ) => void;
-      }
-    ).setData(
-      routeData,
-    );
-  } else {
-    map.addSource(
-      "walking-route",
-      {
-        type: "geojson",
-        data: routeData,
-      },
-    );
-
-    map.addLayer({
-      id: "walking-route-casing",
-      type: "line",
-      source: "walking-route",
-      layout: {
-        "line-join": "round",
-        "line-cap": "round",
-      },
-      paint: {
-        "line-color": "#041018",
-        "line-width": 8,
-        "line-opacity": 0.8,
-      },
-    });
-
-    map.addLayer({
-      id: "walking-route-line",
-      type: "line",
-      source: "walking-route",
-      layout: {
-        "line-join": "round",
-        "line-cap": "round",
-      },
-      paint: {
-        "line-color": "#22d3ee",
-        "line-width": 5,
-        "line-opacity": 0.92,
-        "line-dasharray": [1, 0],
-      },
-    });
-  }
-
-  if (
-    map.getLayer(
-      "walking-route-line",
-    )
-  ) {
-    map.setPaintProperty(
-      "walking-route-line",
-      "line-color",
-      "#22d3ee",
-    );
-
-    map.setPaintProperty(
-      "walking-route-line",
-      "line-width",
-      5,
-    );
-
-    map.setPaintProperty(
-      "walking-route-line",
-      "line-dasharray",
-      [1, 0],
-    );
-  }
-}
 
 function syncWalkingServiceArea(
   map: MapLibreMap,
@@ -721,7 +593,6 @@ export function GetraMap({
   onSelectSponsored,
   onViewportChange,
   mapPickMode = "NONE",
-  manualRouteStart = null,
   onMapPick,
   datasetKey,
   focusBounds,
@@ -763,6 +634,7 @@ export function GetraMap({
     useRef<MapLibreMap | null>(null);
 
   const markUserCameraControl = useCallback(() => {
+    if (cameraOwnerRef.current === "USER") return;
     const map = mapRef.current;
     if (map) map.stop();
     cameraOwnerRef.current = "USER";
@@ -841,7 +713,6 @@ export function GetraMap({
   const mapPickModeRef = useRef(mapPickMode);
   const onMapPickRef = useRef(onMapPick);
 
-  const manualRouteStartMarkerRef = useRef<Marker | null>(null);
 
   // Trigger HMR
   const administrativeBoundariesRef = useRef(administrativeBoundaries);
@@ -970,7 +841,6 @@ export function GetraMap({
       setBoundaryLayersReady(true);
     }
   }, [importBoundaries]);
-
   useEffect(() => {
     if (
       !containerRef.current ||
@@ -1017,7 +887,7 @@ export function GetraMap({
     });
 
     map.on("click", (e) => {
-      if (mapPickModeRef.current === "ROUTE_START") {
+      if (mapPickModeRef.current !== "NONE") {
         if (onMapPickRef.current) {
           onMapPickRef.current({ latitude: e.lngLat.lat, longitude: e.lngLat.lng });
         }
@@ -1371,7 +1241,6 @@ export function GetraMap({
       (marker) =>
         marker.remove(),
     );
-
     merchantMarkersRef.current.clear();
     setRenderedClusterFeatureCount(0);
     setClusterSourceFeatureCount(0);
@@ -1471,7 +1340,7 @@ export function GetraMap({
       });
 
       const expandCluster = async (event: MapLayerMouseEvent) => {
-        if (mapPickModeRef.current === "ROUTE_START") return;
+        if (mapPickModeRef.current !== "NONE") return;
         const feature = event.features?.[0];
         const clusterId = Number(feature?.properties?.cluster_id);
         if (!feature || !Number.isFinite(clusterId) || feature.geometry.type !== "Point") return;
@@ -1480,13 +1349,13 @@ export function GetraMap({
         map.easeTo({ center: feature.geometry.coordinates as [number, number], zoom });
       };
       const selectPoint = (event: MapLayerMouseEvent) => {
-        if (mapPickModeRef.current === "ROUTE_START") return;
+        if (mapPickModeRef.current !== "NONE") return;
         const merchantId = String(event.features?.[0]?.properties?.merchantId ?? "");
         const merchant = merchantById.get(merchantId);
         if (merchant) onSelect(merchant);
       };
-      const showPointer = () => { if (mapPickModeRef.current !== "ROUTE_START") map.getCanvas().style.cursor = "pointer"; };
-      const hidePointer = () => { map.getCanvas().style.cursor = ""; };
+      const showPointer = () => { if (mapPickModeRef.current === "NONE") map.getCanvas().style.cursor = "pointer"; };
+      const hidePointer = () => { map.getCanvas().style.cursor = mapPickModeRef.current === "NONE" ? "" : "crosshair"; };
 
       map.on("click", MERCHANT_CLUSTER_LAYER_ID, expandCluster);
       map.on("click", MERCHANT_POINT_LAYER_ID, selectPoint);
@@ -1966,16 +1835,11 @@ export function GetraMap({
       syncWalkingServiceArea(map, serviceAreaGeometry);
     };
 
-    if (map.isStyleLoaded()) {
-      updateRoute();
-    } else {
-      map.once(
-        "load",
-        updateRoute,
-      );
-    }
+    // Existing data can be cleared while tiles load; a new style needs a ready event.
+    updateRoute();
+    if (!map.isStyleLoaded()) map.once("idle", updateRoute);
 
-    if (routeGeometry) {
+    if (isRouteGeometry(routeGeometry)) {
       if (lastFocusedRouteGeometry.current !== routeGeometry) {
         lastFocusedRouteGeometry.current = routeGeometry;
         const bounds =
@@ -1993,10 +1857,20 @@ export function GetraMap({
         );
 
         if (!bounds.isEmpty()) {
+          const container = map.getContainer();
+          const basemap = container.parentElement?.querySelector(".basemap-switcher");
+          const bottomInset = basemap
+            ? container.getBoundingClientRect().bottom - basemap.getBoundingClientRect().top + 16
+            : 72;
           map.fitBounds(
             bounds,
             {
-              padding: 72,
+              padding: {
+                top: 72,
+                bottom: Math.min(bottomInset, container.clientHeight * 0.45),
+                left: Math.min(72, Math.floor(container.clientWidth / 6)),
+                right: Math.min(72, Math.floor(container.clientWidth / 6)),
+              },
               maxZoom: 16,
               duration: 650,
             },
@@ -2006,72 +1880,23 @@ export function GetraMap({
     } else {
       lastFocusedRouteGeometry.current = null;
     }
+    return () => { map.off("idle", updateRoute); };
   }, [
     routeGeometry,
     serviceAreaGeometry,
+    styleRevision,
   ]);
 
   useEffect(() => {
     if (!mapRef.current) return;
     const canvas = mapRef.current.getCanvas();
-    if (mapPickMode === "ROUTE_START") {
+    if (mapPickMode !== "NONE") {
       canvas.style.cursor = "crosshair";
     } else {
       canvas.style.cursor = "";
     }
   }, [mapPickMode]);
 
-  useEffect(() => {
-    if (!mapRef.current) return;
-    const map = mapRef.current;
-
-    if (!manualRouteStart) {
-      if (manualRouteStartMarkerRef.current) {
-        manualRouteStartMarkerRef.current.remove();
-        manualRouteStartMarkerRef.current = null;
-      }
-      return;
-    }
-
-    if (!manualRouteStartMarkerRef.current) {
-      const el = document.createElement("div");
-      el.className = "manual-start-marker";
-      el.style.backgroundColor = "#ef4444";
-      el.style.color = "white";
-      el.style.padding = "2px 6px";
-      el.style.borderRadius = "4px";
-      el.style.fontWeight = "bold";
-      el.style.fontSize = "12px";
-      el.style.border = "2px solid white";
-      el.style.boxShadow = "0 2px 4px rgba(0,0,0,0.3)";
-      el.style.cursor = "grab";
-      el.textContent = "START";
-
-      const marker = new Marker({
-        element: el,
-        draggable: true,
-        anchor: "bottom",
-      })
-        .setLngLat([manualRouteStart.longitude, manualRouteStart.latitude])
-        .addTo(map);
-
-      marker.on("dragstart", markUserCameraControl);
-
-      marker.on("dragend", () => {
-        const lngLat = marker.getLngLat();
-        if (onMapPickRef.current) {
-          onMapPickRef.current({ latitude: lngLat.lat, longitude: lngLat.lng });
-        }
-      });
-
-      manualRouteStartMarkerRef.current = marker;
-    } else {
-      manualRouteStartMarkerRef.current.setLngLat([
-        manualRouteStart.longitude,
-        manualRouteStart.latitude,
-      ]);
-    }
-  }, [manualRouteStart, markUserCameraControl]);
 
   return (
     <div

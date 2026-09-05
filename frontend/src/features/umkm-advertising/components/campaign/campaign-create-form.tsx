@@ -12,11 +12,12 @@ export function CampaignCreateForm({ merchantId, onSuccess }: { merchantId: stri
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-700 bg-slate-900/55 p-5">
-      <h3 className="text-lg font-bold text-slate-100">Buat campaign draft</h3>
+    <form id="buat-promosi" onSubmit={handleSubmit} className="scroll-mt-6 space-y-4 rounded-xl border border-slate-700 bg-slate-900/55 p-5">
+      <h3 className="text-lg font-bold text-slate-100">Buat Draf Promosi</h3>
+      <p className="text-sm leading-6 text-slate-400">Mulai dengan nama promosi. Selanjutnya, lengkapi materi, sasaran, dan jadwal sebelum mengaktifkannya.</p>
       {error && <p className="text-sm text-red-300">{error}</p>}
       <div className="flex flex-col space-y-2">
-        <label htmlFor="name" className="text-sm font-bold text-slate-300">Nama campaign</label>
+        <label htmlFor="name" className="text-sm font-bold text-slate-300">Nama promosi</label>
         <input 
           id="name"
           type="text" 

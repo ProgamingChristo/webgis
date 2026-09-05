@@ -11,6 +11,10 @@ const regionIdSchema = z.string().regex(/^jakarta-(barat|pusat|selatan|timur|uta
 const uuidSchema = z.string().uuid();
 const finiteCoordinate = z.coerce.number().finite();
 const propertyTransactionSchema = z.enum(["DIJUAL", "DISEWA"]);
+const detailQuerySchema = z.object({
+  category: categorySchema.default("bakso"),
+  days: z.coerce.number().int().refine((value) => value === 7 || value === 30).default(30),
+});
 
 const candidateQuerySchema = z.object({
   category: categorySchema.default("bakso"),
@@ -74,6 +78,15 @@ export function parseBusinessSpaceCandidateQuery(params: URLSearchParams): Busin
     north: params.get("north") ?? undefined,
     limit: params.get("limit") ?? undefined,
     offset: params.get("offset") ?? undefined,
+  });
+  if (!parsed.success) throw new ApplicationError("VALIDATION_ERROR");
+  return parsed.data;
+}
+
+export function parseBusinessSpaceDetailQuery(params: URLSearchParams) {
+  const parsed = detailQuerySchema.safeParse({
+    category: params.get("category") ?? undefined,
+    days: params.get("days") ?? undefined,
   });
   if (!parsed.success) throw new ApplicationError("VALIDATION_ERROR");
   return parsed.data;

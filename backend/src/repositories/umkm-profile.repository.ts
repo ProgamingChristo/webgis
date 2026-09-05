@@ -84,6 +84,7 @@ export class UmkmProfileRepository
     return this.executeListQuery({ kind: "table" }, parsed);
   }
 
+  
   async findWithinBBox(
     bbox: BoundingBox,
     options: UmkmProfileListQuery,

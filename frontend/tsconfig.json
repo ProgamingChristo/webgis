@@ -27,9 +27,15 @@
       }
     ],
     "paths": {
-      "@/data/*": ["../data/*"],
-      "@/types/*": ["../types/*"],
-      "@/*": ["./*"]
+      "@/data/*": [
+        "../data/*"
+      ],
+      "@/types/*": [
+        "../types/*"
+      ],
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [
@@ -38,7 +44,11 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    ".next/phase10/types/**/*.ts",
+    ".next/phase10/dev/types/**/*.ts",
+    ".next/phase10-build/types/**/*.ts",
+    ".next/phase10-build/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

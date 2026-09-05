@@ -6,21 +6,17 @@ import type {
   BusinessSpaceCandidateList,
   BusinessSpaceComparison,
   BusinessSpaceInsight,
+  BusinessSpaceViewport,
 } from "../types/business-space.types";
 
-interface CandidateQuery {
+export interface CandidateQuery {
   category: BusinessCategorySlug;
   days: 7 | 30;
   region_id?: string;
   q?: string;
   property_category?: string;
   transaction_type?: "DIJUAL" | "DISEWA";
-  bbox?: {
-    west: number;
-    south: number;
-    east: number;
-    north: number;
-  };
+  bbox?: BusinessSpaceViewport;
   limit?: number;
   offset?: number;
 }
@@ -57,26 +53,28 @@ export const businessSpaceService = {
   },
 
   async detail(candidateId: string, query: Pick<CandidateQuery, "category" | "days">, signal?: AbortSignal) {
-    const params = new URLSearchParams({ category: query.category, days: String(query.days), region_id: "jakarta-selatan" });
+    const params = new URLSearchParams({ category: query.category, days: String(query.days) });
     return readData<BusinessSpaceCandidateDetail>(
       await authenticatedFetch(`${getGetraApiUrl(`/api/business-space/candidates/${candidateId}`)}?${params}`, { signal }),
     );
   },
 
-  async compare(candidateIds: string[], category: BusinessCategorySlug, days: 7 | 30) {
+  async compare(candidateIds: string[], category: BusinessCategorySlug, days: 7 | 30, signal?: AbortSignal) {
     return readData<BusinessSpaceComparison>(
       await authenticatedFetch(getGetraApiUrl("/api/business-space/compare"), {
         method: "POST",
+        signal,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ candidate_ids: candidateIds, category, days }),
       }),
     );
   },
 
-  async insight(candidateIds: string[], category: BusinessCategorySlug, days: 7 | 30, question?: string) {
+  async insight(candidateIds: string[], category: BusinessCategorySlug, days: 7 | 30, question?: string, signal?: AbortSignal) {
     return readData<BusinessSpaceInsight>(
       await authenticatedFetch(getGetraApiUrl("/api/business-space/insight"), {
         method: "POST",
+        signal,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ candidate_ids: candidateIds, category, days, question }),
       }),

@@ -39,7 +39,10 @@ export class AiService {
 
   private async determineIntent(question: string, history?: AiAskRequest["history"]): Promise<AiIntent> {
     const deterministicIntent = classifyIntentDeterministically(question, history);
-    if (deterministicIntent === "ASSISTANT_IDENTITY") {
+    if (
+      deterministicIntent === "ASSISTANT_IDENTITY" ||
+      deterministicIntent === "CASUAL_CHAT"
+    ) {
       return deterministicIntent;
     }
 
@@ -58,6 +61,7 @@ export class AiService {
       schemaName: "intent_classification",
       instructions: `You are a classifier for the GETRA spatial analytics system. Classify the user's question into one of the following intents:
 - ASSISTANT_IDENTITY: Greetings or questions about whether this is GETRA AI, who the assistant is, or what it can do.
+- CASUAL_CHAT: Simple conversation, user introductions, non-spatial small talk, or random lightweight questions that do not require GIS facts.
 - GENERAL_AREA: Questions about what is in the area generally.
 - NEAREST_TRANSIT: Questions specifically about the closest public transit (bus, train, etc.).
 - WALKING_ROUTE: Questions about walking distance, route, or how to get somewhere.
@@ -81,6 +85,21 @@ export class AiService {
           assistant_name: "Asisten GETRA AI",
           capabilities: ["rute", "area", "akses", "transit", "titik peta", "UMKM"],
           grounding_policy: "Jawaban analisis menggunakan data GETRA yang tersedia.",
+        };
+        break;
+      }
+
+      case "CASUAL_CHAT": {
+        facts = {
+          assistant_name: "Asisten GETRA AI",
+          chat_mode: "Percakapan umum ringan",
+          safe_topics: [
+            "pertanyaan sederhana",
+            "bantuan memakai GETRA",
+            "penjelasan rute dan area jika konteks peta tersedia",
+          ],
+          grounding_policy:
+            "Pertanyaan umum boleh dijawab langsung; klaim spasial tetap harus berdasarkan data GETRA.",
         };
         break;
       }
@@ -279,10 +298,17 @@ function classifyIntentDeterministically(
   const combined = `${recentContext} ${current}`;
 
   if (
-    /^(halo|hai|hi|hello)[!.?\s]*$/u.test(current.trim()) ||
+    /^(halo|hai|hi|hello|pagi|siang|sore|malam)[!.?\s]*$/u.test(current.trim()) ||
     /kamu siapa|siapa kamu|asisten (?:aku|saya)|getra ai|apakah kamu ai|kamu ai|apa yang (?:bisa|dapat) kamu (?:lakukan|bantu)/u.test(current)
   ) {
     return "ASSISTANT_IDENTITY";
+  }
+  if (
+    /\b(halo|hai|hi|hello|pagi|siang|sore|malam)\b/u.test(current) ||
+    /\b(aku|saya|namaku|nama saya)\b/u.test(current) ||
+    /\b(random|acak|cerita|ngobrol|chat|tes|test|apa kabar|makasih|terima kasih)\b/u.test(current)
+  ) {
+    return "CASUAL_CHAT";
   }
   if (/jalan kaki|berapa lama|rute|route|duration|durasi/.test(current)) return "WALKING_ROUTE";
   if (/paling dekat|terdekat|nearest|stasiun|halte|transit/.test(combined)) return "NEAREST_TRANSIT";
@@ -294,6 +320,10 @@ function classifyIntentDeterministically(
 function formatDeterministicAnswer(intent: AiIntent, facts: Record<string, unknown>): string {
   if (intent === "ASSISTANT_IDENTITY") {
     return "Ya, saya Asisten GETRA AI. Saya membantu menjelaskan rute, area, akses, transit, titik peta, dan UMKM berdasarkan data GETRA yang tersedia.";
+  }
+
+  if (intent === "CASUAL_CHAT") {
+    return "Hai, saya aktif. Kamu bisa tanya pertanyaan sederhana atau random, dan kalau pertanyaannya menyangkut peta, rute, area, UMKM, properti, atau aksesibilitas, saya akan jawab berdasarkan data GETRA yang tersedia.";
   }
 
   if (intent === "UNKNOWN") {

@@ -1,120 +1,111 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import type { FeatureCollection, Point } from "geojson";
-import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
+import { useEffect, useRef, useState } from "react";
+import type { Map as MapLibreMap } from "maplibre-gl";
 import { getBasemapOption, getPreferredBasemapId } from "@/lib/mapid";
-import type { BusinessSpaceCandidate, BusinessSpaceCandidateDetail } from "../types/business-space.types";
-
-const EMPTY: FeatureCollection<Point> = { type: "FeatureCollection", features: [] };
+import type { BusinessSpaceCandidate, BusinessSpaceCandidateDetail, BusinessSpaceViewport } from "../types/business-space.types";
+import { PROPERTY_LAYER_ID, PROPERTY_SOURCE_ID, subscribePropertyViewport, syncBusinessSpaceMap } from "../utils/property-map";
 
 export function BusinessSpaceMap({
   candidates,
   selectedId,
   comparison,
   onSelect,
+  onViewportChange,
 }: {
   candidates: BusinessSpaceCandidate[];
   selectedId: string | null;
   comparison: BusinessSpaceCandidateDetail[];
   onSelect: (id: string) => void;
+  onViewportChange: (viewport: BusinessSpaceViewport) => void;
 }) {
   const container = useRef<HTMLDivElement | null>(null);
   const map = useRef<MapLibreMap | null>(null);
-  const latest = useRef({ candidates, selectedId, comparison });
+  const latest = useRef({ candidates, selectedId, comparison, onSelect, onViewportChange });
+  const [mapError, setMapError] = useState<string | null>(null);
 
   useEffect(() => {
-    latest.current = { candidates, selectedId, comparison };
-    syncMap(map.current, latest.current);
-  }, [candidates, selectedId, comparison]);
+    latest.current = { candidates, selectedId, comparison, onSelect, onViewportChange };
+    syncBusinessSpaceMap(map.current, latest.current);
+  }, [candidates, selectedId, comparison, onSelect, onViewportChange]);
 
   useEffect(() => {
     let cancelled = false;
+    let instance: MapLibreMap | null = null;
+    let observer: ResizeObserver | null = null;
+    let unsubscribeViewport: (() => void) | undefined;
+
     void import("maplibre-gl").then((maplibre) => {
-      if (cancelled || !container.current || map.current) return;
+      if (cancelled || !container.current) return;
       maplibre.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
-      const first = latest.current.candidates[0];
-      const instance = new maplibre.Map({
+      const created = new maplibre.Map({
         container: container.current,
         style: getBasemapOption(getPreferredBasemapId()).style,
-        center: first ? [first.longitude, first.latitude] : [106.8272, -6.1754],
-        zoom: first ? 12 : 10,
+        center: [106.8272, -6.1754],
+        zoom: 11,
+        renderWorldCopies: false,
       });
-      instance.addControl(new maplibre.NavigationControl(), "top-right");
-      instance.on("load", () => {
+      // Keep the instance before load so route changes also clean up a still-loading map.
+      instance = created;
+      map.current = created;
+      created.addControl(new maplibre.NavigationControl(), "top-right");
+      created.on("error", () => {
+        if (!cancelled) setMapError("Sebagian peta belum dapat dimuat. Periksa koneksi lalu muat ulang halaman.");
+      });
+      created.on("load", () => {
         if (cancelled) return;
-        instance.addSource("business-space-points", { type: "geojson", data: EMPTY });
-        instance.addLayer({
-          id: "business-space-candidates",
+        setMapError(null);
+        created.addSource(PROPERTY_SOURCE_ID, {
+          type: "geojson", data: { type: "FeatureCollection", features: [] },
+        });
+        created.addLayer({
+          id: PROPERTY_LAYER_ID,
           type: "circle",
-          source: "business-space-points",
+          source: PROPERTY_SOURCE_ID,
           paint: {
-            "circle-radius": ["case", ["get", "selected"], 11, ["get", "comparison"], 9, 6],
+            "circle-radius": ["case", ["get", "selected"], 12, ["get", "comparison"], 10, 7],
             "circle-color": ["case", ["get", "selected"], "#22d3ee", ["get", "comparison"], "#a3e635", "#facc15"],
             "circle-stroke-color": "#071318",
             "circle-stroke-width": 2,
           },
         });
-        instance.on("click", "business-space-candidates", (event) => {
+        created.on("click", PROPERTY_LAYER_ID, (event) => {
           const id = event.features?.[0]?.properties?.id;
-          if (typeof id === "string") onSelect(id);
+          if (typeof id === "string") latest.current.onSelect(id);
         });
-        map.current = instance;
-        syncMap(instance, latest.current);
+        created.on("mouseenter", PROPERTY_LAYER_ID, () => { created.getCanvas().style.cursor = "pointer"; });
+        created.on("mouseleave", PROPERTY_LAYER_ID, () => { created.getCanvas().style.cursor = ""; });
+        syncBusinessSpaceMap(created, latest.current);
+        unsubscribeViewport = subscribePropertyViewport(created, (bounds) => latest.current.onViewportChange(bounds));
         container.current?.setAttribute("data-map-ready", "true");
       });
+      if (typeof ResizeObserver !== "undefined") {
+        observer = new ResizeObserver(() => { if (!cancelled) created.resize(); });
+        observer.observe(container.current);
+      }
+    }).catch(() => {
+      if (!cancelled) setMapError("Peta belum dapat dibuka di browser ini. Muat ulang halaman untuk mencoba lagi.");
     });
+
     return () => {
       cancelled = true;
-      map.current?.remove();
-      map.current = null;
+      observer?.disconnect();
+      unsubscribeViewport?.();
+      instance?.remove();
+      if (map.current === instance) map.current = null;
     };
-  }, [onSelect]);
+  }, []);
 
   return (
     <div className="business-space-map-shell">
-      <div ref={container} className="business-space-map" data-candidate-count={candidates.length} />
-      <div className="business-space-map-legend" aria-label="Legenda kandidat properti">
-        <span><i className="bs-legend-candidate" />Kandidat</span>
+      <div ref={container} className="business-space-map" data-candidate-count={candidates.length}
+        role="region" aria-label="Peta Properti Go. Geser atau perbesar peta untuk melihat properti di area tersebut." />
+      {mapError ? <p className="business-space-map-error" role="alert">{mapError}</p> : null}
+      <div className="business-space-map-legend" aria-label="Legenda properti">
+        <span><i className="bs-legend-candidate" />Properti Go</span>
         <span><i className="bs-legend-selected" />Dipilih</span>
-        <span><i className="bs-legend-compare" />Comparison</span>
+        <span><i className="bs-legend-compare" />Dibandingkan</span>
       </div>
     </div>
   );
-}
-
-function syncMap(map: MapLibreMap | null, state: { candidates: BusinessSpaceCandidate[]; selectedId: string | null; comparison: BusinessSpaceCandidateDetail[] }) {
-  if (!map?.isStyleLoaded()) return;
-  const comparisonIds = new Set(state.comparison.map((item) => item.candidate.id));
-  const points: FeatureCollection<Point> = {
-    type: "FeatureCollection",
-    features: state.candidates.map((candidate) => ({
-      type: "Feature" as const,
-      id: candidate.id,
-      geometry: { type: "Point" as const, coordinates: [candidate.longitude, candidate.latitude] },
-      properties: {
-        id: candidate.id,
-        selected: candidate.id === state.selectedId,
-        comparison: comparisonIds.has(candidate.id),
-      },
-    })),
-  };
-  (map.getSource("business-space-points") as GeoJSONSource | undefined)?.setData(points);
-  if (points.features.length > 1) {
-    const bounds = points.features.reduce((result, feature) => {
-      const [longitude, latitude] = feature.geometry.coordinates;
-      return {
-        west: Math.min(result.west, longitude),
-        south: Math.min(result.south, latitude),
-        east: Math.max(result.east, longitude),
-        north: Math.max(result.north, latitude),
-      };
-    }, {
-      west: points.features[0]!.geometry.coordinates[0],
-      south: points.features[0]!.geometry.coordinates[1],
-      east: points.features[0]!.geometry.coordinates[0],
-      north: points.features[0]!.geometry.coordinates[1],
-    });
-    map.fitBounds([[bounds.west, bounds.south], [bounds.east, bounds.north]], { padding: 56, maxZoom: 13, duration: 350 });
-  }
 }

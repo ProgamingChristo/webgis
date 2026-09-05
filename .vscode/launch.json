@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "GETRA: Edge tanpa ekstensi",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:3000/umkm",
+      "webRoot": "${workspaceFolder}/frontend",
+      "userDataDir": true,
+      "runtimeArgs": ["--disable-extensions"],
+      "sourceMaps": true
+    }
+  ]
+}

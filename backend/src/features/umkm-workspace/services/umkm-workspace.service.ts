@@ -11,27 +11,19 @@ export class UmkmWorkspaceService {
 
   async getWorkspaceSummary(userId: string): Promise<UmkmWorkspaceSummary> {
     // Canonical owner_id is active authority. Claims are workflow/audit history only.
-    const { data: ownedMerchants, error: ownedError } = await this.supabase
-      .from("merchants")
-      .select("id, name, address, description, metadata, publish_status, verification_status")
-      .eq("owner_id", userId);
-
-    if (ownedError) {
-      console.error("[UmkmWorkspaceService] Error fetching merchants:", ownedError);
-      throw new Error("Gagal mengambil data merchant.");
+    const ownedMerchants: any[] = [];
+    for (let offset = 0; ; offset += 100) {
+      const { data, error } = await this.supabase.from("merchants")
+        .select("id, name, address, description, metadata, publish_status, verification_status")
+        .eq("owner_id", userId).order("id").range(offset, offset + 99);
+      if (error) throw new Error("Gagal mengambil data usaha.");
+      ownedMerchants.push(...(data ?? []));
+      if (!data || data.length < 100) break;
     }
 
-    const { data: recentClaims, error: recentClaimsError } = await this.supabase
-      .from("merchant_claims")
-      .select("id, merchant_id, status, note, created_at, reviewed_at")
-      .eq("user_id", userId)
-      .in("status", ["PENDING", "REJECTED"])
-      .order("created_at", { ascending: false })
-      .limit(10);
-
-    if (recentClaimsError) {
-      console.error("[UmkmWorkspaceService] Error fetching merchant claims:", recentClaimsError);
-    }
+    // Keep every open workflow: a newer closed record must not hide pending work.
+    const allClaims = await this.readWorkflowRows("merchant_claims", "id, merchant_id, status, note, created_at, reviewed_at", "user_id", userId, "created_at");
+    const recentClaims = retainOpenAndRecent(allClaims, ["PENDING"]);
 
     const visibleClaimMerchantIds = [...new Set((recentClaims ?? []).map((claim: any) => claim.merchant_id))];
     const allClaimMerchantIds = visibleClaimMerchantIds;
@@ -54,21 +46,24 @@ export class UmkmWorkspaceService {
     // 2. Fetch Active Campaigns Count
     let activeCampaignsCount = 0;
     const campaignCountByMerchant: Record<string, number> = {};
+    const activeCampaignCountByMerchant: Record<string, number> = {};
 
     if (merchantIds.length > 0) {
-      const { data: campaigns, error: cError } = await this.supabase
-        .from("ad_campaigns")
-        .select("id, merchant_id, status")
-        .in("merchant_id", merchantIds);
-
-      if (!cError && campaigns) {
-        for (const c of campaigns) {
+      // Page campaigns too: an API row cap must not become a displayed total.
+      for (let offset = 0; ; offset += 100) {
+        const { data: campaigns, error } = await this.supabase.from("ad_campaigns")
+          .select("id, merchant_id, status").in("merchant_id", merchantIds)
+          .order("id").range(offset, offset + 99);
+        if (error) throw new Error("Gagal mengambil status promosi usaha.");
+        for (const c of campaigns ?? []) {
           if (c.status === "ACTIVE") {
             activeCampaignsCount++;
+            activeCampaignCountByMerchant[c.merchant_id] = (activeCampaignCountByMerchant[c.merchant_id] || 0) + 1;
           }
           campaignCountByMerchant[c.merchant_id] =
             (campaignCountByMerchant[c.merchant_id] || 0) + 1;
         }
+        if (!campaigns || campaigns.length < 100) break;
       }
     }
 
@@ -80,27 +75,18 @@ export class UmkmWorkspaceService {
       publish_status: m.publish_status,
       verification_status: m.verification_status,
       campaigns_count: campaignCountByMerchant[m.id] || 0,
+      active_campaigns_count: activeCampaignCountByMerchant[m.id] || 0,
     }));
 
     // 3. Fetch Recent Submissions (DRAFT, PENDING_REVIEW, REJECTED, APPROVED)
-    const { data: submissions, error: sError } = await this.supabase
-      .from("merchant_submissions")
-      .select("id, name, category, status, address, created_at, updated_at")
-      .eq("submitted_by", userId)
-      .order("updated_at", { ascending: false })
-      .limit(10);
-
-    if (sError) {
-      console.error("[UmkmWorkspaceService] Error fetching submissions:", sError);
-    }
-
-    const submissionsList = (submissions || []) as SubmissionBrief[];
+    const submissions = await this.readWorkflowRows("merchant_submissions", "id, name, category, status, address, created_at, updated_at", "submitted_by", userId, "updated_at");
+    const submissionsList = retainOpenAndRecent(submissions, ["DRAFT", "PENDING_REVIEW"]) as SubmissionBrief[];
     const claimsList: MerchantClaimBrief[] = (recentClaims || []).map((claim: any) => {
       const merchant = merchantByClaimId.get(claim.merchant_id);
       return {
         id: claim.id,
         merchant_id: claim.merchant_id,
-        merchant_name: merchant?.name ?? "Merchant tidak ditemukan",
+        merchant_name: merchant?.name ?? "Usaha tidak ditemukan",
         category: readCategory(merchant?.metadata, merchant?.description),
         status: claim.status,
         address: merchant?.address ?? null,
@@ -122,12 +108,31 @@ export class UmkmWorkspaceService {
       recent_claims: claimsList,
     };
   }
+
+  private async readWorkflowRows(table: "merchant_claims" | "merchant_submissions", columns: string, ownerColumn: string, userId: string, dateColumn: string) {
+    const rows: any[] = [];
+    const pageSize = 100;
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await this.supabase.from(table).select(columns).eq(ownerColumn, userId)
+        .order(dateColumn, { ascending: false }).order("id", { ascending: false }).range(offset, offset + pageSize - 1);
+      if (error) throw new Error(table === "merchant_claims" ? "Gagal mengambil status klaim usaha." : "Gagal mengambil status pendaftaran usaha.");
+      rows.push(...(data ?? []));
+      if (!data || data.length < pageSize) return rows;
+    }
+  }
+}
+
+function retainOpenAndRecent(rows: any[], openStatuses: string[]) {
+  let historyCount = 0;
+  return rows.filter((row) => openStatuses.includes(row.status) || historyCount++ < 10);
 }
 
 function readCategory(metadata: unknown, description: unknown) {
   if (typeof metadata === "object" && metadata !== null && !Array.isArray(metadata)) {
-    const category = (metadata as Record<string, unknown>).category;
-    if (typeof category === "string" && category.trim()) return category.trim();
+    const fields = metadata as Record<string, unknown>;
+    for (const category of [fields.category, fields.category_label]) {
+      if (typeof category === "string" && category.trim()) return category.trim();
+    }
   }
   return typeof description === "string" && description.trim()
     ? description.split("·")[0]!.trim()

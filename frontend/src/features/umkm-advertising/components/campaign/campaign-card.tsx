@@ -188,7 +188,7 @@ export function CampaignCard({
         </button>
 
         <a
-          href={`/umkm/advertising/analytics?campaignId=${campaign.id}`}
+          href={`/umkm/advertising/analytics?merchantId=${encodeURIComponent(merchantId)}&campaignId=${campaign.id}`}
           className="inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-blue-500/50 bg-blue-500/10 px-3 py-1.5 text-xs font-medium text-blue-200 transition-colors hover:bg-blue-500/20 lg:ml-auto"
         >
           <BarChart2 className="w-3.5 h-3.5 text-blue-400" />

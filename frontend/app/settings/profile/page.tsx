@@ -22,10 +22,11 @@ import {
 } from "react";
 
 import { useAuth } from "@/src/components/providers/AuthProvider";
+import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
+import type { ExperienceMode } from "@/src/types/stakeholder.types";
 import type { UserContext } from "@/src/lib/auth-client";
 import {
   getExperienceBadges,
-  getPrimaryExperienceLabel,
 } from "@/src/lib/user-experience";
 import { GetraAppShell } from "@/src/components/getra-ui";
 import { profileService } from "@/src/services/profile.service";
@@ -140,6 +141,11 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 export default function ProfileSettingsPage() {
   const router = useRouter();
   const { context, refresh } = useAuth();
+  const {
+    activeExperience,
+    availableExperiences,
+    setActiveExperience,
+  } = useStakeholder();
 
   const [form, setForm] = useState<ProfileForm>(() =>
     createProfileForm(context?.profile),
@@ -160,9 +166,13 @@ export default function ProfileSettingsPage() {
   );
 
   const badges = context ? getExperienceBadges(context) : [];
-  const primaryExperience = context
-    ? getPrimaryExperienceLabel(context)
-    : "General / Commuter";
+  const experienceLabels: Record<ExperienceMode, string> = {
+    GENERAL: "General / Commuter",
+    UMKM: "UMKM",
+    INVESTOR: "Investor",
+    GOVERNMENT: "Pemerintah",
+  };
+  const primaryExperience = experienceLabels[activeExperience];
 
   useEffect(() => {
     const timeoutId = window.setTimeout(
@@ -317,12 +327,44 @@ export default function ProfileSettingsPage() {
                 </span>
               ))}
             </div>
-            <p className="mt-4 rounded-2xl border border-cyan-300/10 bg-slate-950/70 px-4 py-3 text-xs text-slate-400">
-              Pengalaman aktif utama:{" "}
-              <span className="font-bold text-cyan-100">
-                {primaryExperience}
-              </span>
-            </p>
+            <div className="mt-4 rounded-2xl border border-cyan-300/10 bg-slate-950/70 px-4 py-3">
+              <p className="text-xs text-slate-400">
+                Pengalaman aktif utama:{" "}
+                <span className="font-bold text-cyan-100">
+                  {primaryExperience}
+                </span>
+              </p>
+              <div
+                aria-label="Pilih pengalaman aktif utama"
+                className="mt-3 grid grid-cols-2 gap-2"
+                role="tablist"
+              >
+                {availableExperiences.map((mode) => (
+                  <button
+                    aria-selected={activeExperience === mode}
+                    className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${
+                      activeExperience === mode
+                        ? "border-cyan-200/70 bg-cyan-300/15 text-cyan-100"
+                        : "border-white/10 bg-white/[0.025] text-slate-400 hover:border-cyan-300/40 hover:text-cyan-100"
+                    }`}
+                    key={mode}
+                    role="tab"
+                    type="button"
+                    onClick={() => {
+                      setActiveExperience(mode);
+                      router.push("/app");
+                    }}
+                  >
+                    {experienceLabels[mode]}
+                  </button>
+                ))}
+              </div>
+              {context?.profile?.account_role === "ADMIN" ? (
+                <p className="mt-3 text-[11px] leading-4 text-amber-200/80">
+                  Akses Admin tetap aktif di semua pengalaman.
+                </p>
+              ) : null}
+            </div>
           </section>
         </aside>
 
@@ -545,18 +587,29 @@ export default function ProfileSettingsPage() {
                 Lihat profil publik
               </button>
 
-              <button
-                className="inline-flex h-12 items-center gap-2 rounded-2xl border border-white/25 bg-gradient-to-r from-lime-300 via-emerald-200 to-cyan-300 px-7 text-sm font-black uppercase tracking-[0.04em] text-slate-950 shadow-[0_14px_35px_rgba(34,211,238,0.22)] ring-1 ring-slate-950/10 transition hover:-translate-y-0.5 hover:brightness-110 disabled:cursor-wait disabled:translate-y-0 disabled:opacity-70"
-                disabled={saving}
-                type="submit"
-              >
-                {saving ? (
-                  <LoaderCircle className="animate-spin" size={16} />
-                ) : (
-                  <Save size={16} />
-                )}
-                Simpan profil
-              </button>
+              <div className="flex flex-col items-end gap-2">
+                <button
+                  aria-busy={saving}
+                  className="inline-flex min-h-14 min-w-60 items-center justify-center gap-3 rounded-2xl border border-lime-100/80 bg-gradient-to-r from-lime-300 via-emerald-200 to-cyan-300 px-7 text-sm font-black uppercase tracking-[0.06em] text-slate-950 shadow-[0_14px_35px_rgba(34,211,238,0.28)] ring-2 ring-slate-950/30 transition hover:-translate-y-0.5 hover:brightness-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-200/60 disabled:cursor-wait disabled:translate-y-0 disabled:opacity-75"
+                  disabled={saving}
+                  type="submit"
+                >
+                  {saving ? (
+                    <LoaderCircle className="animate-spin" size={19} />
+                  ) : (
+                    <Save size={19} strokeWidth={2.5} />
+                  )}
+                  {saving ? "Menyimpan perubahan..." : "Simpan perubahan profil"}
+                </button>
+                <span
+                  aria-live="polite"
+                  className="text-xs font-medium text-slate-400"
+                >
+                  {saving
+                    ? "Mohon tunggu, profil sedang diperbarui."
+                    : "Simpan nama, bio, nomor HP, dan foto profil terbaru."}
+                </span>
+              </div>
             </div>
           </form>
         </section>

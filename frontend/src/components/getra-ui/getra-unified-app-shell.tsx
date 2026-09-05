@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 import { GetraGlobalHeader } from "./getra-global-header";
 
 type AppShellTone = "general" | "community" | "umkm" | "admin" | "profile";
-type GetraAppShellProps = { children: ReactNode; eyebrow?: string; title?: string; description?: string; tone?: AppShellTone; actions?: ReactNode };
+type GetraAppShellProps = { children: ReactNode; eyebrow?: string; title?: string; description?: string; tone?: AppShellTone; actions?: ReactNode; showContextNavigation?: boolean };
 
 const UMKM_NAV = [
   { href: "/umkm", label: "Workspace", icon: Store, exact: true },
@@ -21,13 +21,13 @@ const ADMIN_NAV = [
   { href: "/admin/import", label: "Import Data", icon: Database },
 ];
 
-export function GetraAppShell({ actions, children, description, eyebrow = "GETRA Application", title, tone = "general" }: GetraAppShellProps) {
+export function GetraAppShell({ actions, children, description, eyebrow = "GETRA Application", title, tone = "general", showContextNavigation = true }: GetraAppShellProps) {
   const pathname = usePathname();
   const contextualNav = tone === "umkm" ? UMKM_NAV : tone === "admin" ? ADMIN_NAV : [];
   return (
     <main className={`getra-app-shell getra-app-shell--${tone}`}>
       <GetraGlobalHeader />
-      {contextualNav.length > 0 ? (
+      {showContextNavigation && contextualNav.length > 0 ? (
         <nav className="getra-context-nav" aria-label={tone === "umkm" ? "Navigasi UMKM" : "Navigasi admin"}>
           <div className="getra-context-nav__inner">
             {contextualNav.map((item) => {

@@ -138,11 +138,11 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
 
             {submission.status === "APPROVED" && submission.canonical_merchant_id ? (
               <Link
-                href={`/umkm/advertising?merchantId=${submission.canonical_merchant_id}`}
+                href={`/umkm?merchantId=${submission.canonical_merchant_id}#promosi`}
                 className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-emerald-950/40 transition-colors hover:bg-emerald-500 sm:flex-none"
               >
                 <Megaphone size={14} />
-                Pasang Iklan Merchant
+                Periksa kesiapan promosi
               </Link>
             ) : null}
           </div>

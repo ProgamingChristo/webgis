@@ -1,23 +1,33 @@
 .git
 .gitignore
 .next
+**/.next
 node_modules
+**/node_modules
 
 # Environment files never enter the image build context.
 .env
 .env.*
 
 # Development, test, database, and documentation artifacts are not runtime inputs.
+.sites-runtime
+**/.sites-runtime
 coverage
 .logs
 logs
 *.log
+lint_output.txt
+**/lint_output.txt
 *.tsbuildinfo
 tests
 docs
 supabase
 deployment
 routing-data
+routing-source-cache
+tmp
+**/tmp
+.tmp-*
 
 # Local editor and agent metadata.
 .vscode

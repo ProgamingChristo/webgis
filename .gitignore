@@ -61,3 +61,6 @@ next-env.d.ts
 
 # Local audit output
 **/lint_output.txt
+
+# Routing runtime/source artifacts
+routing-source-cache/

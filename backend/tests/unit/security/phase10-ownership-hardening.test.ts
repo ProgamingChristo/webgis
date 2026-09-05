@@ -29,7 +29,7 @@ describe("Phase 10 merchant ownership hardening", () => {
 
   it("uses canonical owner_id rather than claim history as active workspace authority", () => {
     const source = readFileSync(resolve(root, "src/features/umkm-workspace/services/umkm-workspace.service.ts"), "utf8");
-    expect(source).toMatch(/from\(["']merchant_claims["']\)/);
+    expect(source).toMatch(/readWorkflowRows\(["']merchant_claims["']/);
     expect(source).toMatch(/eq\(["']owner_id["'],\s*userId\)/);
     expect(source).not.toMatch(/approvedClaims/);
     expect(source).not.toMatch(/claimedMerchants/);
