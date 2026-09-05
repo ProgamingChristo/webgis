@@ -7,7 +7,7 @@ export function ordinaryUserFixture() {
   return approvedAccountFixture("USER");
 }
 
-export function approvedAccountFixture(role) {
+export function approvedAccountFixture(role, occurrence = 0) {
   assert(["USER", "ADMIN"].includes(role), "APPROVED_ROLE_REQUIRED");
   const require = createRequire(import.meta.url);
   const ts = require(resolve("node_modules/typescript/lib/typescript.js"));
@@ -31,7 +31,7 @@ export function approvedAccountFixture(role) {
     if (node.kind === ts.SyntaxKind.FalseKeyword) return false;
     throw new Error("UNSUPPORTED_FIXTURE_LITERAL");
   }
-  const fixture = literal(declarations.get("stableUsers")).find((u) => u.expectedAccountRole === role);
+  const fixture = literal(declarations.get("stableUsers")).filter((u) => u.expectedAccountRole === role)[occurrence];
   assert(fixture, "ORDINARY_USER_FIXTURE_REQUIRED");
   const password = literal(declarations.get("TEST_PASSWORD"));
   return { email: fixture.email, password };
