@@ -73,6 +73,10 @@ type GetraMapProps = {
   accessibilityEvidence?: AccessibilityEvidence[];
   selectedAccessibilityEvidenceId?: string | null;
   userLocation: UserLocation | null;
+  journeyActive?: boolean;
+  journeyFollowing?: boolean;
+  journeyFocusKey?: number;
+  onJourneyCameraOverride?: () => void;
   onSelect: (merchant: Merchant) => void;
   onSelectProperty?: (candidate: BusinessSpaceCandidate) => void;
   onSelectAccessibilityEvidence?: (evidence: AccessibilityEvidence) => void;
@@ -574,6 +578,10 @@ export function GetraMap({
   accessibilityEvidence = [],
   selectedAccessibilityEvidenceId = null,
   userLocation,
+  journeyActive = false,
+  journeyFollowing = false,
+  journeyFocusKey = 0,
+  onJourneyCameraOverride,
   onSelect,
   onSelectProperty,
   onSelectAccessibilityEvidence,
@@ -621,6 +629,8 @@ export function GetraMap({
   const [cameraFitKey, setCameraFitKey] = useState(0);
   const [cameraOwner, setCameraOwner] = useState<"SYSTEM" | "USER">("SYSTEM");
   const cameraOwnerRef = useRef<"SYSTEM" | "USER">("SYSTEM");
+  const journeyOverrideRef = useRef(onJourneyCameraOverride);
+  useEffect(() => { journeyOverrideRef.current = onJourneyCameraOverride; }, [onJourneyCameraOverride]);
 
   const hasVisibleContextualLayer =
     contextualLayerVisibility.property ||
@@ -634,6 +644,7 @@ export function GetraMap({
     useRef<MapLibreMap | null>(null);
 
   const markUserCameraControl = useCallback(() => {
+    journeyOverrideRef.current?.();
     const map = mapRef.current;
     if (map) map.stop();
     cameraOwnerRef.current = "USER";
@@ -1675,7 +1686,9 @@ export function GetraMap({
     userLocationMarkerRef.current =
       marker;
 
-    map.easeTo({
+    const basemap = map.getContainer().parentElement?.querySelector(".basemap-switcher");
+    const bottomInset = basemap ? map.getContainer().getBoundingClientRect().bottom - basemap.getBoundingClientRect().top + 24 : 72;
+    if (!journeyActive || journeyFollowing) map.easeTo({
       center: [
         userLocation.longitude,
         userLocation.latitude,
@@ -1685,9 +1698,13 @@ export function GetraMap({
         14,
       ),
       duration: 650,
+      ...(journeyActive ? { padding: { top: 72, bottom: Math.min(bottomInset, map.getContainer().clientHeight * 0.45), left: 24, right: 24 } } : {}),
     });
   }, [
     userLocation,
+    journeyActive,
+    journeyFollowing,
+    journeyFocusKey,
   ]);
 
   /*
@@ -1838,7 +1855,7 @@ export function GetraMap({
     updateRoute();
     if (!map.isStyleLoaded()) map.once("idle", updateRoute);
 
-    if (isRouteGeometry(routeGeometry)) {
+    if (isRouteGeometry(routeGeometry) && !journeyActive) {
       if (lastFocusedRouteGeometry.current !== routeGeometry) {
         lastFocusedRouteGeometry.current = routeGeometry;
         const bounds =
@@ -1884,6 +1901,7 @@ export function GetraMap({
     routeGeometry,
     serviceAreaGeometry,
     styleRevision,
+    journeyActive,
   ]);
 
   useEffect(() => {

@@ -5,6 +5,15 @@
 .coordinateEntry input { width: 100%; min-width: 0; height: 36px; border: 1px solid #6b7280; border-radius: 4px; padding: 6px; background: #fff; color: #18181b; }
 .coordinateEntry button { height: 36px; width: 36px; display: grid; place-items: center; border: 1px solid #0891b2; border-radius: 4px; background: #0e7490; color: white; cursor: pointer; }
 .planner { letter-spacing: 0; }
+.journeyFields { border: 0; margin: 0; padding: 0; min-width: 0; }
+.journey { display: grid; gap: 8px; padding-block: 12px; border-bottom: 1px solid #475569; margin-bottom: 10px; font-size: 13px; }
+.journey span { overflow-wrap: anywhere; }
+.journeyActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.journey button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px; border: 1px solid #64748b; border-radius: 4px; background: #fff; color: #18181b; cursor: pointer; }
+.journey .journeyStart { width: 100%; background: #047857; border-color: #10b981; color: #fff; font-weight: 600; }
+.journey .journeyStop { flex: 1; }
+.journey button[aria-pressed="true"] { border-color: #10b981; color: #047857; }
+.journey button:disabled { opacity: .5; cursor: not-allowed; }
 .planner button { min-height: 36px; }
 .planner :global(.route-chip-button) { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .planner :global(.route-mode-grid) { grid-template-columns: repeat(3, minmax(0, 1fr)); }

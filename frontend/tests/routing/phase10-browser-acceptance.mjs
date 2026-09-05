@@ -1,41 +1,19 @@
 // Opt-in real staging acceptance. Never persist sessions or capture login screenshots.
 import { createRequire } from "node:module";
-import { execFileSync } from "node:child_process";
+import { ordinaryUserFixture } from "./browser-user-fixture.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import assert from "node:assert/strict";
 
 const require = createRequire(import.meta.url);
-const ts = require(resolve("node_modules/typescript/lib/typescript.js"));
 const { chromium } = require(process.env.GETRA_PLAYWRIGHT_MODULE || "playwright");
 const api = "https://getra-routing-api.tail0ed517.ts.net";
 const frontend = process.env.GETRA_FRONTEND_ORIGIN || "http://localhost:3001";
 const output = resolve("outputs/phase10");
 mkdirSync(output, { recursive: true });
 const evidence = { started: new Date().toISOString(), frontend, api, routes: [], checks: {} };
-const fixtureSource = execFileSync("git", ["show", "HEAD:backend/scripts/api-smoke-test.ts"], { encoding: "utf8" });
-const source = ts.createSourceFile("fixture.ts", fixtureSource, ts.ScriptTarget.Latest, true);
-const declarations = new Map();
-function collect(node) {
-  if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) declarations.set(node.name.text, node.initializer);
-  ts.forEachChild(node, collect);
-}
-collect(source);
-function literal(node) {
-  if (ts.isAsExpression(node) || ts.isSatisfiesExpression(node)) return literal(node.expression);
-  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node.text;
-  if (ts.isNumericLiteral(node)) return Number(node.text);
-  if (ts.isArrayLiteralExpression(node)) return node.elements.map(literal);
-  if (ts.isObjectLiteralExpression(node)) return Object.fromEntries(node.properties.map((p) => [p.name.text, literal(p.initializer)]));
-  if (ts.isIdentifier(node) && declarations.has(node.text)) return literal(declarations.get(node.text));
-  if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.BarBarToken) return process.env.GETRA_TEST_USER_PASSWORD || literal(node.right);
-  if (node.kind === ts.SyntaxKind.TrueKeyword) return true;
-  if (node.kind === ts.SyntaxKind.FalseKeyword) return false;
-  throw new Error("UNSUPPORTED_FIXTURE_LITERAL");
-}
-const fixture = literal(declarations.get("stableUsers")).find((u) => u.expectedAccountRole === "USER");
-assert(fixture, "ORDINARY_USER_FIXTURE_REQUIRED");
-const password = literal(declarations.get("TEST_PASSWORD"));
+const fixture = ordinaryUserFixture();
+const password = fixture.password;
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 const page = await context.newPage();
