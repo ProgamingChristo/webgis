@@ -6,7 +6,7 @@ describe("safe authentication return path", () => {
     expect(safeReturnPath(value)).toBe(value);
     expect(postLoginPath(new URL(loginPath(value), "https://getra.test").search, true)).toBe(value);
   });
-  it.each([null, "", "https://evil.test", "//evil.test", "javascript:alert(1)", "/\\evil.test", "/%2f%2fevil.test", "/%252f%252fevil.test", "/..//evil.test", "/%00evil", "/%255cevil", "/login", "/signup", "/onboarding"])("rejects unsafe/looping target %s", value => {
+  it.each([null, "", "https://evil.test", "//evil.test", "javascript:alert(1)", "/\\evil.test", "/%2f%2fevil.test", "/%252f%252fevil.test", "/..//evil.test", "/%00evil", "/%255cevil", "/login](https://evil.test)", "/[http://evil.test](http://evil.test)", "/login", "/signup", "/onboarding"])("rejects unsafe/looping target %s", value => {
     expect(safeReturnPath(value)).toBe("/app");
   });
   it("preserves a protected destination through required onboarding", () => {
