@@ -1,0 +1,51 @@
+services:
+  getra-backend-full:
+    image: getra-full-backend:${GETRA_RELEASE_SHA:?Release SHA required}
+    build:
+      context: ../../..
+      dockerfile: docs/qa/phase10d/Dockerfile
+      target: backend
+      args:
+        GETRA_RELEASE_SHA: ${GETRA_RELEASE_SHA}
+    env_file:
+      - /home/getra/phase10d-qa/backend.runtime.env
+    ports:
+      - "127.0.0.1:${GETRA_BACKEND_PORT:-3012}:3000"
+    networks:
+      - default
+      - routing
+    restart: unless-stopped
+    init: true
+    mem_limit: 1g
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+  getra-frontend-full:
+    image: getra-full-frontend:${GETRA_RELEASE_SHA:?Release SHA required}
+    build:
+      context: ../../..
+      dockerfile: docs/qa/phase10d/Dockerfile
+      target: frontend
+      args:
+        GETRA_RELEASE_SHA: ${GETRA_RELEASE_SHA}
+      secrets:
+        - frontend_public_env
+    ports:
+      - "127.0.0.1:${GETRA_FRONTEND_PORT:-3013}:3000"
+    restart: unless-stopped
+    init: true
+    mem_limit: 768m
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+networks:
+  routing:
+    external: true
+    name: getra_default
+secrets:
+  frontend_public_env:
+    file: /home/getra/phase10d-qa/frontend.public.env

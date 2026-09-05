@@ -64,3 +64,6 @@ next-env.d.ts
 
 # Routing runtime/source artifacts
 routing-source-cache/
+
+# Local Supabase CLI project metadata.
+supabase/.temp/
