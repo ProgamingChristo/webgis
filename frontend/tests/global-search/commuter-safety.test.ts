@@ -5,12 +5,14 @@ import { describe, expect, it } from "vitest";
 const routingHook = readFileSync(resolve(process.cwd(), "src/hooks/use-routing.ts"), "utf8");
 const dashboard = readFileSync(resolve(process.cwd(), "components/getra-dashboard.tsx"), "utf8");
 const map = readFileSync(resolve(process.cwd(), "components/getra-map.tsx"), "utf8");
+const routeLayer = readFileSync(resolve(process.cwd(), "src/features/routing/route-layer.ts"), "utf8");
 const basemap = readFileSync(resolve(process.cwd(), "lib/mapid.ts"), "utf8");
 
 describe("commuter browser safety", () => {
   it("cancels stale route requests and never fabricates a client route", () => {
     expect(routingHook).toContain("AbortController");
-    expect(routingHook).toContain("activeRequestRef.current?.id !== id");
+    expect(routingHook).toContain("controller.signal.aborted || sequence.current !== id");
+    expect(routingHook).toContain("snapshot?.identity === identity");
     expect(routingHook).not.toContain("direct_line_fallback");
     expect(routingHook).not.toContain("calculateDistanceMeters");
   });
@@ -23,7 +25,8 @@ describe("commuter browser safety", () => {
 
   it("renders network service-area edges separately from the route", () => {
     expect(map).toContain('"walking-service-area"');
-    expect(map).toContain('"walking-route"');
+    expect(map).toContain("syncWalkingRoute");
+    expect(routeLayer).toContain('"walking-route"');
     expect(map).not.toContain("routeIsFallback");
   });
 
