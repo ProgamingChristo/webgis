@@ -227,7 +227,7 @@ try {
     } else await route.continue();
   };
   await page.route(`${api}/api/routing`, pendingDelay);
-  await page.waitForTimeout(1100); await planner.getByRole("button", { name: "Perbarui rute", exact: true }).click();
+  await page.waitForTimeout(1100); await page.getByRole("button", { name: "Perbarui rute", exact: true }).click();
   await pendingFetched; await state("REROUTING"); await stop(); finishPending();
   await page.waitForTimeout(500); await page.unroute(`${api}/api/routing`, pendingDelay);
   assert.equal(await page.locator('[data-journey-state]').getAttribute('data-journey-state'), 'STOPPED');
