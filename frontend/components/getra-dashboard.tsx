@@ -1718,17 +1718,6 @@ function GeneralGetraDashboard() {
     if (!authContext) journey.controller.sessionLost();
   }, [authContext, journey.controller]);
 
-  const routeDurationMinutes =
-    route?.duration_seconds !== null && route?.duration_seconds !== undefined
-      ? Math.max(
-          1,
-          Math.ceil(
-            route.duration_seconds /
-              60,
-          ),
-        )
-      : null;
-
   const routeOriginPoint = useMemo(() => routeOrigin
     ? {
         label: routeOrigin.label,
@@ -2648,7 +2637,7 @@ function GeneralGetraDashboard() {
       />
 
       <StakeholderContextShell>
-        <section className="workspace-grid">
+        <section className={`workspace-grid ${journeyOpen ? routingStyles.activeWorkspace : ""}`}>
           <aside className="left-panel panel" tabIndex={0} aria-label="Kontrol pencarian dan rute">
           <div className="panel-heading">
             <div>
@@ -2823,8 +2812,9 @@ function GeneralGetraDashboard() {
           </section>
 
           <section className={`route-planner ${routingStyles.planner}`} aria-label="Perencana rute" data-routing-state={routingState}>
-            <JourneyControls journey={journey} canStart={Boolean(!journeyOpen && preview.route && authContext && routeDestination)}
-              onStart={() => { setMapPickMode("NONE"); void journey.controller.start(); }} />
+            {!journeyOpen ? <JourneyControls journey={journey} canStart={Boolean(preview.route && authContext && routeDestination)}
+              onStart={() => { setMapPickMode("NONE"); void journey.controller.start(); }}
+              destinationName={routeDestination?.name} /> : null}
             <div className="route-planner__header">
               <div>
                 <span className="eyebrow">
@@ -3096,37 +3086,24 @@ function GeneralGetraDashboard() {
             </div>
             {routingState === "LOADING" && !journeyOpen ? <p className="route-message" role="status">Menghitung rute...</p> : null}
 
-            {route && route.distance_meters !== null ? (
-              <div className="route-result" data-testid="routing-result" aria-live="polite">
-                {journeyOpen ? <small>Sisa perjalanan · pembaruan rute {journey.updatedAt ? new Date(journey.updatedAt).toLocaleTimeString("id-ID") : ""}</small> : null}
-                <strong>{routeModeLabel(activeMode)} · {formatDistance(route.distance_meters)} · {routeDurationMinutes} menit</strong>
-                {route.has_toll ? <small>Rute ini menggunakan jalan tol.</small> : null}
-                {route.maneuvers.length > 0 ? (
-                  <details className="route-maneuvers">
-                    <summary>Lihat petunjuk ({route.maneuvers.length})</summary>
-                    <ol>
-                      {route.maneuvers.map((maneuver, index) => (
-                        <li key={`${maneuver.type ?? "step"}-${index}`}>
-                          <span>{maneuver.instruction}</span>
-                          {maneuver.distance_meters > 0 ? <small>{formatDistance(maneuver.distance_meters)}</small> : null}
-                        </li>
-                      ))}
-                    </ol>
-                  </details>
-                ) : null}
-              </div>
-            ) : null}
+            {route && !journeyOpen ? <button type="button" className="route-primary-button"
+              onClick={() => {
+                setRouteSheetOpen(true);
+                document.querySelector(".map-panel")?.scrollIntoView({ block: "start" });
+              }}><Route size={18} /> Lihat rute</button> : null}
 
-            {route && route.distance_meters !== null && !journeyOpen ? (
-              <RouteSelectionSheet
-                route={route}
-                open={routeSheetOpen}
-                onOpenChange={setRouteSheetOpen}
-                onSelect={preview.selectCandidate}
-                preference={routePreference}
-                onPreferenceChange={setRoutePreference}
-                onStart={() => { setRouteSheetOpen(false); setMapPickMode("NONE"); void journey.controller.start(); }}
-              />
+            {route && route.maneuvers.length > 0 ? (
+              <details className="route-maneuvers">
+                <summary>Lihat petunjuk ({route.maneuvers.length})</summary>
+                <ol>
+                  {route.maneuvers.map((maneuver, index) => (
+                    <li key={`${maneuver.type ?? "step"}-${index}`}>
+                      <span>{maneuver.instruction}</span>
+                      {maneuver.distance_meters > 0 ? <small>{formatDistance(maneuver.distance_meters)}</small> : null}
+                    </li>
+                  ))}
+                </ol>
+              </details>
             ) : null}
 
             {routingError ? (
@@ -3745,7 +3722,7 @@ function GeneralGetraDashboard() {
         </aside>
 
         <section
-          className="map-panel"
+          className={`map-panel ${route && !journeyOpen ? routingStyles.planningMap : ""}`}
           aria-label="Peta GETRA"
           style={{ position: "relative" }}
         >
@@ -3755,6 +3732,20 @@ function GeneralGetraDashboard() {
               <button type="button" onClick={() => setMapPickMode("NONE")} aria-label="Batal memilih titik" title="Batal memilih titik"><X size={18} /></button>
             </div>
           )}
+          {journeyOpen ? <JourneyControls
+            journey={journey}
+            canStart={false}
+            onStart={() => undefined}
+            destinationName={routeDestination?.name}
+            mode={activeMode}
+            onModeChange={setActiveMode}
+          /> : null}
+          {route && route.distance_meters !== null && !journeyOpen ? (
+            <RouteSelectionSheet route={route} open={routeSheetOpen}
+              onOpenChange={setRouteSheetOpen} onSelect={preview.selectCandidate}
+              preference={routePreference} onPreferenceChange={setRoutePreference}
+              onStart={() => { setRouteSheetOpen(false); setMapPickMode("NONE"); void journey.controller.start(); }} />
+          ) : null}
           <GetraMap
             datasetKey={datasetId}
             focusBounds={searchFocusBounds}

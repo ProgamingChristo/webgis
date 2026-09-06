@@ -91,7 +91,7 @@ async function accepted(name, mode, since) {
   assert.equal(map.sourceCount, 1); assert.equal(map.layerCount, 2);
   assert.equal(map.endpoints, 2, "ENDPOINT_MARKERS_REQUIRED");
   assert(map.webgl && map.coordinateOrder, "MAP_RENDER_OR_ORDER_FAILED");
-  const summary = await planner.getByTestId("routing-result").innerText();
+  const summary = await page.getByTestId("routing-result").innerText();
   const distance = d.distance_meters >= 1000 ? `${(d.distance_meters / 1000).toFixed(1)} km` : `${Math.round(d.distance_meters)} m`;
   assert(summary.includes(distance) && summary.includes(`${Math.max(1, Math.ceil(d.duration_seconds / 60))} menit`), "SUMMARY_NOT_PROVIDER_DERIVED");
   const record = { name, mode, origin: response.request.origin, destination: response.request.destination,
@@ -202,7 +202,7 @@ try {
     await page.waitForFunction((state) => document.querySelector('[data-routing-state]')?.dataset.routingState === state, test.state);
     await page.waitForTimeout(100);
     assert.equal((await inspectMap("state")).points, 0, "FAILURE_LEFT_STALE_GEOMETRY");
-    assert.equal(await planner.getByTestId("routing-result").count(), 0);
+    assert.equal(await page.getByTestId("routing-result").count(), 0);
     if (test.name === "auth") assert.equal(await planner.getByRole("link", { name: "Masuk kembali" }).count(), 1);
     evidence.checks[`controlled-${test.name}`] = "PASS";
     await page.unroute(`${api}/api/routing`, handler);
@@ -255,7 +255,7 @@ try {
   assert.equal(await planner.getAttribute("data-routing-state"), "IDLE");
   assert.equal((await inspectMap("state")).points, 0);
   assert.equal((await inspectMap("state")).endpoints, 0);
-  assert.equal(await planner.getByTestId("routing-result").count(), 0);
+  assert.equal(await page.getByTestId("routing-result").count(), 0);
   assert.equal(await planner.getByRole("alert").count(), 0);
   assert.equal(requests.length, requestsBeforeReset);
   evidence.checks.reset = "PASS";

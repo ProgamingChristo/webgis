@@ -95,6 +95,7 @@ export function CommunityPostDetail({ postId }: CommunityPostDetailProps) {
           }
           onViewLocation={setActiveLocation}
           canDelete={context?.profile?.account_role === "ADMIN" || detail.post.authorId === context?.user.id}
+          moderationDelete={context?.profile?.account_role === "ADMIN" && detail.post.authorId !== context?.user.id}
           deleting={detail.deleting}
           onDelete={async () => {
             const deleted = await detail.deletePost();

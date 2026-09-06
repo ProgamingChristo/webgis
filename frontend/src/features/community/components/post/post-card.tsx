@@ -24,6 +24,7 @@ type PostCardProps = {
   onToggleReaction?(postId: string, reactionType: CommunityReactionType): void;
   canDelete?: boolean;
   deleting?: boolean;
+  moderationDelete?: boolean;
   onDelete?(postId: string): Promise<boolean>;
 };
 
@@ -34,6 +35,7 @@ export function PostCard({
   onToggleReaction,
   canDelete = false,
   deleting = false,
+  moderationDelete = false,
   onDelete,
 }: PostCardProps) {
   return (
@@ -57,12 +59,13 @@ export function PostCard({
               </span>
             ) : null}
           </div>
-          <time dateTime={post.createdAt}>
-            {formatCommunityTime(post.createdAt)}
-          </time>
+          <div className={styles.postHeaderActions}>
+            <time dateTime={post.createdAt}>{formatCommunityTime(post.createdAt)}</time>
+            <ReportButton targetId={post.id} targetType="POST" />
+            {canDelete && onDelete ? <PostDeleteAction deleting={deleting} moderation={moderationDelete}
+              onDelete={() => onDelete(post.id)} /> : null}
+          </div>
         </header>
-        <ReportButton targetId={post.id} targetType="POST" />
-        {canDelete && onDelete ? <PostDeleteAction deleting={deleting} onDelete={() => onDelete(post.id)} /> : null}
         <Link className={styles.postLink} href={`/community/${post.id}`}>
           <p className={styles.postContent}>{post.content}</p>
         </Link>

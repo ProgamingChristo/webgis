@@ -27,7 +27,7 @@ async function login(fixture, viewport = { width: 1440, height: 1000 }) {
 }
 
 async function createPost(page, content) {
-  await page.goto(`${frontend}/community`);
+  if (!page.url().endsWith("/community")) await openCommunity(page);
   await page.getByLabel("Tulis informasi lokal").fill(content);
   const responsePromise = page.waitForResponse((response) => response.url() === `${backend}/api/community/posts` && response.request().method() === "POST");
   await page.getByRole("button", { name: "Posting", exact: true }).click();
@@ -44,12 +44,24 @@ async function createPost(page, content) {
   return body.data.id;
 }
 
-async function deleteThroughUi(page, content) {
+async function openCommunity(page) {
+  if (page.viewportSize().width < 1024) {
+    await page.getByRole("button", { name: "Buka menu GETRA" }).click();
+    await page.getByRole("dialog", { name: "Menu GETRA" }).getByRole("link", { name: "Community", exact: true }).click();
+  } else {
+    await page.getByRole("navigation", { name: "Navigasi utama GETRA" }).getByRole("link", { name: "Community", exact: true }).click();
+  }
+  await page.getByRole("region", { name: "Feed Community" }).waitFor();
+}
+
+async function deleteThroughUi(page, content, label) {
   const card = page.getByRole("article").filter({ hasText: content });
   await card.getByLabel("Opsi postingan").click();
+  await page.screenshot({ path: resolve(output, label + "-delete-menu.png") });
   await card.getByRole("button", { name: "Hapus postingan" }).click();
   const dialog = page.getByRole("dialog", { name: "Hapus postingan ini?" });
   await dialog.waitFor();
+  await page.screenshot({ path: resolve(output, label + "-delete-confirmation.png") });
   await dialog.getByRole("button", { name: "Batal" }).click();
   await card.waitFor();
   await card.getByLabel("Opsi postingan").click();
@@ -95,7 +107,7 @@ try {
   const ownContent = `${marker} owner delete`;
   const adminContent = `${marker} admin delete`;
   const ownId = await createPost(first.page, ownContent);
-  await deleteThroughUi(first.page, ownContent);
+  await deleteThroughUi(first.page, ownContent, "owner");
   assert.equal(await authenticatedStatus(first.page, `/api/community/posts/${ownId}`, "GET"), 404);
   evidence.community.ownerDelete = "PASS";
   evidence.community.deletedDetail = "NOT_FOUND";
@@ -103,7 +115,7 @@ try {
   await first.context.close();
 
   const second = await login(user2, { width: 390, height: 844 });
-  await second.page.goto(`${frontend}/community`);
+  if (!second.page.url().includes("/onboarding")) await openCommunity(second.page);
   const foreignCard = second.page.getByRole("article").filter({ hasText: adminContent });
   await second.page.waitForTimeout(2_000);
   const foreignPostVisible = await foreignCard.isVisible().catch(() => false);
@@ -114,9 +126,14 @@ try {
   evidence.community.mobileAuthorization = "SERVER_DENIAL_PASS";
   await second.context.close();
 
-  const moderator = await login(admin);
-  await moderator.page.goto(`${frontend}/community`);
-  await deleteThroughUi(moderator.page, adminContent);
+  const moderator = await login(admin, { width: 390, height: 844 });
+  await openCommunity(moderator.page);
+  const adminCard = moderator.page.getByRole("article").filter({ hasText: adminContent });
+  await adminCard.getByLabel("Opsi postingan").click();
+  await moderator.page.screenshot({ path: resolve(output, "admin-feed-delete-menu.png") });
+  await adminCard.getByLabel("Opsi postingan").click();
+  await adminCard.getByRole("link").filter({ hasText: adminContent }).click();
+  await deleteThroughUi(moderator.page, adminContent, "admin-detail");
   assert.equal(await authenticatedStatus(moderator.page, `/api/community/posts/${adminDeleteId}`, "GET"), 404);
   evidence.community.adminDelete = "PASS";
   await moderator.context.close();
@@ -142,8 +159,8 @@ try {
   assert(live && live.status === 200);
   assert(live.data.route_candidates.length > 1, "GENUINE_PROVIDER_ALTERNATIVE_REQUIRED");
   assert(live.data.route_candidates.every((candidate) => candidate.geometry.type === "LineString" && candidate.geometry.coordinates.length > 1));
-  await planner.locator('[data-sheet-open] > button').click();
-  const sheet = planner.getByRole("region", { name: "Pilihan rute" });
+  await planner.getByRole("button", { name: "Lihat rute", exact: true }).click();
+  const sheet = page.getByRole("region", { name: "Pilihan rute" });
   await sheet.waitFor();
   const alternative = sheet.getByRole("button", { name: /Alternatif|Lewat area UMKM/ }).last();
   await alternative.click();
@@ -156,7 +173,7 @@ try {
     evidence.routing.umkmPreference = "AVAILABLE_AND_SELECTED";
   } else {
     assert.equal(await umkmButton.isDisabled(), true);
-    await sheet.getByText("Belum ada alternatif lewat area UMKM untuk rute ini.").waitFor();
+    await sheet.getByText("Belum ada alternatif lewat area UMKM untuk perjalanan ini.").waitFor();
     evidence.routing.umkmPreference = "TRUTHFUL_NOT_AVAILABLE";
   }
   await sheet.getByRole("button", { name: "Mulai Perjalanan", exact: true }).waitFor();

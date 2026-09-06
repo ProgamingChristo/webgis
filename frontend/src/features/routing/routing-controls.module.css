@@ -6,14 +6,13 @@
 .coordinateEntry button { height: 36px; width: 36px; display: grid; place-items: center; border: 1px solid #0891b2; border-radius: 4px; background: #0e7490; color: white; cursor: pointer; }
 .planner { letter-spacing: 0; }
 .journeyFields { border: 0; margin: 0; padding: 0; min-width: 0; }
-.journey { display: grid; gap: 8px; padding-block: 12px; border-bottom: 1px solid #475569; margin-bottom: 10px; font-size: 13px; }
-.journey span { overflow-wrap: anywhere; }
-.journeyActions { display: flex; flex-wrap: wrap; gap: 8px; }
-.journey button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px; border: 1px solid #64748b; border-radius: 4px; background: #fff; color: #18181b; cursor: pointer; }
-.journey .journeyStart { width: 100%; background: #047857; border-color: #10b981; color: #fff; font-weight: 600; }
-.journey .journeyStop { flex: 1; }
-.journey button[aria-pressed="true"] { border-color: #10b981; color: #047857; }
-.journey button:disabled { opacity: .5; cursor: not-allowed; }
+.journey { display: grid; padding-block: 12px; border-bottom: 1px solid #475569; margin-bottom: 10px; }
+.journey button,
+.journeyMapUi button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 12px; border: 1px solid #64748b; border-radius: 6px; background: #fff; color: #18181b; cursor: pointer; }
+.journey .journeyStart { width: 100%; background: #047857; border-color: #047857; color: #fff; font-weight: 750; }
+.journeyMapUi button[aria-pressed="true"] { border-color: #0e7490; background: #ecfeff; color: #155e75; }
+.journey button:disabled,
+.journeyMapUi button:disabled { opacity: .5; cursor: not-allowed; }
 .planner button { min-height: 36px; }
 .planner :global(.route-chip-button) { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .planner :global(.route-mode-grid) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -25,29 +24,123 @@
 .point strong { display: block; margin-bottom: 4px; }
 .pointActions { display: flex; gap: 8px; margin-top: 6px; }
 .pointActions button { display: inline-flex; gap: 4px; align-items: center; background: transparent; color: inherit; border: 0; cursor: pointer; }
-.pickBanner { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; background: #fff; color: #18181b; border: 1px solid #0891b2; border-radius: 6px; }
+.pickBanner { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; background: #fff; color: #18181b; border: 1px solid #0891b2; border-radius: 6px; }
 .pickBanner button { background: transparent; border: 0; width: 36px; height: 36px; display: grid; place-items: center; cursor: pointer; }
-.planner button:focus-visible, .coordinateEntry summary:focus-visible, .pickBanner button:focus-visible { outline: 2px solid #facc15; outline-offset: 3px; }
-.routeOverview { position: relative; margin-top: 12px; }
-.routeOverviewButton { width: 100%; display: grid; gap: 4px; padding: 12px; border: 1px solid #cbd5e1; background: #fff; color: #0f172a; text-align: left; border-radius: 6px; }
-.routeOverviewButton span { display: flex; align-items: center; gap: 7px; font-weight: 700; }
-.routeOverviewButton strong { font-size: 1.05rem; }
-.routeOverviewButton small, .enrichmentNote { color: #475569; }
-.routeSheet { position: fixed; z-index: 45; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); max-height: min(68vh, 620px); overflow: auto; background: #fff; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 18px 45px rgba(15,23,42,.25); padding: 16px; }
+.planner button:focus-visible,
+.coordinateEntry summary:focus-visible,
+.pickBanner button:focus-visible,
+.journeyMapUi button:focus-visible { outline: 2px solid #facc15; outline-offset: 3px; }
+
+.routeOverview { position: absolute; z-index: 35; left: 12px; bottom: 30px; width: min(380px, calc(100% - 24px)); display: grid; gap: 8px; }
+.routeOverview[data-sheet-open="true"] > .routeOverviewButton { display: none; }
+.routeOverviewButton { width: 100%; display: grid; gap: 8px; padding: 13px; border: 1px solid #94a3b8; background: #fff; color: #0f172a; text-align: left; border-radius: 7px; cursor: pointer; }
+.routeOverviewButton:hover { border-color: #0891b2; }
+.routeModeLabel { display: flex; align-items: center; gap: 7px; color: #155e75; font-weight: 750; }
+.routeHeadline { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.routeHeadline strong { font-size: 1.55rem; line-height: 1; }
+.routeHeadline b { font-size: .92rem; }
+.routeOverviewFooter { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.routeOverviewFooter small,
+.enrichmentNote { color: #475569; }
+.routeOverviewFooter > span { display: inline-flex; align-items: center; gap: 4px; color: #0369a1; font-size: .78rem; font-weight: 750; }
+.routeOverview[data-sheet-open="true"] .routeOverviewFooter svg { transform: rotate(180deg); }
+
+.routeSheet { max-height: min(62vh, 580px); overflow: auto; overscroll-behavior: contain; background: #fff; color: #0f172a; border: 1px solid #94a3b8; border-radius: 8px; box-shadow: 0 20px 48px rgba(15, 23, 42, .28); padding: 16px; }
+.sheetHandle { display: none; width: 42px; height: 4px; margin: -4px auto 12px; border-radius: 4px; background: #94a3b8; }
 .routeSheet header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
-.routeSheet h3 { margin: 2px 0 10px; font-size: 1.1rem; }
-.sheetEyebrow { font-size: .72rem; text-transform: uppercase; color: #0369a1; font-weight: 800; }
-.sheetClose { width: 36px; height: 36px; font-size: 1.4rem; border: 0; background: #e2e8f0; border-radius: 4px; }
-.preferenceControl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.preferenceControl button { min-height: 42px; display: flex; gap: 6px; align-items: center; justify-content: center; border: 1px solid #94a3b8; background: #f8fafc; border-radius: 5px; }
-.preferenceControl button[aria-pressed="true"] { border-color: #0284c7; background: #e0f2fe; color: #075985; font-weight: 700; }
+.routeSheet h3 { margin: 3px 0 12px; font-size: 1.12rem; }
+.sheetEyebrow { font-size: .72rem; text-transform: uppercase; color: #0e7490; font-weight: 800; }
+.sheetClose { width: 38px; height: 38px; display: grid; place-items: center; border: 0; background: #e2e8f0; color: #0f172a; border-radius: 4px; cursor: pointer; }
+.preferenceControl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 10px; }
+.preferenceControl button { min-height: 44px; display: flex; gap: 6px; align-items: center; justify-content: center; border: 1px solid #94a3b8; background: #f8fafc; color: #334155; border-radius: 5px; cursor: pointer; }
+.preferenceControl button[aria-pressed="true"] { border-color: #0891b2; background: #ecfeff; color: #155e75; font-weight: 750; }
+.preferenceControl button:disabled { cursor: not-allowed; opacity: .5; }
+.enrichmentNote { margin: 10px 0 0; padding: 8px 10px; border-left: 3px solid #f59e0b; background: #fffbeb; font-size: .78rem; line-height: 1.4; }
 .candidateList { display: grid; gap: 8px; margin: 12px 0; }
-.candidateCard { display: grid; gap: 3px; text-align: left; padding: 11px; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; }
-.candidateCard[aria-pressed="true"] { border: 2px solid #0284c7; background: #f0f9ff; }
-.candidateCard span { font-weight: 750; }
-.candidateCard small { color: #475569; }
-.sheetStart { width: 100%; min-height: 46px; display: flex; gap: 8px; align-items: center; justify-content: center; border: 0; background: #047857; color: #fff; font-weight: 800; border-radius: 6px; }
-.nextManeuver { display: grid; gap: 5px; padding: 12px; background: #f0f9ff; border-left: 4px solid #0284c7; }
-.nextManeuver span { text-transform: uppercase; font-size: .7rem; color: #0369a1; font-weight: 800; }
-.remainingMetrics { font-size: 1rem; }
-@media (min-width: 900px) { .routeSheet { position: absolute; left: 0; right: auto; bottom: calc(100% + 8px); width: min(410px, 80vw); max-height: 560px; } }
+.candidateCard { display: grid; gap: 6px; width: 100%; min-height: 94px; text-align: left; padding: 11px 12px; border: 1px solid #cbd5e1; background: #fff; color: #0f172a; border-radius: 6px; cursor: pointer; }
+.candidateCard:hover { border-color: #0891b2; }
+.candidateCard[aria-pressed="true"] { border: 2px solid #0891b2; padding: 10px 11px; background: #ecfeff; }
+.candidateHeading,
+.candidateHeading > span,
+.candidateMetrics { display: flex; align-items: center; }
+.candidateHeading { justify-content: space-between; gap: 10px; color: #155e75; font-weight: 800; }
+.candidateHeading > span { gap: 7px; }
+.candidateMetrics { justify-content: space-between; gap: 12px; }
+.candidateMetrics strong { font-size: 1.08rem; }
+.candidateMetrics b { font-size: .9rem; }
+.candidateCard small { color: #475569; line-height: 1.35; }
+.candidateCard .umkmCount { color: #166534; font-weight: 700; }
+.sheetStart { position: sticky; bottom: 0; width: 100%; min-height: 48px; display: flex; gap: 8px; align-items: center; justify-content: center; border: 0; background: #047857; color: #fff; font-weight: 800; border-radius: 6px; box-shadow: 0 -8px 18px rgba(255, 255, 255, .9); cursor: pointer; }
+
+.journeyMapUi { position: absolute; z-index: 35; inset: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; pointer-events: none; }
+.journeyMapUi > section { pointer-events: auto; }
+.nextManeuver { align-self: center; width: min(560px, calc(100% - 120px)); display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 16px; background: rgba(255, 255, 255, .97); color: #0f172a; border: 1px solid #0891b2; border-radius: 8px; box-shadow: 0 12px 28px rgba(15, 23, 42, .22); }
+.nextManeuver > svg { color: #0284c7; }
+.nextManeuver div { display: grid; gap: 3px; min-width: 0; }
+.nextManeuver span { text-transform: uppercase; font-size: .68rem; color: #0e7490; font-weight: 800; }
+.nextManeuver strong { overflow-wrap: anywhere; font-size: 1.05rem; line-height: 1.25; }
+.nextManeuver b { color: #155e75; white-space: nowrap; }
+.nextManeuver b small { display: block; font-size: 10px; font-weight: 400; }
+.journeyStatusPanel { align-self: center; width: min(560px, calc(100% - 120px)); display: grid; gap: 10px; padding: 14px 16px; background: rgba(255, 255, 255, .97); color: #0f172a; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 12px 28px rgba(15, 23, 42, .22); }
+.journeyStatusHeading { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.journeyStatusHeading > span { color: #0e7490; font-size: .75rem; font-weight: 800; text-transform: uppercase; }
+.journeyStatusHeading > strong { display: inline-flex; align-items: center; gap: 6px; max-width: 60%; overflow-wrap: anywhere; }
+.remainingMetrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.remainingMetrics > span { display: flex; align-items: baseline; gap: 5px; color: #475569; }
+.remainingMetrics strong { color: #0f172a; font-size: 1.45rem; }
+.journeyStatusPanel > small { color: #475569; }
+.journeyActions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(150px, 1.35fr); gap: 8px; }
+.journeyActions .journeyStop { border-color: #b91c1c; color: #b91c1c; font-weight: 750; }
+.navigationModes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.navigationDirections summary { cursor: pointer; padding: 5px 0; font-size: 12px; }
+.navigationDirections ol { max-height: 18vh; overflow: auto; padding-left: 22px; font-size: 12px; }
+.navigationDirections li { margin-block: 8px; }
+.navigationDirections li small { display: block; }
+.activeWorkspace:global(.workspace-grid) { grid-template-columns: 1fr; height: calc(100dvh - 130px); min-height: 640px; }
+.activeWorkspace > :global(.left-panel),
+.activeWorkspace > :global(.right-panel) { display: none; }
+.activeWorkspace > :global(.map-panel) { height: 100%; min-height: 640px; }
+.activeWorkspace :global(.map-status),
+.activeWorkspace :global(.contextual-layer-control),
+.activeWorkspace :global(.map-show-all-button) { display: none; }
+.activeWorkspace :global(.basemap-switcher) { top: 130px; bottom: auto; right: 10px; left: auto; width: 90px; grid-template-columns: 1fr; }
+.activeWorkspace :global(.basemap-button) { min-height: 30px; }
+.activeWorkspace :global(.basemap-button small) { display: none; }
+.activeWorkspace :global(.navigation-basemap) { position: absolute; top: 145px; right: 10px; z-index: 5; }
+.activeWorkspace :global(.navigation-basemap > summary) { list-style: none; display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid #94a3b8; border-radius: 4px; background: #fff; color: #155e75; cursor: pointer; }
+.activeWorkspace :global(.navigation-basemap > summary::-webkit-details-marker) { display: none; }
+.activeWorkspace :global(.navigation-basemap .basemap-switcher) { top: 44px; right: 0; }
+.planningMap :global(.basemap-switcher) { top: 130px; bottom: auto; right: 10px; left: auto; width: 90px; grid-template-columns: 1fr; }
+.planningMap :global(.basemap-button small) { display: none; }
+.planningMap > :global(.map-shell),
+.activeWorkspace :global(.map-shell) { isolation: isolate; z-index: 0; }
+
+@media (max-width: 1024px) {
+  .routeOverview { width: calc(100% - 24px); }
+  .routeSheet { max-height: min(55vh, 540px); padding: 14px; }
+  .planningMap:global(.map-panel) { height: 86dvh; min-height: 640px; }
+  .activeWorkspace:global(.workspace-grid) { height: auto; min-height: 0; }
+  .activeWorkspace > :global(.map-panel) { height: calc(100dvh - 100px); min-height: 640px; }
+  .sheetHandle { display: block; }
+  .journeyMapUi { inset: 10px; }
+  .nextManeuver,
+  .journeyStatusPanel { width: min(520px, 100%); }
+}
+
+@media (max-width: 520px) {
+  .routeSheet { max-height: min(55vh, 540px); }
+  .preferenceControl { grid-template-columns: 1fr 1fr; font-size: 12px; }
+  .nextManeuver { grid-template-columns: 30px minmax(0, 1fr) auto; padding: 11px 12px; }
+  .nextManeuver strong { font-size: .92rem; }
+  .journeyStatusPanel { padding: 11px 12px; }
+  .journeyStatusHeading { align-items: flex-start; }
+  .journeyStatusHeading > strong { max-width: 58%; font-size: .8rem; }
+  .remainingMetrics strong { font-size: 1.2rem; }
+  .journeyActions { grid-template-columns: 1fr 1fr; }
+  .journeyActions .journeyStop { grid-column: 1 / -1; }
+  .journeyMapUi button { min-height: 42px; padding: 8px; font-size: .78rem; }
+  .journeyStatusPanel { gap: 6px; }
+  .activeWorkspace .nextManeuver { align-self: flex-start; width: calc(100% - 46px); grid-template-columns: 24px minmax(0, 1fr); }
+  .activeWorkspace .nextManeuver > b { grid-column: 2; display: flex; gap: 5px; align-items: baseline; }
+  .activeWorkspace :global(.navigation-basemap) { top: 112px; }
+}

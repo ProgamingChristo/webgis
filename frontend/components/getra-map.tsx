@@ -3,6 +3,7 @@
 import { bindRouteAlternativeSelection, syncRouteAlternatives, syncWalkingRoute } from "@/src/features/routing/route-layer";
 import { isRouteGeometry } from "@/src/features/routing/route-geometry";
 import type { RoutingCandidate } from "@/src/services/routing.service";
+import { Layers } from "lucide-react";
 
 import type * as GeoJSON from "geojson";
 
@@ -891,6 +892,8 @@ export function GetraMap({
       });
 
     mapRef.current = map;
+    const resizeObserver = new ResizeObserver(() => map.resize());
+    resizeObserver.observe(map.getContainer());
 
     map.on("dragstart", markUserCameraControl);
     map.on("rotatestart", markUserCameraControl);
@@ -1040,6 +1043,7 @@ export function GetraMap({
       routeDestinationMarkerRef.current?.remove();
       routeDestinationMarkerRef.current = null;
 
+      resizeObserver.disconnect();
       map.remove();
 
       mapRef.current = null;
@@ -1695,7 +1699,11 @@ export function GetraMap({
       marker;
 
     const basemap = map.getContainer().parentElement?.querySelector(".basemap-switcher");
-    const bottomInset = basemap ? map.getContainer().getBoundingClientRect().bottom - basemap.getBoundingClientRect().top + 24 : 72;
+    const containerRect = map.getContainer().getBoundingClientRect();
+    const navigationPanel = map.getContainer().closest(".map-panel")?.querySelector('[data-navigation-metrics]');
+    const bottomInset = journeyActive && navigationPanel
+      ? containerRect.bottom - navigationPanel.getBoundingClientRect().top + 20
+      : basemap ? containerRect.bottom - basemap.getBoundingClientRect().top + 24 : 72;
     if (!journeyActive || journeyFollowing) map.easeTo({
       center: [
         userLocation.longitude,
@@ -1706,7 +1714,7 @@ export function GetraMap({
         14,
       ),
       duration: 650,
-      ...(journeyActive ? { padding: { top: 72, bottom: Math.min(bottomInset, map.getContainer().clientHeight * 0.45), left: 24, right: 24 } } : {}),
+      ...(journeyActive ? { padding: { top: 112, bottom: Math.min(bottomInset, map.getContainer().clientHeight * 0.55), left: 24, right: 24 } } : {}),
     });
   }, [
     userLocation,
@@ -1886,17 +1894,19 @@ export function GetraMap({
         if (!bounds.isEmpty()) {
           const container = map.getContainer();
           const basemap = container.parentElement?.querySelector(".basemap-switcher");
-          const bottomInset = basemap
-            ? container.getBoundingClientRect().bottom - basemap.getBoundingClientRect().top + 16
-            : 72;
+          const routeSheet = container.closest(".map-panel")?.querySelector('[data-sheet-open]');
+          const compact = container.clientWidth < 600;
+          const sheetRect = routeSheet?.getBoundingClientRect();
+          const bottomInset = sheetRect && compact ? sheetRect.height + 50 : 72;
+          const leftInset = sheetRect && !compact ? sheetRect.width + 32 : 40;
           map.fitBounds(
             bounds,
             {
               padding: {
                 top: 72,
-                bottom: Math.min(bottomInset, container.clientHeight * 0.45),
-                left: Math.min(72, Math.floor(container.clientWidth / 6)),
-                right: Math.min(72, Math.floor(container.clientWidth / 6)),
+                bottom: Math.min(bottomInset, container.clientHeight * 0.6),
+                left: Math.min(leftInset, container.clientWidth * 0.5),
+                right: basemap ? Math.min(110, container.clientWidth * 0.2) : 40,
               },
               maxZoom: 16,
               duration: 650,
@@ -2006,6 +2016,8 @@ export function GetraMap({
         onChange={onContextualLayerChange}
       />
 
+      <details className={journeyActive ? "navigation-basemap" : "planning-basemap"} open={journeyActive ? undefined : true}>
+      <summary hidden={!journeyActive} aria-label="Tampilan peta" title="Tampilan peta"><Layers size={20} /></summary>
       <div
         className="basemap-switcher"
         aria-label="Pilih basemap"
@@ -2038,6 +2050,7 @@ export function GetraMap({
           ),
         )}
       </div>
+      </details>
 
     </div>
   );

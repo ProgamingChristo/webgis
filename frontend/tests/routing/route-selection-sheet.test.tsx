@@ -28,14 +28,15 @@ describe("route selection sheet", () => {
     expect(html).toContain("Rute tercepat");
     expect(html).toContain("Lewat area UMKM");
     expect(html).toContain("+2 menit");
-    expect(html).toContain("8 UMKM di sekitar rute");
+    expect(html).toContain("8 UMKM di sekitar jalur");
+    expect(html).toContain("+200 m");
     expect(html).toContain("Mulai Perjalanan");
   });
 
   it("truthfully disables UMKM preference when no richer provider candidate exists", () => {
     const html = renderToStaticMarkup(<RouteSelectionSheet route={route(false)} open onOpenChange={vi.fn()}
       onSelect={vi.fn()} preference="FASTEST" onPreferenceChange={vi.fn()} onStart={vi.fn()} />);
-    expect(html).toContain("Belum ada alternatif lewat area UMKM untuk rute ini.");
+    expect(html).toContain("Belum ada alternatif lewat area UMKM untuk perjalanan ini.");
     expect(html).toMatch(/disabled=""[^>]*>.*Lewat area UMKM/s);
   });
 });

@@ -200,6 +200,18 @@
   white-space: nowrap;
 }
 
+.postHeaderActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-height: 36px;
+}
+
+.postHeaderActions .reportAction {
+  margin-top: 0;
+}
+
 .textareaLabel {
   position: absolute;
   width: 1px;
@@ -1796,6 +1808,9 @@
   }
 }
 .postDelete { position: relative; display: flex; justify-content: flex-end; }
+.postDelete .iconButton { color: var(--getra-ink); border: 1px solid var(--getra-line); width: 40px; height: 40px; }
+.postDelete .iconButton:hover,
+.postDelete .iconButton:focus-visible { background: var(--getra-primary-soft); color: var(--getra-primary); }
 .iconButton { width: 36px; height: 36px; display: inline-grid; place-items: center; border: 0; background: transparent; color: #475569; border-radius: 4px; }
 .iconButton:hover, .iconButton:focus-visible { background: #e2e8f0; color: #0f172a; }
 .deleteMenuAction { position: absolute; z-index: 4; top: 38px; right: 0; min-width: 170px; display: flex; gap: 8px; align-items: center; padding: 10px 12px; border: 1px solid #fecaca; background: #fff; color: #b91c1c; border-radius: 5px; box-shadow: 0 8px 24px rgba(15,23,42,.16); }
@@ -1805,3 +1820,9 @@
 .deleteDialogActions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 .deleteDialogActions button { min-height: 42px; padding: 0 14px; border: 1px solid #94a3b8; background: #fff; border-radius: 5px; }
 .deleteDialogActions .dangerButton { border-color: #b91c1c; background: #b91c1c; color: #fff; }
+
+@media (max-width: 640px) {
+  .postHeaderActions {
+    justify-content: flex-start;
+  }
+}
