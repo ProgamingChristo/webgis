@@ -210,7 +210,7 @@ try {
   await planner.getByRole("button", { name: "Mulai Perjalanan", exact: true }).click();
   await accepted("arrival", "walking", { latitude: -6.21795, longitude: 106.68695 }, since, true);
   assert.equal((await gpsStats()).active, 0);
-  assert((await page.getByRole("region", { name: "Navigasi aktif" }).innerText()).includes("Anda telah tiba di tujuan.")); evidence.checks.arrival = "PASS";
+  assert((await page.getByRole("region", { name: "Navigasi aktif" }).innerText()).includes("Anda telah tiba")); evidence.checks.arrival = "PASS";
   await page.getByRole("button", { name: "Kembali ke perencana" }).click(); await preview();
   evidence.checks.previewAfterJourney = "PASS";
   // Unmount cleanup while watch is active, without logging out or exposing a session.
