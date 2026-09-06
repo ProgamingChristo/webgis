@@ -1014,6 +1014,7 @@ export function GetraMap({
     );
 
     const sponsoredMarkers = sponsoredMarkersRef.current;
+    const routeLabelMarkers = routeLabelMarkersRef.current;
 
     return () => {
       merchantMarkers.forEach(
@@ -1048,8 +1049,8 @@ export function GetraMap({
       routeDestinationMarkerRef.current?.remove();
       routeDestinationMarkerRef.current = null;
 
-      routeLabelMarkersRef.current.forEach((marker) => marker.remove());
-      routeLabelMarkersRef.current.clear();
+      routeLabelMarkers.forEach((marker) => marker.remove());
+      routeLabelMarkers.clear();
 
       resizeObserver.disconnect();
       map.remove();
@@ -1939,8 +1940,9 @@ export function GetraMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    routeLabelMarkersRef.current.forEach((marker) => marker.remove());
-    routeLabelMarkersRef.current.clear();
+    const routeLabelMarkers = routeLabelMarkersRef.current;
+    routeLabelMarkers.forEach((marker) => marker.remove());
+    routeLabelMarkers.clear();
     if (!map || journeyActive) return;
 
     routeCandidates.forEach((candidate, index) => {
@@ -1967,12 +1969,12 @@ export function GetraMap({
         onSelectRouteRef.current?.(candidate.route_id);
       });
       const marker = new Marker({ element, anchor: "center" }).setLngLat(anchor).addTo(map);
-      routeLabelMarkersRef.current.set(candidate.route_id, marker);
+      routeLabelMarkers.set(candidate.route_id, marker);
     });
 
     return () => {
-      routeLabelMarkersRef.current.forEach((marker) => marker.remove());
-      routeLabelMarkersRef.current.clear();
+      routeLabelMarkers.forEach((marker) => marker.remove());
+      routeLabelMarkers.clear();
     };
   }, [journeyActive, routeCandidates, selectedRouteId]);
 
