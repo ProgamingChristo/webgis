@@ -111,6 +111,20 @@ try {
   const ownContent = `${marker} owner delete`;
   const adminContent = `${marker} admin delete`;
   const ownId = await createPost(first.page, ownContent);
+  const ownCard = first.page.getByRole("article").filter({ hasText: ownContent });
+  const ownAuthorHref = await ownCard.locator('a[href^="/community/users/"]').first().getAttribute("href");
+  const feedCards = first.page.getByRole("article");
+  let foreignCardIndex = -1;
+  for (let index = 0; index < await feedCards.count(); index += 1) {
+    const authorHref = await feedCards.nth(index).locator('a[href^="/community/users/"]').first().getAttribute("href").catch(() => null);
+    if (authorHref && authorHref !== ownAuthorHref) { foreignCardIndex = index; break; }
+  }
+  assert(foreignCardIndex >= 0, "VISIBLE_FOREIGN_POST_REQUIRED");
+  const visibleForeignCard = feedCards.nth(foreignCardIndex);
+  assert.equal(await visibleForeignCard.getByRole("button", { name: "Hapus", exact: true }).count(), 0);
+  await visibleForeignCard.scrollIntoViewIfNeeded();
+  await visibleForeignCard.screenshot({ path: resolve(output, "other-user-no-delete.png") });
+  evidence.community.otherUserUi = "DELETE_ACTION_HIDDEN";
   await deleteThroughUi(first.page, ownContent, "owner");
   assert.equal(await authenticatedStatus(first.page, `/api/community/posts/${ownId}`, "GET"), 404);
   evidence.community.ownerDelete = "PASS";
@@ -129,7 +143,7 @@ try {
   }
   assert.equal(await authenticatedStatus(second.page, `/api/community/posts/${adminDeleteId}`, "DELETE"), 403);
   evidence.community.otherUserDenial = "PASS";
-  evidence.community.otherUserUi = foreignPostVisible ? "DELETE_ACTION_HIDDEN" : "FIXTURE_NOT_ONBOARDED_POST_NOT_VISIBLE";
+  evidence.community.secondaryFixtureUi = foreignPostVisible ? "DELETE_ACTION_HIDDEN" : "FIXTURE_NOT_ONBOARDED_POST_NOT_VISIBLE";
   evidence.community.mobileAuthorization = "SERVER_DENIAL_PASS";
   await second.context.close();
 
