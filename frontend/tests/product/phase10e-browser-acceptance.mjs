@@ -9,6 +9,9 @@ const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.GETRA_PLAYWRIGHT_MODULE || "playwright");
 const frontend = process.env.GETRA_FRONTEND_ORIGIN || "http://localhost:3003";
 const backend = process.env.GETRA_BACKEND_ORIGIN || "https://getra-routing-api.tail0ed517.ts.net";
+const backendSource = ["localhost", "127.0.0.1"].includes(new URL(backend).hostname)
+  ? "REAL_GETRA_BACKEND_LOCAL_GATEWAY"
+  : "PUBLIC_GETRA_BACKEND";
 const output = resolve("outputs/phase10e");
 mkdirSync(output, { recursive: true });
 const evidence = { started: new Date().toISOString(), checks: {}, community: {}, routing: {}, simulatedGPS: false, physicalTravel: false };
@@ -185,7 +188,7 @@ try {
   evidence.routing = { ...evidence.routing, mode: "car", candidateCount: live.data.route_candidates.length,
     selectedRouteId: live.data.selected_route_id, enrichmentStatus: live.data.umkm_enrichment_status,
     nearbyCounts: live.data.route_candidates.map((candidate) => candidate.nearby_umkm_count),
-    latencyMs: Date.now() - started, responseBytes: live.bytes, source: "PUBLIC_GETRA_BACKEND" };
+    latencyMs: Date.now() - started, responseBytes: live.bytes, source: backendSource };
   evidence.checks.community = "PASS";
   evidence.checks.multiRoute = "PASS";
   evidence.checks.responsiveRouteSheet = "PASS";
