@@ -125,7 +125,8 @@ try {
   await coordinate("Tujuan", { latitude: -6.218, longitude: 106.687 });
   await planner.getByRole("button", { name: "Jalan kaki", exact: true }).click();
   await ready("walking");
-  await planner.getByRole("button", { name: "Mulai Perjalanan", exact: true }).click();
+  await planner.getByRole("button", { name: "Lihat rute", exact: true }).click();
+  await page.getByRole("region", { name: "Pilihan rute" }).getByRole("button", { name: "Mulai Perjalanan", exact: true }).click();
   const active = page.getByRole("region", { name: "Navigasi aktif" });
   await page.waitForFunction(() => document.querySelector('[data-journey-state="ACTIVE"]'));
   await page.locator(".map-panel").scrollIntoViewIfNeeded();

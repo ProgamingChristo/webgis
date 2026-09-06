@@ -2,6 +2,7 @@
 
 import { bindRouteAlternativeSelection, syncRouteAlternatives, syncWalkingRoute } from "@/src/features/routing/route-layer";
 import { isRouteGeometry } from "@/src/features/routing/route-geometry";
+import { formatRouteDistance, formatRouteMinutes, getRouteLabelAnchor } from "@/src/features/routing/route-presentation";
 import type { RoutingCandidate } from "@/src/services/routing.service";
 import { Layers } from "lucide-react";
 
@@ -639,6 +640,8 @@ export function GetraMap({
   const cameraOwnerRef = useRef<"SYSTEM" | "USER">("SYSTEM");
   const journeyOverrideRef = useRef(onJourneyCameraOverride);
   useEffect(() => { journeyOverrideRef.current = onJourneyCameraOverride; }, [onJourneyCameraOverride]);
+  const onSelectRouteRef = useRef(onSelectRoute);
+  useEffect(() => { onSelectRouteRef.current = onSelectRoute; }, [onSelectRoute]);
 
   const hasVisibleContextualLayer =
     contextualLayerVisibility.property ||
@@ -704,6 +707,8 @@ export function GetraMap({
     useRef<Marker | null>(
       null,
     );
+
+  const routeLabelMarkersRef = useRef<Map<string, Marker>>(new Map());
 
   const routeGeometryRef =
     useRef<GeoJSON.LineString | null>(
@@ -1042,6 +1047,9 @@ export function GetraMap({
 
       routeDestinationMarkerRef.current?.remove();
       routeDestinationMarkerRef.current = null;
+
+      routeLabelMarkersRef.current.forEach((marker) => marker.remove());
+      routeLabelMarkersRef.current.clear();
 
       resizeObserver.disconnect();
       map.remove();
@@ -1928,6 +1936,45 @@ export function GetraMap({
     styleRevision,
     journeyActive,
   ]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    routeLabelMarkersRef.current.forEach((marker) => marker.remove());
+    routeLabelMarkersRef.current.clear();
+    if (!map || journeyActive) return;
+
+    routeCandidates.forEach((candidate, index) => {
+      const anchor = getRouteLabelAnchor(candidate, index, routeCandidates.length);
+      if (!anchor) return;
+      const selected = candidate.route_id === selectedRouteId;
+      const element = document.createElement("button");
+      element.type = "button";
+      element.className = `route-map-label${selected ? " route-map-label--selected" : ""}${candidate.route_category === "UMKM_AREA" ? " route-map-label--umkm" : ""}`;
+      element.setAttribute("aria-label", `${selected ? "Rute dipilih" : "Pilih rute"}, ${formatRouteMinutes(candidate.duration_seconds)}, ${formatRouteDistance(candidate.distance_meters)}`);
+      element.setAttribute("aria-pressed", String(selected));
+      const duration = document.createElement("strong");
+      duration.textContent = formatRouteMinutes(candidate.duration_seconds);
+      const distance = document.createElement("span");
+      distance.textContent = formatRouteDistance(candidate.distance_meters);
+      element.append(duration, distance);
+      if (candidate.route_category === "UMKM_AREA") {
+        const umkm = document.createElement("b");
+        umkm.textContent = "UMKM";
+        element.append(umkm);
+      }
+      element.addEventListener("click", (event) => {
+        event.stopPropagation();
+        onSelectRouteRef.current?.(candidate.route_id);
+      });
+      const marker = new Marker({ element, anchor: "center" }).setLngLat(anchor).addTo(map);
+      routeLabelMarkersRef.current.set(candidate.route_id, marker);
+    });
+
+    return () => {
+      routeLabelMarkersRef.current.forEach((marker) => marker.remove());
+      routeLabelMarkersRef.current.clear();
+    };
+  }, [journeyActive, routeCandidates, selectedRouteId]);
 
   useEffect(() => {
     if (!mapRef.current) return;

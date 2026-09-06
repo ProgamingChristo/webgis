@@ -2812,9 +2812,6 @@ function GeneralGetraDashboard() {
           </section>
 
           <section className={`route-planner ${routingStyles.planner}`} aria-label="Perencana rute" data-routing-state={routingState}>
-            {!journeyOpen ? <JourneyControls journey={journey} canStart={Boolean(preview.route && authContext && routeDestination)}
-              onStart={() => { setMapPickMode("NONE"); void journey.controller.start(); }}
-              destinationName={routeDestination?.name} /> : null}
             <div className="route-planner__header">
               <div>
                 <span className="eyebrow">
@@ -3091,20 +3088,6 @@ function GeneralGetraDashboard() {
                 setRouteSheetOpen(true);
                 document.querySelector(".map-panel")?.scrollIntoView({ block: "start" });
               }}><Route size={18} /> Lihat rute</button> : null}
-
-            {route && route.maneuvers.length > 0 ? (
-              <details className="route-maneuvers">
-                <summary>Lihat petunjuk ({route.maneuvers.length})</summary>
-                <ol>
-                  {route.maneuvers.map((maneuver, index) => (
-                    <li key={`${maneuver.type ?? "step"}-${index}`}>
-                      <span>{maneuver.instruction}</span>
-                      {maneuver.distance_meters > 0 ? <small>{formatDistance(maneuver.distance_meters)}</small> : null}
-                    </li>
-                  ))}
-                </ol>
-              </details>
-            ) : null}
 
             {routingError ? (
               <p className="route-message" role="alert">
@@ -3742,7 +3725,10 @@ function GeneralGetraDashboard() {
           /> : null}
           {route && route.distance_meters !== null && !journeyOpen ? (
             <RouteSelectionSheet route={route} open={routeSheetOpen}
+              originLabel={routeOriginPoint?.label ?? "Titik mulai"}
+              destinationLabel={routeDestinationPoint?.label ?? routeDestination?.name ?? "Tujuan"}
               onOpenChange={setRouteSheetOpen} onSelect={preview.selectCandidate}
+              onModeChange={setActiveMode}
               preference={routePreference} onPreferenceChange={setRoutePreference}
               onStart={() => { setRouteSheetOpen(false); setMapPickMode("NONE"); void journey.controller.start(); }} />
           ) : null}

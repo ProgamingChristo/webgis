@@ -23,7 +23,8 @@ const route = (available: boolean): RoutingResult => ({
 describe("route selection sheet", () => {
   it("shows selected semantics, provider deltas, UMKM counts, and Start", () => {
     const html = renderToStaticMarkup(<RouteSelectionSheet route={route(true)} open onOpenChange={vi.fn()}
-      onSelect={vi.fn()} preference="FASTEST" onPreferenceChange={vi.fn()} onStart={vi.fn()} />);
+      originLabel="Lokasi Anda" destinationLabel="Pasar" onSelect={vi.fn()} onModeChange={vi.fn()}
+      preference="FASTEST" onPreferenceChange={vi.fn()} onStart={vi.fn()} />);
     expect(html).toContain("aria-pressed=\"true\"");
     expect(html).toContain("Rute tercepat");
     expect(html).toContain("Lewat area UMKM");
@@ -31,11 +32,13 @@ describe("route selection sheet", () => {
     expect(html).toContain("8 UMKM di sekitar jalur");
     expect(html).toContain("+200 m");
     expect(html).toContain("Mulai Perjalanan");
+    expect(html).toContain("Estimasi tanpa data lalu lintas real-time.");
   });
 
   it("truthfully disables UMKM preference when no richer provider candidate exists", () => {
     const html = renderToStaticMarkup(<RouteSelectionSheet route={route(false)} open onOpenChange={vi.fn()}
-      onSelect={vi.fn()} preference="FASTEST" onPreferenceChange={vi.fn()} onStart={vi.fn()} />);
+      originLabel="Lokasi Anda" destinationLabel="Pasar" onSelect={vi.fn()} onModeChange={vi.fn()}
+      preference="FASTEST" onPreferenceChange={vi.fn()} onStart={vi.fn()} />);
     expect(html).toContain("Belum ada alternatif lewat area UMKM untuk perjalanan ini.");
     expect(html).toMatch(/disabled=""[^>]*>.*Lewat area UMKM/s);
   });

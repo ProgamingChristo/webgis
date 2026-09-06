@@ -62,7 +62,7 @@ export function PostCard({
           <div className={styles.postHeaderActions}>
             <time dateTime={post.createdAt}>{formatCommunityTime(post.createdAt)}</time>
             <ReportButton targetId={post.id} targetType="POST" />
-            {canDelete && onDelete ? <PostDeleteAction deleting={deleting} moderation={moderationDelete}
+            {canDelete && onDelete ? <PostDeleteAction authorName={post.author.displayName} deleting={deleting} moderation={moderationDelete}
               onDelete={() => onDelete(post.id)} /> : null}
           </div>
         </header>

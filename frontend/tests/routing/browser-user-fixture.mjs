@@ -1,6 +1,5 @@
 import { createRequire } from "node:module";
 import { execFileSync } from "node:child_process";
-import { resolve } from "node:path";
 import assert from "node:assert/strict";
 
 export function ordinaryUserFixture() {
@@ -9,8 +8,8 @@ export function ordinaryUserFixture() {
 
 export function approvedAccountFixture(role, occurrence = 0) {
   assert(["USER", "ADMIN"].includes(role), "APPROVED_ROLE_REQUIRED");
-  const require = createRequire(import.meta.url);
-  const ts = require(resolve("node_modules/typescript/lib/typescript.js"));
+  const workspaceRequire = createRequire(new URL("../../../package.json", import.meta.url));
+  const ts = workspaceRequire("typescript");
   const fixtureSource = execFileSync("git", ["show", "HEAD:backend/scripts/api-smoke-test.ts"], { encoding: "utf8" });
   const source = ts.createSourceFile("fixture.ts", fixtureSource, ts.ScriptTarget.Latest, true);
   const declarations = new Map();

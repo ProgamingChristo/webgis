@@ -12,7 +12,7 @@ const backend = process.env.GETRA_BACKEND_ORIGIN || "https://getra-routing-api.t
 const backendSource = ["localhost", "127.0.0.1"].includes(new URL(backend).hostname)
   ? "REAL_GETRA_BACKEND_LOCAL_GATEWAY"
   : "PUBLIC_GETRA_BACKEND";
-const output = resolve("outputs/phase10e");
+const output = resolve("outputs/phase10e3");
 mkdirSync(output, { recursive: true });
 const evidence = { started: new Date().toISOString(), checks: {}, community: {}, routing: {}, simulatedGPS: false, physicalTravel: false };
 const browser = await chromium.launch({ channel: "msedge", headless: true });
@@ -57,20 +57,21 @@ async function openCommunity(page) {
   await page.getByRole("region", { name: "Feed Community" }).waitFor();
 }
 
-async function deleteThroughUi(page, content, label) {
+async function deleteThroughUi(page, content, label, moderation = false) {
   const card = page.getByRole("article").filter({ hasText: content });
-  await card.getByLabel("Opsi postingan").click();
-  await page.screenshot({ path: resolve(output, label + "-delete-menu.png") });
-  await card.getByRole("button", { name: "Hapus postingan" }).click();
-  const dialog = page.getByRole("dialog", { name: "Hapus postingan ini?" });
+  const action = card.getByRole("button", { name: "Hapus", exact: true });
+  await action.waitFor();
+  await page.screenshot({ path: resolve(output, label + "-delete-action.png") });
+  await action.click();
+  const dialogName = moderation ? "Hapus postingan sebagai admin?" : "Hapus postingan?";
+  const dialog = page.getByRole("dialog", { name: dialogName });
   await dialog.waitFor();
   await page.screenshot({ path: resolve(output, label + "-delete-confirmation.png") });
   await dialog.getByRole("button", { name: "Batal" }).click();
   await card.waitFor();
-  await card.getByLabel("Opsi postingan").click();
-  await card.getByRole("button", { name: "Hapus postingan" }).click();
+  await action.click();
   const deleteResponse = page.waitForResponse((response) => response.url().includes("/api/community/posts/") && response.request().method() === "DELETE");
-  await page.getByRole("dialog", { name: "Hapus postingan ini?" }).getByRole("button", { name: "Hapus", exact: true }).click();
+  await page.getByRole("dialog", { name: dialogName }).getByRole("button", { name: "Hapus", exact: true }).click();
   assert.equal((await deleteResponse).status(), 200);
   await card.waitFor({ state: "hidden", timeout: 5_000 });
 }
@@ -122,7 +123,10 @@ try {
   const foreignCard = second.page.getByRole("article").filter({ hasText: adminContent });
   await second.page.waitForTimeout(2_000);
   const foreignPostVisible = await foreignCard.isVisible().catch(() => false);
-  if (foreignPostVisible) assert.equal(await foreignCard.getByLabel("Opsi postingan").count(), 0);
+  if (foreignPostVisible) {
+    assert.equal(await foreignCard.getByRole("button", { name: "Hapus", exact: true }).count(), 0);
+    await second.page.screenshot({ path: resolve(output, "other-user-no-delete.png") });
+  }
   assert.equal(await authenticatedStatus(second.page, `/api/community/posts/${adminDeleteId}`, "DELETE"), 403);
   evidence.community.otherUserDenial = "PASS";
   evidence.community.otherUserUi = foreignPostVisible ? "DELETE_ACTION_HIDDEN" : "FIXTURE_NOT_ONBOARDED_POST_NOT_VISIBLE";
@@ -132,11 +136,10 @@ try {
   const moderator = await login(admin, { width: 390, height: 844 });
   await openCommunity(moderator.page);
   const adminCard = moderator.page.getByRole("article").filter({ hasText: adminContent });
-  await adminCard.getByLabel("Opsi postingan").click();
-  await moderator.page.screenshot({ path: resolve(output, "admin-feed-delete-menu.png") });
-  await adminCard.getByLabel("Opsi postingan").click();
+  await adminCard.getByRole("button", { name: "Hapus", exact: true }).waitFor();
+  await moderator.page.screenshot({ path: resolve(output, "admin-feed-delete-action.png") });
   await adminCard.getByRole("link").filter({ hasText: adminContent }).click();
-  await deleteThroughUi(moderator.page, adminContent, "admin-detail");
+  await deleteThroughUi(moderator.page, adminContent, "admin-detail", true);
   assert.equal(await authenticatedStatus(moderator.page, `/api/community/posts/${adminDeleteId}`, "GET"), 404);
   evidence.community.adminDelete = "PASS";
   await moderator.context.close();
@@ -167,7 +170,18 @@ try {
   await sheet.waitFor();
   const alternative = sheet.getByRole("button", { name: /Alternatif|Lewat area UMKM/ }).last();
   await alternative.click();
-  assert.equal(await alternative.getAttribute("aria-pressed"), "true");
+  assert.equal(await alternative.getAttribute("aria-pressed"), "true", "ROUTE_CARD_SELECTION");
+  const mapLabels = page.locator(".route-map-label");
+  assert.equal(await mapLabels.count(), live.data.route_candidates.length);
+  const clickableLabelIndex = await mapLabels.evaluateAll((labels) => labels.findIndex((label) => {
+    const box = label.getBoundingClientRect();
+    const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+    return hit === label || label.contains(hit);
+  }));
+  assert(clickableLabelIndex >= 0, "VISIBLE_MAP_ROUTE_LABEL_REQUIRED");
+  await mapLabels.nth(clickableLabelIndex).click();
+  await page.waitForFunction((index) => document.querySelectorAll(".route-map-label")[index]?.getAttribute("aria-pressed") === "true", clickableLabelIndex);
+  assert.equal(await mapLabels.nth(clickableLabelIndex).getAttribute("aria-pressed"), "true", "MAP_ROUTE_LABEL_SELECTION");
   const umkmButton = sheet.getByRole("button", { name: "Lewat area UMKM", exact: true });
   if (live.data.umkm_preference_available) {
     assert.equal(await umkmButton.isEnabled(), true);

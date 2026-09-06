@@ -57,6 +57,7 @@ next-env.d.ts
 /.sites-runtime/
 **/.sites-runtime/
 /outputs/
+/frontend/outputs/
 /work/
 
 # Local audit output
