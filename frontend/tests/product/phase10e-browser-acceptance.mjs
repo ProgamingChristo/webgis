@@ -8,7 +8,7 @@ import { approvedAccountFixture } from "../routing/browser-user-fixture.mjs";
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.GETRA_PLAYWRIGHT_MODULE || "playwright");
 const frontend = process.env.GETRA_FRONTEND_ORIGIN || "http://localhost:3003";
-const backend = "https://getra-routing-api.tail0ed517.ts.net";
+const backend = process.env.GETRA_BACKEND_ORIGIN || "https://getra-routing-api.tail0ed517.ts.net";
 const output = resolve("outputs/phase10e");
 mkdirSync(output, { recursive: true });
 const evidence = { started: new Date().toISOString(), checks: {}, community: {}, routing: {}, simulatedGPS: false, physicalTravel: false };

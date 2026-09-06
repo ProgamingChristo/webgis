@@ -7,7 +7,7 @@ import { ordinaryUserFixture } from "./browser-user-fixture.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.GETRA_PLAYWRIGHT_MODULE || "playwright");
-const api = "https://getra-routing-api.tail0ed517.ts.net";
+const api = process.env.GETRA_BACKEND_ORIGIN || "https://getra-routing-api.tail0ed517.ts.net";
 const origin = process.env.GETRA_FRONTEND_ORIGIN || "http://localhost:3003";
 const output = resolve("outputs/phase10b");
 mkdirSync(output, { recursive: true });
