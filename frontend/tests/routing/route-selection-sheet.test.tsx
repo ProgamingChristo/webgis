@@ -42,4 +42,30 @@ describe("route selection sheet", () => {
     expect(html).toContain("Belum ada alternatif lewat area UMKM untuk perjalanan ini.");
     expect(html).toMatch(/disabled=""[^>]*>.*Lewat area UMKM/s);
   });
+
+  it("renders inline desktop planner with route cards, start CTA, and secondary collapsed directions", () => {
+    const routeWithManeuvers = route(true);
+    routeWithManeuvers.route_candidates![0].maneuvers = [
+      { instruction: "Mulai berjalan ke utara di Jl. Merpati", distance_meters: 150, time_seconds: 90, type: 1 },
+      { instruction: "Belok kanan ke Jl. Boulevard UPJ", distance_meters: 850, time_seconds: 510, type: 2 },
+    ];
+    const html = renderToStaticMarkup(<RouteSelectionSheet route={routeWithManeuvers} inline open onOpenChange={vi.fn()}
+      originLabel="Stasiun Jurangmangu" destinationLabel="UPJ Bintaro" onSelect={vi.fn()} onModeChange={vi.fn()}
+      preference="FASTEST" onPreferenceChange={vi.fn()} onStart={vi.fn()} />);
+
+    // Inline desktop container
+    expect(html).toContain("inlinePlanner");
+    // Route cards
+    expect(html).toContain("Rute tercepat");
+    expect(html).toContain("Lewat area UMKM");
+    expect(html).toContain("Mulai Perjalanan");
+    // Collapsible directions (details element without open attribute)
+    expect(html).toContain("<details");
+    expect(html).not.toContain("<details open");
+    expect(html).toContain("Lihat petunjuk (2)");
+    expect(html).toContain("Mulai berjalan ke utara di Jl. Merpati");
+    expect(html).toContain("Belok kanan ke Jl. Boulevard UPJ");
+  });
 });
+
+

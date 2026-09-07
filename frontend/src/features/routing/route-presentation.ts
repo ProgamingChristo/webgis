@@ -10,13 +10,107 @@ export function formatRouteMinutes(seconds: number): string {
   return `${Math.max(1, Math.ceil(seconds / 60))} menit`;
 }
 
-export function getRouteIdentity(candidate: RoutingCandidate, index: number): string {
+export function getRouteIdentity(
+  candidate: RoutingCandidate,
+  index: number,
+  allCandidates?: RoutingCandidate[],
+): string {
+  const roadDistances = new Map<string, number>();
   for (const maneuver of candidate.maneuvers) {
     const match = maneuver.instruction.match(ROAD_MARKER);
-    const road = match?.[1]?.trim();
-    if (road) return `Lewat ${road}`;
+    const road = match?.[1]?.trim().replace(/[.,;:]+$/, "");
+    if (road && road.length >= 3) {
+      roadDistances.set(road, (roadDistances.get(road) ?? 0) + (maneuver.distance_meters || 1));
+    }
   }
+
+  const sortedRoads = [...roadDistances.entries()].sort((a, b) => b[1] - a[1]);
+
+  if (sortedRoads.length > 0) {
+    if (allCandidates && allCandidates.length > 1) {
+      const otherTopRoads = new Set(
+        allCandidates
+          .filter((other) => other.route_id !== candidate.route_id)
+          .map((other) => {
+            for (const m of other.maneuvers) {
+              const match = m.instruction.match(ROAD_MARKER);
+              if (match?.[1]) return match[1].trim().replace(/[.,;:]+$/, "");
+            }
+            return null;
+          })
+          .filter(Boolean),
+      );
+
+      const distinctive = sortedRoads.find(([road]) => !otherTopRoads.has(road));
+      const chosen = distinctive ? distinctive[0] : sortedRoads[0][0];
+      return `Lewat ${chosen}`;
+    }
+
+    return `Lewat ${sortedRoads[0][0]}`;
+  }
+
   return `Rute ${index + 1}`;
+}
+
+export interface RouteCandidateDelta {
+  timeDeltaSeconds: number;
+  timeDeltaMinutes: number;
+  distanceDeltaMeters: number;
+  formattedTimeDelta: string | null;
+  formattedDistanceDelta: string | null;
+  formattedDeltaSummary: string | null;
+}
+
+export function computeCandidateDelta(
+  candidate: RoutingCandidate,
+  fastestCandidate?: RoutingCandidate | null,
+): RouteCandidateDelta | null {
+  if (!fastestCandidate || candidate.route_id === fastestCandidate.route_id) {
+    return null;
+  }
+  const timeDeltaSeconds = candidate.duration_seconds - fastestCandidate.duration_seconds;
+  const distanceDeltaMeters = candidate.distance_meters - fastestCandidate.distance_meters;
+  const timeDeltaMinutes = Math.round(timeDeltaSeconds / 60);
+
+  const formattedTimeDelta = timeDeltaSeconds > 0
+    ? `+${Math.max(1, Math.ceil(timeDeltaSeconds / 60))} menit`
+    : timeDeltaSeconds < 0
+      ? `-${Math.max(1, Math.ceil(Math.abs(timeDeltaSeconds) / 60))} menit`
+      : "Waktu sama";
+
+  const formattedDistanceDelta = distanceDeltaMeters > 0
+    ? `+${formatRouteDistance(distanceDeltaMeters)}`
+    : distanceDeltaMeters < 0
+      ? `-${formatRouteDistance(Math.abs(distanceDeltaMeters))}`
+      : "Jarak sama";
+
+  const parts: string[] = [];
+  if (timeDeltaSeconds !== 0) parts.push(formattedTimeDelta);
+  if (distanceDeltaMeters !== 0) parts.push(formattedDistanceDelta);
+  const formattedDeltaSummary = parts.length > 0
+    ? `${parts.join(" · ")} dibanding rute tercepat`
+    : null;
+
+  return {
+    timeDeltaSeconds,
+    timeDeltaMinutes,
+    distanceDeltaMeters,
+    formattedTimeDelta,
+    formattedDistanceDelta,
+    formattedDeltaSummary,
+  };
+}
+
+export function deduplicateCandidates(candidates: RoutingCandidate[]): RoutingCandidate[] {
+  const seen = new Set<string>();
+  return candidates.filter((candidate) => {
+    const coords = candidate.geometry.coordinates;
+    const midCoord = coords[Math.floor(coords.length / 2)];
+    const key = `${Math.round(candidate.distance_meters / 20)}:${Math.round(candidate.duration_seconds / 20)}:${midCoord?.[0].toFixed(3)}:${midCoord?.[1].toFixed(3)}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export function getRouteContext(candidate: RoutingCandidate): string[] {
@@ -56,3 +150,4 @@ export function getRouteLabelAnchor(candidate: RoutingCandidate, index: number, 
   }
   return coordinates.at(-1) ?? null;
 }
+

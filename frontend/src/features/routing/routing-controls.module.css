@@ -62,25 +62,57 @@
 .preferenceControl button { min-height: 44px; display: flex; gap: 6px; align-items: center; justify-content: center; border: 1px solid #94a3b8; background: #f8fafc; color: #334155; border-radius: 5px; cursor: pointer; }
 .preferenceControl button[aria-pressed="true"] { border-color: #0891b2; background: #ecfeff; color: #155e75; font-weight: 750; }
 .preferenceControl button:disabled { cursor: not-allowed; opacity: .5; }
-.enrichmentNote { margin: 10px 0 0; padding: 8px 10px; border-left: 3px solid #f59e0b; background: #fffbeb; font-size: .78rem; line-height: 1.4; }
-.candidateList { display: grid; gap: 8px; margin: 12px 0; }
-.candidateCard { display: grid; gap: 6px; width: 100%; min-height: 94px; text-align: left; padding: 11px 12px; border: 1px solid #cbd5e1; background: #fff; color: #0f172a; border-radius: 6px; cursor: pointer; }
-.candidateCard:hover { border-color: #0891b2; }
-.candidateCard[aria-pressed="true"] { border: 2px solid #0891b2; padding: 10px 11px; background: #ecfeff; }
-.candidateHeading,
-.candidateHeading > span,
-.candidateMetrics { display: flex; align-items: center; }
-.candidateHeading { justify-content: space-between; gap: 10px; color: #155e75; font-weight: 800; }
-.candidateHeading > span { gap: 7px; }
-.candidateMetrics { justify-content: space-between; gap: 12px; }
-.candidateMetrics strong { font-size: 1.08rem; }
-.candidateMetrics b { font-size: .9rem; }
-.routeIdentity { color: #0f172a; font-size: .9rem; font-weight: 750; overflow-wrap: anywhere; }
+.enrichmentNote { margin: 10px 0 0; padding: 8px 10px; border-left: 3px solid #f59e0b; background: #fffbeb; font-size: .78rem; line-height: 1.4; border-radius: 0 4px 4px 0; }
+.candidateList { display: grid; gap: 10px; margin: 12px 0; }
+.candidateCard { display: grid; gap: 6px; width: 100%; min-height: 94px; text-align: left; padding: 12px 14px; border: 1.5px solid #cbd5e1; background: #fff; color: #0f172a; border-radius: 8px; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+.candidateCard:hover { border-color: #0891b2; box-shadow: 0 4px 12px rgba(8, 145, 178, 0.12); transform: translateY(-1px); }
+.candidateCard[aria-pressed="true"],
+.candidateCardSelected { border: 2px solid #0284c7 !important; padding: 11px 13px; background: #f0f9ff !important; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.18) !important; }
+.candidateHeading { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.categoryBadge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; padding: 2.5px 8px; border-radius: 4px; }
+.categoryFastest { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.categoryUmkm { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.categoryAlt { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.selectedPill { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 800; color: #0284c7; background: #e0f2fe; padding: 2.5px 8px; border-radius: 12px; }
+.routeIdentity { color: #0f172a; font-size: 0.92rem; font-weight: 750; overflow-wrap: anywhere; line-height: 1.3; }
+.candidateMetrics { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 2px; }
+.candidateTime { font-size: 1.32rem; font-weight: 800; color: #0f172a; line-height: 1; }
+.candidateDist { font-size: 0.92rem; font-weight: 600; color: #475569; }
+.candidateDelta { display: block; font-size: 0.76rem; font-weight: 700; color: #0284c7; }
 .candidateCard small { color: #475569; line-height: 1.35; }
-.candidateCard .umkmCount { color: #166534; font-weight: 700; }
-.selectRoute { justify-self: end; color: #0369a1; font-size: .75rem; font-weight: 800; }
-.trafficNotice { margin: 0 0 10px; color: #64748b; font-size: .72rem; text-align: center; }
-.sheetStart { position: sticky; bottom: 0; width: 100%; min-height: 48px; display: flex; gap: 8px; align-items: center; justify-content: center; border: 0; background: #047857; color: #fff; font-weight: 800; border-radius: 6px; box-shadow: 0 -8px 18px rgba(255, 255, 255, .9); cursor: pointer; }
+.candidateCard .umkmCount { display: inline-flex; align-items: center; gap: 5px; color: #166534; font-weight: 700; }
+.routeContextTag { display: block; font-size: 0.72rem; color: #64748b; }
+.cardActionRow { display: flex; justify-content: flex-end; margin-top: 2px; }
+.selectRoute { color: #0369a1; font-size: 0.76rem; font-weight: 800; }
+.trafficNotice { margin: 6px 0 10px; color: #64748b; font-size: 0.72rem; text-align: center; font-style: italic; }
+.sheetStart { position: sticky; bottom: 0; width: 100%; min-height: 48px; display: flex; gap: 8px; align-items: center; justify-content: center; border: 0; background: #059669; color: #fff; font-size: 0.95rem; font-weight: 800; border-radius: 6px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35); cursor: pointer; transition: all 0.15s ease; z-index: 10; }
+.sheetStart:hover { background: #047857; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(5, 150, 105, 0.45); }
+.sheetStart:active { background: #065f46; transform: translateY(0); }
+.sheetStart:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+
+/* Inline planner layout for desktop */
+.inlinePlanner { display: grid; gap: 12px; margin-top: 10px; }
+.inlineSection { display: grid; gap: 10px; }
+.modeDurationBadge { display: block; font-size: 0.7rem; font-weight: 750; color: #0891b2; margin-top: 2px; }
+.sheetModeActive { border-color: #0891b2 !important; background: #ecfeff !important; color: #155e75 !important; font-weight: 800 !important; }
+.sheetModeButton { min-height: 48px; display: grid; place-items: center; gap: 2px; padding: 6px; border: 1px solid #cbd5e1; background: #fff; color: #475569; border-radius: 5px; cursor: pointer; font-size: 0.72rem; }
+
+/* Collapsible directions */
+.directionsDetails { border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; overflow: hidden; margin-top: 8px; }
+.directionsSummary { display: flex; align-items: center; gap: 8px; padding: 10px 12px; font-size: 0.82rem; font-weight: 700; color: #1e293b; cursor: pointer; background: #f1f5f9; user-select: none; transition: background 0.12s ease; }
+.directionsSummary:hover { background: #e2e8f0; }
+.directionsSummary:focus-visible { outline: 2px solid #0284c7; outline-offset: -2px; }
+.directionsList { margin: 0; padding: 10px 14px 12px 28px; max-height: 240px; overflow-y: auto; font-size: 0.78rem; line-height: 1.45; color: #334155; }
+.directionsList li { margin-bottom: 8px; }
+.directionsList li:last-child { margin-bottom: 0; }
+.stepInstruction { display: block; font-weight: 600; color: #0f172a; }
+.stepDistance { display: block; font-size: 0.7rem; color: #64748b; margin-top: 1px; }
+
+/* Responsive mobile sheet visibility */
+.mobileSheetOnly { display: none; }
+@media (max-width: 1024px) {
+  .mobileSheetOnly { display: block; }
+}
 
 .journeyMapUi { position: absolute; z-index: 35; inset: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; pointer-events: none; }
 .journeyMapUi > section { pointer-events: auto; }
