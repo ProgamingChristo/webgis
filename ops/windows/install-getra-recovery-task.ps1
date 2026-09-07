@@ -27,6 +27,8 @@ $definition.Settings.MultipleInstances = 2
 $definition.Settings.ExecutionTimeLimit = "PT10M"
 $definition.Settings.RestartCount = 1
 $definition.Settings.RestartInterval = "PT1M"
+$definition.Settings.DisallowStartIfOnBatteries = $false
+$definition.Settings.StopIfGoingOnBatteries = $false
 
 $userId = "$env:USERDOMAIN\$env:USERNAME"
 $definition.Principal.UserId = $userId
@@ -39,6 +41,10 @@ $logonTrigger.UserId = $userId
 $eventTrigger = $definition.Triggers.Create(0)
 $eventTrigger.Enabled = $true
 $eventTrigger.Subscription = $eventSubscription
+$unlockTrigger = $definition.Triggers.Create(11)
+$unlockTrigger.Enabled = $true
+$unlockTrigger.UserId = $userId
+$unlockTrigger.StateChange = 8
 
 $action = $definition.Actions.Create(0)
 $action.Path = "powershell.exe"
@@ -50,3 +56,5 @@ $rootFolder.RegisterTaskDefinition($TaskName, $definition, 6, $null, $null, 3, $
 Write-Output "GETRA_RECOVERY_TASK=$TaskName"
 Write-Output "GETRA_RECOVERY_SCRIPT=$recoverScript"
 Write-Output "GETRA_STATUS_SCRIPT=$(Join-Path $InstallDirectory 'getra-status.ps1')"
+Write-Output "GETRA_RECOVERY_ON_BATTERY=ENABLED"
+Write-Output "GETRA_RECOVERY_TRIGGERS=LOGON,POWER_RESUME,SESSION_UNLOCK"

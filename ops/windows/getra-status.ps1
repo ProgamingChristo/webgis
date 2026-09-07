@@ -1,17 +1,121 @@
 [CmdletBinding()]
 param(
   [string]$VmPath = "D:\VMware\Getra-Routing\Getra-Routing.vmx",
-  [string]$VmAddress = "192.168.47.131",
+  [string]$VmAddress = "",
   [string]$SshUser = "getra"
 )
 
 $ErrorActionPreference = "Stop"
 $vmrun = "C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe"
-$ssh = "$SshUser@$VmAddress"
+$addressSource = "unavailable"
+$sshTarget = $null
+
+function Test-IPv4Subnet([string]$Address, [string]$NetworkAddress, [int]$PrefixLength) {
+  $addressBytes = ([Net.IPAddress]::Parse($Address)).GetAddressBytes()
+  $networkBytes = ([Net.IPAddress]::Parse($NetworkAddress)).GetAddressBytes()
+  for ($index = 0; $index -lt 4; $index++) {
+    $bits = [Math]::Min(8, [Math]::Max(0, $PrefixLength - ($index * 8)))
+    if ($bits -eq 0) { continue }
+    $mask = (0xff -shl (8 - $bits)) -band 0xff
+    if (($addressBytes[$index] -band $mask) -ne ($networkBytes[$index] -band $mask)) {
+      return $false
+    }
+  }
+  return $true
+}
+
+function Resolve-VmAddressCandidates {
+  if ($VmAddress) {
+    return ,([PSCustomObject]@{ Address = $VmAddress; Source = "parameter" })
+  }
+
+  $candidates = [Collections.Generic.List[object]]::new()
+  $seen = @{}
+  $natInterfaces = @(Get-NetIPAddress -InterfaceAlias "VMware Network Adapter VMnet8" `
+    -AddressFamily IPv4 -ErrorAction SilentlyContinue)
+  $vmrunOutput = @(& $vmrun getGuestIPAddress $VmPath 2>$null)
+  foreach ($candidate in $vmrunOutput | Where-Object { $_ }) {
+    $parsed = $null
+    if ([Net.IPAddress]::TryParse($candidate.Trim(), [ref]$parsed) -and
+        $parsed.AddressFamily -eq [Net.Sockets.AddressFamily]::InterNetwork -and
+        $natInterfaces.Where({ Test-IPv4Subnet $parsed.IPAddressToString $_.IPAddress $_.PrefixLength }).Count -gt 0) {
+      $seen[$parsed.IPAddressToString] = $true
+      $candidates.Add([PSCustomObject]@{ Address = $parsed.IPAddressToString; Source = "vmware-tools-nat" })
+    }
+  }
+
+  $vmx = Get-Content -LiteralPath $VmPath -Raw
+  $macMatch = [regex]::Match(
+    $vmx,
+    '(?im)^ethernet0\.(?:generatedAddress|address)\s*=\s*"(?<mac>[0-9a-f:-]+)"'
+  )
+  if ($macMatch.Success) {
+    $mac = $macMatch.Groups['mac'].Value.Replace(':', '-').ToUpperInvariant()
+    foreach ($neighbor in @(Get-NetNeighbor -InterfaceAlias "VMware Network Adapter VMnet8" `
+      -AddressFamily IPv4 -ErrorAction SilentlyContinue)) {
+      if ($neighbor.LinkLayerAddress -eq $mac -and -not $seen[$neighbor.IPAddress]) {
+        $seen[$neighbor.IPAddress] = $true
+        $candidates.Add([PSCustomObject]@{ Address = $neighbor.IPAddress; Source = "vmware-nat-neighbor" })
+      }
+    }
+
+    $leasePaths = @(
+      "C:\ProgramData\VMware\vmnetdhcp.leases",
+      "C:\ProgramData\VMware\vmnetdhcp.leases~"
+    )
+    $leaseMac = $mac.Replace('-', ':')
+    foreach ($leasePath in $leasePaths) {
+      if (-not (Test-Path -LiteralPath $leasePath)) { continue }
+      $leaseText = Get-Content -LiteralPath $leasePath -Raw
+      $leaseMatches = [regex]::Matches(
+        $leaseText,
+        "(?is)lease\s+(?<ip>[0-9.]+)\s*\{(?:(?!\n\}).)*hardware\s+ethernet\s+$([regex]::Escape($leaseMac));"
+      )
+      for ($index = $leaseMatches.Count - 1; $index -ge 0; $index--) {
+        $leaseAddress = $leaseMatches[$index].Groups['ip'].Value
+        if (-not $seen[$leaseAddress] -and
+            $natInterfaces.Where({ Test-IPv4Subnet $leaseAddress $_.IPAddress $_.PrefixLength }).Count -gt 0) {
+          $seen[$leaseAddress] = $true
+          $candidates.Add([PSCustomObject]@{ Address = $leaseAddress; Source = "vmware-dhcp-lease" })
+        }
+      }
+    }
+  }
+
+  return $candidates.ToArray()
+}
+
+function Test-SshTarget([string]$Target) {
+  $previousPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = "Continue"
+    & ssh.exe -o BatchMode=yes -o ConnectTimeout=5 -o ConnectionAttempts=1 `
+      -o StrictHostKeyChecking=accept-new $Target "true" 2>$null
+    return $LASTEXITCODE -eq 0
+  } catch {
+    return $false
+  } finally {
+    $ErrorActionPreference = $previousPreference
+  }
+}
 
 function Test-Ssh {
-  & ssh.exe -o BatchMode=yes -o ConnectTimeout=5 $ssh "true" 2>$null
-  return $LASTEXITCODE -eq 0
+  foreach ($endpoint in @(Resolve-VmAddressCandidates)) {
+    $target = "$SshUser@$($endpoint.Address)"
+    if (Test-SshTarget $target) {
+      $script:sshTarget = $target
+      $script:addressSource = $endpoint.Source
+      return $true
+    }
+  }
+  return $false
+}
+
+function Invoke-RemoteScript([string]$Command) {
+  $normalized = $Command -replace "`r`n", "`n"
+  $encoded = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($normalized))
+  & ssh.exe -o BatchMode=yes -o ConnectTimeout=5 -o ConnectionAttempts=1 `
+    -o StrictHostKeyChecking=accept-new $script:sshTarget "echo '$encoded' | base64 -d | bash"
 }
 
 if (-not (Test-Path -LiteralPath $vmrun)) {
@@ -35,7 +139,8 @@ echo "database=$(curl --fail --silent --max-time 12 http://127.0.0.1:3002/api/he
 echo "provider=$(curl --fail --silent --max-time 12 http://127.0.0.1:8002/status >/dev/null && echo reachable || echo unavailable)"
 echo "provider_dns=$(docker exec getra-full-product-10e-getra-backend-full-1 getent hosts valhalla >/dev/null 2>&1 && echo resolved || echo unavailable)"
 # The payload is a small Node fetch probe, encoded to survive PowerShell/SSH quoting.
-if echo 'ZmV0Y2goImh0dHA6Ly92YWxoYWxsYTo4MDAyL3N0YXR1cyIpLnRoZW4ocj0+cHJvY2Vzcy5leGl0KHIub2s/MDoxKSkuY2F0Y2goKCk9PnByb2Nlc3MuZXhpdCgxKSk=' | base64 -d | docker exec -i getra-full-product-10e-getra-backend-full-1 node >/dev/null 2>&1; then
+provider_probe=$(echo 'ZmV0Y2goImh0dHA6Ly92YWxoYWxsYTo4MDAyL3N0YXR1cyIpLnRoZW4ocj0+cHJvY2Vzcy5leGl0KHIub2s/MDoxKSkuY2F0Y2goKCk9PnByb2Nlc3MuZXhpdCgxKSk=' | base64 -d)
+if docker exec getra-full-product-10e-getra-backend-full-1 node -e "$provider_probe" >/dev/null 2>&1; then
   echo "provider_backend=reachable"
 else
   echo "provider_backend=unavailable"
@@ -48,7 +153,7 @@ echo "public_dns=$(test -n "$public_ip" && echo resolved || echo unavailable)"
 echo "public_backend=$(test -n "$public_ip" && curl --fail --silent --max-time 15 --resolve getra-routing-api.tail0ed517.ts.net:443:$public_ip https://getra-routing-api.tail0ed517.ts.net/api/health >/dev/null && echo reachable || echo unavailable)"
 echo "public_frontend=$(test -n "$public_ip" && curl --fail --silent --max-time 15 --resolve getra-routing-api.tail0ed517.ts.net:8443:$public_ip https://getra-routing-api.tail0ed517.ts.net:8443/login >/dev/null && echo reachable || echo unavailable)"
 '@
-  $remoteStatus = & ssh.exe -o BatchMode=yes -o ConnectTimeout=5 $ssh $remoteCommand
+  $remoteStatus = Invoke-RemoteScript $remoteCommand
 }
 
 $publicBackend = $remoteStatus -contains "public_backend=reachable"
@@ -76,6 +181,7 @@ $remoteReady = $requiredRemoteStatus.Where({ $remoteStatus -notcontains $_ }).Co
 Write-Output "GETRA_STATUS"
 Write-Output "VM_RUNNING=$($vmRunning.ToString().ToUpperInvariant())"
 Write-Output "UBUNTU_SSH=$($sshReady.ToString().ToUpperInvariant())"
+Write-Output "VM_ADDRESS_SOURCE=$addressSource"
 $remoteStatus | ForEach-Object { Write-Output $_ }
 Write-Output "PUBLIC_BACKEND=$($publicBackend.ToString().ToUpperInvariant())"
 Write-Output "PUBLIC_FRONTEND=$($publicFrontend.ToString().ToUpperInvariant())"
