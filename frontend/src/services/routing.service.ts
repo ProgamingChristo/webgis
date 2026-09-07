@@ -87,7 +87,6 @@ const coordinateSchema = z.object({
   latitude: z.number().finite().min(-90).max(90),
   longitude: z.number().finite().min(-180).max(180),
 });
-
 const routeOptionSchema = z.object({
   distance_meters: z.number().finite(),
   duration_seconds: z.number().finite(),
@@ -106,7 +105,6 @@ const routeOptionSchema = z.object({
   name: z.string(),
   warnings: z.array(z.string()),
 });
-
 const responseSchema = z.object({
   route_status: z.enum(["ROUTABLE", "UNROUTABLE", "OUTSIDE_GRAPH", "SERVICE_UNAVAILABLE"]),
   mode: z.enum(ROUTING_MODES),
@@ -157,6 +155,7 @@ export function parseRoutingResult(value: unknown, mode: RoutingMode): RoutingRe
   }
   return result as RoutingResult;
 }
+
 export const routingService = {
   async getRoute(
     request: RoutingRequest,

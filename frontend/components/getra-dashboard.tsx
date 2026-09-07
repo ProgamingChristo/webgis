@@ -19,8 +19,14 @@ import {
   Search,
   ShieldCheck,
   Target,
+  X,
+  RotateCcw,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { CoordinateEntry } from "@/src/features/routing/components/coordinate-entry";
+import routingStyles from "@/src/features/routing/routing-controls.module.css";
+import type { Coordinate } from "@/src/types/spatial";
 
 import { StakeholderModeSwitcher } from "@/src/components/stakeholder/stakeholder-mode-switcher";
 import { StakeholderContextShell } from "@/src/components/stakeholder/stakeholder-context-shell";
@@ -36,6 +42,9 @@ import { useProfilePoster, ProfilePoster } from "@/src/features/umkm-advertising
 import { useRouting } from "@/src/hooks/use-routing";
 import { RouteCards } from "@/src/features/routing/components/route-cards";
 import { NavigationHud } from "@/src/features/routing/components/navigation-hud";
+import { useActiveJourney } from "@/src/hooks/use-active-journey";
+import { JourneyControls } from "@/src/features/routing/components/journey-controls";
+import { useAuth } from "@/src/components/providers/AuthProvider";
 import { useDestinationMerchantSearch } from "@/src/features/routing/hooks/use-destination-merchant-search";
 import type { RoutingMode } from "@/src/services/routing.service";
 import {
@@ -271,19 +280,11 @@ function routeModeLabel(mode: RoutingMode) {
 }
 
 function routeModeDescription(mode: RoutingMode) {
-  return mode === "walking" ? "pedestrian" : mode === "motorcycle" ? "sepeda motor" : "mobil";
+  if (mode === "walking") return "pejalan kaki";
+  if (mode === "motorcycle") return "sepeda motor";
+  return "mobil";
 }
 
-function routeStatusLabel(status?: "ROUTABLE" | "UNROUTABLE" | "OUTSIDE_GRAPH" | "SERVICE_UNAVAILABLE") {
-  if (status === "OUTSIDE_GRAPH") return "Di luar cakupan";
-  if (status === "SERVICE_UNAVAILABLE") return "Layanan terganggu";
-  if (status === "UNROUTABLE") return "Tidak ada jalur";
-  return "Belum dihitung";
-}
-
-function isTransitPlace(label: string) {
-  return /\b(stasiun|halte|terminal|transit)\b/i.test(label);
-}
 
 function freshnessLabel(value: string | null | undefined) {
   if (value === "FRESH") return "Fresh";
@@ -1031,8 +1032,9 @@ function GeneralGetraDashboard() {
   ] =
     useState(false);
 
-  const [mapPickMode, setMapPickMode] = useState<"NONE" | "ROUTE_START">("NONE");
+  const [mapPickMode, setMapPickMode] = useState<"NONE" | "ROUTE_START" | "ROUTE_DESTINATION">("NONE");
   const [manualRouteStart, setManualRouteStart] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [manualRouteDestination, setManualRouteDestination] = useState<Coordinate | null>(null);
 
   const [
     locating,
@@ -1109,32 +1111,9 @@ function GeneralGetraDashboard() {
       merchant: Merchant;
     } | null>(null);
 
-  const {
-    state: routingState,
-    route,
-    routes,
-    allRoutes,
-    selectedRoute,
-    selectedRouteId,
-    setSelectedRouteId,
-    activeMode,
-    recommendedMode,
-    setActiveMode,
-    error: routingError,
-    requestRoute,
-    clearRoute,
-  } = useRouting();
-
   const [isNavigating, setIsNavigating] = useState(false);
   const [activeManeuverIndex, setActiveManeuverIndex] = useState(0);
-
-  useEffect(() => {
-    if (!route) {
-      setIsNavigating(false);
-      setActiveManeuverIndex(0);
-    }
-  }, [route]);
-
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const allMerchants =
     useMemo(
       () => deduplicateMerchants([
@@ -1665,12 +1644,14 @@ function GeneralGetraDashboard() {
     ? canonicalDestinationResults
     : [];
 
-  const routeDestination =
-    routeDestinationMerchant ?? mapMerchants.find(
+  const routeDestination = useMemo(() => (
+    manualRouteDestination ? {
+      ...manualRouteDestination, id: undefined, name: "Titik tujuan di peta", district: null, city: null,
+    } : routeDestinationMerchant ?? mapMerchants.find(
       (merchant) =>
         merchant.id ===
         routeDestinationId,
-    ) ?? null;
+    ) ?? null), [manualRouteDestination, routeDestinationMerchant, mapMerchants, routeDestinationId]);
 
   const routeOrigin = useMemo(() => (
     routeOriginValue === ROUTE_ORIGIN_MANUAL && manualRouteStart
@@ -1696,6 +1677,45 @@ function GeneralGetraDashboard() {
     userLocation,
   ]);
 
+  const { context: authContext } = useAuth();
+  const [activeMode, setActiveMode] = useState<RoutingMode>("walking");
+  const journey = useActiveJourney(routeDestination, activeMode);
+  const journeyOpen = journey.state !== "PREVIEW" && journey.state !== "STOPPED";
+  const preview = useRouting({
+    origin: routeOrigin?.coordinate ?? null,
+    destination: routeDestination,
+    destinationMerchantId: routeDestination?.id,
+    enabled: !journeyOpen,
+    mode: activeMode,
+  });
+  const { requestRoute, clearRoute } = preview;
+  const route = journeyOpen ? journey.route : preview.route;
+  const routingState = journeyOpen ? route ? "ROUTABLE" : journey.state === "ERROR" ? "ERROR" : "LOADING" : preview.state;
+  const routingError = journeyOpen ? journey.error : preview.error;
+  const authRequired = journeyOpen ? journey.authRequired : preview.authRequired;
+  const journeyPosition = journey.position;
+  useEffect(() => {
+    if (!authContext) journey.controller.sessionLost();
+  }, [authContext, journey.controller]);
+
+  const allRoutes = useMemo(() => {
+    return route?.routes ?? [];
+  }, [route]);
+
+  const selectedRoute = useMemo(() => {
+    return allRoutes.find((r) => r.id === selectedRouteId) ?? allRoutes[0] ?? null;
+  }, [allRoutes, selectedRouteId]);
+
+  useEffect(() => {
+    if (!route) {
+      queueMicrotask(() => {
+        setIsNavigating(false);
+        setActiveManeuverIndex(0);
+        setSelectedRouteId(null);
+      });
+    }
+  }, [route]);
+
   const routeDurationMinutes =
     route?.duration_seconds !== null && route?.duration_seconds !== undefined
       ? Math.max(
@@ -1707,21 +1727,16 @@ function GeneralGetraDashboard() {
         )
       : null;
 
-  const routeOriginPoint = routeOrigin
+  const routeOriginPoint = useMemo(() => routeOrigin
     ? {
         label: routeOrigin.label,
         latitude: routeOrigin.coordinate.latitude,
         longitude: routeOrigin.coordinate.longitude,
       }
-    : null;
+    : null, [routeOrigin]);
 
-  const routeDestinationPoint =
-    routeDestination &&
-    (
-      routeDestinationId ||
-      selectedMerchant ||
-      route
-    )
+  const routeDestinationPoint = useMemo(() =>
+    routeDestination
       ? {
           label:
             routeDestination.name,
@@ -1730,7 +1745,7 @@ function GeneralGetraDashboard() {
           longitude:
             routeDestination.longitude,
         }
-      : null;
+      : null, [routeDestination]);
 
   const handleSelect =
     useCallback(
@@ -1745,6 +1760,7 @@ function GeneralGetraDashboard() {
     );
 
   const clearRouteDestination = useCallback(() => {
+    setManualRouteDestination(null);
     setRouteDestinationId(null);
     setRouteDestinationMerchant(null);
     setDestinationSearch("");
@@ -2384,17 +2400,7 @@ function GeneralGetraDashboard() {
         return;
       }
 
-      requestRoute(
-        routeOrigin.coordinate,
-        {
-          latitude:
-            routeDestination.latitude,
-          longitude:
-            routeDestination.longitude,
-        },
-        routeDestination.id,
-        { originNearTransit: isTransitPlace(routeOrigin.label) },
-      );
+      requestRoute();
     }, [
       requestRoute,
       routeDestination,
@@ -2407,15 +2413,12 @@ function GeneralGetraDashboard() {
     const alternative = merchants[(currentIndex + 1 + merchants.length) % merchants.length];
     if (!alternative || alternative.id === routeDestination?.id) return;
     setSelectedId(alternative.id);
+    setManualRouteDestination(null);
     setRouteDestinationId(alternative.id);
     setRouteDestinationMerchant(alternative);
     setDestinationSearch(alternative.name);
     setDestinationSearchActive(false);
-    void requestRoute(routeOrigin.coordinate, {
-      latitude: alternative.latitude,
-      longitude: alternative.longitude,
-    }, alternative.id, { originNearTransit: isTransitPlace(routeOrigin.label) });
-  }, [merchants, requestRoute, routeDestination?.id, routeOrigin]);
+  }, [merchants, routeDestination?.id, routeOrigin]);
 
   const handleRouteChoice =
     useCallback(
@@ -2453,6 +2456,7 @@ function GeneralGetraDashboard() {
           merchant.name,
         );
       } else {
+        setManualRouteDestination(null);
         setRouteDestinationId(
           merchant.id,
         );
@@ -2467,28 +2471,19 @@ function GeneralGetraDashboard() {
         suppressNextViewportRef.current = true;
         setSearchFocusBounds(merchantFocusBounds(merchant));
         setSearchFocusKey((key) => key + 1);
-        if (routingState !== "IDLE" && routeOrigin) {
-          void requestRoute(routeOrigin.coordinate, {
-            latitude: merchant.latitude,
-            longitude: merchant.longitude,
-          }, merchant.id, { originNearTransit: isTransitPlace(routeOrigin.label) });
-        }
       }
 
-      if (target === "origin" || routingState === "IDLE") clearRoute();
+      setMapPickMode("NONE");
       setPendingRouteChoice(
         null,
       );
     }, [
-      clearRoute,
       pendingRouteChoice,
-      requestRoute,
-      routeOrigin,
-      routingState,
     ]);
 
   const handleLocateUser =
     useCallback(() => {
+      if (journeyOpen) { journey.controller.focus(); return; }
       setLocationError(
         null,
       );
@@ -2557,7 +2552,7 @@ function GeneralGetraDashboard() {
           maximumAge: 30000,
         },
       );
-    }, [clearRoute]);
+    }, [clearRoute, journeyOpen, journey.controller]);
 
   const handleUseUserLocationAsOrigin =
     useCallback(() => {
@@ -2594,13 +2589,10 @@ function GeneralGetraDashboard() {
     }, [clearRoute]);
 
   const handleUseManualOrigin = useCallback(() => {
-    setRouteOriginValue(ROUTE_ORIGIN_MANUAL);
-    setExplicitRouteOrigin(null);
-    setOriginSearch("");
     setLocationError(null);
-    clearRoute();
     setMapPickMode("ROUTE_START");
-  }, [clearRoute]);
+    document.querySelector(".map-panel")?.scrollIntoView({ block: "nearest" });
+  }, []);
 
   const handleClearManualOrigin = useCallback(() => {
     setManualRouteStart(null);
@@ -2608,7 +2600,7 @@ function GeneralGetraDashboard() {
     handleUseDatasetCenterAsOrigin();
   }, [handleUseDatasetCenterAsOrigin]);
 
-  const handleMapPick = useCallback((coordinate: { latitude: number; longitude: number }) => {
+  const selectOrigin = useCallback((coordinate: Coordinate) => {
     setManualRouteStart(coordinate);
     setRouteOriginValue(ROUTE_ORIGIN_MANUAL);
     setExplicitRouteOrigin(null);
@@ -2616,6 +2608,35 @@ function GeneralGetraDashboard() {
     setLocationError(null);
     setMapPickMode("NONE");
   }, []);
+
+  const selectDestination = useCallback((coordinate: Coordinate) => {
+    setManualRouteDestination({ ...coordinate });
+    setRouteDestinationId(null);
+    setRouteDestinationMerchant(null);
+    setDestinationSearch("");
+    setDestinationSearchActive(false);
+    setMapPickMode("NONE");
+  }, []);
+
+  const handleMapPick = useCallback((coordinate: Coordinate) => {
+    if (mapPickMode === "ROUTE_START") selectOrigin(coordinate);
+    if (mapPickMode === "ROUTE_DESTINATION") selectDestination(coordinate);
+  }, [mapPickMode, selectOrigin, selectDestination]);
+
+  const resetRouting = useCallback(() => {
+    journey.controller.stop();
+    clearRoute();
+    setMapPickMode("NONE");
+    setManualRouteStart(null);
+    setManualRouteDestination(null);
+    setRouteOriginValue(ROUTE_ORIGIN_NONE);
+    setExplicitRouteOrigin(null);
+    setRouteDestinationId(null);
+    setRouteDestinationMerchant(null);
+    setOriginSearch("");
+    setDestinationSearch("");
+    setDestinationSearchActive(false);
+  }, [clearRoute, journey.controller]);
 
   return (
     <main className="workspace">
@@ -2799,19 +2820,22 @@ function GeneralGetraDashboard() {
             ) : null}
           </section>
 
-          <section className="route-planner">
+          <section className={`route-planner ${routingStyles.planner}`} aria-label="Perencana rute" data-routing-state={routingState}>
+            <JourneyControls journey={journey} canStart={Boolean(!journeyOpen && preview.route && authContext && routeDestination)}
+              onStart={() => { setMapPickMode("NONE"); void journey.controller.start(); }} />
             <div className="route-planner__header">
               <div>
                 <span className="eyebrow">
                   Rute commuter
                 </span>
                 <strong>
-                  Mulai dari mana?
+                  {journeyOpen ? `Menuju ${routeDestination?.name ?? "tujuan"}` : "Mulai dari mana?"}
                 </strong>
               </div>
               <Route size={18} />
             </div>
 
+            <fieldset className={routingStyles.journeyFields} disabled={journeyOpen} hidden={journeyOpen}>
             <div className="route-field">
               <span>
                 Titik mulai
@@ -2842,25 +2866,24 @@ function GeneralGetraDashboard() {
                   }
                   type="button"
                   onClick={handleUseManualOrigin}
+                  aria-label="Pilih asal di peta"
+                  aria-pressed={mapPickMode === "ROUTE_START"}
                   style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
                 >
                   <Target size={14} /> Pilih di peta
                 </button>
               </div>
 
-              {routeOriginValue === ROUTE_ORIGIN_MANUAL && manualRouteStart ? (
-                <div style={{ marginTop: "1rem", padding: "0.75rem", backgroundColor: "#1e293b", borderRadius: "8px", border: "1px solid #334155" }}>
-                  <span style={{ display: "block", fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>TITIK MULAI</span>
-                  <strong style={{ display: "block", fontSize: "0.9rem", color: "#eef8fa", marginBottom: "0.25rem" }}>Titik pilihan di peta</strong>
-                  <p style={{ margin: 0, fontSize: "0.8rem", color: "#cbd5e1" }}>
-                    {manualRouteStart.latitude.toFixed(6)}, {manualRouteStart.longitude.toFixed(6)}
-                  </p>
-                  <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
-                    <button type="button" onClick={() => setMapPickMode("ROUTE_START")} style={{ fontSize: "0.75rem", backgroundColor: "#0284c7", color: "white", padding: "0.3rem 0.6rem", borderRadius: "4px", border: "none", cursor: "pointer" }}>Pilih ulang</button>
-                    <button type="button" onClick={handleClearManualOrigin} style={{ fontSize: "0.75rem", backgroundColor: "#b91c1c", color: "white", padding: "0.3rem 0.6rem", borderRadius: "4px", border: "none", cursor: "pointer" }}>Batal / Hapus</button>
+              {routeOrigin ? (
+                <div className={routingStyles.point} data-testid="routing-origin">
+                  <strong>A · {routeOrigin.label}</strong>
+                  <span>{routeOrigin.coordinate.latitude.toFixed(6)}, {routeOrigin.coordinate.longitude.toFixed(6)}</span>
+                  <div className={routingStyles.pointActions}>
+                    <button type="button" onClick={handleClearManualOrigin} aria-label="Hapus asal" title="Hapus asal"><X size={16} /></button>
                   </div>
                 </div>
               ) : null}
+              <CoordinateEntry label="Asal" coordinate={routeOrigin?.coordinate ?? null} onSelect={selectOrigin} />
               <div className="route-search-box">
                 <Search size={15} />
                 <input
@@ -2918,7 +2941,7 @@ function GeneralGetraDashboard() {
 
             <div className="route-field">
               <span>
-                Tujuan tersedia
+                Tujuan
               </span>
               <div className="route-search-box route-search-box--destination">
                 <Search size={15} />
@@ -2932,6 +2955,7 @@ function GeneralGetraDashboard() {
                     setDestinationSearch(value);
                     setDestinationSearchActive(true);
                     if (routeDestination && value.trim() !== routeDestination.name) {
+                      setManualRouteDestination(null);
                       setRouteDestinationId(null);
                       setRouteDestinationMerchant(null);
                       clearRoute();
@@ -2988,9 +3012,16 @@ function GeneralGetraDashboard() {
               </div>
             </div>
 
+            <button type="button" className="route-chip-button" aria-pressed={mapPickMode === "ROUTE_DESTINATION"}
+              aria-label="Pilih tujuan di peta" onClick={() => {
+                setMapPickMode("ROUTE_DESTINATION");
+                document.querySelector(".map-panel")?.scrollIntoView({ block: "nearest" });
+              }}><Target size={14} aria-hidden="true" /> Pilih tujuan di peta</button>
+            <CoordinateEntry label="Tujuan" coordinate={routeDestination} onSelect={selectDestination} />
+
             {routeDestination ? (
-              <div className="route-selection-card">
-                <span className="route-selection-card__label">Tujuan</span>
+              <div className="route-selection-card" data-testid="routing-destination">
+                <span className="route-selection-card__label">B · Tujuan</span>
                 <strong className="route-selection-card__title">
                   <MapPinned size={14} aria-hidden="true" />
                   <span>{routeDestination.name}</span>
@@ -3020,6 +3051,7 @@ function GeneralGetraDashboard() {
                 type="button"
                 disabled={
                   !routeDestination ||
+                  !routeOrigin ||
                   routingState ===
                     "LOADING"
                 }
@@ -3033,10 +3065,10 @@ function GeneralGetraDashboard() {
               <button
                 className="route-secondary-button"
                 type="button"
-                onClick={clearRoute}
-                disabled={!route}
+                onClick={resetRouting}
+                disabled={!routeOrigin && !routeDestination && routingState === "IDLE"}
               >
-                Reset
+                <RotateCcw size={14} aria-hidden="true" /> Reset
               </button>
               <button
                 className="route-secondary-button"
@@ -3048,41 +3080,23 @@ function GeneralGetraDashboard() {
               </button>
             </div>
 
-            {routingState === "SUCCESS" || routingState === "NO_ROUTE" ? (
-              <div className="route-mode-grid" aria-label="Pilihan moda rute">
-                {(["walking", "motorcycle", "car"] as const).map((mode) => {
-                  const option = routes[mode];
-                  const available = option?.route_status === "ROUTABLE";
-                  const Icon = mode === "walking" ? Footprints : mode === "motorcycle" ? Bike : Car;
-                  return (
-                    <button
-                      aria-pressed={activeMode === mode}
-                      className={activeMode === mode ? "route-mode route-mode--active" : "route-mode"}
-                      key={mode}
-                      type="button"
-                      onClick={() => setActiveMode(mode)}
-                    >
-                      <Icon size={15} aria-hidden="true" />
-                      <span>{routeModeLabel(mode)}</span>
-                      <strong>
-                        {available && option.duration_seconds !== null
-                          ? `${Math.max(1, Math.ceil(option.duration_seconds / 60))} mnt`
-                          : "Tidak tersedia"}
-                      </strong>
-                      <small>
-                        {available && option.distance_meters !== null
-                          ? formatDistance(option.distance_meters)
-                          : routeStatusLabel(option?.route_status)}
-                      </small>
-                      {recommendedMode === mode && available ? <em>Disarankan</em> : null}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
+            </fieldset>
+            <div className="route-mode-grid" aria-label="Pilihan moda rute">
+              {(["walking", "motorcycle", "car"] as const).map((mode) => {
+                const Icon = mode === "walking" ? Footprints : mode === "motorcycle" ? Bike : Car;
+                return <button aria-pressed={activeMode === mode}
+                  aria-label={routeModeLabel(mode)}
+                  className={activeMode === mode ? "route-mode route-mode--active" : "route-mode"}
+                  key={mode} type="button" onClick={() => setActiveMode(mode)}>
+                  <Icon size={18} aria-hidden="true" /><span>{routeModeLabel(mode)}</span>
+                </button>;
+              })}
+            </div>
+            {routingState === "LOADING" && !journeyOpen ? <p className="route-message" role="status">Menghitung rute...</p> : null}
 
             {route && route.distance_meters !== null ? (
               <div className="route-result" data-testid="routing-result" aria-live="polite">
+                {journeyOpen ? <small>Sisa perjalanan · pembaruan rute {journey.updatedAt ? new Date(journey.updatedAt).toLocaleTimeString("id-ID") : ""}</small> : null}
                 {allRoutes.length > 0 ? (
                   <RouteCards
                     routes={allRoutes}
@@ -3119,10 +3133,11 @@ function GeneralGetraDashboard() {
             ) : null}
 
             {routingError ? (
-              <p className="route-message">
+              <p className="route-message" role="alert">
                 {routingError}
               </p>
             ) : null}
+            {authRequired ? <Link href="/login" className="route-primary-button">Masuk kembali</Link> : null}
           </section>
 
           {pendingRouteChoice ? (
@@ -3587,6 +3602,7 @@ function GeneralGetraDashboard() {
                     const itemId = (item as any).id || (item as any).merchant_id;
                     const match = mapMerchants.find((merchant) => merchant.id === itemId);
                     setRouteDestinationId(itemId);
+                    setManualRouteDestination(null);
                     setRouteDestinationMerchant(match ?? null);
                     if (match) {
                       setDestinationSearch(match.name);
@@ -3736,44 +3752,10 @@ function GeneralGetraDashboard() {
           aria-label="Peta GETRA"
           style={{ position: "relative" }}
         >
-          {mapPickMode === "ROUTE_START" && (
-            <div
-              style={{
-                position: "absolute",
-                top: "1rem",
-                left: "50%",
-                transform: "translateX(-50%)",
-                zIndex: 20,
-                backgroundColor: "#1e293b",
-                color: "#eef8fa",
-                padding: "0.75rem 1rem",
-                borderRadius: "8px",
-                border: "1px solid #38bdf8",
-                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.5)",
-                display: "flex",
-                alignItems: "center",
-                gap: "1rem",
-              }}
-            >
-              <div>
-                <strong style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.25rem" }}>Pilih titik mulai</strong>
-                <span style={{ fontSize: "0.8rem", color: "#94a3b8" }}>Klik peta untuk menentukan START</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleClearManualOrigin}
-                style={{
-                  padding: "0.25rem 0.5rem",
-                  fontSize: "0.75rem",
-                  backgroundColor: "#334155",
-                  border: "none",
-                  borderRadius: "4px",
-                  color: "#eef8fa",
-                  cursor: "pointer",
-                }}
-              >
-                Batal
-              </button>
+          {mapPickMode !== "NONE" && (
+            <div className={routingStyles.pickBanner} role="status">
+              <strong>{mapPickMode === "ROUTE_START" ? "Memilih asal (A)" : "Memilih tujuan (B)"}</strong>
+              <button type="button" onClick={() => setMapPickMode("NONE")} aria-label="Batal memilih titik" title="Batal memilih titik"><X size={18} /></button>
             </div>
           )}
           {isNavigating && selectedRoute && (
@@ -3806,7 +3788,11 @@ function GeneralGetraDashboard() {
             selectedPropertyId={primaryMode === "business-space" ? selectedPropertyId : null}
             accessibilityEvidence={primaryMode === "accessibility" ? accessibilityEvidence : []}
             selectedAccessibilityEvidenceId={primaryMode === "accessibility" ? selectedAccessibilityEvidenceId : null}
-            userLocation={userLocation}
+            userLocation={journeyOpen ? journeyPosition : userLocation}
+            journeyActive={journey.engaged}
+            journeyFollowing={journey.following}
+            journeyFocusKey={journey.focusKey}
+            onJourneyCameraOverride={journey.controller.suspendFollow}
             onSelect={handleSelect}
             onSelectProperty={loadSelectedPropertyDetail}
             onSelectAccessibilityEvidence={loadSelectedAccessibilityEvidenceDetail}
@@ -3817,7 +3803,7 @@ function GeneralGetraDashboard() {
             onContextualLayerChange={handleContextualLayerChange}
             datasetBounds={datasetBounds}
             datasetOrigin={datasetOrigin}
-            routeOriginPoint={routeOriginPoint}
+            routeOriginPoint={journeyOpen ? null : routeOriginPoint}
             routeDestinationPoint={routeDestinationPoint}
             routeGeometry={route?.geometry}
             routes={allRoutes}
@@ -3838,7 +3824,6 @@ function GeneralGetraDashboard() {
             analyticsMode={analyticsMode}
             onSelectAnalyticsRegion={setSelectedAnalyticsRegionId}
             mapPickMode={mapPickMode}
-            manualRouteStart={manualRouteStart}
             onMapPick={handleMapPick}
           />
         </section>
@@ -3896,21 +3881,11 @@ function GeneralGetraDashboard() {
                 <button
                   type="button"
                   onClick={() => {
+                    setManualRouteDestination(null);
                     setRouteDestinationId(selectedMerchant.id);
                     setRouteDestinationMerchant(selectedMerchant);
                     setDestinationSearch(selectedMerchant.name);
                     setDestinationSearchActive(false);
-                    if (routeOrigin) {
-                      void requestRoute(
-                        routeOrigin.coordinate,
-                        {
-                          latitude: selectedMerchant.latitude,
-                          longitude: selectedMerchant.longitude,
-                        },
-                        selectedMerchant.id,
-                        { originNearTransit: isTransitPlace(routeOrigin.label) },
-                      );
-                    }
                   }}
                   style={{
                     width: "100%",
@@ -3939,6 +3914,7 @@ function GeneralGetraDashboard() {
                     poster={profilePoster}
                     onRequestRoute={() => {
                       if (selectedMerchant) {
+                        setManualRouteDestination(null);
                         setRouteDestinationId(selectedMerchant.id);
                         setRouteDestinationMerchant(selectedMerchant);
                         setDestinationSearch(selectedMerchant.name);

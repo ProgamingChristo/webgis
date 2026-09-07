@@ -14,7 +14,6 @@ import {
   ChevronRight,
   ListOrdered,
   LocateFixed,
-  Navigation,
 } from "lucide-react";
 import type { NavigationRouteOption, RoutingManeuver } from "@/src/services/routing.service";
 import styles from "../routing-controls.module.css";

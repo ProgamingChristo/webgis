@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useId } from "react";
-import { Navigation, Clock, ShieldAlert, CheckCircle2, ChevronRight, Zap } from "lucide-react";
+import { Navigation, CheckCircle2, ChevronRight, Zap } from "lucide-react";
 import type { NavigationRouteOption } from "@/src/services/routing.service";
 import styles from "../routing-controls.module.css";
 

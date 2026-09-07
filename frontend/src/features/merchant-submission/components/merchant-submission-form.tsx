@@ -67,22 +67,24 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
   const [address, setAddress] = useState(initialData?.address || "");
   const [openingHours, setOpeningHours] = useState<MerchantOperatingHours>(() => initialOperatingHours(initialData?.opening_hours));
   const [coordinates, setCoordinates] = useState<[number, number]>(
-    initialData?.location?.coordinates || DEFAULT_COORDINATES,
+    initialData?.location?.coordinates || [106.827153, -6.175392],
   );
   const [storedImageUrl, setStoredImageUrl] = useState(initialData?.image_url || "");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState(initialData?.image_url || "");
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState(initialData?.image_url || "");
   const photoObjectUrlRef = useRef<string | null>(null);
-  const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [menuPhotoFile, setMenuPhotoFile] = useState<File | null>(null);
   const [menuPhotoUrl, setMenuPhotoUrl] = useState(initialData?.public_media?.menu_urls?.[0] || "");
   const [menuPhotoPreviewUrl, setMenuPhotoPreviewUrl] = useState(initialData?.public_media?.menu_urls?.[0] || "");
   const menuObjectUrlRef = useRef<string | null>(null);
-  const menuPhotoInputRef = useRef<HTMLInputElement | null>(null);
   const [contactPhone, setContactPhone] = useState(initialData?.business_info?.contact_phone || "");
   const [priceRange, setPriceRange] = useState<MerchantBusinessInfo["price_range"]>(initialData?.business_info?.price_range || null);
   const [paymentMethods, setPaymentMethods] = useState<MerchantBusinessInfo["payment_methods"]>(initialData?.business_info?.payment_methods || ["CASH"]);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+  const menuPhotoInputRef = useRef<HTMLInputElement | null>(null);
+  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+  const [formResetVersion, setFormResetVersion] = useState(0);
 
   const [claimQuery, setClaimQuery] = useState(initialData?.name || "");
   const [claimResults, setClaimResults] = useState<ClaimableMerchant[]>([]);
@@ -97,8 +99,6 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
   const [claimingId, setClaimingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
-  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
-  const [formResetVersion, setFormResetVersion] = useState(0);
 
   useEffect(() => () => {
     if (photoObjectUrlRef.current) URL.revokeObjectURL(photoObjectUrlRef.current);
@@ -644,11 +644,11 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                   Deskripsi Usaha & Produk/Layanan Unggulan
                 </label>
                 <MerchantDescriptionAssistant
+                  key={`merchant-description-${formResetVersion}`}
                   businessName={name}
                   category={category}
                   disabled={submitting}
                   id="merchant-description"
-                  key={`merchant-description-${formResetVersion}`}
                   onChange={setDescription}
                   priceRange={priceRange ?? null}
                   value={description}
@@ -674,8 +674,8 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
               </div>
 
               <MerchantMapPicker
-                initialCoordinates={coordinates}
                 key={`merchant-map-${formResetVersion}`}
+                initialCoordinates={coordinates}
                 onCoordinatesChange={setCoordinates}
               />
             </section> : null}

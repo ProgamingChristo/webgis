@@ -1,41 +1,19 @@
 // Opt-in real staging acceptance. Never persist sessions or capture login screenshots.
 import { createRequire } from "node:module";
-import { execFileSync } from "node:child_process";
+import { ordinaryUserFixture } from "./browser-user-fixture.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import assert from "node:assert/strict";
 
 const require = createRequire(import.meta.url);
-const ts = require(resolve("node_modules/typescript/lib/typescript.js"));
 const { chromium } = require(process.env.GETRA_PLAYWRIGHT_MODULE || "playwright");
-const api = "https://getra-routing-api.tail0ed517.ts.net";
+const api = process.env.GETRA_BACKEND_ORIGIN || "https://getra-routing-api.tail0ed517.ts.net";
 const frontend = process.env.GETRA_FRONTEND_ORIGIN || "http://localhost:3001";
 const output = resolve("outputs/phase10");
 mkdirSync(output, { recursive: true });
 const evidence = { started: new Date().toISOString(), frontend, api, routes: [], checks: {} };
-const fixtureSource = execFileSync("git", ["show", "b3fded2cc23885b890fb7fbb30f99cdd7e6befbe:backend/scripts/api-smoke-test.ts"], { encoding: "utf8" });
-const source = ts.createSourceFile("fixture.ts", fixtureSource, ts.ScriptTarget.Latest, true);
-const declarations = new Map();
-function collect(node) {
-  if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) declarations.set(node.name.text, node.initializer);
-  ts.forEachChild(node, collect);
-}
-collect(source);
-function literal(node) {
-  if (ts.isAsExpression(node) || ts.isSatisfiesExpression(node)) return literal(node.expression);
-  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node.text;
-  if (ts.isNumericLiteral(node)) return Number(node.text);
-  if (ts.isArrayLiteralExpression(node)) return node.elements.map(literal);
-  if (ts.isObjectLiteralExpression(node)) return Object.fromEntries(node.properties.map((p) => [p.name.text, literal(p.initializer)]));
-  if (ts.isIdentifier(node) && declarations.has(node.text)) return literal(declarations.get(node.text));
-  if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.BarBarToken) return process.env.GETRA_TEST_USER_PASSWORD || literal(node.right);
-  if (node.kind === ts.SyntaxKind.TrueKeyword) return true;
-  if (node.kind === ts.SyntaxKind.FalseKeyword) return false;
-  throw new Error("UNSUPPORTED_FIXTURE_LITERAL");
-}
-const fixture = literal(declarations.get("stableUsers")).find((u) => u.expectedAccountRole === "USER");
-assert(fixture, "ORDINARY_USER_FIXTURE_REQUIRED");
-const password = literal(declarations.get("TEST_PASSWORD"));
+const fixture = ordinaryUserFixture();
+const password = fixture.password;
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 const page = await context.newPage();
@@ -113,7 +91,7 @@ async function accepted(name, mode, since) {
   assert.equal(map.sourceCount, 1); assert.equal(map.layerCount, 2);
   assert.equal(map.endpoints, 2, "ENDPOINT_MARKERS_REQUIRED");
   assert(map.webgl && map.coordinateOrder, "MAP_RENDER_OR_ORDER_FAILED");
-  const summary = await planner.getByTestId("routing-result").innerText();
+  const summary = await page.getByTestId("routing-result").innerText();
   const distance = d.distance_meters >= 1000 ? `${(d.distance_meters / 1000).toFixed(1)} km` : `${Math.round(d.distance_meters)} m`;
   assert(summary.includes(distance) && summary.includes(`${Math.max(1, Math.ceil(d.duration_seconds / 60))} menit`), "SUMMARY_NOT_PROVIDER_DERIVED");
   const record = { name, mode, origin: response.request.origin, destination: response.request.destination,
@@ -224,7 +202,7 @@ try {
     await page.waitForFunction((state) => document.querySelector('[data-routing-state]')?.dataset.routingState === state, test.state);
     await page.waitForTimeout(100);
     assert.equal((await inspectMap("state")).points, 0, "FAILURE_LEFT_STALE_GEOMETRY");
-    assert.equal(await planner.getByTestId("routing-result").count(), 0);
+    assert.equal(await page.getByTestId("routing-result").count(), 0);
     if (test.name === "auth") assert.equal(await planner.getByRole("link", { name: "Masuk kembali" }).count(), 1);
     evidence.checks[`controlled-${test.name}`] = "PASS";
     await page.unroute(`${api}/api/routing`, handler);
@@ -277,7 +255,7 @@ try {
   assert.equal(await planner.getAttribute("data-routing-state"), "IDLE");
   assert.equal((await inspectMap("state")).points, 0);
   assert.equal((await inspectMap("state")).endpoints, 0);
-  assert.equal(await planner.getByTestId("routing-result").count(), 0);
+  assert.equal(await page.getByTestId("routing-result").count(), 0);
   assert.equal(await planner.getByRole("alert").count(), 0);
   assert.equal(requests.length, requestsBeforeReset);
   evidence.checks.reset = "PASS";

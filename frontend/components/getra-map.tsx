@@ -1,6 +1,5 @@
 "use client";
 
-// "walking-route" source and layers
 import { getRouteLabelCoordinate, syncWalkingRoute } from "@/src/features/routing/route-layer";
 import { isRouteGeometry } from "@/src/features/routing/route-geometry";
 import type { NavigationRouteOption } from "@/src/services/routing.service";
@@ -75,6 +74,10 @@ type GetraMapProps = {
   accessibilityEvidence?: AccessibilityEvidence[];
   selectedAccessibilityEvidenceId?: string | null;
   userLocation: UserLocation | null;
+  journeyActive?: boolean;
+  journeyFollowing?: boolean;
+  journeyFocusKey?: number;
+  onJourneyCameraOverride?: () => void;
   onSelect: (merchant: Merchant) => void;
   onSelectProperty?: (candidate: BusinessSpaceCandidate) => void;
   onSelectAccessibilityEvidence?: (evidence: AccessibilityEvidence) => void;
@@ -276,11 +279,13 @@ function createRouteEndpointMarker(
 
   badge.textContent =
     kind === "start"
-      ? "START"
-      : "TUJUAN";
+      ? "A · ASAL"
+      : "B · TUJUAN";
 
   element.title =
     label;
+  element.setAttribute("aria-label", `${kind === "start" ? "Asal A" : "Tujuan B"}: ${label}`);
+  element.setAttribute("role", "img");
 
   element.append(
     dot,
@@ -627,6 +632,10 @@ export function GetraMap({
   accessibilityEvidence = [],
   selectedAccessibilityEvidenceId = null,
   userLocation,
+  journeyActive = false,
+  journeyFollowing = false,
+  journeyFocusKey = 0,
+  onJourneyCameraOverride,
   onSelect,
   onSelectProperty,
   onSelectAccessibilityEvidence,
@@ -651,7 +660,6 @@ export function GetraMap({
   onSelectSponsored,
   onViewportChange,
   mapPickMode = "NONE",
-  manualRouteStart = null,
   onMapPick,
   datasetKey,
   focusBounds,
@@ -680,6 +688,8 @@ export function GetraMap({
   const [cameraFitKey, setCameraFitKey] = useState(0);
   const [cameraOwner, setCameraOwner] = useState<"SYSTEM" | "USER">("SYSTEM");
   const cameraOwnerRef = useRef<"SYSTEM" | "USER">("SYSTEM");
+  const journeyOverrideRef = useRef(onJourneyCameraOverride);
+  useEffect(() => { journeyOverrideRef.current = onJourneyCameraOverride; }, [onJourneyCameraOverride]);
 
   const hasVisibleContextualLayer =
     contextualLayerVisibility.property ||
@@ -693,6 +703,7 @@ export function GetraMap({
     useRef<MapLibreMap | null>(null);
 
   const markUserCameraControl = useCallback(() => {
+    journeyOverrideRef.current?.();
     const map = mapRef.current;
     if (map) map.stop();
     cameraOwnerRef.current = "USER";
@@ -701,7 +712,9 @@ export function GetraMap({
 
   const markSystemCameraIntent = useCallback(() => {
     cameraOwnerRef.current = "SYSTEM";
-    setCameraOwner("SYSTEM");
+    queueMicrotask(() => {
+      setCameraOwner("SYSTEM");
+    });
   }, []);
 
   const merchantMarkersRef =
@@ -778,7 +791,6 @@ export function GetraMap({
   const mapPickModeRef = useRef(mapPickMode);
   const onMapPickRef = useRef(onMapPick);
 
-  const manualRouteStartMarkerRef = useRef<Marker | null>(null);
 
   // Trigger HMR
   const administrativeBoundariesRef = useRef(administrativeBoundaries);
@@ -907,7 +919,6 @@ export function GetraMap({
       setBoundaryLayersReady(true);
     }
   }, [importBoundaries]);
-
   useEffect(() => {
     if (
       !containerRef.current ||
@@ -954,7 +965,7 @@ export function GetraMap({
     });
 
     map.on("click", (e) => {
-      if (mapPickModeRef.current === "ROUTE_START") {
+      if (mapPickModeRef.current !== "NONE") {
         if (onMapPickRef.current) {
           onMapPickRef.current({ latitude: e.lngLat.lat, longitude: e.lngLat.lng });
         }
@@ -1308,7 +1319,6 @@ export function GetraMap({
       (marker) =>
         marker.remove(),
     );
-
     merchantMarkersRef.current.clear();
     setRenderedClusterFeatureCount(0);
     setClusterSourceFeatureCount(0);
@@ -1408,7 +1418,7 @@ export function GetraMap({
       });
 
       const expandCluster = async (event: MapLayerMouseEvent) => {
-        if (mapPickModeRef.current === "ROUTE_START") return;
+        if (mapPickModeRef.current !== "NONE") return;
         const feature = event.features?.[0];
         const clusterId = Number(feature?.properties?.cluster_id);
         if (!feature || !Number.isFinite(clusterId) || feature.geometry.type !== "Point") return;
@@ -1417,13 +1427,13 @@ export function GetraMap({
         map.easeTo({ center: feature.geometry.coordinates as [number, number], zoom });
       };
       const selectPoint = (event: MapLayerMouseEvent) => {
-        if (mapPickModeRef.current === "ROUTE_START") return;
+        if (mapPickModeRef.current !== "NONE") return;
         const merchantId = String(event.features?.[0]?.properties?.merchantId ?? "");
         const merchant = merchantById.get(merchantId);
         if (merchant) onSelect(merchant);
       };
-      const showPointer = () => { if (mapPickModeRef.current !== "ROUTE_START") map.getCanvas().style.cursor = "pointer"; };
-      const hidePointer = () => { map.getCanvas().style.cursor = ""; };
+      const showPointer = () => { if (mapPickModeRef.current === "NONE") map.getCanvas().style.cursor = "pointer"; };
+      const hidePointer = () => { map.getCanvas().style.cursor = mapPickModeRef.current === "NONE" ? "" : "crosshair"; };
 
       map.on("click", MERCHANT_CLUSTER_LAYER_ID, expandCluster);
       map.on("click", MERCHANT_POINT_LAYER_ID, selectPoint);
@@ -1744,7 +1754,9 @@ export function GetraMap({
     userLocationMarkerRef.current =
       marker;
 
-    map.easeTo({
+    const basemap = map.getContainer().parentElement?.querySelector(".basemap-switcher");
+    const bottomInset = basemap ? map.getContainer().getBoundingClientRect().bottom - basemap.getBoundingClientRect().top + 24 : 72;
+    if (!journeyActive || journeyFollowing) map.easeTo({
       center: [
         userLocation.longitude,
         userLocation.latitude,
@@ -1754,9 +1766,13 @@ export function GetraMap({
         14,
       ),
       duration: 650,
+      ...(journeyActive ? { padding: { top: 72, bottom: Math.min(bottomInset, map.getContainer().clientHeight * 0.45), left: 24, right: 24 } } : {}),
     });
   }, [
     userLocation,
+    journeyActive,
+    journeyFollowing,
+    journeyFocusKey,
   ]);
 
   /*
@@ -1926,11 +1942,8 @@ export function GetraMap({
       }
     };
 
-    if (map.isStyleLoaded()) {
-      updateRoute();
-    } else {
-      map.once("load", updateRoute);
-    }
+    updateRoute();
+    if (!map.isStyleLoaded()) map.once("idle", updateRoute);
 
     // Line click listener to switch route when clicking directly on the map line
     const onRouteLineClick = (e: MapLayerMouseEvent) => {
@@ -1953,7 +1966,7 @@ export function GetraMap({
       map.on("mouseleave", "walking-route-line", onRouteMouseLeave);
     }
 
-    if (routeGeometry && !isNavigating) {
+    if (isRouteGeometry(routeGeometry) && !isNavigating && !journeyActive) {
       if (lastFocusedRouteGeometry.current !== routeGeometry) {
         lastFocusedRouteGeometry.current = routeGeometry;
         const bounds = new LngLatBounds();
@@ -1971,18 +1984,31 @@ export function GetraMap({
         }
 
         if (!bounds.isEmpty()) {
-          map.fitBounds(bounds, {
-            padding: 72,
-            maxZoom: 16,
-            duration: 650,
-          });
+          const container = map.getContainer();
+          const basemap = container.parentElement?.querySelector(".basemap-switcher");
+          const bottomInset = basemap
+            ? container.getBoundingClientRect().bottom - basemap.getBoundingClientRect().top + 16
+            : 72;
+          map.fitBounds(
+            bounds,
+            {
+              padding: {
+                top: 72,
+                bottom: Math.min(bottomInset, container.clientHeight * 0.45),
+                left: Math.min(72, Math.floor(container.clientWidth / 6)),
+                right: Math.min(72, Math.floor(container.clientWidth / 6)),
+              },
+              maxZoom: 16,
+              duration: 650,
+            },
+          );
         }
       }
     } else if (!routeGeometry) {
       lastFocusedRouteGeometry.current = null;
     }
-
     return () => {
+      map.off("idle", updateRoute);
       if (map.getLayer("walking-route-line")) {
         map.off("click", "walking-route-line", onRouteLineClick);
         map.off("mouseenter", "walking-route-line", onRouteMouseEnter);
@@ -1998,6 +2024,7 @@ export function GetraMap({
     isNavigating,
     serviceAreaGeometry,
     mapPickMode,
+    journeyActive,
   ]);
 
   /*
@@ -2093,69 +2120,20 @@ export function GetraMap({
     selectedRouteId,
     routeGeometry,
     markSystemCameraIntent,
+    styleRevision,
+    journeyActive,
   ]);
 
   useEffect(() => {
     if (!mapRef.current) return;
     const canvas = mapRef.current.getCanvas();
-    if (mapPickMode === "ROUTE_START") {
+    if (mapPickMode !== "NONE") {
       canvas.style.cursor = "crosshair";
     } else {
       canvas.style.cursor = "";
     }
   }, [mapPickMode]);
 
-  useEffect(() => {
-    if (!mapRef.current) return;
-    const map = mapRef.current;
-
-    if (!manualRouteStart) {
-      if (manualRouteStartMarkerRef.current) {
-        manualRouteStartMarkerRef.current.remove();
-        manualRouteStartMarkerRef.current = null;
-      }
-      return;
-    }
-
-    if (!manualRouteStartMarkerRef.current) {
-      const el = document.createElement("div");
-      el.className = "manual-start-marker";
-      el.style.backgroundColor = "#ef4444";
-      el.style.color = "white";
-      el.style.padding = "2px 6px";
-      el.style.borderRadius = "4px";
-      el.style.fontWeight = "bold";
-      el.style.fontSize = "12px";
-      el.style.border = "2px solid white";
-      el.style.boxShadow = "0 2px 4px rgba(0,0,0,0.3)";
-      el.style.cursor = "grab";
-      el.textContent = "START";
-
-      const marker = new Marker({
-        element: el,
-        draggable: true,
-        anchor: "bottom",
-      })
-        .setLngLat([manualRouteStart.longitude, manualRouteStart.latitude])
-        .addTo(map);
-
-      marker.on("dragstart", markUserCameraControl);
-
-      marker.on("dragend", () => {
-        const lngLat = marker.getLngLat();
-        if (onMapPickRef.current) {
-          onMapPickRef.current({ latitude: lngLat.lat, longitude: lngLat.lng });
-        }
-      });
-
-      manualRouteStartMarkerRef.current = marker;
-    } else {
-      manualRouteStartMarkerRef.current.setLngLat([
-        manualRouteStart.longitude,
-        manualRouteStart.latitude,
-      ]);
-    }
-  }, [manualRouteStart, markUserCameraControl]);
 
   return (
     <div

@@ -116,7 +116,6 @@ describe("strict routing response geometry", () => {
   it("rejects failure payloads that contain fabricated success fields", () => {
     expect(() => parseRoutingResult({ ...result(), route_status: "SERVICE_UNAVAILABLE" }, "walking")).toThrow();
   });
-
   it("parses genuine alternative routes array with via names and fastest flag", () => {
     const multiRoute = {
       ...result("car"),
