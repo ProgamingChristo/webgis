@@ -70,10 +70,10 @@ export function UmkmIntelligenceMap({ data }: { data: UmkmIntelligenceResult }) 
       data-similar-merchant-count={data.nearby_similar_merchants.length}
       data-transit-count={data.location_context.nearest_transit ? 1 : 0}
     />
-    <div className="umkm-intelligence-map-legend" aria-label="Legenda konteks peta merchant">
-      <span><i className="legend-owned" />Merchant Anda</span>
-      <span><i className="legend-similar" />Merchant sejenis</span>
-      <span><i className="legend-transit" />Transit dengan bukti jaringan</span>
+    <div className="umkm-intelligence-map-legend" aria-label="Legenda peta usaha">
+      <span><i className="legend-owned" />Usaha Anda</span>
+      <span><i className="legend-similar" />Usaha sejenis</span>
+      <span><i className="legend-transit" />Transportasi umum yang dapat dicapai berjalan kaki</span>
     </div>
   </div>;
 }

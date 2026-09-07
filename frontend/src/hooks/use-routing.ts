@@ -19,6 +19,7 @@ export function useRouting() {
   const [routes, setRoutes] = useState<Partial<Record<RoutingMode, RoutingResult>>>({});
   const [activeMode, setActiveModeState] = useState<RoutingMode>("walking");
   const [recommendedMode, setRecommendedMode] = useState<RoutingMode | null>(null);
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const activeRequestRef = useRef<{ id: number; controller: AbortController } | null>(null);
   const requestSequenceRef = useRef(0);
@@ -92,6 +93,7 @@ export function useRouting() {
     setRoute(null);
     setRoutes({});
     setRecommendedMode(null);
+    setSelectedRouteId(null);
     setError(null);
   }, []);
 
@@ -99,6 +101,7 @@ export function useRouting() {
 
   const setActiveMode = useCallback((mode: RoutingMode) => {
     setActiveModeState(mode);
+    setSelectedRouteId(null);
     const nextRoute = routes[mode];
     if (nextRoute?.route_status === "ROUTABLE" && nextRoute.geometry) {
       setRoute(nextRoute);
@@ -109,16 +112,42 @@ export function useRouting() {
     }
   }, [routes]);
 
+  const allRoutes = route?.routes ?? [];
+  const selectedRoute = (route && allRoutes.length > 0)
+    ? (allRoutes.find((r) => r.id === selectedRouteId) ?? allRoutes[0])
+    : null;
+
+  const activeRoute = route
+    ? selectedRoute
+      ? {
+          ...route,
+          distance_meters: selectedRoute.distance_meters,
+          duration_seconds: selectedRoute.duration_seconds,
+          geometry: selectedRoute.geometry as import("@/src/types/spatial").LineStringGeometry,
+          has_ferry: selectedRoute.has_ferry,
+          has_highway: selectedRoute.has_highway,
+          has_toll: selectedRoute.has_toll,
+          maneuvers: selectedRoute.maneuvers,
+          warnings: selectedRoute.warnings,
+          routes: route.routes,
+        }
+      : route
+    : null;
+
   return {
     state,
-    route,
+    route: activeRoute,
     routes,
+    allRoutes,
+    selectedRoute,
+    selectedRouteId: selectedRoute?.id ?? null,
+    setSelectedRouteId,
     activeMode,
     recommendedMode,
     setActiveMode,
     error,
     requestRoute,
-    clearRoute
+    clearRoute,
   };
 }
 

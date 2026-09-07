@@ -20,6 +20,13 @@ type ApiEnvelope<T> =
   | ApiSuccess<T>
   | ApiFailure;
 
+export class ApiError extends Error {
+  constructor(message: string, public readonly status: number, public readonly code?: string) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 async function request<T>(
   path: string,
   init: RequestInit,
@@ -30,19 +37,28 @@ async function request<T>(
       init,
     );
 
-  const json =
-    (await response.json()) as ApiEnvelope<T>;
+  let json: ApiEnvelope<T>;
+  try {
+    json = (await response.json()) as ApiEnvelope<T>;
+  } catch {
+    throw new ApiError("Respons GETRA tidak valid.", response.status, "INVALID_RESPONSE");
+  }
+  if (!json || typeof json !== "object" || typeof json.success !== "boolean") {
+    throw new ApiError("Respons GETRA tidak valid.", response.status, "INVALID_RESPONSE");
+  }
 
   if (
     !response.ok ||
     !json.success
   ) {
-    throw new Error(
+    throw new ApiError(
       json.success
         ? "Request GETRA gagal."
         : json.error?.message ||
           json.error?.code ||
           "Request GETRA gagal.",
+      response.status,
+      json.success ? undefined : json.error?.code,
     );
   }
 

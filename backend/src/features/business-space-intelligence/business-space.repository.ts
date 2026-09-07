@@ -8,6 +8,8 @@ import { TransportNodeRepository } from "@/src/repositories/transport-node.repos
 import { MapidMissionRepository } from "@/src/integrations/mapid/mission.repository";
 import type { MapidMissionObservationDTO } from "@/src/integrations/mapid/mission.types";
 import type { JsonObject } from "@/src/types/provenance";
+import { mapDatabasePointGeometry } from "@/src/mappers/geometry.mapper";
+import { toBoundaryFeature } from "@/src/features/administrative-boundaries/administrative-boundary.service";
 
 export class BusinessSpaceRepository {
   readonly demand: DemandIntelligenceRepository;
@@ -34,7 +36,7 @@ export class BusinessSpaceRepository {
   async getPropertyObservation(id: string): Promise<MapidMissionObservationDTO | null> {
     const { data, error } = await this.supabase
       .from("mapid_mission_observations")
-      .select("id,source_record_id,source_type,geometry,normalized_properties,observed_at,provenance,freshness_status,verification_status")
+      .select("id,source_record_id,source_type,geometry::json,normalized_properties,observed_at,provenance,freshness_status,verification_status")
       .eq("id", id)
       .eq("source_type", "PROPERTI_GO")
       .maybeSingle();
@@ -44,7 +46,7 @@ export class BusinessSpaceRepository {
       id: data.id,
       source_id: data.source_record_id,
       source_type: "PROPERTI_GO",
-      geometry: parsePoint(data.geometry),
+      geometry: mapDatabasePointGeometry(data.geometry),
       properties: asObject(data.normalized_properties) as JsonObject,
       observed_at: data.observed_at,
       provenance: asObject(data.provenance) as JsonObject,
@@ -54,9 +56,19 @@ export class BusinessSpaceRepository {
   }
 
   async listRegions() {
-    const { data, error } = await this.supabase.rpc("list_administrative_regions_v1");
+    const { data, error } = await this.supabase
+      .from("administrative_regions")
+      .select("id,name,region_type,geometry::json");
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []).map((row: any) => {
+      const feature = toBoundaryFeature(row);
+      return {
+        id: feature.properties.id,
+        name: feature.properties.name,
+        ...feature.properties.bounds,
+        geometry: feature.geometry,
+      };
+    });
   }
 
   async listSimilarMerchants(input: {
@@ -81,18 +93,6 @@ export class BusinessSpaceRepository {
       { limit: 8, offset: 0, page: 1, sort: "created_at", order: "desc" },
     );
   }
-}
-
-function parsePoint(value: unknown) {
-  if (typeof value === "object" && value !== null && Array.isArray((value as any).coordinates)) {
-    const [longitude, latitude] = (value as any).coordinates;
-    return { type: "Point" as const, coordinates: [Number(longitude), Number(latitude)] as [number, number] };
-  }
-  if (typeof value === "string") {
-    const match = /POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i.exec(value);
-    if (match) return { type: "Point" as const, coordinates: [Number(match[1]), Number(match[2])] as [number, number] };
-  }
-  return { type: "Point" as const, coordinates: [0, 0] as [number, number] };
 }
 
 function asObject(value: unknown): Record<string, unknown> {

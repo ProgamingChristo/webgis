@@ -1,6 +1,8 @@
 import { ApplicationError } from "@/src/lib/errors";
 import type { AnalyticsCategorySlug } from "@/src/features/demand-intelligence";
 import type { MapidMissionObservationDTO } from "@/src/integrations/mapid/mission.types";
+import { pointGeometrySchema } from "@/src/schemas/spatial.schema";
+import { regionContainsPoint } from "./business-space.geometry";
 import {
   BUSINESS_SPACE_AGING_DAYS,
   BUSINESS_SPACE_CATCHMENT_MINUTES,
@@ -32,9 +34,11 @@ export class BusinessSpaceService {
     return {
       category_slug: query.category,
       days: query.days,
-      spatial_scope: query.region_id ? { type: "ADMINISTRATIVE_CITY", region_id: query.region_id } : { type: "BBOX" },
+      spatial_scope: query.west !== undefined ? { type: "BBOX" } : { type: "ADMINISTRATIVE_CITY", region_id: query.region_id },
       candidates: result.items.map((item) => mapCandidate(item)),
       total_available: result.total,
+      total_is_exact: !result.searchTruncated,
+      search_truncated: result.searchTruncated,
       limit: query.limit,
       offset: query.offset,
       has_more: query.offset + result.items.length < result.total,
@@ -66,19 +70,19 @@ export class BusinessSpaceService {
 
   private async buildDetail(item: MapidMissionObservationDTO, category: AnalyticsCategorySlug, days: 7 | 30): Promise<BusinessSpaceCandidateDetail> {
     const candidate = mapCandidate(item);
-    const regions = await this.repository.listRegions();
+    const regions = await this.repository.listRegions().catch(() => []);
     const region = findContainingRegion(regions, candidate) ?? null;
     const endAt = new Date();
     const startAt = new Date(endAt.getTime() - days * 86_400_000);
     const [analytics, walkingContext, transitContext] = await Promise.all([
-      this.repository.demand.get({
+      region ? this.repository.demand.get({
         category,
         start_at: startAt.toISOString(),
         end_at: endAt.toISOString(),
-        region_ids: region?.id ? [region.id] : [],
-        bbox: region?.id ? null : localBounds(candidate),
+        region_ids: [region.id],
+        bbox: null,
         limit: 1,
-      }).catch(() => null),
+      }).catch(() => null) : Promise.resolve(null),
       this.repository.network.serviceArea({ ...candidate, source: "EXPLICIT_ORIGIN" }, BUSINESS_SPACE_CATCHMENT_MINUTES).catch(() => null),
       this.resolveTransit(candidate).catch(() => ({ status: "UNAVAILABLE" as const, nearest: null })),
     ]);
@@ -120,14 +124,20 @@ export class BusinessSpaceService {
     query: BusinessSpaceCandidateQuery,
     bounds: { minLng: number; minLat: number; maxLng: number; maxLat: number },
   ) {
-    const pageSize = 100;
+    // The existing RPC provides an exact spatial count; avoid scanning for the
+    // common map-pan request, which has no text/property filters.
+    if (!query.q && !query.property_category && !query.transaction_type) {
+      const result = await this.repository.listPropertyObservations({ bbox: bounds, limit: query.limit, offset: query.offset });
+      return { ...result, searchTruncated: false };
+    }
+
+    const pageSize = 500;
     const maxPages = 8;
-    const targetCount = query.offset + query.limit;
     const filtered: MapidMissionObservationDTO[] = [];
     let sourceOffset = 0;
     let sourceTotal = 0;
 
-    for (let page = 0; page < maxPages && filtered.length < targetCount; page += 1) {
+    for (let page = 0; page < maxPages; page += 1) {
       const result = await this.repository.listPropertyObservations({
         bbox: bounds,
         limit: pageSize,
@@ -141,9 +151,8 @@ export class BusinessSpaceService {
 
     return {
       items: filtered.slice(query.offset, query.offset + query.limit),
-      total: filtered.length < targetCount && sourceOffset < sourceTotal
-        ? Math.max(filtered.length, sourceTotal)
-        : filtered.length,
+      total: filtered.length,
+      searchTruncated: sourceOffset < sourceTotal,
     };
   }
 
@@ -201,11 +210,13 @@ export class BusinessSpaceService {
 }
 
 function mapCandidate(item: MapidMissionObservationDTO): BusinessSpacePropertyCandidate {
-  const [longitude, latitude] = item.geometry.coordinates;
+  const point = pointGeometrySchema.safeParse(item.geometry);
+  if (!point.success) throw new ApplicationError("DATABASE_ERROR", "Lokasi properti belum dapat dibaca.");
+  const [longitude, latitude] = point.data.coordinates;
   const properties = item.properties;
   const importedAt = safeDate(item.provenance.imported_at);
   const observedAt = safeDate(item.observed_at);
-    const freshnessStatus = resolveFreshness(observedAt ?? importedAt);
+  const freshnessStatus = resolveFreshness(observedAt ?? importedAt);
   return {
     id: item.id,
     source_id: item.source_id,
@@ -282,24 +293,32 @@ function buildIndicators(
 
 function buildMetricRows(candidates: BusinessSpaceCandidateDetail[]): BusinessSpaceComparison["metric_rows"] {
   const value = (candidate: BusinessSpaceCandidateDetail, metric: string) => ({ candidate_id: candidate.candidate.id, value: metric, status: "AVAILABLE" as const });
+  const marketValue = (candidate: BusinessSpaceCandidateDetail, metric: number | null) => {
+    const available = candidate.market_context.status === "AVAILABLE" && metric !== null;
+    return {
+      candidate_id: candidate.candidate.id,
+      value: available ? String(metric) : "Insufficient Data",
+      status: available ? "AVAILABLE" as const : "INSUFFICIENT_DATA" as const,
+    };
+  };
   return [
     { metric: "Transit network walk", values: candidates.map((item) => value(item, item.transit_context.nearest ? `${item.transit_context.nearest.network_walking_minutes} min` : "Unavailable")) },
-    { metric: "Demand Score", values: candidates.map((item) => value(item, item.market_context.demand_score === null ? "Insufficient Data" : String(item.market_context.demand_score))) },
-    { metric: "Supply Score", values: candidates.map((item) => value(item, item.market_context.supply_score === null ? "Insufficient Data" : String(item.market_context.supply_score))) },
-    { metric: "Retail Gap", values: candidates.map((item) => value(item, item.market_context.retail_gap === null ? "Insufficient Data" : String(item.market_context.retail_gap))) },
+    { metric: "Demand Score", values: candidates.map((item) => marketValue(item, item.market_context.demand_score)) },
+    { metric: "Supply Score", values: candidates.map((item) => marketValue(item, item.market_context.supply_score)) },
+    { metric: "Retail Gap", values: candidates.map((item) => marketValue(item, item.market_context.retail_gap)) },
     { metric: "Freshness", values: candidates.map((item) => value(item, item.candidate.freshness)) },
   ];
 }
 
 function buildTradeOff(candidates: BusinessSpaceCandidateDetail[]) {
   const transit = [...candidates].filter((item) => item.transit_context.nearest).sort((a, b) => a.transit_context.nearest!.network_walking_minutes - b.transit_context.nearest!.network_walking_minutes)[0];
-  const demand = [...candidates].filter((item) => item.market_context.demand_score !== null).sort((a, b) => (b.market_context.demand_score ?? -1) - (a.market_context.demand_score ?? -1))[0];
-  const gap = [...candidates].filter((item) => item.market_context.retail_gap !== null).sort((a, b) => (b.market_context.retail_gap ?? -999) - (a.market_context.retail_gap ?? -999))[0];
+  const demand = [...candidates].filter((item) => item.market_context.status === "AVAILABLE" && item.market_context.demand_score !== null).sort((a, b) => (b.market_context.demand_score ?? -1) - (a.market_context.demand_score ?? -1))[0];
+  const gap = [...candidates].filter((item) => item.market_context.status === "AVAILABLE" && item.market_context.retail_gap !== null).sort((a, b) => (b.market_context.retail_gap ?? -999) - (a.market_context.retail_gap ?? -999))[0];
   return [
-    transit ? `${label(transit)} has the strongest observed transit access at ${transit.transit_context.nearest!.network_walking_minutes} min network walk.` : "Transit network evidence is unavailable for the compared candidates.",
-    demand ? `${label(demand)} has the highest Demand Score (${demand.market_context.demand_score}).` : "Demand evidence is insufficient for this comparison.",
-    gap ? `${label(gap)} has the highest Retail Gap (${gap.market_context.retail_gap}), based on the unchanged Phase 09 model.` : "Retail Gap is unavailable where evidence is insufficient.",
-    "This is a contextual trade-off, not a revenue, profit, ROI, or availability claim.",
+    transit ? `${label(transit)} memiliki waktu berjalan kaki ke transit paling singkat dalam perbandingan ini: ${transit.transit_context.nearest!.network_walking_minutes} menit berdasarkan jaringan jalan.` : "Data akses berjalan kaki ke transit belum tersedia untuk properti yang dibandingkan.",
+    demand ? `${label(demand)} memiliki indeks permintaan teramati tertinggi (${demand.market_context.demand_score}).` : "Data permintaan belum cukup untuk perbandingan ini.",
+    gap ? `${label(gap)} memiliki selisih indeks permintaan dan pasokan tertinggi (${gap.market_context.retail_gap}).` : "Data selisih permintaan dan pasokan belum tersedia.",
+    "Gunakan perbandingan ini sebagai bahan pertimbangan. Ketersediaan properti perlu dikonfirmasi dan hasil usaha tidak dijamin.",
   ].join(" ");
 }
 
@@ -310,7 +329,8 @@ function label(item: BusinessSpaceCandidateDetail) {
 function findContainingRegion(regions: any[], point: { longitude: number; latitude: number }) {
   return regions.find((region) =>
     Number(region.west) <= point.longitude && Number(region.east) >= point.longitude &&
-    Number(region.south) <= point.latitude && Number(region.north) >= point.latitude);
+    Number(region.south) <= point.latitude && Number(region.north) >= point.latitude &&
+    regionContainsPoint(region.geometry, point));
 }
 
 function localBounds(point: { longitude: number; latitude: number }) {

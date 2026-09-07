@@ -1,17 +1,16 @@
 "use client";
 
+import { Suspense } from "react";
 import { GetraAppShell } from "@/src/components/getra-ui";
 import { UmkmWorkspace } from "@/src/features/umkm-workspace";
 
 export default function UmkmWorkspacePage() {
   return (
     <GetraAppShell
-      description="Kelola profil usaha, discoverability, intelligence lokasi, dan promosi spasial tanpa mengubah role akun."
-      eyebrow="GETRA for Business"
-      title="Pusat Manajemen & Aktivasi UMKM"
       tone="umkm"
+      showContextNavigation={false}
     >
-      <UmkmWorkspace />
+      <Suspense fallback={<p role="status" className="p-6 text-sm text-slate-300">Memuat usaha Anda...</p>}><UmkmWorkspace /></Suspense>
     </GetraAppShell>
   );
 }

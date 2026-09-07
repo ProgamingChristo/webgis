@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, RefreshCw, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/src/components/providers/AuthProvider";
-import { apiClient } from "@/src/lib/api-client";
+import { getMerchantAnalyticsCampaigns } from "../services/merchant-campaigns.service";
 import { CampaignAnalyticsDTO } from "../types/campaign-analytics.types";
 import { CampaignAnalyticsService } from "../services/campaign-analytics.service";
 import { AnalyticsSummaryCards } from "./analytics-summary-cards";
@@ -16,68 +16,72 @@ import { AnalyticsDisclaimer } from "./analytics-disclaimer";
 import { AnalyticsEmptyState } from "./analytics-empty-state";
 
 export function AnalyticsDashboard() {
-  const { loading: authLoading } = useAuth();
+  const { context, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const urlCampaignId = searchParams.get("campaignId");
+  const merchantId = searchParams.get("merchantId");
+  // Reset all filters/results when navigation changes the merchant or URL campaign.
+  return <MerchantAnalyticsDashboard key={JSON.stringify([context?.user.id, merchantId, urlCampaignId])} authLoading={authLoading} merchantId={merchantId} urlCampaignId={urlCampaignId} />;
+}
+
+function MerchantAnalyticsDashboard({ authLoading, merchantId, urlCampaignId }: {
+  authLoading: boolean;
+  merchantId: string | null;
+  urlCampaignId: string | null;
+}) {
+  const backHref = merchantId ? `/umkm/advertising?merchantId=${encodeURIComponent(merchantId)}` : "/umkm/advertising";
 
   const [campaigns, setCampaigns] = useState<{ id: string; name: string }[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>(urlCampaignId || "");
   const [dateRange, setDateRange] = useState<"7d" | "30d" | "all">("30d");
   const [selectedPlacement, setSelectedPlacement] = useState<string | undefined>(undefined);
 
-  const [analytics, setAnalytics] = useState<CampaignAnalyticsDTO | null>(null);
+  const [analyticsState, setAnalyticsState] = useState<{
+    key: string;
+    data: CampaignAnalyticsDTO | null;
+    loading: boolean;
+    error: string | null;
+  } | null>(null);
   const [loadingCampaigns, setLoadingCampaigns] = useState(true);
-  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [campaignsError, setCampaignsError] = useState<string | null>(null);
+  const requestVersion = useRef(0);
+  const analyticsKey = JSON.stringify([selectedCampaignId, dateRange, selectedPlacement]);
+  const currentAnalytics = analyticsState?.key === analyticsKey ? analyticsState : null;
+  const analytics = currentAnalytics?.data ?? null;
+  const loadingAnalytics = Boolean(selectedCampaignId) && (!currentAnalytics || currentAnalytics.loading);
+  const error = campaignsError ?? currentAnalytics?.error ?? null;
 
   // 1. Load User's Campaigns
   useEffect(() => {
+    let cancelled = false;
     async function loadCampaigns() {
       if (authLoading) return;
 
       try {
         setLoadingCampaigns(true);
-        const merchantsRes = await apiClient.get<Array<{ id: string; name: string }>>("/api/umkm/advertising/my-merchants");
-        if (Array.isArray(merchantsRes) && merchantsRes.length > 0) {
-          const allCampaigns: Array<{ id: string; name: string }> = [];
-          for (const m of merchantsRes) {
-            try {
-              const camps = await apiClient.get<Array<{ id: string; name: string }>>(`/api/umkm/advertising/campaigns?merchantId=${m.id}`);
-              if (Array.isArray(camps)) {
-                allCampaigns.push(...camps.map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
-              }
-            } catch (err) {
-              console.error("[AnalyticsDashboard] Error loading merchant campaigns:", err);
-            }
-          }
-
-          setCampaigns(allCampaigns);
-
-          if (allCampaigns.length > 0) {
-            if (urlCampaignId && allCampaigns.some((c) => c.id === urlCampaignId)) {
-              setSelectedCampaignId(urlCampaignId);
-            } else {
-              setSelectedCampaignId(allCampaigns[0].id);
-            }
-          }
-        }
-      } catch (err: any) {
-        console.error("[AnalyticsDashboard] Error loading campaigns:", err);
+        const allCampaigns = await getMerchantAnalyticsCampaigns(merchantId);
+        if (cancelled) return;
+        setCampaigns(allCampaigns);
+        setSelectedCampaignId(urlCampaignId && allCampaigns.some((campaign) => campaign.id === urlCampaignId)
+          ? urlCampaignId : allCampaigns[0]?.id || "");
+      } catch {
+        if (!cancelled) setCampaignsError("Daftar promosi belum dapat dimuat. Muat ulang halaman untuk mencoba lagi.");
       } finally {
-        setLoadingCampaigns(false);
+        if (!cancelled) setLoadingCampaigns(false);
       }
     }
 
-    loadCampaigns();
-  }, [authLoading, urlCampaignId]);
+    void loadCampaigns();
+    return () => { cancelled = true; };
+  }, [authLoading, urlCampaignId, merchantId]);
 
   // 2. Load Analytics for Selected Campaign & Filters
   const loadAnalytics = useCallback(async () => {
-    if (!selectedCampaignId) return;
+    if (loadingCampaigns || !campaigns.some((campaign) => campaign.id === selectedCampaignId)) return;
+    const version = ++requestVersion.current;
 
     try {
-      setLoadingAnalytics(true);
-      setError(null);
+      setAnalyticsState({ key: analyticsKey, data: null, loading: true, error: null });
 
       let fromStr: string | undefined;
       const now = new Date();
@@ -93,21 +97,27 @@ export function AnalyticsDashboard() {
         placement: selectedPlacement,
       });
 
-      setAnalytics(data);
-    } catch (err: any) {
-      console.error("[AnalyticsDashboard] Error loading analytics:", err);
-      setError(err.message || "Gagal memuat analitik campaign.");
-    } finally {
-      setLoadingAnalytics(false);
+      if (version !== requestVersion.current) return;
+      if (data.campaign.id !== selectedCampaignId || (merchantId && data.campaign.merchant_id !== merchantId)) {
+        throw new Error("Data promosi tidak sesuai dengan usaha yang dipilih.");
+      }
+      setAnalyticsState({ key: analyticsKey, data, loading: false, error: null });
+    } catch {
+      if (version === requestVersion.current) {
+        setAnalyticsState({ key: analyticsKey, data: null, loading: false, error: "Analitik promosi belum dapat dimuat. Gunakan Segarkan untuk mencoba lagi." });
+      }
     }
-  }, [dateRange, selectedCampaignId, selectedPlacement]);
+  }, [analyticsKey, campaigns, dateRange, loadingCampaigns, merchantId, selectedCampaignId, selectedPlacement]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       void loadAnalytics();
     }, 0);
 
-    return () => window.clearTimeout(timeoutId);
+    return () => {
+      window.clearTimeout(timeoutId);
+      requestVersion.current += 1;
+    };
   }, [loadAnalytics]);
 
   if (authLoading || loadingCampaigns) {
@@ -124,14 +134,14 @@ export function AnalyticsDashboard() {
       <div className="mx-auto max-w-4xl space-y-6 py-3 sm:py-6">
         <div className="flex items-center gap-2 mb-4">
           <Link
-            href="/umkm"
+            href={backHref}
             className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
           >
             <ArrowLeft size={13} />
-            Kembali ke Workspace UMKM
+            Kembali ke Promosi
           </Link>
         </div>
-        <AnalyticsEmptyState type="NO_CAMPAIGN" />
+        {error ? <p role="alert" className="text-sm text-rose-300">{error}</p> : <AnalyticsEmptyState type="NO_CAMPAIGN" />}
       </div>
     );
   }
@@ -140,11 +150,11 @@ export function AnalyticsDashboard() {
     <div className="mx-auto max-w-6xl space-y-6 py-3 sm:py-6">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
         <Link
-          href="/umkm/advertising"
+          href={backHref}
           className="inline-flex min-w-0 items-center gap-1.5 text-xs font-semibold text-slate-400 transition-colors hover:text-slate-200"
         >
           <ArrowLeft className="shrink-0" size={13} />
-          <span className="break-words">Kembali ke Advertising & Promosi</span>
+          <span className="break-words">Kembali ke Promosi</span>
         </Link>
 
         <div className="flex shrink-0 items-center gap-3">
@@ -165,15 +175,17 @@ export function AnalyticsDashboard() {
       <AnalyticsFilters
         campaigns={campaigns}
         selectedCampaignId={selectedCampaignId}
-        onCampaignChange={setSelectedCampaignId}
+        onCampaignChange={(id) => { if (id !== selectedCampaignId) { requestVersion.current += 1; setSelectedCampaignId(id); } }}
         dateRange={dateRange}
-        onDateRangeChange={setDateRange}
+        onDateRangeChange={(range) => { if (range !== dateRange) { requestVersion.current += 1; setDateRange(range); } }}
         selectedPlacement={selectedPlacement}
-        onPlacementChange={setSelectedPlacement}
+        onPlacementChange={(placement) => { if (placement !== selectedPlacement) { requestVersion.current += 1; setSelectedPlacement(placement); } }}
       />
 
       {/* Scope Disclaimer */}
       <AnalyticsDisclaimer />
+
+      {loadingAnalytics ? <p role="status" className="text-sm text-slate-400">Memuat analitik untuk pilihan ini...</p> : null}
 
       {error ? (
         <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">

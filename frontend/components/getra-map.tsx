@@ -1,5 +1,10 @@
 "use client";
 
+// "walking-route" source and layers
+import { getRouteLabelCoordinate, syncWalkingRoute } from "@/src/features/routing/route-layer";
+import { isRouteGeometry } from "@/src/features/routing/route-geometry";
+import type { NavigationRouteOption } from "@/src/services/routing.service";
+
 import type * as GeoJSON from "geojson";
 
 import {
@@ -79,6 +84,11 @@ type GetraMapProps = {
   routeOriginPoint?: RoutePoint | null;
   routeDestinationPoint?: RoutePoint | null;
   routeGeometry?: GeoJSON.LineString | null;
+  routes?: NavigationRouteOption[] | null;
+  selectedRouteId?: string | null;
+  onSelectRoute?: (routeId: string) => void;
+  isNavigating?: boolean;
+  activeManeuverIndex?: number;
   serviceAreaGeometry?: GeoJSON.MultiLineString | null;
   importBoundaries?: GeoJSON.FeatureCollection<GeoJSON.MultiPolygon> | null;
   administrativeBoundaries?: AdministrativeBoundaryCollection;
@@ -89,7 +99,7 @@ type GetraMapProps = {
   onSelectSponsored?: (placement: SponsoredPinDTO) => void;
   onViewportChange?: (bounds: MapViewportBounds) => void;
   onRandomExploration?: () => void;
-  mapPickMode?: "NONE" | "ROUTE_START";
+  mapPickMode?: "NONE" | "ROUTE_START" | "ROUTE_DESTINATION";
   manualRouteStart?: { latitude: number; longitude: number } | null;
   onMapPick?: (coordinate: { latitude: number; longitude: number }) => void;
   datasetKey: string;
@@ -534,137 +544,52 @@ function addJakartaAdminBoundaries(
   }
 }
 
-function toRouteFeatureCollection(
-  routeGeometry?: GeoJSON.LineString | null,
+function createRouteLabelElement(
+  route: NavigationRouteOption,
+  isSelected: boolean,
+  fastestDuration: number,
+  onClick: () => void,
 ) {
-  return {
-    type: "FeatureCollection",
-    features: routeGeometry
-      ? [
-          {
-            type: "Feature",
-            properties: {},
-            geometry:
-              routeGeometry,
-          },
-        ]
-      : [],
-  } satisfies GeoJSON.FeatureCollection;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `map-route-label ${isSelected ? "map-route-label--active" : "map-route-label--alt"}`;
+
+  const minutes = Math.max(1, Math.ceil(route.duration_seconds / 60));
+  const fastestMinutes = Math.max(1, Math.ceil(fastestDuration / 60));
+  const diffMinutes = minutes - fastestMinutes;
+
+  const timeText = document.createElement("strong");
+  timeText.textContent = isSelected
+    ? `${minutes} mnt`
+    : diffMinutes > 0
+    ? `+${diffMinutes} mnt`
+    : `${minutes} mnt`;
+
+  const subText = document.createElement("span");
+  subText.textContent = route.is_fastest ? "Tercepat" : route.name.replace(/^Lewat /, "");
+
+  button.append(timeText, subText);
+  button.setAttribute("aria-label", `Pilih ${route.name}: ${minutes} menit`);
+  button.onclick = (e) => {
+    e.stopPropagation();
+    onClick();
+  };
+  return button;
 }
 
-function syncWalkingRoute(
-  map: MapLibreMap,
-  routeGeometry?: GeoJSON.LineString | null,
-) {
-  if (!map.isStyleLoaded()) {
-    return;
-  }
+function createNavVehicleElement() {
+  const container = document.createElement("div");
+  container.className = "nav-vehicle-marker";
 
-  const routeData =
-    toRouteFeatureCollection(
-      routeGeometry,
-    );
+  const pulse = document.createElement("div");
+  pulse.className = "nav-vehicle-pulse";
 
-  const source =
-    map.getSource(
-      "walking-route",
-    );
+  const arrow = document.createElement("div");
+  arrow.className = "nav-vehicle-arrow";
+  arrow.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 19 21 12 17 5 21 12 2"/></svg>`;
 
-  if (
-    map.getLayer(
-      "walking-route-line",
-    )
-  ) {
-    map.moveLayer(
-      "walking-route-line",
-    );
-  }
-
-  if (
-    map.getLayer(
-      "walking-route-casing",
-    )
-  ) {
-    map.moveLayer(
-      "walking-route-casing",
-      "walking-route-line",
-    );
-  }
-
-  if (source) {
-    (
-      source as unknown as {
-        setData: (
-          data: GeoJSON.FeatureCollection,
-        ) => void;
-      }
-    ).setData(
-      routeData,
-    );
-  } else {
-    map.addSource(
-      "walking-route",
-      {
-        type: "geojson",
-        data: routeData,
-      },
-    );
-
-    map.addLayer({
-      id: "walking-route-casing",
-      type: "line",
-      source: "walking-route",
-      layout: {
-        "line-join": "round",
-        "line-cap": "round",
-      },
-      paint: {
-        "line-color": "#041018",
-        "line-width": 8,
-        "line-opacity": 0.8,
-      },
-    });
-
-    map.addLayer({
-      id: "walking-route-line",
-      type: "line",
-      source: "walking-route",
-      layout: {
-        "line-join": "round",
-        "line-cap": "round",
-      },
-      paint: {
-        "line-color": "#22d3ee",
-        "line-width": 5,
-        "line-opacity": 0.92,
-        "line-dasharray": [1, 0],
-      },
-    });
-  }
-
-  if (
-    map.getLayer(
-      "walking-route-line",
-    )
-  ) {
-    map.setPaintProperty(
-      "walking-route-line",
-      "line-color",
-      "#22d3ee",
-    );
-
-    map.setPaintProperty(
-      "walking-route-line",
-      "line-width",
-      5,
-    );
-
-    map.setPaintProperty(
-      "walking-route-line",
-      "line-dasharray",
-      [1, 0],
-    );
-  }
+  container.append(pulse, arrow);
+  return { container, arrow };
 }
 
 function syncWalkingServiceArea(
@@ -711,6 +636,11 @@ export function GetraMap({
   routeOriginPoint,
   routeDestinationPoint,
   routeGeometry,
+  routes = null,
+  selectedRouteId = null,
+  onSelectRoute,
+  isNavigating = false,
+  activeManeuverIndex = 0,
   serviceAreaGeometry,
   importBoundaries,
   administrativeBoundaries = { type: "FeatureCollection", features: [] },
@@ -813,6 +743,13 @@ export function GetraMap({
     useRef<Marker | null>(
       null,
     );
+
+  const routeLabelMarkersRef = useRef<Marker[]>([]);
+  const navVehicleMarkerRef = useRef<Marker | null>(null);
+  const onSelectRouteRef = useRef(onSelectRoute);
+  useEffect(() => {
+    onSelectRouteRef.current = onSelectRoute;
+  }, [onSelectRoute]);
 
   const routeGeometryRef =
     useRef<GeoJSON.LineString | null>(
@@ -1946,69 +1883,216 @@ export function GetraMap({
   }, [propertyCandidates, selectedPropertyId]);
 
   /*
-   * Draw Route Line
+   * Draw Route Line & Interactive Route Labels
    */
   const lastFocusedRouteGeometry = useRef<GeoJSON.LineString | null>(null);
 
   useEffect(() => {
-    const map =
-      mapRef.current;
-
-    if (!map) {
-      return;
-    }
+    const map = mapRef.current;
+    if (!map) return;
 
     const updateRoute = () => {
-      syncWalkingRoute(
-        map,
-        routeGeometry,
-      );
+      syncWalkingRoute(map, routeGeometry, routes, selectedRouteId);
       syncWalkingServiceArea(map, serviceAreaGeometry);
+
+      // Clean up previous route label markers
+      routeLabelMarkersRef.current.forEach((marker) => marker.remove());
+      routeLabelMarkersRef.current = [];
+
+      // Only show on-map route labels when NOT navigating and multiple alternative routes exist
+      if (!isNavigating && routes && routes.length > 1) {
+        const fastest = routes.find((r) => r.is_fastest) ?? routes[0];
+        const fastestDuration = fastest?.duration_seconds ?? 0;
+        const activeId = selectedRouteId ?? routes[0]?.id;
+
+        routes.forEach((route) => {
+          const coord = getRouteLabelCoordinate(route.geometry as GeoJSON.LineString, 0.5);
+          if (!coord) return;
+
+          const isSelected = route.id === activeId;
+          const labelEl = createRouteLabelElement(
+            route,
+            isSelected,
+            fastestDuration,
+            () => onSelectRouteRef.current?.(route.id),
+          );
+
+          const marker = new Marker({ element: labelEl, anchor: "center" })
+            .setLngLat(coord)
+            .addTo(map);
+
+          routeLabelMarkersRef.current.push(marker);
+        });
+      }
     };
 
     if (map.isStyleLoaded()) {
       updateRoute();
     } else {
-      map.once(
-        "load",
-        updateRoute,
-      );
+      map.once("load", updateRoute);
     }
 
-    if (routeGeometry) {
+    // Line click listener to switch route when clicking directly on the map line
+    const onRouteLineClick = (e: MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
+      const clickedId = feature?.properties?.id ?? feature?.id;
+      if (typeof clickedId === "string" && onSelectRouteRef.current) {
+        onSelectRouteRef.current(clickedId);
+      }
+    };
+    const onRouteMouseEnter = () => {
+      if (map.getCanvas()) map.getCanvas().style.cursor = "pointer";
+    };
+    const onRouteMouseLeave = () => {
+      if (map.getCanvas() && mapPickMode === "NONE") map.getCanvas().style.cursor = "";
+    };
+
+    if (map.getLayer("walking-route-line")) {
+      map.on("click", "walking-route-line", onRouteLineClick);
+      map.on("mouseenter", "walking-route-line", onRouteMouseEnter);
+      map.on("mouseleave", "walking-route-line", onRouteMouseLeave);
+    }
+
+    if (routeGeometry && !isNavigating) {
       if (lastFocusedRouteGeometry.current !== routeGeometry) {
         lastFocusedRouteGeometry.current = routeGeometry;
-        const bounds =
-          new LngLatBounds();
+        const bounds = new LngLatBounds();
 
-        routeGeometry.coordinates.forEach(
-          (
-            coordinate,
-          ) => {
-            bounds.extend([
-              coordinate[0],
-              coordinate[1],
-            ]);
-          },
-        );
+        // If multiple routes exist, extend bounds to encompass all alternatives
+        if (routes && routes.length > 0) {
+          routes.forEach((r) => {
+            const g = r.geometry as GeoJSON.LineString;
+            g.coordinates?.forEach((coord) => bounds.extend([coord[0], coord[1]]));
+          });
+        } else {
+          routeGeometry.coordinates.forEach((coordinate) => {
+            bounds.extend([coordinate[0], coordinate[1]]);
+          });
+        }
 
         if (!bounds.isEmpty()) {
-          map.fitBounds(
-            bounds,
-            {
-              padding: 72,
-              maxZoom: 16,
-              duration: 650,
-            },
-          );
+          map.fitBounds(bounds, {
+            padding: 72,
+            maxZoom: 16,
+            duration: 650,
+          });
         }
       }
-    } else {
+    } else if (!routeGeometry) {
       lastFocusedRouteGeometry.current = null;
     }
+
+    return () => {
+      if (map.getLayer("walking-route-line")) {
+        map.off("click", "walking-route-line", onRouteLineClick);
+        map.off("mouseenter", "walking-route-line", onRouteMouseEnter);
+        map.off("mouseleave", "walking-route-line", onRouteMouseLeave);
+      }
+      routeLabelMarkersRef.current.forEach((marker) => marker.remove());
+      routeLabelMarkersRef.current = [];
+    };
   }, [
     routeGeometry,
+    routes,
+    selectedRouteId,
+    isNavigating,
     serviceAreaGeometry,
+    mapPickMode,
+  ]);
+
+  /*
+   * Navigation Mode Camera & Directional Vehicle Tracking
+   */
+  const wasNavigatingRef = useRef(false);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (!isNavigating) {
+      if (navVehicleMarkerRef.current) {
+        navVehicleMarkerRef.current.remove();
+        navVehicleMarkerRef.current = null;
+      }
+      if (wasNavigatingRef.current) {
+        wasNavigatingRef.current = false;
+        map.easeTo({
+          pitch: 0,
+          bearing: 0,
+          duration: 600,
+        });
+      }
+      return;
+    }
+
+    wasNavigatingRef.current = true;
+    const activeRoute = routes?.find((r) => r.id === selectedRouteId) ?? routes?.[0];
+    const geom = (activeRoute?.geometry ?? routeGeometry) as GeoJSON.LineString | null;
+    if (!geom || !geom.coordinates || geom.coordinates.length < 2) return;
+
+    const coords = geom.coordinates;
+    const totalCoords = coords.length;
+    const totalManeuvers = activeRoute?.maneuvers?.length ?? 1;
+
+    // Approximate progress coordinate based on activeManeuverIndex
+    const targetCoordIndex = Math.min(
+      totalCoords - 1,
+      Math.max(0, Math.floor((activeManeuverIndex / Math.max(1, totalManeuvers)) * totalCoords)),
+    );
+    const currentCoord = coords[targetCoordIndex] as [number, number];
+    const nextCoordIndex = Math.min(totalCoords - 1, targetCoordIndex + 1);
+    const nextCoord = (coords[nextCoordIndex] ?? currentCoord) as [number, number];
+
+    // Compute heading / bearing toward next coordinate
+    let bearing = 0;
+    if (nextCoord && (nextCoord[0] !== currentCoord[0] || nextCoord[1] !== currentCoord[1])) {
+      const startLat = (currentCoord[1] * Math.PI) / 180;
+      const startLng = (currentCoord[0] * Math.PI) / 180;
+      const endLat = (nextCoord[1] * Math.PI) / 180;
+      const endLng = (nextCoord[0] * Math.PI) / 180;
+      const y = Math.sin(endLng - startLng) * Math.cos(endLat);
+      const x =
+        Math.cos(startLat) * Math.sin(endLat) -
+        Math.sin(startLat) * Math.cos(endLat) * Math.cos(endLng - startLng);
+      const brng = (Math.atan2(y, x) * 180) / Math.PI;
+      bearing = (brng + 360) % 360;
+    }
+
+    markSystemCameraIntent();
+
+    // 3D Perspective map camera
+    map.easeTo({
+      center: [currentCoord[0], currentCoord[1]],
+      pitch: 52,
+      zoom: 17.5,
+      bearing,
+      duration: 800,
+    });
+
+    // Create or position vehicle marker with orientation arrow
+    if (!navVehicleMarkerRef.current) {
+      const { container, arrow } = createNavVehicleElement();
+      arrow.style.transform = `rotate(${bearing}deg)`;
+      const marker = new Marker({ element: container, anchor: "center" })
+        .setLngLat(currentCoord)
+        .addTo(map);
+      navVehicleMarkerRef.current = marker;
+    } else {
+      navVehicleMarkerRef.current.setLngLat(currentCoord);
+      const arrow = navVehicleMarkerRef.current
+        .getElement()
+        .querySelector(".nav-vehicle-arrow") as HTMLElement | null;
+      if (arrow) {
+        arrow.style.transform = `rotate(${bearing}deg)`;
+      }
+    }
+  }, [
+    isNavigating,
+    activeManeuverIndex,
+    routes,
+    selectedRouteId,
+    routeGeometry,
+    markSystemCameraIntent,
   ]);
 
   useEffect(() => {

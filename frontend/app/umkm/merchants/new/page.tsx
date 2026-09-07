@@ -6,7 +6,7 @@ import { GetraAppShell } from "@/src/components/getra-ui";
 
 export default function NewMerchantSubmissionPage() {
   return (
-    <GetraAppShell tone="umkm">
+    <GetraAppShell tone="umkm" showContextNavigation={false}>
       <Suspense
         fallback={
           <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">

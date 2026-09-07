@@ -3,6 +3,13 @@ export type BusinessSpaceAvailability = "AVAILABILITY_UNCONFIRMED" | "NEEDS_RECO
 export type BusinessSpaceMetricStatus = "AVAILABLE" | "INSUFFICIENT_DATA" | "UNAVAILABLE";
 export type BusinessCategorySlug = "bakso" | "nasi-goreng" | "coffee" | "restaurant" | "warung" | "street-food" | "fast-food" | "food" | "beverage" | "minimarket" | "retail" | "pharmacy" | "health" | "laundry" | "services";
 
+export interface BusinessSpaceViewport {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
+
 export interface BusinessSpaceCandidate {
   id: string;
   source_id: string;
@@ -30,6 +37,8 @@ export interface BusinessSpaceCandidateList {
   days: 7 | 30;
   candidates: BusinessSpaceCandidate[];
   total_available: number;
+  total_is_exact?: boolean;
+  search_truncated?: boolean;
   limit: number;
   offset: number;
   has_more: boolean;

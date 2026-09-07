@@ -200,7 +200,7 @@ describe("AiService grounding", () => {
     const result = await new AiService("Bearer VALID").handleAskRequest({
       active_experience: "GENERAL",
       context: { origin: { latitude: -6.2, longitude: 106.8 } },
-      question: "Tolong ceritakan lelucon acak",
+      question: "Pertanyaan ini tidak punya konteks jelas",
     });
 
     expect(result).toMatchObject({
@@ -209,6 +209,28 @@ describe("AiService grounding", () => {
     });
     expect(result.answer).toContain("belum dapat menghubungkan");
     expect(result.answer).not.toContain("0 UMKM");
+    expect(mocks.getRequestSupabaseClient).not.toHaveBeenCalled();
+    expect(mocks.findNearby).not.toHaveBeenCalled();
+    expect(mocks.findById).not.toHaveBeenCalled();
+    expect(mocks.findNear).not.toHaveBeenCalled();
+    expect(mocks.route).not.toHaveBeenCalled();
+  });
+
+  it("answers casual chat and introductions without requiring GIS facts", async () => {
+    mocks.generateStructured.mockReset().mockResolvedValue(null);
+
+    const result = await new AiService("Bearer VALID").handleAskRequest({
+      active_experience: "GENERAL",
+      context: { origin: { latitude: -6.2, longitude: 106.8 } },
+      question: "hai aku christo",
+    });
+
+    expect(result).toMatchObject({
+      intent: "CASUAL_CHAT",
+      provider: "deterministic",
+    });
+    expect(result.answer).toContain("saya aktif");
+    expect(result.answer).not.toContain("Data terverifikasi yang tersedia belum cukup");
     expect(mocks.getRequestSupabaseClient).not.toHaveBeenCalled();
     expect(mocks.findNearby).not.toHaveBeenCalled();
     expect(mocks.findById).not.toHaveBeenCalled();

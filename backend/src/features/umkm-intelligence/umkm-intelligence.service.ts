@@ -43,6 +43,7 @@ export class UmkmIntelligenceService {
     const observedProperties = asObject(observed?.normalized_properties);
     const categoryLabel = firstString(
       metadata.category,
+      metadata.category_label,
       observedProperties.jenis_tempat,
       merchant.description,
       merchant.name,
@@ -193,7 +194,7 @@ export class UmkmIntelligenceService {
 
   private buildWithoutLocation(merchant: any): MerchantIntelligenceResult {
     const metadata = asObject(merchant.metadata);
-    const categoryLabel = firstString(metadata.category, merchant.description, merchant.name) ?? "Kategori belum tersedia";
+    const categoryLabel = firstString(metadata.category, metadata.category_label, merchant.description, merchant.name) ?? "Kategori belum tersedia";
     const categorySlug = resolveAnalyticsCategory(categoryLabel);
     const fields = buildEvidenceFields(merchant, metadata, {}, false, "UNAVAILABLE", false);
     return {
@@ -225,16 +226,20 @@ export class UmkmIntelligenceService {
 }
 
 function buildEvidenceFields(merchant: any, metadata: Record<string, unknown>, observed: Record<string, unknown>, regionKnown: boolean, networkStatus: unknown, transitRoutable: boolean): MerchantEvidenceInput {
+  // Approved registrations preserve their reviewed public fields in these objects.
+  // Imported GETRA/MAPID/Menu Go evidence remains a fallback for existing merchants.
+  const publicMedia = asObject(metadata.public_media);
+  const businessInfo = asObject(metadata.business_info);
   return {
     name: Boolean(merchant.name?.trim()),
-    category: Boolean(resolveAnalyticsCategory(firstString(metadata.category, observed.jenis_tempat, merchant.description, merchant.name))),
+    category: Boolean(resolveAnalyticsCategory(firstString(metadata.category, metadata.category_label, observed.jenis_tempat, merchant.description, merchant.name))),
     location: Boolean(readPoint(merchant.location)),
     address: Boolean(merchant.address?.trim()),
     openingHours: hasValues(merchant.opening_hours),
-    price: Boolean(merchant.price_level || firstString(observed.harga_rata_rata)),
-    photo: Boolean(firstString(metadata.photo, metadata.photo_url, observed.foto_tempat)),
-    menu: Boolean(firstString(observed.menu_utama, observed.foto_menu_1, observed.foto_menu_2)),
-    phone: Boolean(firstString(metadata.phone, metadata.phone_number)),
+    price: Boolean(firstString(merchant.price_level, businessInfo.price_range, observed.harga_rata_rata)),
+    photo: Boolean(firstString(publicMedia.storefront_url, metadata.photo, metadata.photo_url, observed.foto_tempat)) || hasStringItems(publicMedia.product_urls),
+    menu: hasStringItems(publicMedia.menu_urls) || Boolean(firstString(observed.menu_utama, observed.foto_menu_1, observed.foto_menu_2)),
+    phone: Boolean(firstString(businessInfo.contact_phone, metadata.phone, metadata.phone_number)),
     verified: merchant.verification_status === "VERIFIED",
     published: merchant.publish_status === "PUBLISHED",
     isMobile: Boolean(merchant.is_mobile),
@@ -284,6 +289,10 @@ function firstString(...values: unknown[]) {
 
 function hasValues(value: unknown) {
   return typeof value === "object" && value !== null && Object.keys(value).length > 0;
+}
+
+function hasStringItems(value: unknown): boolean {
+  return Array.isArray(value) && value.some((item) => typeof item === "string" && item.trim().length > 0);
 }
 
 function latestObserved(rows: any[]) {

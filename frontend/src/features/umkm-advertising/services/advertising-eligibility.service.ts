@@ -6,7 +6,7 @@ export class AdvertisingEligibilityService {
     merchantId: string
   ): Promise<AdvertisingEligibilityResult> {
     return apiClient.get<AdvertisingEligibilityResult>(
-      `/api/umkm/advertising/eligibility?merchantId=${merchantId}`
+      `/api/umkm/advertising/eligibility?merchantId=${encodeURIComponent(merchantId)}`
     );
   }
 }

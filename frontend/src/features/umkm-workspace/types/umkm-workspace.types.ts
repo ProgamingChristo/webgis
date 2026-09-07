@@ -6,6 +6,7 @@ export interface OwnedMerchantBrief {
   publish_status: string;
   verification_status: string;
   campaigns_count: number;
+  active_campaigns_count?: number;
 }
 
 export interface SubmissionBrief {

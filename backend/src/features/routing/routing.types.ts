@@ -33,6 +33,20 @@ export type NavigationFailureCode =
   | "ROUTING_TIMEOUT"
   | "ROUTING_UPSTREAM_ERROR";
 
+export interface NavigationRouteOption {
+  distance_meters: number;
+  duration_seconds: number;
+  geometry: LineStringGeometry;
+  has_ferry: boolean;
+  has_highway: boolean;
+  has_toll: boolean;
+  id: string;
+  is_fastest: boolean;
+  maneuvers: NavigationManeuver[];
+  name: string;
+  warnings: string[];
+}
+
 export interface NavigationRouteResult {
   distance_meters: number | null;
   duration_seconds: number | null;
@@ -45,6 +59,7 @@ export interface NavigationRouteResult {
   mode: RoutingMode;
   reason_code: NavigationFailureCode | null;
   route_status: NavigationRouteStatus;
+  routes?: NavigationRouteOption[];
   source: "OPENSTREETMAP";
   warnings: string[];
 }

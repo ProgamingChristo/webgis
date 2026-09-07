@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const AiIntentEnum = z.enum([
   "ASSISTANT_IDENTITY",
+  "CASUAL_CHAT",
   "GENERAL_AREA",
   "NEAREST_TRANSIT",
   "WALKING_ROUTE",

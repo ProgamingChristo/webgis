@@ -127,6 +127,7 @@ describe("MerchantSubmissionService", () => {
                   submitted_by: userId,
                   name: "Warung Kopi",
                   status: "DRAFT",
+                  location: "POINT(106.78 -6.18)",
                 },
                 error: null,
               }),

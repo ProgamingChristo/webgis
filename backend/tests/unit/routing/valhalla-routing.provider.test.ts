@@ -23,6 +23,7 @@ describe("ValhallaRoutingProvider", () => {
 
     const request = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
     expect(request.costing).toBe(costing);
+    expect(request.alternates).toBe(2);
     expect(request.locations).toEqual([
       { lat: -6.2, lon: 106.8, type: "break" },
       { lat: -6.21, lon: 106.81, type: "break" },
@@ -36,6 +37,47 @@ describe("ValhallaRoutingProvider", () => {
     });
     expect(result.geometry?.coordinates.length).toBeGreaterThan(1);
     expect(result.maneuvers[0].instruction).toBe("Mulai ke arah timur");
+  });
+
+  it("normalizes genuine alternative routes with via road names and fastest indicator", async () => {
+    const payloadWithAlternates = {
+      trip: {
+        status: 0,
+        summary: { length: 2.38, time: 440, has_toll: false, has_highway: false, has_ferry: false },
+        legs: [{
+          shape: "_p~iF~ps|U_ulLnnqC_mqNvxq`@",
+          maneuvers: [{ instruction: "Ikuti jalan", length: 1.5, time: 300, type: 1, street_names: ["Jalan Sudirman"] }],
+        }],
+      },
+      alternates: [{
+        trip: {
+          status: 0,
+          summary: { length: 2.75, time: 480, has_toll: false, has_highway: false, has_ferry: false },
+          legs: [{
+            shape: "_p~iF~ps|U_ulLnnqC_mqNvxq`@",
+            maneuvers: [{ instruction: "Lewat jalan lain", length: 1.8, time: 350, type: 1, street_names: ["Jalan Gatot Subroto"] }],
+          }],
+        },
+      }],
+    };
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(payloadWithAlternates), { status: 200 }));
+    const provider = new ValhallaRoutingProvider("http://valhalla:8002", fetchMock, 1_000);
+
+    const result = await provider.route({ ...input, mode: "car" });
+
+    expect(result.routes).toHaveLength(2);
+    expect(result.routes?.[0]).toMatchObject({
+      id: "route-0",
+      name: "Lewat Jalan Sudirman",
+      is_fastest: true,
+      duration_seconds: 440,
+    });
+    expect(result.routes?.[1]).toMatchObject({
+      id: "route-1",
+      name: "Lewat Jalan Gatot Subroto",
+      is_fastest: false,
+      duration_seconds: 480,
+    });
   });
 
   it("normalizes a no-route response without fabricating geometry", async () => {

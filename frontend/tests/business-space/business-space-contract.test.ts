@@ -9,6 +9,8 @@ const map = readFileSync(resolve(root, "src/features/business-space/components/b
 const dashboard = readFileSync(resolve(root, "components/getra-dashboard.tsx"), "utf8");
 const sharedMap = readFileSync(resolve(root, "components/getra-map.tsx"), "utf8");
 const nextConfig = readFileSync(resolve(root, "next.config.ts"), "utf8");
+const detail = readFileSync(resolve(root, "src/features/business-space/components/property-candidate-detail.tsx"), "utf8");
+const comparison = readFileSync(resolve(root, "src/features/business-space/components/property-comparison.tsx"), "utf8");
 
 describe("Business Space frontend contract", () => {
   it("calls GETRA-owned APIs only", () => {
@@ -19,16 +21,16 @@ describe("Business Space frontend contract", () => {
   });
 
   it("keeps claim-safe property wording", () => {
-    expect(workspace).toContain("Availability unconfirmed");
-    expect(workspace).toContain("Unknown freshness");
-    expect(workspace).toContain("Needs reconfirmation");
+    expect(detail).toContain("Ketersediaan belum dikonfirmasi");
+    expect(detail).toContain("Tanggal observasi belum tersedia");
+    expect(detail).toContain("Perlu konfirmasi ulang");
     expect(workspace).not.toMatch(/AVAILABLE NOW|STILL FOR RENT|STILL FOR SALE|untung pasti/i);
   });
 
   it("has accessible comparison and ECharts output", () => {
-    expect(workspace).toContain("<table>");
-    expect(workspace).toContain("BusinessSpaceChart");
-    expect(workspace).toContain("AI Location Insight");
+    expect(comparison).toContain("<table>");
+    expect(comparison).toContain("BusinessSpaceChart");
+    expect(comparison).toContain("Jelaskan perbandingan");
   });
 
   it("uses persisted MAPID GL basemap preference for the map", () => {
@@ -46,6 +48,15 @@ describe("Business Space frontend contract", () => {
     expect(dashboard).toContain("propertyCandidates");
     expect(sharedMap).toContain("property-marker");
     expect(sharedMap).toContain("Sumber: Properti Go");
+  });
+
+  it("mounts only the Properti Go workspace for the Investor experience", () => {
+    expect(dashboard).toContain('activeExperience === "INVESTOR"');
+    expect(dashboard).toContain('<BusinessSpaceWorkspace />');
+    expect(dashboard).toContain('data-active-experience="INVESTOR"');
+    expect(dashboard).toMatch(
+      /activeExperience === "INVESTOR"[\s\S]*?<BusinessSpaceWorkspace \/>[\s\S]*?return <GeneralGetraDashboard \/>/,
+    );
   });
 
   it("exposes Menu Go media as safe canonical merchant enrichment", () => {

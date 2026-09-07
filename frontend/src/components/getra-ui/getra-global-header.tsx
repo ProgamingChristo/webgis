@@ -87,7 +87,7 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
             </div>
           ) : null}
         </div>
-        <AccountMenu context={context} />
+        <AccountMenu context={context} loggingOut={loggingOut} onLogout={() => void handleLogout()} />
         <button aria-expanded={menuOpen} aria-label="Buka menu GETRA" className="getra-global-header__menu" onClick={() => setMenuOpen(true)} type="button"><Menu size={18} /><span>Menu</span></button>
       </div>
 

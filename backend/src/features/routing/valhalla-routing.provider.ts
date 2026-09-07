@@ -3,44 +3,44 @@ import "server-only";
 import { createTimeoutFetch, type FetchImplementation } from "@/src/lib/http/timeout-fetch";
 import type {
   NavigationManeuver,
+  NavigationRouteOption,
   NavigationRouteRequest,
   NavigationRouteResult,
   RoutingMode,
   RoutingProvider,
 } from "@/src/features/routing/routing.types";
 
-type ValhallaResponse = {
-  error?: string;
-  error_code?: number;
-  error_message?: string;
-  trip?: {
-    legs?: Array<{
-      maneuvers?: Array<{
-        instruction?: string;
-        length?: number;
-        time?: number;
-        type?: number;
-      }>;
-      shape?: string;
-    }>;
-    status?: number;
-    status_message?: string;
-    summary?: {
-      has_ferry?: boolean;
-      has_highway?: boolean;
-      has_toll?: boolean;
-      length?: number;
-      time?: number;
-    };
-    warnings?: Array<{ description?: string; text?: string }>;
-  };
-};
-
 type ValhallaManeuver = {
   instruction?: string;
   length?: number;
+  street_names?: string[];
   time?: number;
   type?: number;
+};
+
+type ValhallaTrip = {
+  legs?: Array<{
+    maneuvers?: ValhallaManeuver[];
+    shape?: string;
+  }>;
+  status?: number;
+  status_message?: string;
+  summary?: {
+    has_ferry?: boolean;
+    has_highway?: boolean;
+    has_toll?: boolean;
+    length?: number;
+    time?: number;
+  };
+  warnings?: Array<{ description?: string; text?: string }>;
+};
+
+type ValhallaResponse = {
+  alternates?: Array<{ trip: ValhallaTrip }>;
+  error?: string;
+  error_code?: number;
+  error_message?: string;
+  trip?: ValhallaTrip;
 };
 
 const MODE_COSTING: Record<RoutingMode, "pedestrian" | "motorcycle" | "auto"> = {
@@ -85,6 +85,7 @@ export class ValhallaRoutingProvider implements RoutingProvider {
         ],
         costing: MODE_COSTING[input.mode],
         costing_options: costingOptions(input.mode),
+        alternates: 2,
         directions_type: "instructions",
         language: "id-ID",
         units: "kilometers",
@@ -116,15 +117,57 @@ function costingOptions(mode: RoutingMode) {
   return { auto: { use_ferry: 0.2, use_highways: 0.65, use_tolls: 0.5 } };
 }
 
-function normalizeRoute(mode: RoutingMode, payload: ValhallaResponse): NavigationRouteResult {
-  const trip = payload.trip;
-  const summary = trip?.summary;
-  const encodedShapes = trip?.legs?.map((leg) => leg.shape).filter(isNonEmptyString) ?? [];
+function normalizeTripOption(
+  trip: ValhallaTrip | undefined,
+  id: string,
+  defaultName: string,
+): NavigationRouteOption | null {
+  if (!trip) return null;
+  const summary = trip.summary;
+  const encodedShapes = trip.legs?.map((leg) => leg.shape).filter(isNonEmptyString) ?? [];
   const geometry = combineShapes(encodedShapes);
   const distanceMeters = finiteNumber(summary?.length) * 1_000;
   const durationSeconds = finiteNumber(summary?.time);
 
-  if (!geometry || distanceMeters <= 0 || durationSeconds <= 0) {
+  if (!geometry || distanceMeters <= 0 || durationSeconds <= 0) return null;
+
+  let viaStreet = "";
+  let maxStreetLen = 0;
+  const allManeuvers = trip.legs?.flatMap((l) => l.maneuvers ?? []) ?? [];
+  for (const m of allManeuvers) {
+    if (m.street_names && m.street_names.length > 0) {
+      const street = m.street_names[0].trim();
+      const length = finiteNumber(m.length);
+      if (street && length > maxStreetLen) {
+        maxStreetLen = length;
+        viaStreet = street;
+      }
+    }
+  }
+
+  const name = viaStreet ? `Lewat ${viaStreet}` : defaultName;
+
+  return {
+    distance_meters: Math.round(distanceMeters),
+    duration_seconds: Math.round(durationSeconds),
+    geometry,
+    has_ferry: Boolean(summary?.has_ferry),
+    has_highway: Boolean(summary?.has_highway),
+    has_toll: Boolean(summary?.has_toll),
+    id,
+    is_fastest: false,
+    maneuvers: (trip.legs ?? []).flatMap((leg) => normalizeManeuvers(leg.maneuvers)),
+    name,
+    warnings: (trip.warnings ?? [])
+      .map((warning) => warning.description ?? warning.text ?? "")
+      .filter(isNonEmptyString),
+  };
+}
+
+function normalizeRoute(mode: RoutingMode, payload: ValhallaResponse): NavigationRouteResult {
+  const primaryOption = normalizeTripOption(payload.trip, "route-0", "Rute Utama");
+
+  if (!primaryOption) {
     return failedRoute(
       mode,
       "SERVICE_UNAVAILABLE",
@@ -133,22 +176,40 @@ function normalizeRoute(mode: RoutingMode, payload: ValhallaResponse): Navigatio
     );
   }
 
+  const routeOptions: NavigationRouteOption[] = [primaryOption];
+  const alternates = payload.alternates ?? [];
+  alternates.forEach((alt, index) => {
+    const opt = normalizeTripOption(alt.trip, `route-${index + 1}`, `Rute Alternatif ${index + 1}`);
+    if (opt) {
+      routeOptions.push(opt);
+    }
+  });
+
+  let minDuration = primaryOption.duration_seconds;
+  for (const opt of routeOptions) {
+    if (opt.duration_seconds < minDuration) {
+      minDuration = opt.duration_seconds;
+    }
+  }
+  for (const opt of routeOptions) {
+    opt.is_fastest = opt.duration_seconds === minDuration;
+  }
+
   return {
-    distance_meters: Math.round(distanceMeters),
-    duration_seconds: Math.round(durationSeconds),
+    distance_meters: primaryOption.distance_meters,
+    duration_seconds: primaryOption.duration_seconds,
     engine: "valhalla",
-    geometry,
-    has_ferry: Boolean(summary?.has_ferry),
-    has_highway: Boolean(summary?.has_highway),
-    has_toll: Boolean(summary?.has_toll),
-    maneuvers: (trip?.legs ?? []).flatMap((leg) => normalizeManeuvers(leg.maneuvers)),
+    geometry: primaryOption.geometry,
+    has_ferry: primaryOption.has_ferry,
+    has_highway: primaryOption.has_highway,
+    has_toll: primaryOption.has_toll,
+    maneuvers: primaryOption.maneuvers,
     mode,
     reason_code: null,
     route_status: "ROUTABLE",
+    routes: routeOptions,
     source: "OPENSTREETMAP",
-    warnings: (trip?.warnings ?? [])
-      .map((warning) => warning.description ?? warning.text ?? "")
-      .filter(isNonEmptyString),
+    warnings: primaryOption.warnings,
   };
 }
 

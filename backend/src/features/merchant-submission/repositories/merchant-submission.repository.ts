@@ -4,26 +4,7 @@ import {
   UpdateMerchantSubmissionInput,
   MerchantSubmissionRecord,
 } from "../types/merchant-submission.types";
-
-function parsePoint(val: any): { type: "Point"; coordinates: [number, number] } {
-  if (!val) {
-    return { type: "Point", coordinates: [106.827153, -6.175392] };
-  }
-  if (typeof val === "object" && val.type === "Point" && Array.isArray(val.coordinates)) {
-    return { type: "Point", coordinates: [val.coordinates[0], val.coordinates[1]] };
-  }
-  if (typeof val === "string") {
-    // E.g. "POINT(106.78 -6.18)" or "SRID=4326;POINT(106.78 -6.18)"
-    const match = val.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
-    if (match) {
-      return {
-        type: "Point",
-        coordinates: [parseFloat(match[1]), parseFloat(match[2])],
-      };
-    }
-  }
-  return { type: "Point", coordinates: [106.827153, -6.175392] };
-}
+import { parseSubmissionPoint } from "./submission-point";
 
 function mapRowToRecord(row: any): MerchantSubmissionRecord {
   return {
@@ -33,7 +14,7 @@ function mapRowToRecord(row: any): MerchantSubmissionRecord {
     category: row.category,
     description: row.description || null,
     address: row.address || null,
-    location: parsePoint(row.location),
+    location: parseSubmissionPoint(row.location),
     opening_hours: row.opening_hours || {},
     public_media: row.public_media || { menu_urls: [], product_urls: [] },
     business_info: row.business_info || { payment_methods: [] },

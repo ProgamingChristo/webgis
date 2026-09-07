@@ -26,6 +26,7 @@ import { StakeholderModeSwitcher } from "@/src/components/stakeholder/stakeholde
 import { StakeholderContextShell } from "@/src/components/stakeholder/stakeholder-context-shell";
 import { GetraGlobalHeader } from "@/src/components/getra-ui";
 import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
+import { BusinessSpaceWorkspace } from "@/src/features/business-space";
 import { AiPanel } from "@/components/ai/ai-panel";
 import { CommunityNotificationsMenu } from "@/src/features/community/components/notifications/community-notifications-menu";
 
@@ -33,6 +34,8 @@ import { GetraMap } from "@/components/getra-map";
 import { useFairDiscovery, FairDiscoveryResults } from "@/src/features/fair-discovery";
 import { useProfilePoster, ProfilePoster } from "@/src/features/umkm-advertising";
 import { useRouting } from "@/src/hooks/use-routing";
+import { RouteCards } from "@/src/features/routing/components/route-cards";
+import { NavigationHud } from "@/src/features/routing/components/navigation-hud";
 import { useDestinationMerchantSearch } from "@/src/features/routing/hooks/use-destination-merchant-search";
 import type { RoutingMode } from "@/src/services/routing.service";
 import {
@@ -926,7 +929,7 @@ function calculateMerchantOrigin(
   };
 }
 
-export function GetraDashboard() {
+function GeneralGetraDashboard() {
   const { activeExperience } = useStakeholder();
 
   const [
@@ -1110,6 +1113,10 @@ export function GetraDashboard() {
     state: routingState,
     route,
     routes,
+    allRoutes,
+    selectedRoute,
+    selectedRouteId,
+    setSelectedRouteId,
     activeMode,
     recommendedMode,
     setActiveMode,
@@ -1117,6 +1124,16 @@ export function GetraDashboard() {
     requestRoute,
     clearRoute,
   } = useRouting();
+
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [activeManeuverIndex, setActiveManeuverIndex] = useState(0);
+
+  useEffect(() => {
+    if (!route) {
+      setIsNavigating(false);
+      setActiveManeuverIndex(0);
+    }
+  }, [route]);
 
   const allMerchants =
     useMemo(
@@ -3065,17 +3082,31 @@ export function GetraDashboard() {
             ) : null}
 
             {route && route.distance_meters !== null ? (
-              <div className="route-result">
-                <strong>{routeModeLabel(activeMode)} · {formatDistance(route.distance_meters)} · {routeDurationMinutes} menit</strong>
-                <span>
-                  Navigasi {routeModeDescription(activeMode)} dihitung Valhalla dari jaringan jalan OpenStreetMap.
-                </span>
-                {route.has_toll ? <small>Rute ini menggunakan jalan tol.</small> : null}
-                {route.maneuvers.length > 0 ? (
+              <div className="route-result" data-testid="routing-result" aria-live="polite">
+                {allRoutes.length > 0 ? (
+                  <RouteCards
+                    routes={allRoutes}
+                    selectedRouteId={selectedRouteId}
+                    onSelectRoute={setSelectedRouteId}
+                    onStartNavigation={() => {
+                      setIsNavigating(true);
+                      setActiveManeuverIndex(0);
+                    }}
+                  />
+                ) : (
+                  <div>
+                    <strong>{routeModeLabel(activeMode)} · {formatDistance(route.distance_meters)} · {routeDurationMinutes} menit</strong>
+                    <span>
+                      Navigasi {routeModeDescription(activeMode)} dihitung Valhalla dari jaringan jalan OpenStreetMap.
+                    </span>
+                    {route.has_toll ? <small>Rute ini menggunakan jalan tol.</small> : null}
+                  </div>
+                )}
+                {(selectedRoute?.maneuvers?.length ?? route.maneuvers.length) > 0 ? (
                   <details className="route-maneuvers">
-                    <summary>Lihat petunjuk ({route.maneuvers.length})</summary>
+                    <summary>Petunjuk Arah Lengkap ({(selectedRoute?.maneuvers ?? route.maneuvers).length} langkah)</summary>
                     <ol>
-                      {route.maneuvers.map((maneuver, index) => (
+                      {(selectedRoute?.maneuvers ?? route.maneuvers).map((maneuver, index) => (
                         <li key={`${maneuver.type ?? "step"}-${index}`}>
                           <span>{maneuver.instruction}</span>
                           {maneuver.distance_meters > 0 ? <small>{formatDistance(maneuver.distance_meters)}</small> : null}
@@ -3745,6 +3776,26 @@ export function GetraDashboard() {
               </button>
             </div>
           )}
+          {isNavigating && selectedRoute && (
+            <NavigationHud
+              route={selectedRoute}
+              activeManeuverIndex={activeManeuverIndex}
+              onPrevManeuver={() => setActiveManeuverIndex((prev) => Math.max(0, prev - 1))}
+              onNextManeuver={() =>
+                setActiveManeuverIndex((prev) =>
+                  Math.min((selectedRoute.maneuvers?.length ?? 1) - 1, prev + 1),
+                )
+              }
+              onSelectManeuver={(index) => setActiveManeuverIndex(index)}
+              onRecenter={() => {
+                setSearchFocusKey((k) => k + 1);
+              }}
+              onExitNavigation={() => {
+                setIsNavigating(false);
+                setActiveManeuverIndex(0);
+              }}
+            />
+          )}
           <GetraMap
             datasetKey={datasetId}
             focusBounds={searchFocusBounds}
@@ -3769,6 +3820,11 @@ export function GetraDashboard() {
             routeOriginPoint={routeOriginPoint}
             routeDestinationPoint={routeDestinationPoint}
             routeGeometry={route?.geometry}
+            routes={allRoutes}
+            selectedRouteId={selectedRouteId}
+            onSelectRoute={setSelectedRouteId}
+            isNavigating={isNavigating}
+            activeManeuverIndex={activeManeuverIndex}
             serviceAreaGeometry={serviceArea?.geometry ?? null}
             importBoundaries={
               visibleImportBoundaries
@@ -4014,3 +4070,19 @@ export function GetraDashboard() {
     </main>
   );
 }
+
+export function GetraDashboard() {
+  const { activeExperience } = useStakeholder();
+
+  if (activeExperience === "INVESTOR") {
+    return (
+      <div data-active-experience="INVESTOR">
+        <BusinessSpaceWorkspace />
+      </div>
+    );
+  }
+
+  return <GeneralGetraDashboard />;
+}
+
+export default GetraDashboard;

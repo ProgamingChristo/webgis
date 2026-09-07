@@ -18,19 +18,27 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const authHeader = req.headers.get("Authorization")!;
     const supabase = getRequestSupabaseClient(authHeader);
 
-    // 1. Fetch merchants owned by current user
-    const { data: owned, error: ownedError } = await supabase
-      .from("merchants")
-      .select("id, name, address, publish_status, verification_status")
-      .eq("owner_id", userId)
-      .order("name", { ascending: true })
-      .limit(20);
+    // Read every owned merchant; a newly approved business must not disappear
+    // behind the old twenty-row cap. Ownership remains the canonical authority.
+    const owned = [];
+    const pageSize = 100;
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await supabase
+        .from("merchants")
+        .select("id, name, address, publish_status, verification_status")
+        .eq("owner_id", userId)
+        .order("name", { ascending: true })
+        .order("id", { ascending: true })
+        .range(offset, offset + pageSize - 1);
 
-    if (ownedError) {
-      return NextResponse.json(
-        { success: false, error: { message: ownedError.message } },
-        { status: 500 }
-      );
+      if (error) {
+        return NextResponse.json(
+          { success: false, error: { message: error.message } },
+          { status: 500 }
+        );
+      }
+      owned.push(...(data ?? []));
+      if (!data || data.length < pageSize) break;
     }
 
     const ownershipService = new MerchantOwnershipService(supabase);

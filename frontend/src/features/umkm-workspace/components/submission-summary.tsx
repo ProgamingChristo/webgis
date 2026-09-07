@@ -42,7 +42,7 @@ export function SubmissionSummary({ submissions, claims = [] }: SubmissionSummar
       merchantName: claim.merchant_name,
       typeLabel: "Klaim kepemilikan usaha",
       status: claim.status,
-      context: `Existing merchant / ${claim.category} / ${claim.address || "Lokasi tersimpan"}`,
+      context: `${claim.category} / ${claim.address || "Alamat belum tersedia"}`,
       note: claim.note,
       createdAt: claim.created_at,
       updatedAt: claim.reviewed_at,
@@ -59,7 +59,7 @@ export function SubmissionSummary({ submissions, claims = [] }: SubmissionSummar
       note: null,
       createdAt: submission.created_at,
       updatedAt: submission.updated_at,
-      href: `/umkm/submissions/${submission.id}`,
+      href: submission.status === "DRAFT" ? `/umkm/merchants/new?edit=${encodeURIComponent(submission.id)}` : `/umkm/submissions/${submission.id}`,
     })),
   ].sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 
@@ -105,7 +105,7 @@ function SubmissionCard({ item }: { item: SummaryItem }) {
       <div className="mt-4 space-y-2">
         <p className="text-xs leading-5 text-slate-300">
           {item.kind === "CLAIM"
-            ? "Klaim kepemilikan merchant yang sudah tersedia di GETRA."
+            ? "Klaim kepemilikan usaha yang sudah tersedia di GETRA."
             : "Pendaftaran usaha baru ke katalog GETRA."}
         </p>
         <p className="break-words text-xs leading-5 text-slate-500">{item.context}</p>
@@ -120,7 +120,7 @@ function SubmissionCard({ item }: { item: SummaryItem }) {
         <div className="min-w-0 break-words text-xs leading-5 text-slate-400">
           <p>{getStateDescription(item.status)}</p>
           <p className="text-slate-500">
-            Diajukan {formatDate(item.createdAt)}
+            {item.status === "DRAFT" ? "Draft dibuat" : "Pengajuan dibuat"} {formatDate(item.createdAt)}
             {item.updatedAt ? ` / Diperbarui ${formatDate(item.updatedAt)}` : ""}
           </p>
         </div>
@@ -195,11 +195,11 @@ function getStatusPresentation(status: SummaryItem["status"]) {
 function getActionLabel(status: SummaryItem["status"]) {
   switch (status) {
     case "DRAFT":
-      return "Lanjutkan Draft";
+      return "Lanjutkan Pendaftaran";
     case "REJECTED":
       return "Lihat Alasan";
     case "APPROVED":
-      return "Kelola Usaha";
+      return "Lihat Detail";
     default:
       return "Lihat Detail";
   }
@@ -211,7 +211,7 @@ function getStateDescription(status: SummaryItem["status"]) {
       return "Pengajuan belum dikirim.";
     case "PENDING":
     case "PENDING_REVIEW":
-      return "Pengajuan sedang diperiksa.";
+      return "Pantau detail pengajuan untuk hasil pemeriksaan admin.";
     case "APPROVED":
       return "Usaha telah berhasil diverifikasi.";
     case "REJECTED":

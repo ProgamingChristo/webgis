@@ -7,6 +7,13 @@ import { getGetraApiUrl } from "@/src/lib/api-base-url";
 
 const AUTH_OPERATION_TIMEOUT_MS = 10_000;
 
+export class AuthSessionError extends Error {
+  constructor() {
+    super("Session tidak tersedia.");
+    this.name = "AuthSessionError";
+  }
+}
+
 async function withAuthTimeout<T>(operation: PromiseLike<T>): Promise<T> {
   let timeout: ReturnType<typeof setTimeout> | undefined;
 
@@ -89,9 +96,7 @@ export async function authenticatedFetch(
     await getAccessToken();
 
   if (!token) {
-    throw new Error(
-      "Session tidak tersedia.",
-    );
+    throw new AuthSessionError();
   }
 
   const headers =
