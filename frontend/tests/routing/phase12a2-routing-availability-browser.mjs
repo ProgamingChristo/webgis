@@ -8,6 +8,16 @@ import { ordinaryUserFixture } from "./browser-user-fixture.mjs";
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.GETRA_PLAYWRIGHT_MODULE || "playwright");
 const origin = process.env.GETRA_FRONTEND_ORIGIN || "http://localhost:3040";
+const browserHostResolverRules = process.env.GETRA_BROWSER_HOST_RESOLVER_RULES;
+const expectedState = process.env.GETRA_EXPECTED_ROUTING_STATE || "ROUTABLE";
+const diagnosticOrigin = {
+  latitude: Number(process.env.GETRA_DIAGNOSTIC_ORIGIN_LATITUDE ?? -6.2414),
+  longitude: Number(process.env.GETRA_DIAGNOSTIC_ORIGIN_LONGITUDE ?? 106.6281),
+};
+const diagnosticDestination = {
+  latitude: Number(process.env.GETRA_DIAGNOSTIC_DESTINATION_LATITUDE ?? -6.1754),
+  longitude: Number(process.env.GETRA_DIAGNOSTIC_DESTINATION_LONGITUDE ?? 106.8272),
+};
 const output = resolve("outputs/phase12a2");
 mkdirSync(output, { recursive: true });
 
@@ -18,7 +28,13 @@ const evidence = {
   requests: [],
   checks: {},
 };
-const browser = await chromium.launch({ channel: "msedge", headless: true });
+const browser = await chromium.launch({
+  channel: "msedge",
+  headless: true,
+  ...(browserHostResolverRules
+    ? { args: [`--host-resolver-rules=${browserHostResolverRules}`] }
+    : {}),
+});
 const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
 page.setDefaultTimeout(45_000);
 
@@ -59,8 +75,8 @@ try {
   evidence.checks.login = "PASS";
 
   const planner = page.getByRole("region", { name: "Perencana rute" });
-  await setCoordinate(planner, "Asal", { latitude: -6.2414, longitude: 106.6281 });
-  await setCoordinate(planner, "Tujuan", { latitude: -6.1754, longitude: 106.8272 });
+  await setCoordinate(planner, "Asal", diagnosticOrigin);
+  await setCoordinate(planner, "Tujuan", diagnosticDestination);
   await planner.getByRole("button", { name: "Motor", exact: true }).click();
   await page.waitForFunction(() => {
     const state = document.querySelector("[data-routing-state]")?.dataset.routingState;
@@ -68,13 +84,18 @@ try {
   });
   const state = await page.locator("[data-routing-state]").getAttribute("data-routing-state");
   evidence.checks.finalRoutingState = state;
-  assert.equal(state, "ROUTABLE");
+  assert.equal(state, expectedState);
   const request = evidence.requests.findLast((item) => item.mode === "motorcycle");
   assert(request, "ROUTING_RESPONSE_REQUIRED");
   assert.equal(request.status, 200);
-  assert.equal(request.routeStatus, "ROUTABLE");
-  assert(request.distanceMeters > 0 && request.durationSeconds > 0);
-  evidence.checks.motorcycle = "PASS";
+  assert.equal(request.routeStatus, expectedState);
+  if (expectedState === "ROUTABLE") {
+    assert(request.distanceMeters > 0 && request.durationSeconds > 0);
+    evidence.checks.motorcycle = "PASS";
+  } else {
+    assert.equal(request.reasonCode, "ROUTING_PROVIDER_UNREACHABLE");
+    evidence.checks.providerUnavailable = "PASS";
+  }
   evidence.status = "PASS";
 } catch (error) {
   evidence.status = "FAIL";
