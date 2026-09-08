@@ -12,7 +12,7 @@ export const maxDuration = 15;
 
 export async function PUT(
   req: NextRequest,
-  { params }: RouteContext<"/api/umkm/advertising/campaigns/[id]/schedule">
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   const reqId = getRequestId(req);
 
