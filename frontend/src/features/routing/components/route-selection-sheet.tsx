@@ -67,6 +67,8 @@ export function RouteSelectionSheet({
             key={candidate.route_id}
             type="button"
             aria-pressed={selected}
+            data-route-id={candidate.route_id}
+            data-route-category={candidate.route_category}
             className={`${styles.candidateCard}${selected ? ` ${styles.candidateCardSelected}` : ""}`}
             onClick={() => onSelect(candidate)}
           >

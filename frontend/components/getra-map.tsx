@@ -2,7 +2,7 @@
 
 import { bindRouteAlternativeSelection, syncRouteAlternatives, syncWalkingRoute } from "@/src/features/routing/route-layer";
 import { isRouteGeometry } from "@/src/features/routing/route-geometry";
-import { formatRouteDistance, formatRouteMinutes, getRouteLabelAnchor } from "@/src/features/routing/route-presentation";
+import { formatRouteDistance, formatRouteMinutes, getRouteLabelAnchor, getRouteLabelOffset } from "@/src/features/routing/route-presentation";
 import type { RoutingCandidate } from "@/src/services/routing.service";
 import { Layers } from "lucide-react";
 
@@ -1951,24 +1951,35 @@ export function GetraMap({
       const selected = candidate.route_id === selectedRouteId;
       const element = document.createElement("button");
       element.type = "button";
-      element.className = `route-map-label${selected ? " route-map-label--selected" : ""}${candidate.route_category === "UMKM_AREA" ? " route-map-label--umkm" : ""}`;
+      element.className = "route-map-label";
       element.setAttribute("aria-label", `${selected ? "Rute dipilih" : "Pilih rute"}, ${formatRouteMinutes(candidate.duration_seconds)}, ${formatRouteDistance(candidate.distance_meters)}`);
       element.setAttribute("aria-pressed", String(selected));
+      element.dataset.routeId = candidate.route_id;
+      element.dataset.routeSelected = String(selected);
+      element.dataset.routeCategory = candidate.route_category;
+      const surface = document.createElement("span");
+      surface.className = `route-map-label__surface ${selected ? "route-map-label--selected" : "route-map-label--alternative"}${candidate.route_category === "UMKM_AREA" ? " route-map-label--umkm" : ""}`;
       const duration = document.createElement("strong");
       duration.textContent = formatRouteMinutes(candidate.duration_seconds);
       const distance = document.createElement("span");
+      distance.className = "route-map-label__distance";
       distance.textContent = formatRouteDistance(candidate.distance_meters);
-      element.append(duration, distance);
+      surface.append(duration, distance);
       if (candidate.route_category === "UMKM_AREA") {
         const umkm = document.createElement("b");
         umkm.textContent = "UMKM";
-        element.append(umkm);
+        surface.append(umkm);
       }
+      element.append(surface);
       element.addEventListener("click", (event) => {
         event.stopPropagation();
         onSelectRouteRef.current?.(candidate.route_id);
       });
-      const marker = new Marker({ element, anchor: "center" }).setLngLat(anchor).addTo(map);
+      const marker = new Marker({
+        element,
+        anchor: "center",
+        offset: getRouteLabelOffset(index, routeCandidates.length),
+      }).setLngLat(anchor).addTo(map);
       routeLabelMarkers.set(candidate.route_id, marker);
     });
 
@@ -2019,6 +2030,8 @@ export function GetraMap({
       data-context-transaction-count={contextualLayerData.STRUK_GO.collection.features.length}
       data-context-activities-count={contextualLayerData.ACTIVITIES.collection.features.length}
       data-camera-owner={cameraOwner}
+      data-route-candidate-count={journeyActive ? 0 : routeCandidates.filter((candidate) => isRouteGeometry(candidate.geometry)).length}
+      data-selected-route-id={journeyActive ? "" : selectedRouteId ?? ""}
     >
 
       <div

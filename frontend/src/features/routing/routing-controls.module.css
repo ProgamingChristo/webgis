@@ -64,10 +64,10 @@
 .preferenceControl button:disabled { cursor: not-allowed; opacity: .5; }
 .enrichmentNote { margin: 10px 0 0; padding: 8px 10px; border-left: 3px solid #f59e0b; background: #fffbeb; font-size: .78rem; line-height: 1.4; border-radius: 0 4px 4px 0; }
 .candidateList { display: grid; gap: 10px; margin: 12px 0; }
-.candidateCard { display: grid; gap: 6px; width: 100%; min-height: 94px; text-align: left; padding: 12px 14px; border: 1.5px solid #cbd5e1; background: #fff; color: #0f172a; border-radius: 8px; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+.candidateCard { display: grid; gap: 6px; width: 100%; min-height: 94px; text-align: left; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-left-width: 4px; background: #fff; color: #0f172a; border-radius: 8px; cursor: pointer; opacity: .88; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease, opacity .15s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
 .candidateCard:hover { border-color: #0891b2; box-shadow: 0 4px 12px rgba(8, 145, 178, 0.12); transform: translateY(-1px); }
 .candidateCard[aria-pressed="true"],
-.candidateCardSelected { border: 2px solid #0284c7 !important; padding: 11px 13px; background: #f0f9ff !important; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.18) !important; }
+.candidateCardSelected { border: 2px solid #0284c7 !important; border-left-width: 6px !important; padding: 11px 13px 11px 10px; background: #f0f9ff !important; opacity: 1; box-shadow: 0 5px 16px rgba(2, 132, 199, 0.2) !important; }
 .candidateHeading { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .categoryBadge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; padding: 2.5px 8px; border-radius: 4px; }
 .categoryFastest { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
@@ -116,25 +116,36 @@
 
 .journeyMapUi { position: absolute; z-index: 35; inset: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; pointer-events: none; }
 .journeyMapUi > section { pointer-events: auto; }
-.nextManeuver { align-self: center; width: min(560px, calc(100% - 120px)); display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 16px; background: rgba(255, 255, 255, .97); color: #0f172a; border: 1px solid #0891b2; border-radius: 8px; box-shadow: 0 12px 28px rgba(15, 23, 42, .22); }
+.nextManeuver { align-self: center; width: min(520px, calc(100% - 120px)); display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 11px 14px; background: rgba(255, 255, 255, .97); color: #0f172a; border: 1px solid #0891b2; border-left-width: 4px; border-radius: 8px; box-shadow: 0 10px 24px rgba(15, 23, 42, .2); }
 .nextManeuver > svg { color: #0284c7; }
-.nextManeuver div { display: grid; gap: 3px; min-width: 0; }
+.nextManeuver div { display: grid; gap: 2px; min-width: 0; }
 .nextManeuver span { text-transform: uppercase; font-size: .68rem; color: #0e7490; font-weight: 800; }
-.nextManeuver strong { overflow-wrap: anywhere; font-size: 1.05rem; line-height: 1.25; }
+.nextManeuver strong { overflow-wrap: anywhere; font-size: 1rem; line-height: 1.22; }
 .nextManeuver b { color: #155e75; white-space: nowrap; }
 .nextManeuver b small { display: block; font-size: 10px; font-weight: 400; }
-.journeyStatusPanel { align-self: center; width: min(560px, calc(100% - 120px)); display: grid; gap: 10px; padding: 14px 16px; background: rgba(255, 255, 255, .97); color: #0f172a; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 12px 28px rgba(15, 23, 42, .22); }
-.journeyStatusHeading { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
-.journeyStatusHeading > span { color: #0e7490; font-size: .75rem; font-weight: 800; text-transform: uppercase; }
-.journeyStatusHeading > strong { display: inline-flex; align-items: center; gap: 6px; max-width: 60%; overflow-wrap: anywhere; }
+.journeyStatusPanel { align-self: center; width: min(520px, calc(100% - 120px)); display: grid; gap: 7px; padding: 10px 12px; background: rgba(255, 255, 255, .97); color: #0f172a; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 24px rgba(15, 23, 42, .2); }
+.navigationStatusRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.gpsStatus { display: inline-flex; align-items: center; gap: 5px; min-width: 0; padding: 3px 7px; border: 1px solid #bae6fd; border-radius: 999px; background: #f0f9ff; color: #0369a1; font-size: .7rem; font-weight: 750; }
+.gpsStatus[data-gps-quality="GPS_GOOD"] { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
+.gpsStatus[data-gps-quality="GPS_DEGRADED"],
+.gpsStatus[data-gps-quality="GPS_STALE"] { border-color: #fde68a; background: #fffbeb; color: #92400e; }
+.gpsStatus[data-gps-quality="GPS_UNAVAILABLE"],
+.gpsStatus[data-gps-quality="GPS_PERMISSION_DENIED"] { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+.journeyPhase { min-width: 0; color: #475569; font-size: .7rem; font-weight: 700; text-align: right; overflow-wrap: anywhere; }
+.journeySummary { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(120px, .8fr); gap: 12px; align-items: center; }
 .remainingMetrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.remainingMetrics > span { display: flex; align-items: baseline; gap: 5px; color: #475569; }
-.remainingMetrics strong { color: #0f172a; font-size: 1.45rem; }
-.journeyStatusPanel > small { color: #475569; }
-.journeyActions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(150px, 1.35fr); gap: 8px; }
+.remainingMetrics > span { display: grid; gap: 1px; color: #475569; }
+.remainingMetrics strong { color: #0f172a; font-size: 1.22rem; line-height: 1; }
+.remainingMetrics small { font-size: .66rem; }
+.journeyDestination { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 0; color: #334155; font-size: .78rem; text-align: right; overflow-wrap: anywhere; }
+.waitingMetric { color: #475569; font-size: .78rem; }
+.routeFreshness { color: #64748b; font-size: .68rem; }
+.journeyStatusPanel > p { margin: 0; color: #92400e; font-size: .72rem; line-height: 1.3; }
+.journeyActions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(140px, 1.2fr); gap: 7px; }
 .journeyActions .journeyStop { border-color: #b91c1c; color: #b91c1c; font-weight: 750; }
 .navigationModes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-.navigationDirections summary { cursor: pointer; padding: 5px 0; font-size: 12px; }
+.navigationModes button { min-height: 34px; padding: 5px 7px; font-size: .7rem; }
+.navigationDirections summary { cursor: pointer; padding: 3px 0; font-size: 11px; }
 .navigationDirections ol { max-height: 18vh; overflow: auto; padding-left: 22px; font-size: 12px; }
 .navigationDirections li { margin-block: 8px; }
 .navigationDirections li small { display: block; }
@@ -172,14 +183,14 @@
 @media (max-width: 520px) {
   .routeSheet { max-height: min(55vh, 540px); }
   .preferenceControl { grid-template-columns: 1fr 1fr; font-size: 12px; }
-  .nextManeuver { grid-template-columns: 30px minmax(0, 1fr) auto; padding: 11px 12px; }
+  .journeyMapUi { inset: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); }
+  .nextManeuver { grid-template-columns: 28px minmax(0, 1fr) auto; padding: 9px 10px; }
   .nextManeuver strong { font-size: .92rem; }
-  .journeyStatusPanel { padding: 11px 12px; }
-  .journeyStatusHeading { align-items: flex-start; }
-  .journeyStatusHeading > strong { max-width: 58%; font-size: .8rem; }
-  .remainingMetrics strong { font-size: 1.2rem; }
-  .journeyActions { grid-template-columns: 1fr 1fr; }
-  .journeyActions .journeyStop { grid-column: 1 / -1; }
+  .journeyStatusPanel { padding: 9px 10px; }
+  .journeySummary { grid-template-columns: minmax(0, 1.1fr) minmax(95px, .9fr); gap: 7px; }
+  .remainingMetrics { gap: 7px; }
+  .remainingMetrics strong { font-size: 1.05rem; }
+  .journeyActions { grid-template-columns: .8fr .8fr 1.35fr; }
   .journeyMapUi button { min-height: 42px; padding: 8px; font-size: .78rem; }
   .journeyStatusPanel { gap: 6px; }
   .activeWorkspace .nextManeuver { align-self: flex-start; width: calc(100% - 46px); grid-template-columns: 24px minmax(0, 1fr); }

@@ -4526,6 +4526,14 @@ select:focus-visible {
 }
 /* Route labels are interactive MapLibre markers backed by provider candidates. */
 .route-map-label {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+}
+.route-map-label__surface {
   display: grid;
   grid-template-columns: auto auto;
   align-items: baseline;
@@ -4537,20 +4545,20 @@ select:focus-visible {
   background: rgba(255, 255, 255, 0.98);
   color: #0f172a;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.22);
-  cursor: pointer;
   font-variant-numeric: tabular-nums;
-  transition: all 0.15s ease;
-  user-select: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
 }
-.route-map-label:hover {
+.route-map-label:hover .route-map-label__surface {
   border-color: #0891b2;
   box-shadow: 0 6px 18px rgba(8, 145, 178, 0.32);
   transform: translateY(-2px);
 }
-.route-map-label strong { font-size: 12px; font-weight: 800; color: #0f172a; }
-.route-map-label span { font-size: 10px; color: #475569; font-weight: 600; }
-.route-map-label b { grid-column: 1 / -1; color: #166534; font-size: 9px; font-weight: 800; text-transform: uppercase; }
-.route-map-label--selected { z-index: 2; border: 2px solid #0891b2; background: #ecfeff; transform: scale(1.08); box-shadow: 0 6px 20px rgba(8, 145, 178, 0.35); }
+.route-map-label__surface > strong { font-size: 12px; font-weight: 800; color: #0f172a; }
+.route-map-label__surface > .route-map-label__distance { font-size: 10px; color: #475569; font-weight: 600; }
+.route-map-label__surface > b { grid-column: 1 / -1; color: #166534; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.route-map-label--alternative { opacity: .76; transform: scale(.94); box-shadow: 0 3px 10px rgba(15, 23, 42, .16); }
+.route-map-label:hover .route-map-label--alternative { opacity: 1; transform: scale(1); }
+.route-map-label--selected { z-index: 2; border: 2px solid #0891b2; background: #ecfeff; opacity: 1; transform: scale(1.08); box-shadow: 0 6px 20px rgba(8, 145, 178, 0.35); }
 .route-map-label--umkm { border-bottom: 3px solid #65a30d; }
 .route-map-label:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
 

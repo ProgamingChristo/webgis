@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { RoutingCandidate } from "@/src/services/routing.service";
-import { getRouteContext, getRouteIdentity, getRouteLabelAnchor } from "@/src/features/routing/route-presentation";
+import { getRouteContext, getRouteIdentity, getRouteLabelAnchor, getRouteLabelOffset } from "@/src/features/routing/route-presentation";
 
 const candidate = (overrides: Partial<RoutingCandidate> = {}): RoutingCandidate => ({
   route_id: "route-1",
@@ -39,5 +39,12 @@ describe("route presentation", () => {
     expect(first).not.toEqual(second);
     expect(first?.[0]).toBeGreaterThan(106.7);
     expect(second?.[0]).toBeLessThan(106.9);
+  });
+
+  it("uses bounded visual-only offsets to reduce label collisions", () => {
+    expect(getRouteLabelOffset(0, 1)).toEqual([0, 0]);
+    const offsets = Array.from({ length: 5 }, (_, index) => getRouteLabelOffset(index, 5));
+    expect(new Set(offsets.map((offset) => offset.join(","))).size).toBe(5);
+    expect(offsets.every(([x, y]) => Math.abs(x) <= 18 && Math.abs(y) <= 20)).toBe(true);
   });
 });

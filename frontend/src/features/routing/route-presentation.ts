@@ -151,3 +151,17 @@ export function getRouteLabelAnchor(candidate: RoutingCandidate, index: number, 
   return coordinates.at(-1) ?? null;
 }
 
+const LABEL_OFFSETS: ReadonlyArray<readonly [number, number]> = [
+  [0, 0],
+  [0, -20],
+  [0, 20],
+  [-18, -12],
+  [18, 12],
+];
+
+export function getRouteLabelOffset(index: number, count: number): [number, number] {
+  if (count <= 1) return [0, 0];
+  const offset = LABEL_OFFSETS[index % LABEL_OFFSETS.length];
+  return [offset[0], offset[1]];
+}
+
