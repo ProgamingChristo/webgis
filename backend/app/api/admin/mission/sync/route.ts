@@ -36,7 +36,7 @@ const defaultDependencies: AdminMissionSyncRouteDependencies = {
     const repository = new MapidMissionRepository(getServiceRoleSupabaseClient());
     return new AdminMissionSyncService(
       repository,
-      new MapidMissionSyncService(repository),
+      { syncSource: (input) => new MapidMissionSyncService(repository).syncSource(input) },
     );
   },
 };

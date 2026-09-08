@@ -8,10 +8,13 @@ export interface RoutingRequest {
   origin: Coordinate;
   destination: Coordinate;
   destination_merchant_id?: string;
+  include_alternatives?: boolean;
+  route_preference?: RoutePreference;
 }
 
 export const ROUTING_MODES = ["walking", "motorcycle", "car"] as const;
 export type RoutingMode = (typeof ROUTING_MODES)[number];
+export type RoutePreference = "FASTEST" | "UMKM";
 
 export interface RoutingManeuver {
   distance_meters: number;
@@ -61,6 +64,29 @@ export interface RoutingResult {
   route_source: string;
   source: string;
   routes?: NavigationRouteOption[];
+  route_candidates?: RoutingCandidate[];
+  route_preference?: RoutePreference;
+  selected_route_id?: string | null;
+  umkm_preference_available?: boolean;
+  umkm_enrichment_status?: "AVAILABLE" | "UNAVAILABLE" | "NOT_REQUESTED";
+}
+
+export interface RoutingCandidate {
+  route_id: string;
+  route_rank: number;
+  route_category: "FASTEST" | "ALTERNATIVE" | "UMKM_AREA";
+  is_primary: boolean;
+  mode: RoutingMode;
+  distance_meters: number;
+  duration_seconds: number;
+  geometry: LineStringGeometry;
+  maneuvers: RoutingManeuver[];
+  has_toll: boolean;
+  has_highway: boolean;
+  has_ferry: boolean;
+  nearby_umkm_count: number | null;
+  verified_umkm_count: number | null;
+  distinct_category_count: number | null;
 }
 
 export interface NearestTransportRequest {
@@ -87,6 +113,17 @@ const coordinateSchema = z.object({
   latitude: z.number().finite().min(-90).max(90),
   longitude: z.number().finite().min(-180).max(180),
 });
+const maneuverSchema = z.object({ distance_meters: z.number().finite(), instruction: z.string(), time_seconds: z.number().finite(), type: z.number().nullable() });
+const candidateSchema = z.object({
+  route_id: z.string().min(1), route_rank: z.number().int().nonnegative(),
+  route_category: z.enum(["FASTEST", "ALTERNATIVE", "UMKM_AREA"]), is_primary: z.boolean(),
+  mode: z.enum(ROUTING_MODES), distance_meters: z.number().finite().positive(),
+  duration_seconds: z.number().finite().positive(), geometry: z.unknown(), maneuvers: z.array(maneuverSchema),
+  has_toll: z.boolean(), has_highway: z.boolean(), has_ferry: z.boolean(),
+  nearby_umkm_count: z.number().int().nonnegative().nullable(),
+  verified_umkm_count: z.number().int().nonnegative().nullable(),
+  distinct_category_count: z.number().int().nonnegative().nullable(),
+});
 const routeOptionSchema = z.object({
   distance_meters: z.number().finite(),
   duration_seconds: z.number().finite(),
@@ -112,12 +149,17 @@ const responseSchema = z.object({
   distance_meters: z.number().finite().nullable(),
   duration_seconds: z.number().finite().nullable(),
   geometry: z.unknown(),
-  maneuvers: z.array(z.object({ distance_meters: z.number().finite(), instruction: z.string(), time_seconds: z.number().finite(), type: z.number().nullable() })),
+  maneuvers: z.array(maneuverSchema),
   warnings: z.array(z.string()),
   limitation_flags: z.array(z.string()),
   engine: z.string(), analysis_method: z.string(), route_source: z.string(), source: z.string(),
   has_toll: z.boolean(), has_highway: z.boolean(), has_ferry: z.boolean(),
   routes: z.array(routeOptionSchema).optional(),
+  route_candidates: z.array(candidateSchema).max(3).optional(),
+  route_preference: z.enum(["FASTEST", "UMKM"]).optional(),
+  selected_route_id: z.string().nullable().optional(),
+  umkm_preference_available: z.boolean().optional(),
+  umkm_enrichment_status: z.enum(["AVAILABLE", "UNAVAILABLE", "NOT_REQUESTED"]).optional(),
 });
 
 export function parseRoutingResult(value: unknown, mode: RoutingMode): RoutingResult {
@@ -127,6 +169,13 @@ export function parseRoutingResult(value: unknown, mode: RoutingMode): RoutingRe
   if (result.route_status === "ROUTABLE") {
     if (!(result.distance_meters !== null && result.distance_meters > 0 &&
       result.duration_seconds !== null && result.duration_seconds > 0 && isRouteGeometry(result.geometry))) {
+      throw new RoutingClientError("INVALID_RESPONSE");
+    }
+    if (result.route_candidates?.some((candidate) =>
+      candidate.mode !== mode || !isRouteGeometry(candidate.geometry))) {
+      throw new RoutingClientError("INVALID_RESPONSE");
+    }
+    if (result.selected_route_id && !result.route_candidates?.some((candidate) => candidate.route_id === result.selected_route_id)) {
       throw new RoutingClientError("INVALID_RESPONSE");
     }
     if (result.routes && result.routes.length > 0) {
@@ -177,6 +226,12 @@ export const routingService = {
         origin: request.origin,
         destination: request.destination,
         mode,
+        ...(request.include_alternatives !== undefined
+          ? { include_alternatives: request.include_alternatives }
+          : {}),
+        ...(request.route_preference !== undefined
+          ? { route_preference: request.route_preference }
+          : {}),
         ...(request.destination_merchant_id && z.uuid().safeParse(request.destination_merchant_id).success
           ? { destination_merchant_id: request.destination_merchant_id } : {}),
       }, { signal: controller.signal });

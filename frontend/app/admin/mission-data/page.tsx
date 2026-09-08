@@ -48,8 +48,10 @@ const SOURCE_DETAILS = {
   },
 } satisfies Record<MissionSource, { label: string; domain: string; icon: typeof Store }>;
 
-const STATUS_LABELS: Record<MissionSyncStatus, string> = {
-  NEVER_SYNCED: "Siap",
+const STATUS_LABELS: Record<MissionSyncStatus | "UNKNOWN" | "ERROR", string> = {
+  UNKNOWN: "Belum diketahui",
+  ERROR: "Status tidak tersedia",
+  NEVER_SYNCED: "Belum disinkronkan",
   RUNNING: "Sinkronisasi",
   COMPLETED: "Berhasil",
   PARTIAL: "Peringatan",
@@ -175,7 +177,7 @@ export default function AdminMissionDataPage() {
           </div>
           <div>
             <span>Sinkron terakhir</span>
-            <strong>{formatLatestDate(summaries)}</strong>
+            <strong>{pageError ? "Tidak tersedia" : loading || refreshing ? "Memuat..." : formatLatestDate(summaries)}</strong>
           </div>
         </div>
 
@@ -191,7 +193,8 @@ export default function AdminMissionDataPage() {
             const details = SOURCE_DETAILS[source];
             const summary = summaryBySource.get(source) ?? emptySummary(source);
             const isSyncing = syncing.has(source);
-            const status = isSyncing ? "RUNNING" : summary.status;
+            const status = isSyncing ? "RUNNING" : loading || refreshing ? "UNKNOWN" : pageError ? "ERROR" : summary.status;
+            const unavailable = status === "UNKNOWN" || status === "ERROR";
             const Icon = details.icon;
 
             return (
@@ -211,7 +214,7 @@ export default function AdminMissionDataPage() {
                       <LoaderCircle className={styles.spinning} size={14} />
                     ) : status === "COMPLETED" ? (
                       <CheckCircle2 size={14} />
-                    ) : status === "FAILED" || status === "BLOCKED" ? (
+                    ) : status === "FAILED" || status === "BLOCKED" || status === "ERROR" ? (
                       <TriangleAlert size={14} />
                     ) : (
                       <Clock3 size={14} />
@@ -222,13 +225,13 @@ export default function AdminMissionDataPage() {
 
                 <div className={styles.lastSync}>
                   <span>Sinkron terakhir</span>
-                  <strong>{formatDate(summary.finished_at)}</strong>
-                  {summary.duration_ms !== null ? (
+                  <strong>{unavailable ? "Tidak tersedia" : formatDate(summary.finished_at)}</strong>
+                  {!unavailable && summary.duration_ms !== null ? (
                     <small>{formatDuration(summary.duration_ms)}</small>
                   ) : null}
                 </div>
 
-                {summary.fetched !== null ? (
+                {!unavailable && summary.fetched !== null ? (
                   <dl className={styles.metrics}>
                     <Metric label="Diambil" value={summary.fetched} />
                     <Metric label="Baru" value={summary.inserted} />
@@ -238,7 +241,7 @@ export default function AdminMissionDataPage() {
                     <Metric label="Gagal" value={summary.failed} tone="danger" />
                   </dl>
                 ) : (
-                  <div className={styles.emptyMetrics}>Belum ada hasil sinkronisasi.</div>
+                  <div className={styles.emptyMetrics}>{unavailable ? "Status belum dapat dipastikan." : "Belum ada hasil sinkronisasi."}</div>
                 )}
 
                 {sourceErrors[source] ? (
@@ -249,7 +252,7 @@ export default function AdminMissionDataPage() {
 
                 <button
                   className={styles.syncButton}
-                  disabled={isSyncing}
+                  disabled={isSyncing || unavailable}
                   onClick={() => void syncSource(source)}
                   type="button"
                 >

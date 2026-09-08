@@ -286,6 +286,16 @@ export class CommunityService {
     }
   }
 
+  async deletePost(postId: unknown): Promise<{ deletionActorRole: "OWNER" | "ADMIN" }> {
+    const parsedPostId = communityPostIdSchema.safeParse(postId);
+    if (!parsedPostId.success) throw new ApplicationError("VALIDATION_ERROR");
+    try {
+      return await this.repository.deletePost(parsedPostId.data);
+    } catch (error) {
+      throw mapCommunityRepositoryError(error);
+    }
+  }
+
   async listComments(
     postId: unknown,
     input: unknown,

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import {
   createCommunityPost,
+  deleteCommunityPost,
   getCommunityFeed,
   setCommunityReaction,
 } from "../api/community.api";
@@ -40,6 +41,7 @@ export function useCommunityFeed(filters: CommunityFeedFilters = DEFAULT_FEED_FI
   const [postError, setPostError] = useState<string | null>(null);
   const [pendingReactionByPostId, setPendingReactionByPostId] =
     useState<Record<string, CommunityReactionType | null>>({});
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
 
   const loadPage = useCallback(
     async (page: number) => {
@@ -183,6 +185,23 @@ export function useCommunityFeed(filters: CommunityFeedFilters = DEFAULT_FEED_FI
     [items],
   );
 
+  const deletePost = useCallback(async (postId: string) => {
+    setDeletingPostId(postId);
+    setError(null);
+    try {
+      await deleteCommunityPost(postId);
+      setItems((current) => current.filter((item) => item.id !== postId));
+      setMeta((current) => ({ ...current, total: Math.max(0, current.total - 1),
+        total_pages: Math.max(1, Math.ceil(Math.max(0, current.total - 1) / current.limit)) }));
+      return true;
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Posting Community gagal dihapus.");
+      return false;
+    } finally {
+      setDeletingPostId(null);
+    }
+  }, []);
+
   return {
     items,
     meta,
@@ -192,9 +211,11 @@ export function useCommunityFeed(filters: CommunityFeedFilters = DEFAULT_FEED_FI
     error,
     postError,
     pendingReactionByPostId,
+    deletingPostId,
     reload: () => loadPage(1),
     loadMore: () => loadPage(meta.page + 1),
     publishPost,
     toggleReaction,
+    deletePost,
   };
 }

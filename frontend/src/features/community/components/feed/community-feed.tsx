@@ -24,6 +24,10 @@ type CommunityFeedProps = {
   onLoadMore(): void;
   onRetry(): void;
   onToggleReaction?(postId: string, reactionType: CommunityReactionType): void;
+  canDelete?(post: CommunityFeedItem): boolean;
+  isModerationDelete?(post: CommunityFeedItem): boolean;
+  deletingPostId?: string | null;
+  onDelete?(postId: string): Promise<boolean>;
 };
 
 export function CommunityFeed({
@@ -36,6 +40,10 @@ export function CommunityFeed({
   onLoadMore,
   onRetry,
   onToggleReaction,
+  canDelete,
+  isModerationDelete,
+  deletingPostId = null,
+  onDelete,
 }: CommunityFeedProps) {
   const [activeLocation, setActiveLocation] =
     useState<CommunityPostLocation | null>(null);
@@ -70,6 +78,10 @@ export function CommunityFeed({
           pendingReaction={pendingReactionByPostId[post.id] ?? null}
           post={post}
           onToggleReaction={onToggleReaction}
+          canDelete={canDelete?.(post) ?? false}
+          moderationDelete={isModerationDelete?.(post) ?? false}
+          deleting={deletingPostId === post.id}
+          onDelete={onDelete}
         />
       ))}
 

@@ -41,6 +41,8 @@ function cacheKey(input: NavigationRouteRequest) {
   const coordinate = (value: number) => value.toFixed(5);
   return [
     input.mode,
+    input.preference ?? "FASTEST",
+    input.includeAlternatives ? "alternatives" : "primary",
     coordinate(input.origin.latitude),
     coordinate(input.origin.longitude),
     coordinate(input.destination.latitude),

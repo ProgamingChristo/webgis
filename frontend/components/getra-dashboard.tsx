@@ -32,7 +32,6 @@ import { StakeholderModeSwitcher } from "@/src/components/stakeholder/stakeholde
 import { StakeholderContextShell } from "@/src/components/stakeholder/stakeholder-context-shell";
 import { GetraGlobalHeader } from "@/src/components/getra-ui";
 import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
-import { BusinessSpaceWorkspace } from "@/src/features/business-space";
 import { AiPanel } from "@/components/ai/ai-panel";
 import { CommunityNotificationsMenu } from "@/src/features/community/components/notifications/community-notifications-menu";
 
@@ -40,13 +39,12 @@ import { GetraMap } from "@/components/getra-map";
 import { useFairDiscovery, FairDiscoveryResults } from "@/src/features/fair-discovery";
 import { useProfilePoster, ProfilePoster } from "@/src/features/umkm-advertising";
 import { useRouting } from "@/src/hooks/use-routing";
-import { RouteCards } from "@/src/features/routing/components/route-cards";
-import { NavigationHud } from "@/src/features/routing/components/navigation-hud";
 import { useActiveJourney } from "@/src/hooks/use-active-journey";
 import { JourneyControls } from "@/src/features/routing/components/journey-controls";
+import { RouteSelectionSheet } from "@/src/features/routing/components/route-selection-sheet";
 import { useAuth } from "@/src/components/providers/AuthProvider";
 import { useDestinationMerchantSearch } from "@/src/features/routing/hooks/use-destination-merchant-search";
-import type { RoutingMode } from "@/src/services/routing.service";
+import type { RoutePreference, RoutingMode } from "@/src/services/routing.service";
 import {
   mapidLayerService,
   type CanonicalMerchantLayer,
@@ -84,6 +82,7 @@ import type {
   AnalyticsQuery,
 } from "@/src/features/demand-intelligence/types/demand-intelligence.types";
 import { businessSpaceService } from "@/src/features/business-space/services/business-space.service";
+import { BusinessSpaceWorkspace } from "@/src/features/business-space/components/business-space-workspace";
 import type {
   BusinessCategorySlug,
   BusinessSpaceCandidate,
@@ -278,13 +277,6 @@ function formatDistance(
 function routeModeLabel(mode: RoutingMode) {
   return mode === "walking" ? "Jalan kaki" : mode === "motorcycle" ? "Motor" : "Mobil";
 }
-
-function routeModeDescription(mode: RoutingMode) {
-  if (mode === "walking") return "pejalan kaki";
-  if (mode === "motorcycle") return "sepeda motor";
-  return "mobil";
-}
-
 
 function freshnessLabel(value: string | null | undefined) {
   if (value === "FRESH") return "Fresh";
@@ -930,6 +922,34 @@ function calculateMerchantOrigin(
   };
 }
 
+export function GetraDashboard() {
+  const { activeExperience, experienceReady } = useStakeholder();
+
+  if (!experienceReady) {
+    return (
+      <div className="auth-loading" role="status" aria-live="polite">
+        <span>Menyiapkan pengalaman GETRA...</span>
+      </div>
+    );
+  }
+
+  if (activeExperience === "INVESTOR") {
+    return (
+      <div className="workspace" data-active-experience="INVESTOR">
+        <GetraGlobalHeader
+          contextActions={<StakeholderModeSwitcher />}
+          utilities={<CommunityNotificationsMenu />}
+        />
+        <StakeholderContextShell>
+          <BusinessSpaceWorkspace />
+        </StakeholderContextShell>
+      </div>
+    );
+  }
+
+  return <GeneralGetraDashboard />;
+}
+
 function GeneralGetraDashboard() {
   const { activeExperience } = useStakeholder();
 
@@ -1111,9 +1131,6 @@ function GeneralGetraDashboard() {
       merchant: Merchant;
     } | null>(null);
 
-  const [isNavigating, setIsNavigating] = useState(false);
-  const [activeManeuverIndex, setActiveManeuverIndex] = useState(0);
-  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const allMerchants =
     useMemo(
       () => deduplicateMerchants([
@@ -1679,7 +1696,10 @@ function GeneralGetraDashboard() {
 
   const { context: authContext } = useAuth();
   const [activeMode, setActiveMode] = useState<RoutingMode>("walking");
-  const journey = useActiveJourney(routeDestination, activeMode);
+  const [routePreference, setRoutePreference] = useState<RoutePreference>("FASTEST");
+  const [routeSheetOpen, setRouteSheetOpen] = useState(false);
+  const [editingEndpoints, setEditingEndpoints] = useState(false);
+  const journey = useActiveJourney(routeDestination, activeMode, routePreference);
   const journeyOpen = journey.state !== "PREVIEW" && journey.state !== "STOPPED";
   const preview = useRouting({
     origin: routeOrigin?.coordinate ?? null,
@@ -1687,6 +1707,7 @@ function GeneralGetraDashboard() {
     destinationMerchantId: routeDestination?.id,
     enabled: !journeyOpen,
     mode: activeMode,
+    preference: routePreference,
   });
   const { requestRoute, clearRoute } = preview;
   const route = journeyOpen ? journey.route : preview.route;
@@ -1697,35 +1718,6 @@ function GeneralGetraDashboard() {
   useEffect(() => {
     if (!authContext) journey.controller.sessionLost();
   }, [authContext, journey.controller]);
-
-  const allRoutes = useMemo(() => {
-    return route?.routes ?? [];
-  }, [route]);
-
-  const selectedRoute = useMemo(() => {
-    return allRoutes.find((r) => r.id === selectedRouteId) ?? allRoutes[0] ?? null;
-  }, [allRoutes, selectedRouteId]);
-
-  useEffect(() => {
-    if (!route) {
-      queueMicrotask(() => {
-        setIsNavigating(false);
-        setActiveManeuverIndex(0);
-        setSelectedRouteId(null);
-      });
-    }
-  }, [route]);
-
-  const routeDurationMinutes =
-    route?.duration_seconds !== null && route?.duration_seconds !== undefined
-      ? Math.max(
-          1,
-          Math.ceil(
-            route.duration_seconds /
-              60,
-          ),
-        )
-      : null;
 
   const routeOriginPoint = useMemo(() => routeOrigin
     ? {
@@ -2400,6 +2392,8 @@ function GeneralGetraDashboard() {
         return;
       }
 
+      setEditingEndpoints(false);
+      setRouteSheetOpen(true);
       requestRoute();
     }, [
       requestRoute,
@@ -2626,6 +2620,7 @@ function GeneralGetraDashboard() {
   const resetRouting = useCallback(() => {
     journey.controller.stop();
     clearRoute();
+    setEditingEndpoints(false);
     setMapPickMode("NONE");
     setManualRouteStart(null);
     setManualRouteDestination(null);
@@ -2646,7 +2641,7 @@ function GeneralGetraDashboard() {
       />
 
       <StakeholderContextShell>
-        <section className="workspace-grid">
+        <section className={`workspace-grid ${journeyOpen ? routingStyles.activeWorkspace : ""}`} data-routing-active={Boolean(route && route.distance_meters !== null && !journeyOpen)}>
           <aside className="left-panel panel" tabIndex={0} aria-label="Kontrol pencarian dan rute">
           <div className="panel-heading">
             <div>
@@ -2821,316 +2816,346 @@ function GeneralGetraDashboard() {
           </section>
 
           <section className={`route-planner ${routingStyles.planner}`} aria-label="Perencana rute" data-routing-state={routingState}>
-            <JourneyControls journey={journey} canStart={Boolean(!journeyOpen && preview.route && authContext && routeDestination)}
-              onStart={() => { setMapPickMode("NONE"); void journey.controller.start(); }} />
             <div className="route-planner__header">
               <div>
                 <span className="eyebrow">
                   Rute commuter
                 </span>
                 <strong>
-                  {journeyOpen ? `Menuju ${routeDestination?.name ?? "tujuan"}` : "Mulai dari mana?"}
+                  {journeyOpen ? `Menuju ${routeDestination?.name ?? "tujuan"}` : (route && !editingEndpoints) ? "Opsi Rute" : "Mulai dari mana?"}
                 </strong>
               </div>
               <Route size={18} />
             </div>
 
-            <fieldset className={routingStyles.journeyFields} disabled={journeyOpen} hidden={journeyOpen}>
-            <div className="route-field">
-              <span>
-                Titik mulai
-              </span>
-              <div className="route-quick-actions">
-                <button
-                  className={
-                    routeOriginValue ===
-                    ROUTE_ORIGIN_USER
-                      ? "route-chip-button route-chip-button--active"
-                      : "route-chip-button"
-                  }
-                  type="button"
-                  onClick={handleUseUserLocationAsOrigin}
-                >
-                  {userLocation
-                    ? "Lokasi saya"
-                    : locating
-                      ? "Mengambil GPS..."
-                      : "Aktifkan GPS"}
-                </button>
-                <button
-                  className={
-                    routeOriginValue ===
-                    ROUTE_ORIGIN_MANUAL
-                      ? "route-chip-button route-chip-button--active"
-                      : "route-chip-button"
-                  }
-                  type="button"
-                  onClick={handleUseManualOrigin}
-                  aria-label="Pilih asal di peta"
-                  aria-pressed={mapPickMode === "ROUTE_START"}
-                  style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
-                >
-                  <Target size={14} /> Pilih di peta
-                </button>
-              </div>
-
-              {routeOrigin ? (
-                <div className={routingStyles.point} data-testid="routing-origin">
-                  <strong>A · {routeOrigin.label}</strong>
-                  <span>{routeOrigin.coordinate.latitude.toFixed(6)}, {routeOrigin.coordinate.longitude.toFixed(6)}</span>
-                  <div className={routingStyles.pointActions}>
-                    <button type="button" onClick={handleClearManualOrigin} aria-label="Hapus asal" title="Hapus asal"><X size={16} /></button>
+            {route && route.distance_meters !== null && !journeyOpen && !editingEndpoints ? (
+              <>
+                <div className="route-endpoints-summary" aria-label="Titik perjalanan terpilih">
+                  <div className="route-endpoints-summary__header">
+                    <span className="route-endpoints-summary__eyebrow">Perjalanan</span>
+                    <div className="route-endpoints-summary__actions">
+                      <button
+                        type="button"
+                        className="route-endpoints-summary__btn"
+                        onClick={() => setEditingEndpoints(true)}
+                        aria-label="Ubah titik awal atau tujuan"
+                      >
+                        Ubah
+                      </button>
+                      <button
+                        type="button"
+                        className="route-endpoints-summary__btn"
+                        onClick={resetRouting}
+                        aria-label="Reset rute"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+                  <div className="route-endpoints-summary__list">
+                    <div className="route-endpoints-summary__item" data-testid="routing-origin">
+                      <span className="route-endpoints-summary__dot route-endpoints-summary__dot--origin" aria-hidden="true" />
+                      <strong>A · {routeOrigin?.label ?? "Titik mulai"}</strong>
+                    </div>
+                    <div className="route-endpoints-summary__item" data-testid="routing-destination">
+                      <span className="route-endpoints-summary__dot route-endpoints-summary__dot--destination" aria-hidden="true" />
+                      <strong>B · {routeDestination?.name ?? "Tujuan"}</strong>
+                    </div>
                   </div>
                 </div>
-              ) : null}
-              <CoordinateEntry label="Asal" coordinate={routeOrigin?.coordinate ?? null} onSelect={selectOrigin} />
-              <div className="route-search-box">
-                <Search size={15} />
-                <input
-                  aria-label="Cari titik mulai"
-                  placeholder="Cari titik mulai dari data..."
-                  type="search"
-                  value={originSearch}
-                  onChange={(event) =>
-                    setOriginSearch(
-                      event.target.value,
-                    )
-                  }
-                />
-              </div>
-              <div className="route-search-results">
-                {originSearchResults.length >
-                0 ? (
-                  originSearchResults.map(
-                    (merchant) => (
-                      <button
-                        className={
-                          routeOriginValue ===
-                          `MERCHANT:${merchant.id}`
-                            ? "route-search-result route-search-result--active"
-                            : "route-search-result"
-                        }
-                        key={`origin-search-${merchant.id}`}
-                        type="button"
-                        onClick={() =>
-                          handleRouteChoice(
-                            "origin",
-                            merchant,
-                          )
-                        }
-                      >
-                        <strong>
-                          {merchant.name}
-                        </strong>
-                        <span>
-                          {merchant.brand} ·{" "}
-                          {merchant.district ??
-                            merchant.city ??
-                            "Lokasi tersedia"}
-                        </span>
-                      </button>
-                    ),
-                  )
-                ) : originSearch.trim() && explicitRouteOrigin?.label !== originSearch.trim() ? (
-                  <p className="route-search-empty">
-                    Titik mulai tidak ditemukan.
-                  </p>
-                ) : null}
-              </div>
-            </div>
 
-            <div className="route-field">
-              <span>
-                Tujuan
-              </span>
-              <div className="route-search-box route-search-box--destination">
-                <Search size={15} />
-                <input
-                  aria-label="Cari tujuan"
-                  placeholder="Cari nama, brand, alamat, kecamatan..."
-                  type="search"
-                  value={destinationSearch}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    setDestinationSearch(value);
-                    setDestinationSearchActive(true);
-                    if (routeDestination && value.trim() !== routeDestination.name) {
-                      setManualRouteDestination(null);
-                      setRouteDestinationId(null);
-                      setRouteDestinationMerchant(null);
-                      clearRoute();
-                    }
+                <RouteSelectionSheet
+                  route={route}
+                  inline
+                  open={true}
+                  originLabel={routeOriginPoint?.label ?? "Titik mulai"}
+                  destinationLabel={routeDestinationPoint?.label ?? routeDestination?.name ?? "Tujuan"}
+                  onOpenChange={setRouteSheetOpen}
+                  onSelect={preview.selectCandidate}
+                  onModeChange={setActiveMode}
+                  preference={routePreference}
+                  onPreferenceChange={setRoutePreference}
+                  onStart={() => {
+                    setRouteSheetOpen(false);
+                    setMapPickMode("NONE");
+                    void journey.controller.start();
                   }}
                 />
-              </div>
-              <div className="route-search-results">
-                {destinationSearchLoading ? (
-                  <p className="route-search-empty" aria-live="polite">
-                    Mencari tujuan di seluruh data GETRA...
-                  </p>
-                ) : destinationSearchResults.length >
-                0 ? (
-                  destinationSearchResults.map(
-                    (merchant) => (
-                      <button
-                        className={
-                          routeDestination?.id ===
-                          merchant.id
-                            ? "route-search-result route-search-result--active"
-                            : "route-search-result"
-                        }
-                        key={`destination-search-${merchant.id}`}
-                        type="button"
-                        onClick={() =>
-                          handleRouteChoice(
-                            "destination",
-                            merchant,
-                          )
-                        }
-                      >
-                        <strong>
-                          {merchant.name}
-                        </strong>
-                        <span>
-                          {getMerchantAreaLine(
-                            merchant,
-                          ) ||
-                            `${merchant.latitude.toFixed(5)}, ${merchant.longitude.toFixed(5)}`}
-                        </span>
-                      </button>
-                    ),
-                  )
-                ) : destinationSearchError ? (
-                  <p className="route-search-empty" role="alert">
-                    Pencarian tujuan sedang tidak tersedia.
-                  </p>
-                ) : destinationSearchActive && destinationSearch.trim().length >= 2 ? (
-                  <p className="route-search-empty">
-                    Tujuan tidak ditemukan.
-                  </p>
-                ) : null}
-              </div>
-            </div>
-
-            <button type="button" className="route-chip-button" aria-pressed={mapPickMode === "ROUTE_DESTINATION"}
-              aria-label="Pilih tujuan di peta" onClick={() => {
-                setMapPickMode("ROUTE_DESTINATION");
-                document.querySelector(".map-panel")?.scrollIntoView({ block: "nearest" });
-              }}><Target size={14} aria-hidden="true" /> Pilih tujuan di peta</button>
-            <CoordinateEntry label="Tujuan" coordinate={routeDestination} onSelect={selectDestination} />
-
-            {routeDestination ? (
-              <div className="route-selection-card" data-testid="routing-destination">
-                <span className="route-selection-card__label">B · Tujuan</span>
-                <strong className="route-selection-card__title">
-                  <MapPinned size={14} aria-hidden="true" />
-                  <span>{routeDestination.name}</span>
-                </strong>
-                <p className="route-selection-card__meta">
-                  {routeDestination.district ?? routeDestination.city ?? `${routeDestination.latitude.toFixed(5)}, ${routeDestination.longitude.toFixed(5)}`}
-                </p>
-                <div className="route-selection-card__actions">
-                  <button type="button" onClick={() => {
-                    setDestinationSearchActive(true);
-                    const input = document.querySelector('.route-search-box--destination input') as HTMLInputElement;
-                    input?.focus();
-                  }} className="route-selection-card__action">Ganti tujuan</button>
-                  <button type="button" onClick={clearRouteDestination} className="route-selection-card__action route-selection-card__action--danger">Batal / Hapus tujuan</button>
-                </div>
-              </div>
+              </>
             ) : (
-              <div className="route-selection-card route-selection-card--empty">
-                <span className="route-selection-card__label">Tujuan</span>
-                <p className="route-selection-card__meta">Belum ada tujuan dipilih.</p>
-              </div>
-            )}
+              <>
+                {editingEndpoints && route ? (
+                  <button
+                    type="button"
+                    className="route-secondary-button"
+                    onClick={() => setEditingEndpoints(false)}
+                    style={{ marginBottom: "0.75rem", width: "100%" }}
+                  >
+                    Batal ubah / Kembali ke rute
+                  </button>
+                ) : null}
 
-            <div className="route-actions" style={{ marginTop: "1rem" }}>
-              <button
-                className="route-primary-button"
-                type="button"
-                disabled={
-                  !routeDestination ||
-                  !routeOrigin ||
-                  routingState ===
-                    "LOADING"
-                }
-                onClick={handleBuildRoute}
-              >
-                {routingState ===
-                "LOADING"
-                  ? "Menghitung rute..."
-                  : "Hitung Rute"}
-              </button>
-              <button
-                className="route-secondary-button"
-                type="button"
-                onClick={resetRouting}
-                disabled={!routeOrigin && !routeDestination && routingState === "IDLE"}
-              >
-                <RotateCcw size={14} aria-hidden="true" /> Reset
-              </button>
-              <button
-                className="route-secondary-button"
-                type="button"
-                onClick={handleSmartAlternative}
-                disabled={merchants.length < 2 || routingState === "LOADING"}
-              >
-                Alternatif berikutnya
-              </button>
-            </div>
+                <fieldset className={routingStyles.journeyFields} disabled={journeyOpen} hidden={journeyOpen}>
+                <div className="route-field">
+                  <span>
+                    Titik mulai
+                  </span>
+                  <div className="route-quick-actions">
+                    <button
+                      className={
+                        routeOriginValue ===
+                        ROUTE_ORIGIN_USER
+                          ? "route-chip-button route-chip-button--active"
+                          : "route-chip-button"
+                      }
+                      type="button"
+                      onClick={handleUseUserLocationAsOrigin}
+                    >
+                      {userLocation
+                        ? "Lokasi saya"
+                        : locating
+                          ? "Mengambil GPS..."
+                          : "Aktifkan GPS"}
+                    </button>
+                    <button
+                      className={
+                        routeOriginValue ===
+                        ROUTE_ORIGIN_MANUAL
+                          ? "route-chip-button route-chip-button--active"
+                          : "route-chip-button"
+                      }
+                      type="button"
+                      onClick={handleUseManualOrigin}
+                      aria-label="Pilih asal di peta"
+                      aria-pressed={mapPickMode === "ROUTE_START"}
+                      style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
+                    >
+                      <Target size={14} /> Pilih di peta
+                    </button>
+                  </div>
 
-            </fieldset>
-            <div className="route-mode-grid" aria-label="Pilihan moda rute">
-              {(["walking", "motorcycle", "car"] as const).map((mode) => {
-                const Icon = mode === "walking" ? Footprints : mode === "motorcycle" ? Bike : Car;
-                return <button aria-pressed={activeMode === mode}
-                  aria-label={routeModeLabel(mode)}
-                  className={activeMode === mode ? "route-mode route-mode--active" : "route-mode"}
-                  key={mode} type="button" onClick={() => setActiveMode(mode)}>
-                  <Icon size={18} aria-hidden="true" /><span>{routeModeLabel(mode)}</span>
-                </button>;
-              })}
-            </div>
-            {routingState === "LOADING" && !journeyOpen ? <p className="route-message" role="status">Menghitung rute...</p> : null}
+                  {routeOrigin ? (
+                    <div className={routingStyles.point} data-testid="routing-origin">
+                      <strong>A · {routeOrigin.label}</strong>
+                      <span>{routeOrigin.coordinate.latitude.toFixed(6)}, {routeOrigin.coordinate.longitude.toFixed(6)}</span>
+                      <div className={routingStyles.pointActions}>
+                        <button type="button" onClick={handleClearManualOrigin} aria-label="Hapus asal" title="Hapus asal"><X size={16} /></button>
+                      </div>
+                    </div>
+                  ) : null}
+                  <CoordinateEntry label="Asal" coordinate={routeOrigin?.coordinate ?? null} onSelect={selectOrigin} />
+                  <div className="route-search-box">
+                    <Search size={15} />
+                    <input
+                      aria-label="Cari titik mulai"
+                      placeholder="Cari titik mulai dari data..."
+                      type="search"
+                      value={originSearch}
+                      onChange={(event) =>
+                        setOriginSearch(
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="route-search-results">
+                    {originSearchResults.length >
+                    0 ? (
+                      originSearchResults.map(
+                        (merchant) => (
+                          <button
+                            className={
+                              routeOriginValue ===
+                              `MERCHANT:${merchant.id}`
+                                ? "route-search-result route-search-result--active"
+                                : "route-search-result"
+                            }
+                            key={`origin-search-${merchant.id}`}
+                            type="button"
+                            onClick={() =>
+                              handleRouteChoice(
+                                "origin",
+                                merchant,
+                              )
+                            }
+                          >
+                            <strong>
+                              {merchant.name}
+                            </strong>
+                            <span>
+                              {merchant.brand} ·{" "}
+                              {merchant.district ??
+                                merchant.city ??
+                                "Lokasi tersedia"}
+                            </span>
+                          </button>
+                        ),
+                      )
+                    ) : originSearch.trim() && explicitRouteOrigin?.label !== originSearch.trim() ? (
+                      <p className="route-search-empty">
+                        Titik mulai tidak ditemukan.
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
 
-            {route && route.distance_meters !== null ? (
-              <div className="route-result" data-testid="routing-result" aria-live="polite">
-                {journeyOpen ? <small>Sisa perjalanan · pembaruan rute {journey.updatedAt ? new Date(journey.updatedAt).toLocaleTimeString("id-ID") : ""}</small> : null}
-                {allRoutes.length > 0 ? (
-                  <RouteCards
-                    routes={allRoutes}
-                    selectedRouteId={selectedRouteId}
-                    onSelectRoute={setSelectedRouteId}
-                    onStartNavigation={() => {
-                      setIsNavigating(true);
-                      setActiveManeuverIndex(0);
-                    }}
-                  />
+                <div className="route-field">
+                  <span>
+                    Tujuan
+                  </span>
+                  <div className="route-search-box route-search-box--destination">
+                    <Search size={15} />
+                    <input
+                      aria-label="Cari tujuan"
+                      placeholder="Cari nama, brand, alamat, kecamatan..."
+                      type="search"
+                      value={destinationSearch}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        setDestinationSearch(value);
+                        setDestinationSearchActive(true);
+                        if (routeDestination && value.trim() !== routeDestination.name) {
+                          setManualRouteDestination(null);
+                          setRouteDestinationId(null);
+                          setRouteDestinationMerchant(null);
+                          clearRoute();
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="route-search-results">
+                    {destinationSearchLoading ? (
+                      <p className="route-search-empty" aria-live="polite">
+                        Mencari tujuan di seluruh data GETRA...
+                      </p>
+                    ) : destinationSearchResults.length >
+                    0 ? (
+                      destinationSearchResults.map(
+                        (merchant) => (
+                          <button
+                            className={
+                              routeDestination?.id ===
+                              merchant.id
+                                ? "route-search-result route-search-result--active"
+                                : "route-search-result"
+                            }
+                            key={`destination-search-${merchant.id}`}
+                            type="button"
+                            onClick={() =>
+                              handleRouteChoice(
+                                "destination",
+                                merchant,
+                              )
+                            }
+                          >
+                            <strong>
+                              {merchant.name}
+                            </strong>
+                            <span>
+                              {getMerchantAreaLine(
+                                merchant,
+                              ) ||
+                                `${merchant.latitude.toFixed(5)}, ${merchant.longitude.toFixed(5)}`}
+                            </span>
+                          </button>
+                        ),
+                      )
+                    ) : destinationSearchError ? (
+                      <p className="route-search-empty" role="alert">
+                        Pencarian tujuan sedang tidak tersedia.
+                      </p>
+                    ) : destinationSearchActive && destinationSearch.trim().length >= 2 ? (
+                      <p className="route-search-empty">
+                        Tujuan tidak ditemukan.
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+
+                <button type="button" className="route-chip-button" aria-pressed={mapPickMode === "ROUTE_DESTINATION"}
+                  aria-label="Pilih tujuan di peta" onClick={() => {
+                    setMapPickMode("ROUTE_DESTINATION");
+                    document.querySelector(".map-panel")?.scrollIntoView({ block: "nearest" });
+                  }}><Target size={14} aria-hidden="true" /> Pilih tujuan di peta</button>
+                <CoordinateEntry label="Tujuan" coordinate={routeDestination} onSelect={selectDestination} />
+
+                {routeDestination ? (
+                  <div className="route-selection-card" data-testid="routing-destination">
+                    <span className="route-selection-card__label">B · Tujuan</span>
+                    <strong className="route-selection-card__title">
+                      <MapPinned size={14} aria-hidden="true" />
+                      <span>{routeDestination.name}</span>
+                    </strong>
+                    <p className="route-selection-card__meta">
+                      {routeDestination.district ?? routeDestination.city ?? `${routeDestination.latitude.toFixed(5)}, ${routeDestination.longitude.toFixed(5)}`}
+                    </p>
+                    <div className="route-selection-card__actions">
+                      <button type="button" onClick={() => {
+                        setDestinationSearchActive(true);
+                        const input = document.querySelector('.route-search-box--destination input') as HTMLInputElement;
+                        input?.focus();
+                      }} className="route-selection-card__action">Ganti tujuan</button>
+                      <button type="button" onClick={clearRouteDestination} className="route-selection-card__action route-selection-card__action--danger">Batal / Hapus tujuan</button>
+                    </div>
+                  </div>
                 ) : (
-                  <div>
-                    <strong>{routeModeLabel(activeMode)} · {formatDistance(route.distance_meters)} · {routeDurationMinutes} menit</strong>
-                    <span>
-                      Navigasi {routeModeDescription(activeMode)} dihitung Valhalla dari jaringan jalan OpenStreetMap.
-                    </span>
-                    {route.has_toll ? <small>Rute ini menggunakan jalan tol.</small> : null}
+                  <div className="route-selection-card route-selection-card--empty">
+                    <span className="route-selection-card__label">Tujuan</span>
+                    <p className="route-selection-card__meta">Belum ada tujuan dipilih.</p>
                   </div>
                 )}
-                {(selectedRoute?.maneuvers?.length ?? route.maneuvers.length) > 0 ? (
-                  <details className="route-maneuvers">
-                    <summary>Petunjuk Arah Lengkap ({(selectedRoute?.maneuvers ?? route.maneuvers).length} langkah)</summary>
-                    <ol>
-                      {(selectedRoute?.maneuvers ?? route.maneuvers).map((maneuver, index) => (
-                        <li key={`${maneuver.type ?? "step"}-${index}`}>
-                          <span>{maneuver.instruction}</span>
-                          {maneuver.distance_meters > 0 ? <small>{formatDistance(maneuver.distance_meters)}</small> : null}
-                        </li>
-                      ))}
-                    </ol>
-                  </details>
-                ) : null}
-              </div>
-            ) : null}
+
+                <div className="route-actions" style={{ marginTop: "1rem" }}>
+                  <button
+                    className="route-primary-button"
+                    type="button"
+                    disabled={
+                      !routeDestination ||
+                      !routeOrigin ||
+                      routingState ===
+                        "LOADING"
+                    }
+                    onClick={handleBuildRoute}
+                  >
+                    {routingState ===
+                    "LOADING"
+                      ? "Menghitung rute..."
+                      : "Hitung Rute"}
+                  </button>
+                  <button
+                    className="route-secondary-button"
+                    type="button"
+                    onClick={resetRouting}
+                    disabled={!routeOrigin && !routeDestination && routingState === "IDLE"}
+                  >
+                    <RotateCcw size={14} aria-hidden="true" /> Reset
+                  </button>
+                  <button
+                    className="route-secondary-button"
+                    type="button"
+                    onClick={handleSmartAlternative}
+                    disabled={merchants.length < 2 || routingState === "LOADING"}
+                  >
+                    Tujuan UMKM berikutnya
+                  </button>
+                </div>
+
+                </fieldset>
+                <div className="route-mode-grid" aria-label="Pilihan moda rute">
+                  {(["walking", "motorcycle", "car"] as const).map((mode) => {
+                    const Icon = mode === "walking" ? Footprints : mode === "motorcycle" ? Bike : Car;
+                    return <button aria-pressed={activeMode === mode}
+                      aria-label={routeModeLabel(mode)}
+                      className={activeMode === mode ? "route-mode route-mode--active" : "route-mode"}
+                      key={mode} type="button" onClick={() => setActiveMode(mode)}>
+                      <Icon size={18} aria-hidden="true" /><span>{routeModeLabel(mode)}</span>
+                    </button>;
+                  })}
+                </div>
+              </>
+            )}
+
+            {routingState === "LOADING" && !journeyOpen ? <p className="route-message" role="status">Menghitung rute...</p> : null}
 
             {routingError ? (
               <p className="route-message" role="alert">
@@ -3748,7 +3773,7 @@ function GeneralGetraDashboard() {
         </aside>
 
         <section
-          className="map-panel"
+          className={`map-panel ${route && !journeyOpen ? routingStyles.planningMap : ""}`}
           aria-label="Peta GETRA"
           style={{ position: "relative" }}
         >
@@ -3758,26 +3783,25 @@ function GeneralGetraDashboard() {
               <button type="button" onClick={() => setMapPickMode("NONE")} aria-label="Batal memilih titik" title="Batal memilih titik"><X size={18} /></button>
             </div>
           )}
-          {isNavigating && selectedRoute && (
-            <NavigationHud
-              route={selectedRoute}
-              activeManeuverIndex={activeManeuverIndex}
-              onPrevManeuver={() => setActiveManeuverIndex((prev) => Math.max(0, prev - 1))}
-              onNextManeuver={() =>
-                setActiveManeuverIndex((prev) =>
-                  Math.min((selectedRoute.maneuvers?.length ?? 1) - 1, prev + 1),
-                )
-              }
-              onSelectManeuver={(index) => setActiveManeuverIndex(index)}
-              onRecenter={() => {
-                setSearchFocusKey((k) => k + 1);
-              }}
-              onExitNavigation={() => {
-                setIsNavigating(false);
-                setActiveManeuverIndex(0);
-              }}
-            />
-          )}
+          {journeyOpen ? <JourneyControls
+            journey={journey}
+            canStart={false}
+            onStart={() => undefined}
+            destinationName={routeDestination?.name}
+            mode={activeMode}
+            onModeChange={setActiveMode}
+          /> : null}
+          {route && route.distance_meters !== null && !journeyOpen ? (
+            <div className={routingStyles.mobileSheetOnly}>
+              <RouteSelectionSheet route={route} open={routeSheetOpen}
+                originLabel={routeOriginPoint?.label ?? "Titik mulai"}
+                destinationLabel={routeDestinationPoint?.label ?? routeDestination?.name ?? "Tujuan"}
+                onOpenChange={setRouteSheetOpen} onSelect={preview.selectCandidate}
+                onModeChange={setActiveMode}
+                preference={routePreference} onPreferenceChange={setRoutePreference}
+                onStart={() => { setRouteSheetOpen(false); setMapPickMode("NONE"); void journey.controller.start(); }} />
+            </div>
+          ) : null}
           <GetraMap
             datasetKey={datasetId}
             focusBounds={searchFocusBounds}
@@ -3806,11 +3830,12 @@ function GeneralGetraDashboard() {
             routeOriginPoint={journeyOpen ? null : routeOriginPoint}
             routeDestinationPoint={routeDestinationPoint}
             routeGeometry={route?.geometry}
-            routes={allRoutes}
-            selectedRouteId={selectedRouteId}
-            onSelectRoute={setSelectedRouteId}
-            isNavigating={isNavigating}
-            activeManeuverIndex={activeManeuverIndex}
+            routeCandidates={journeyOpen ? [] : route?.route_candidates ?? []}
+            selectedRouteId={route?.selected_route_id ?? null}
+            onSelectRoute={(routeId) => {
+              const candidate = route?.route_candidates?.find((item) => item.route_id === routeId);
+              if (candidate && !journeyOpen) preview.selectCandidate(candidate);
+            }}
             serviceAreaGeometry={serviceArea?.geometry ?? null}
             importBoundaries={
               visibleImportBoundaries
@@ -4045,20 +4070,6 @@ function GeneralGetraDashboard() {
       </StakeholderContextShell>
     </main>
   );
-}
-
-export function GetraDashboard() {
-  const { activeExperience } = useStakeholder();
-
-  if (activeExperience === "INVESTOR") {
-    return (
-      <div data-active-experience="INVESTOR">
-        <BusinessSpaceWorkspace />
-      </div>
-    );
-  }
-
-  return <GeneralGetraDashboard />;
 }
 
 export default GetraDashboard;

@@ -1,11 +1,15 @@
 import { createRequire } from "node:module";
 import { execFileSync } from "node:child_process";
-import { resolve } from "node:path";
 import assert from "node:assert/strict";
 
 export function ordinaryUserFixture() {
-  const require = createRequire(import.meta.url);
-  const ts = require(resolve("node_modules/typescript/lib/typescript.js"));
+  return approvedAccountFixture("USER");
+}
+
+export function approvedAccountFixture(role, occurrence = 0) {
+  assert(["USER", "ADMIN"].includes(role), "APPROVED_ROLE_REQUIRED");
+  const workspaceRequire = createRequire(new URL("../../../package.json", import.meta.url));
+  const ts = workspaceRequire("typescript");
   const fixtureSource = execFileSync("git", ["show", "HEAD:backend/scripts/api-smoke-test.ts"], { encoding: "utf8" });
   const source = ts.createSourceFile("fixture.ts", fixtureSource, ts.ScriptTarget.Latest, true);
   const declarations = new Map();
@@ -26,7 +30,7 @@ export function ordinaryUserFixture() {
     if (node.kind === ts.SyntaxKind.FalseKeyword) return false;
     throw new Error("UNSUPPORTED_FIXTURE_LITERAL");
   }
-  const fixture = literal(declarations.get("stableUsers")).find((u) => u.expectedAccountRole === "USER");
+  const fixture = literal(declarations.get("stableUsers")).filter((u) => u.expectedAccountRole === role)[occurrence];
   assert(fixture, "ORDINARY_USER_FIXTURE_REQUIRED");
   const password = literal(declarations.get("TEST_PASSWORD"));
   return { email: fixture.email, password };

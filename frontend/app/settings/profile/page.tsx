@@ -13,6 +13,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   type FormEvent,
   type ReactNode,
@@ -359,6 +360,9 @@ export default function ProfileSettingsPage() {
                   </button>
                 ))}
               </div>
+              <Link className="mt-3 inline-flex min-h-10 items-center gap-2 text-sm text-cyan-100 underline" href="/onboarding?returnTo=%2Fsettings%2Fprofile">
+                <UserRound size={16} />Kelola pengalaman
+              </Link>
               {context?.profile?.account_role === "ADMIN" ? (
                 <p className="mt-3 text-[11px] leading-4 text-amber-200/80">
                   Akses Admin tetap aktif di semua pengalaman.

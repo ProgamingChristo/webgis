@@ -1,14 +1,16 @@
-import { RoutingClientError, parseRoutingResult, type RoutingMode, type RoutingResult, type RoutingRequest } from "@/src/services/routing.service";
+import { RoutingClientError, parseRoutingResult, type RoutePreference, type RoutingMode, type RoutingResult, type RoutingRequest } from "@/src/services/routing.service";
 import type { Coordinate } from "@/src/types/spatial";
 import { JOURNEY_POLICY as policy, proximityMeters, validCoordinate } from "./journey-policy";
 
 export type JourneyState = "PREVIEW" | "REQUESTING_LOCATION" | "STARTING" | "ACTIVE" | "REROUTING" | "ARRIVED" | "STOPPED" | "ERROR";
+export type JourneyGpsState = "GPS_REQUESTING" | "GPS_GOOD" | "GPS_DEGRADED" | "GPS_STALE" | "GPS_UNAVAILABLE" | "GPS_PERMISSION_DENIED";
 export type JourneyFix = Coordinate & { accuracyMeters: number; capturedAt: string; timestamp: number };
 export type JourneySnapshot = {
   state: JourneyState; engaged: boolean; position: JourneyFix | null; route: RoutingResult | null;
   error: string | null; authRequired: boolean; following: boolean; updatedAt: number | null; routeKey: string; focusKey: number;
+  gpsState: JourneyGpsState; gpsAccuracyMeters: number | null; routeStale: boolean;
 };
-type Config = { destination: Coordinate | null; mode: RoutingMode };
+type Config = { destination: Coordinate | null; mode: RoutingMode; preference?: RoutePreference };
 type Dependencies = {
   geolocation: () => Pick<Geolocation, "watchPosition" | "clearWatch"> | null;
   authenticated: () => Promise<boolean>;
@@ -16,7 +18,8 @@ type Dependencies = {
   now?: () => number;
 };
 const initial: JourneySnapshot = { state: "PREVIEW", engaged: false, position: null, route: null,
-  error: null, authRequired: false, following: false, updatedAt: null, routeKey: "", focusKey: 0 };
+  error: null, authRequired: false, following: false, updatedAt: null, routeKey: "", focusKey: 0,
+  gpsState: "GPS_UNAVAILABLE", gpsAccuracyMeters: null, routeStale: false };
 
 // One controller owns the watch, pending request, and latest accepted route per mounted planner.
 export class JourneyController {
@@ -34,6 +37,10 @@ export class JourneyController {
   private pending = false;
   private locationValid = false;
   private needsRoute = false;
+  private recentFixes: JourneyFix[] = [];
+  private latestObservedFix: JourneyFix | null = null;
+  private lastObservedTimestamp = -Infinity;
+  private poorAccuracySamples = 0;
   private readonly now: () => number;
   constructor(private readonly deps: Dependencies) { this.now = deps.now ?? Date.now; }
   getSnapshot = () => this.snapshot;
@@ -50,7 +57,7 @@ export class JourneyController {
     if (!this.snapshot.engaged) return;
     if (!validCoordinate(config.destination)) { this.stop(); return; }
     this.cancelRequest();
-    this.emit({ route: null, updatedAt: null });
+    this.emit({ route: null, updatedAt: null, routeStale: false });
     this.request(true);
   }
   start = async () => {
@@ -61,7 +68,11 @@ export class JourneyController {
     this.lastRequestAt = -Infinity;
     this.locationValid = false;
     this.needsRoute = false;
-    this.emit({ ...initial, engaged: true, state: "REQUESTING_LOCATION", following: true });
+    this.recentFixes = [];
+    this.latestObservedFix = null;
+    this.lastObservedTimestamp = -Infinity;
+    this.poorAccuracySamples = 0;
+    this.emit({ ...initial, engaged: true, state: "REQUESTING_LOCATION", following: true, gpsState: "GPS_REQUESTING" });
     let authenticated = false;
     try { authenticated = await this.deps.authenticated(); } catch { /* Auth errors stay local and sanitized. */ }
     if (session !== this.session) return;
@@ -78,48 +89,104 @@ export class JourneyController {
       else this.watch = watch;
     } catch { this.locationError(2, true); }
   };
+  private hasFreshAcceptedFix() {
+    const fix = this.snapshot.position;
+    return Boolean(fix && this.now() - fix.timestamp <= policy.maximumFixAgeMs &&
+      fix.accuracyMeters <= policy.maximumAccuracyMeters);
+  }
+  private selectRecentFix(latest: JourneyFix) {
+    const cutoff = this.now() - policy.maximumFixAgeMs;
+    this.recentFixes = [...this.recentFixes.filter((fix) => fix.timestamp >= cutoff), latest]
+      .slice(-policy.recentFixBufferSize);
+    const best = this.recentFixes.reduce((candidate, fix) =>
+      fix.accuracyMeters < candidate.accuracyMeters ? fix : candidate, latest);
+    const brieflyBetter = latest.timestamp - best.timestamp <= policy.bestFixHoldMs &&
+      latest.accuracyMeters > best.accuracyMeters + policy.accuracyRegressionToleranceMeters;
+    return brieflyBetter ? best : latest;
+  }
+  private degradeGps(gpsState: JourneyGpsState, error: string, accuracyMeters: number | null = null) {
+    const freshAcceptedFix = this.hasFreshAcceptedFix();
+    this.locationValid = freshAcceptedFix;
+    if (!freshAcceptedFix) this.cancelRequest();
+    this.emit({
+      state: this.snapshot.route
+        ? this.snapshot.state === "REROUTING" && freshAcceptedFix ? "REROUTING" : "ACTIVE"
+        : "REQUESTING_LOCATION",
+      engaged: true,
+      gpsState,
+      gpsAccuracyMeters: accuracyMeters,
+      routeStale: !freshAcceptedFix && Boolean(this.snapshot.route),
+      error,
+    });
+  }
   private position(p: GeolocationPosition) {
     if (!this.snapshot.engaged) return;
     const fix: JourneyFix = { latitude: p.coords.latitude, longitude: p.coords.longitude,
       accuracyMeters: p.coords.accuracy, timestamp: p.timestamp, capturedAt: "" };
     if (!validCoordinate(fix) || !Number.isFinite(fix.timestamp) || fix.timestamp > this.now() + 1000 ||
-      this.now() - fix.timestamp > policy.maximumFixAgeMs || !Number.isFinite(fix.accuracyMeters) || fix.accuracyMeters < 0) {
-      this.locationError(2); return;
+      !Number.isFinite(fix.accuracyMeters) || fix.accuracyMeters < 0) {
+      this.degradeGps("GPS_UNAVAILABLE", "Data lokasi dari perangkat tidak valid."); return;
     }
-    if (this.snapshot.position && fix.timestamp < this.snapshot.position.timestamp) return;
+    if (this.now() - fix.timestamp > policy.maximumFixAgeMs) {
+      this.degradeGps("GPS_STALE", "Data GPS sudah kedaluwarsa. Menunggu lokasi terbaru.", fix.accuracyMeters); return;
+    }
+    if (fix.timestamp < this.lastObservedTimestamp) return;
+    this.lastObservedTimestamp = fix.timestamp;
+    this.latestObservedFix = fix;
     if (fix.accuracyMeters > policy.maximumAccuracyMeters) {
-      this.locationError(2);
-      this.emit({ error: "Akurasi lokasi belum memadai. Menunggu sinyal GPS yang lebih baik." }); return;
+      this.poorAccuracySamples += 1;
+      if (this.hasFreshAcceptedFix() && this.poorAccuracySamples < policy.degradedSampleThreshold) return;
+      this.degradeGps("GPS_DEGRADED", `GPS ditemukan, tetapi akurasinya belum cukup (\u00b1${Math.round(fix.accuracyMeters)} m).`, fix.accuracyMeters);
+      return;
     }
     fix.capturedAt = new Date(fix.timestamp).toISOString();
-    const recovered = !this.locationValid;
+    this.poorAccuracySamples = 0;
+    const acceptedFix = this.selectRecentFix(fix);
+    const recovered = !this.locationValid || this.snapshot.gpsState !== "GPS_GOOD";
     this.locationValid = true;
-    this.emit({ position: fix, error: recovered ? null : this.snapshot.error });
+    this.emit({ position: acceptedFix, gpsState: "GPS_GOOD", gpsAccuracyMeters: acceptedFix.accuracyMeters,
+      routeStale: false, error: null });
     if (recovered) this.request(this.lastOrigin === null);
     else this.tick();
   }
   private locationError(code: number, terminal = false) {
-    this.locationValid = false;
-    this.cancelRequest();
-    if (code === 1 || terminal) this.cleanup();
-    this.emit({ state: "ERROR", route: null, updatedAt: null,
-      engaged: code !== 1 && !terminal, following: code !== 1 && !terminal && this.snapshot.following,
-      error: code === 1 ? "Izin lokasi diperlukan untuk memulai perjalanan."
-        : code === 3 ? "Pengambilan lokasi terlalu lama. Menunggu GPS; coba lagi."
-        : "Lokasi perangkat tidak tersedia. Periksa GPS dan izin lokasi." });
+    if (code === 1) {
+      this.cleanup();
+      this.emit({ ...initial, state: "ERROR", gpsState: "GPS_PERMISSION_DENIED",
+        error: "Izin lokasi diperlukan untuk memulai navigasi." });
+      return;
+    }
+    if (terminal) {
+      this.cleanup();
+      this.emit({ ...initial, state: "ERROR", gpsState: "GPS_UNAVAILABLE",
+        error: "Perangkat atau browser belum mendukung lokasi." });
+      return;
+    }
+    const stale = code === 3 && this.snapshot.position !== null;
+    this.degradeGps(stale ? "GPS_STALE" : "GPS_UNAVAILABLE", stale
+      ? "Data GPS sudah kedaluwarsa. Menunggu lokasi terbaru."
+      : code === 3
+        ? "Pengambilan lokasi terlalu lama. Menunggu GPS yang lebih akurat."
+        : "Lokasi perangkat sementara tidak tersedia. Periksa GPS dan izin lokasi.");
   }
   private tick() {
     const p = this.snapshot.position;
-    if (!this.snapshot.engaged || !p || !this.locationValid) return;
-    if (this.now() - p.timestamp > policy.maximumFixAgeMs) { this.locationError(3); return; }
-    const moved = this.lastOrigin && proximityMeters(p, this.lastOrigin) >= policy.movementMeters[this.config.mode];
+    if (!this.snapshot.engaged || !p) return;
+    if (this.now() - p.timestamp > policy.maximumFixAgeMs) {
+      if (this.snapshot.gpsState !== "GPS_STALE") this.locationError(3);
+      return;
+    }
+    if (!this.locationValid) return;
+    const movementThreshold = policy.movementMeters[this.config.mode];
+    const uncertainty = this.lastOrigin ? Math.min(Math.max(p.accuracyMeters, this.lastOrigin.accuracyMeters), movementThreshold) : 0;
+    const moved = this.lastOrigin && proximityMeters(p, this.lastOrigin) >= movementThreshold + uncertainty;
     if (moved || this.needsRoute) {
       if (moved && this.pending) this.cancelRequest();
-      if (this.snapshot.route) this.emit({ route: null, updatedAt: null, state: "REROUTING" });
       this.request(false);
     }
   }
   refresh = () => {
+    if (this.snapshot.gpsState !== "GPS_GOOD") return;
     if (this.now() - this.lastRequestAt < policy.manualIntervalMs) return;
     this.request(true);
   };
@@ -137,10 +204,13 @@ export class JourneyController {
     this.controller = controller;
     this.pending = true;
     this.lastRequestAt = this.now();
-    this.emit({ route: null, updatedAt: null, error: null, state: this.lastOrigin ? "REROUTING" : "STARTING" });
+    const rerouting = this.lastOrigin !== null;
+    this.emit({ ...(rerouting ? {} : { route: null, updatedAt: null }), error: null,
+      routeStale: false, state: rerouting ? "REROUTING" : "STARTING" });
     this.lastOrigin = origin;
     void this.deps.route({ origin: { latitude: origin.latitude, longitude: origin.longitude },
-      destination: { latitude: destination.latitude, longitude: destination.longitude } }, mode, controller.signal)
+      destination: { latitude: destination.latitude, longitude: destination.longitude },
+      include_alternatives: true, route_preference: this.config.preference ?? "FASTEST" }, mode, controller.signal)
       .then((value) => {
         if (generation !== this.generation || controller.signal.aborted) return;
         const route = parseRoutingResult(value, mode);
@@ -152,17 +222,19 @@ export class JourneyController {
             : "Rute tidak ditemukan untuk lokasi dan moda ini." }); return;
         }
         const current = this.snapshot.position!;
+        const latestObserved = this.latestObservedFix;
         const fresh = this.locationValid && this.now() - current.timestamp <= policy.maximumFixAgeMs;
         if (!fresh) { this.locationError(3); return; }
-        const arrived = current.accuracyMeters <= policy.arrivalAccuracyMeters &&
+        const arrived = Boolean(latestObserved && latestObserved.accuracyMeters <= policy.arrivalAccuracyMeters &&
+          this.now() - latestObserved.timestamp <= policy.maximumFixAgeMs &&
           this.now() - origin.timestamp <= policy.maximumFixAgeMs &&
-          proximityMeters(current, origin) <= policy.arrivalOriginDriftMeters &&
-          proximityMeters(current, destination) <= policy.arrivalProximityMeters &&
-          route.distance_meters! <= policy.arrivalRouteMeters;
+          proximityMeters(latestObserved, origin) <= policy.arrivalOriginDriftMeters &&
+          proximityMeters(latestObserved, destination) <= policy.arrivalProximityMeters &&
+          route.distance_meters! <= policy.arrivalRouteMeters);
         if (arrived) this.cleanup();
         this.emit({ state: arrived ? "ARRIVED" : "ACTIVE", route, error: null,
-          routeKey: JSON.stringify([destination.latitude, destination.longitude, mode]),
-          updatedAt: this.now(), engaged: !arrived, following: !arrived && this.snapshot.following });
+          routeKey: JSON.stringify([destination.latitude, destination.longitude, mode, this.config.preference ?? "FASTEST"]),
+          routeStale: false, updatedAt: this.now(), engaged: !arrived, following: !arrived && this.snapshot.following });
       }).catch((error: unknown) => {
         if (generation !== this.generation || controller.signal.aborted) return;
         this.pending = false;
@@ -174,6 +246,11 @@ export class JourneyController {
   private cancelRequest() { this.generation++; this.controller?.abort(); this.controller = null; this.pending = false; }
   private cleanup() {
     this.needsRoute = false;
+    this.locationValid = false;
+    this.recentFixes = [];
+    this.latestObservedFix = null;
+    this.lastObservedTimestamp = -Infinity;
+    this.poorAccuracySamples = 0;
     this.session++;
     this.cancelRequest();
     if (this.watch !== null) this.geo?.clearWatch(this.watch);

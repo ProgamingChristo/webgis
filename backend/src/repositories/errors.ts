@@ -93,7 +93,10 @@ export function mapDatabaseError(
     });
   }
 
-  if (message.includes("Contribution not found")) {
+  if (
+    message.includes("Contribution not found") ||
+    message.includes("Community post not found")
+  ) {
     return new RepositoryError("NOT_FOUND", operation, { cause: error });
   }
 

@@ -12,6 +12,7 @@ import {
   routingFailureCodeFromError,
   type NavigationRouteRequest,
   type NavigationRouteResult,
+  RouteUmkmAnalysisService,
 } from "@/src/features/routing";
 import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
 import { parseRoutingRequest } from "@/src/modules/spatial/spatial.schema";
@@ -26,6 +27,7 @@ export interface RoutingRouteDependencies {
   checkLimit: typeof rateLimiter.checkLimit;
   route: (input: NavigationRouteRequest, signal?: AbortSignal) => Promise<NavigationRouteResult>;
   recordRoute?: (actorId: string, merchantId: string, outcome: string) => Promise<void>;
+  enrichRoute?: (result: NavigationRouteResult, preference: "FASTEST" | "UMKM") => Promise<NavigationRouteResult>;
 }
 
 const routingDependencies: RoutingRouteDependencies = {
@@ -35,6 +37,9 @@ const routingDependencies: RoutingRouteDependencies = {
   recordRoute: (actorId, merchantId, outcome) => new AnalyticsEventService(
     getServiceRoleSupabaseClient(),
   ).recordRoute(actorId, merchantId, outcome),
+  enrichRoute: (result, preference) => new RouteUmkmAnalysisService(
+    getServiceRoleSupabaseClient(),
+  ).enrich(result, preference),
 };
 
 export function createRoutingHandler(dependencies: RoutingRouteDependencies = routingDependencies) {
@@ -53,7 +58,9 @@ export function createRoutingHandler(dependencies: RoutingRouteDependencies = ro
       result = await dependencies.route({
         origin: input.origin,
         destination: input.destination,
+        includeAlternatives: input.include_alternatives ?? false,
         mode: input.mode,
+        preference: input.route_preference ?? "FASTEST",
       }, request.signal);
     } catch (error) {
       const reasonCode = routingFailureCodeFromError(error, request.signal);
@@ -77,6 +84,13 @@ export function createRoutingHandler(dependencies: RoutingRouteDependencies = ro
         has_ferry: false,
         source: "OPENSTREETMAP",
       };
+    }
+
+    if (result.route_status === "ROUTABLE" && input.include_alternatives) {
+      result = await dependencies.enrichRoute?.(
+        result,
+        input.route_preference ?? "FASTEST",
+      ) ?? result;
     }
 
     if (input.destination_merchant_id) {

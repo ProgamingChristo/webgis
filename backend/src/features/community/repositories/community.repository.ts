@@ -165,6 +165,14 @@ export class SupabaseCommunityRepository
     );
   }
 
+  async deletePost(postId: string): Promise<{ deletionActorRole: "OWNER" | "ADMIN" }> {
+    const { data, error } = await (this.client as any)
+      .rpc("delete_community_post_v1", { p_post_id: postId })
+      .single();
+    if (error) throw mapDatabaseError(error, "community_posts.deletePost");
+    return { deletionActorRole: data.deletion_actor_role };
+  }
+
   async listComments(
     postId: string,
     query: CommunityCommentQuery,

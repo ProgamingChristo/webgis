@@ -173,8 +173,10 @@ export const routingRequestSchema = z
       .optional(),
     destination: coordinateSchema,
     destination_merchant_id: z.string().uuid().optional(),
+    include_alternatives: z.boolean().optional(),
     mode: z.enum(ROUTING_MODES),
     origin: coordinateSchema,
+    route_preference: z.enum(["FASTEST", "UMKM"]).optional(),
   })
   .strict();
 

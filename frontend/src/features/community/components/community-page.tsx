@@ -164,6 +164,10 @@ export function CommunityPage() {
             onLoadMore={feed.loadMore}
             onRetry={feed.reload}
             onToggleReaction={feed.toggleReaction}
+            canDelete={(post) => context?.profile?.account_role === "ADMIN" || post.authorId === context?.user.id}
+            isModerationDelete={(post) => context?.profile?.account_role === "ADMIN" && post.authorId !== context?.user.id}
+            deletingPostId={feed.deletingPostId}
+            onDelete={feed.deletePost}
           />
         </>
       )}

@@ -200,6 +200,18 @@
   white-space: nowrap;
 }
 
+.postHeaderActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-height: 36px;
+}
+
+.postHeaderActions .reportAction {
+  margin-top: 0;
+}
+
 .textareaLabel {
   position: absolute;
   width: 1px;
@@ -1793,5 +1805,23 @@
 
   .culturalMapList {
     max-height: none;
+  }
+}
+.postDelete { position: relative; display: flex; justify-content: flex-end; }
+.deleteTrigger { min-height: 36px; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid #fca5a5; background: transparent; color: #ef4444; border-radius: 4px; cursor: pointer; font-weight: 700; }
+.deleteTrigger:hover,
+.deleteTrigger:focus-visible { background: rgba(239, 68, 68, .12); color: #f87171; outline: 2px solid currentColor; outline-offset: 2px; }
+.iconButton { width: 36px; height: 36px; display: inline-grid; place-items: center; border: 0; background: transparent; color: #475569; border-radius: 4px; }
+.iconButton:hover, .iconButton:focus-visible { background: #e2e8f0; color: #0f172a; }
+.deleteDialog { width: min(420px, calc(100vw - 32px)); border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; background: #fff; color: #0f172a; }
+.deleteDialog::backdrop { background: rgba(15,23,42,.6); }
+.deleteDialog h3 { margin: 0 0 8px; }.deleteDialog p { color: #475569; }
+.deleteDialogActions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.deleteDialogActions button { min-height: 42px; padding: 0 14px; border: 1px solid #94a3b8; background: #fff; border-radius: 5px; }
+.deleteDialogActions .dangerButton { border-color: #b91c1c; background: #b91c1c; color: #fff; }
+
+@media (max-width: 640px) {
+  .postHeaderActions {
+    justify-content: flex-start;
   }
 }

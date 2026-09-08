@@ -11,6 +11,7 @@ import {
 } from "@/src/lib/http/timeout-fetch";
 
 export * from "@/src/features/routing/routing.types";
+export * from "@/src/features/routing/route-umkm-analysis.service";
 
 let provider: RoutingProvider | undefined;
 

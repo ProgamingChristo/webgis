@@ -15,12 +15,17 @@ import { PostPhoto } from "../media/post-photo";
 import { ReportButton } from "../moderation/report-button";
 import styles from "../community.module.css";
 import { ReactionBar } from "./reaction-bar";
+import { PostDeleteAction } from "./post-delete-action";
 
 type PostCardProps = {
   post: CommunityFeedItem;
   pendingReaction?: CommunityReactionType | null;
   onViewLocation(location: NonNullable<CommunityFeedItem["location"]>): void;
   onToggleReaction?(postId: string, reactionType: CommunityReactionType): void;
+  canDelete?: boolean;
+  deleting?: boolean;
+  moderationDelete?: boolean;
+  onDelete?(postId: string): Promise<boolean>;
 };
 
 export function PostCard({
@@ -28,6 +33,10 @@ export function PostCard({
   pendingReaction = null,
   onViewLocation,
   onToggleReaction,
+  canDelete = false,
+  deleting = false,
+  moderationDelete = false,
+  onDelete,
 }: PostCardProps) {
   return (
     <article className={styles.postCard}>
@@ -50,11 +59,13 @@ export function PostCard({
               </span>
             ) : null}
           </div>
-          <time dateTime={post.createdAt}>
-            {formatCommunityTime(post.createdAt)}
-          </time>
+          <div className={styles.postHeaderActions}>
+            <time dateTime={post.createdAt}>{formatCommunityTime(post.createdAt)}</time>
+            <ReportButton targetId={post.id} targetType="POST" />
+            {canDelete && onDelete ? <PostDeleteAction authorName={post.author.displayName} deleting={deleting} moderation={moderationDelete}
+              onDelete={() => onDelete(post.id)} /> : null}
+          </div>
         </header>
-        <ReportButton targetId={post.id} targetType="POST" />
         <Link className={styles.postLink} href={`/community/${post.id}`}>
           <p className={styles.postContent}>{post.content}</p>
         </Link>

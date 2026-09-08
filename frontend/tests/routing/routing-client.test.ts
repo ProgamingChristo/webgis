@@ -45,6 +45,13 @@ describe("authenticated routing client", () => {
       { origin: a2, destination: b2, mode: "walking" },
     ]);
   });
+  it("sends an explicit alternative and UMKM preference without changing legacy calls", async () => {
+    fetchMock.mockResolvedValue(respond({ success: true, data: result() }));
+    await routingService.getRoute({ origin, destination, include_alternatives: true, route_preference: "UMKM" }, "walking");
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      origin, destination, mode: "walking", include_alternatives: true, route_preference: "UMKM",
+    });
+  });
   it("does not request an anonymous route", async () => {
     session.mockResolvedValue({ data: { session: null }, error: null });
     await expect(routingService.getRoute({ origin, destination }, "car")).rejects.toMatchObject({ kind: "AUTH" });

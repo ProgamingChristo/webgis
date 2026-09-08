@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import {
   createCommunityComment,
+  deleteCommunityPost,
   getCommunityComments,
   getCommunityPost,
   setCommunityReaction,
@@ -33,6 +34,7 @@ export function useCommunityPostDetail(postId: string) {
     useState<CommunityReactionType | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [commentError, setCommentError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadDetail = useCallback(async () => {
     setLoading(true);
@@ -172,6 +174,21 @@ export function useCommunityPostDetail(postId: string) {
     [post],
   );
 
+  const deletePost = useCallback(async () => {
+    setDeleting(true);
+    setError(null);
+    try {
+      await deleteCommunityPost(postId);
+      setPost(null);
+      return true;
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Posting Community gagal dihapus.");
+      return false;
+    } finally {
+      setDeleting(false);
+    }
+  }, [postId]);
+
   return {
     post,
     comments,
@@ -179,10 +196,12 @@ export function useCommunityPostDetail(postId: string) {
     loading,
     commentSubmitting,
     pendingReaction,
+    deleting,
     error,
     commentError,
     reload: loadDetail,
     submitComment,
     toggleReaction,
+    deletePost,
   };
 }

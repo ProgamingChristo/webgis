@@ -267,6 +267,7 @@ test is claimed. The local-origin override is not a production CORS policy.
 The backend remains OWNER_HOSTED_TAILSCALE_STAGING, owner-machine dependent,
 not a remote VPS and not 24/7 hosting. No paid infrastructure, database migration
 or new routing feature was introduced. Phase 11 is not started.
+
 ## Post-Commit Verification
 
 This section is the owner-workspace attestation written after Git assigned the

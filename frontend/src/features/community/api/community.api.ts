@@ -191,6 +191,15 @@ export async function createCommunityPost(
   return json.data;
 }
 
+export async function deleteCommunityPost(postId: string): Promise<{ deletionActorRole: "OWNER" | "ADMIN" }> {
+  const response = await authenticatedFetch(`${getApiBaseUrl()}/api/community/posts/${postId}`, { method: "DELETE" });
+  const json = (await response.json()) as ApiSuccessEnvelope<{ deletionActorRole: "OWNER" | "ADMIN" }> | ApiFailureEnvelope;
+  if (!response.ok || !json.success) {
+    throw new Error(json.success ? "Posting Community gagal dihapus." : readFailureMessage(json));
+  }
+  return json.data;
+}
+
 export async function getCommuterRequests(
   page = 1,
   limit = 20,

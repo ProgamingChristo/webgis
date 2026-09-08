@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
 import { DemandIntelligenceRepository } from "@/src/features/demand-intelligence";
 import { CanonicalMerchantReadService } from "@/src/features/merchant-reconciliation/canonical-merchant-read.service";
 import { CommuterNetworkRepository } from "@/src/features/commuter";
@@ -8,7 +9,7 @@ import { TransportNodeRepository } from "@/src/repositories/transport-node.repos
 import { MapidMissionRepository } from "@/src/integrations/mapid/mission.repository";
 import type { MapidMissionObservationDTO } from "@/src/integrations/mapid/mission.types";
 import type { JsonObject } from "@/src/types/provenance";
-import { mapDatabasePointGeometry } from "@/src/mappers/geometry.mapper";
+import { GeometryMappingError, mapDatabasePointGeometry } from "@/src/mappers/geometry.mapper";
 import { toBoundaryFeature } from "@/src/features/administrative-boundaries/administrative-boundary.service";
 
 export class BusinessSpaceRepository {
@@ -46,7 +47,7 @@ export class BusinessSpaceRepository {
       id: data.id,
       source_id: data.source_record_id,
       source_type: "PROPERTI_GO",
-      geometry: mapDatabasePointGeometry(data.geometry),
+      geometry: mapPropertyPoint(data.geometry),
       properties: asObject(data.normalized_properties) as JsonObject,
       observed_at: data.observed_at,
       provenance: asObject(data.provenance) as JsonObject,
@@ -93,6 +94,17 @@ export class BusinessSpaceRepository {
       { limit: 8, offset: 0, page: 1, sort: "created_at", order: "desc" },
     );
   }
+}
+
+function mapPropertyPoint(value: Parameters<typeof mapDatabasePointGeometry>[0]) {
+  // PostGIS JSON casts include CRS metadata; only known WGS84 needs no reprojection.
+  if (typeof value === "object" && value !== null && "crs" in value) {
+    const { crs, ...point } = value;
+    const wgs84 = z.object({ type: z.literal("name"), properties: z.object({ name: z.literal("EPSG:4326") }).strict() }).strict();
+    if (!wgs84.safeParse(crs).success) throw new GeometryMappingError("Property CRS is not EPSG:4326");
+    return mapDatabasePointGeometry(point);
+  }
+  return mapDatabasePointGeometry(value);
 }
 
 function asObject(value: unknown): Record<string, unknown> {

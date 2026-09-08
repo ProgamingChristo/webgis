@@ -7,7 +7,7 @@ import { ordinaryUserFixture } from "./browser-user-fixture.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.GETRA_PLAYWRIGHT_MODULE || "playwright");
-const api = "https://getra-routing-api.tail0ed517.ts.net";
+const api = process.env.GETRA_BACKEND_ORIGIN || "https://getra-routing-api.tail0ed517.ts.net";
 const origin = process.env.GETRA_FRONTEND_ORIGIN || "http://localhost:3003";
 const output = resolve("outputs/phase10b");
 mkdirSync(output, { recursive: true });
@@ -75,7 +75,9 @@ async function mapState(action = "state") {
     const mapRect = map.getContainer().getBoundingClientRect();
     return { points: coords.length, center: map.getCenter().toArray(), bounds: map.getBounds().toArray(),
       gpsVisible: projectedGPS && projectedGPS.x > 0 && projectedGPS.y > 0 && projectedGPS.x < map.getContainer().clientWidth && projectedGPS.y < map.getContainer().clientHeight,
-      gpsClearOfBasemap: projectedGPS && mapRect.top + projectedGPS.y + 24 < basemap.top,
+      gpsClearOfBasemap: projectedGPS && (!basemap.width || mapRect.left + projectedGPS.x + 24 < basemap.left ||
+        mapRect.left + projectedGPS.x - 24 > basemap.right || mapRect.top + projectedGPS.y + 24 < basemap.top ||
+        mapRect.top + projectedGPS.y - 24 > basemap.bottom),
       sourceCount: Object.keys(map.getStyle().sources).filter((s) => s === "walking-route").length,
       layerCount: map.getStyle().layers.filter((l) => l.source === "walking-route").length,
       currentMarkers: document.querySelectorAll(".user-location-anchor").length,
@@ -103,7 +105,7 @@ async function accepted(name, mode, point, since, arrived = false) {
   assert.equal(map.points, r.data.geometry.coordinates.length); assert(map.points > 1 && map.order && map.canvas.webgl);
   assert.equal(map.sourceCount, 1); assert.equal(map.layerCount, 2);
   assert.equal(map.currentMarkers, 1); assert.equal(map.originMarkers, 0); assert.equal(map.destinationMarkers, 1);
-  const text = await planner.getByTestId("routing-result").innerText();
+  const text = await page.getByTestId("routing-result").innerText();
   const distance = r.data.distance_meters >= 1000 ? `${(r.data.distance_meters / 1000).toFixed(1)} km` : `${Math.round(r.data.distance_meters)} m`;
   assert(text.includes(distance)); assert(text.includes(`${Math.max(1, Math.ceil(r.data.duration_seconds / 60))} menit`));
   const record = { name, mode, origin: point, destination: b, distance: r.data.distance_meters, duration: r.data.duration_seconds, points: map.points,
@@ -116,7 +118,7 @@ async function preview() {
   await planner.getByRole("button", { name: "Mulai Perjalanan", exact: true }).waitFor();
 }
 async function stop() {
-  await planner.getByRole("button", { name: "Akhiri Perjalanan", exact: true }).click(); await state("STOPPED");
+  await page.getByRole("button", { name: "Akhiri Perjalanan", exact: true }).click(); await state("STOPPED");
   assert.equal((await gpsStats()).active, 0); await preview();
 }
 try {
@@ -138,7 +140,7 @@ try {
   since = responses.length; await gps(p2); await accepted("P2", "walking", p2, since);
   evidence.checks.realMovementReroute = "PASS";
   for (const [mode, label] of [["motorcycle", "Motor"], ["car", "Mobil"]]) {
-    since = responses.length; await planner.getByRole("button", { name: label, exact: true }).click();
+    since = responses.length; await page.getByRole("region", { name: "Navigasi aktif" }).getByRole("button", { name: label, exact: true }).click();
     await accepted(`active-${mode}`, mode, p2, since);
   }
   evidence.checks.activeModeIsolation = "PASS";
@@ -147,19 +149,21 @@ try {
   await gps({ latitude: p2.latitude + 0.00001, longitude: p2.longitude }); await page.waitForTimeout(800);
   assert.deepEqual((await mapState()).center, camera);
   assert.equal(await page.locator('[data-journey-following]').getAttribute('data-journey-following'), 'false');
-  await planner.getByRole("button", { name: "Fokuskan Lokasi", exact: true }).click(); await page.waitForTimeout(800);
+  await page.getByRole("button", { name: "Fokuskan Lokasi", exact: true }).click(); await page.waitForTimeout(800);
   const centered = (await mapState()).center; assert(Math.abs(centered[0] - p2.longitude) < 0.0001);
   evidence.checks.cameraFollowAndOverride = "PASS";
   const count = requests.length;
+  await page.getByLabel("Tampilan peta").click();
   await page.locator('.basemap-switcher button').filter({ hasText: 'Light' }).click(); await page.waitForTimeout(2000);
+  await page.getByLabel("Tampilan peta").click();
   assert.equal(requests.length, count); assert.equal((await mapState()).layerCount, 2);
   evidence.checks.styleReload = "PASS";
-  await planner.scrollIntoViewIfNeeded(); await page.screenshot({ path: resolve(output, "desktop.png"), fullPage: true });
+  await page.locator(".map-panel").scrollIntoViewIfNeeded(); await page.screenshot({ path: resolve(output, "desktop.png"), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(1000);
-  await planner.getByRole("button", { name: "Fokuskan Lokasi", exact: true }).click();
+  await page.getByRole("button", { name: "Fokuskan Lokasi", exact: true }).click();
   await page.waitForTimeout(1000);
-  await planner.scrollIntoViewIfNeeded(); await page.screenshot({ path: resolve(output, "mobile-controls.png"), fullPage: false });
+  await page.locator(".map-panel").scrollIntoViewIfNeeded(); await page.screenshot({ path: resolve(output, "mobile-controls.png"), fullPage: false });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   await page.locator(".map-panel").scrollIntoViewIfNeeded(); await page.screenshot({ path: resolve(output, "mobile-map.png"), fullPage: false });
   evidence.mobileMap = await mapState();
@@ -169,7 +173,7 @@ try {
   // GPS failures only: successful provider responses are never mocked.
   for (const code of [2, 3]) {
     await page.evaluate((code) => window.__journeyGPS.error(code), code); await state("ERROR");
-    assert.equal(await planner.getByTestId("routing-result").count(), 0); assert.equal((await mapState()).points, 0);
+    assert.equal(await page.getByTestId("routing-result").count(), 0); assert.equal((await mapState()).points, 0);
     since = responses.length; await gps(p2); await accepted(`GPS-recovery-${code}`, "car", p2, since);
   }
   evidence.checks.gpsLoss = "PASS";
@@ -178,7 +182,7 @@ try {
   await page.evaluate(() => window.__journeyGPS.error(1));
   const deniedRequests = requests.length;
   await planner.getByRole("button", { name: "Mulai Perjalanan", exact: true }).click(); await state("ERROR");
-  assert((await planner.innerText()).includes("Izin lokasi diperlukan"));
+  assert((await page.getByRole("region", { name: "Navigasi aktif" }).innerText()).includes("Izin lokasi diperlukan"));
   assert.equal(requests.length, deniedRequests); assert.equal((await gpsStats()).active, 0);
   assert.equal((await mapState()).currentMarkers, 0); evidence.checks.permissionDenied = "PASS";
   await stop(); await page.setViewportSize({ width: 1440, height: 1000 });
@@ -206,8 +210,8 @@ try {
   await planner.getByRole("button", { name: "Mulai Perjalanan", exact: true }).click();
   await accepted("arrival", "walking", { latitude: -6.21795, longitude: 106.68695 }, since, true);
   assert.equal((await gpsStats()).active, 0);
-  assert((await planner.innerText()).includes("Anda telah tiba di tujuan.")); evidence.checks.arrival = "PASS";
-  await planner.getByRole("button", { name: "Kembali ke perencana" }).click(); await preview();
+  assert((await page.getByRole("region", { name: "Navigasi aktif" }).innerText()).includes("Anda telah tiba")); evidence.checks.arrival = "PASS";
+  await page.getByRole("button", { name: "Kembali ke perencana" }).click(); await preview();
   evidence.checks.previewAfterJourney = "PASS";
   // Unmount cleanup while watch is active, without logging out or exposing a session.
   await gps(p1); since = responses.length;
@@ -223,7 +227,7 @@ try {
     } else await route.continue();
   };
   await page.route(`${api}/api/routing`, pendingDelay);
-  await page.waitForTimeout(1100); await planner.getByRole("button", { name: "Perbarui rute", exact: true }).click();
+  await page.waitForTimeout(1100); await page.getByRole("button", { name: "Perbarui rute", exact: true }).click();
   await pendingFetched; await state("REROUTING"); await stop(); finishPending();
   await page.waitForTimeout(500); await page.unroute(`${api}/api/routing`, pendingDelay);
   assert.equal(await page.locator('[data-journey-state]').getAttribute('data-journey-state'), 'STOPPED');
