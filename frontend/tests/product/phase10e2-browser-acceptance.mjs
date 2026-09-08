@@ -9,13 +9,20 @@ const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.GETRA_PLAYWRIGHT_MODULE || "playwright");
 const origin = process.env.GETRA_FRONTEND_ORIGIN || "https://getra-routing-api.tail0ed517.ts.net:8443";
 const api = process.env.GETRA_BACKEND_ORIGIN || "https://getra-routing-api.tail0ed517.ts.net";
+const browserHostResolverRules = process.env.GETRA_BROWSER_HOST_RESOLVER_RULES;
 const localTransport = process.env.GETRA_LOCAL_FRONTEND_TRANSPORT;
 const isLocalQa = ["localhost", "127.0.0.1"].includes(new URL(origin).hostname);
 const output = resolve(localTransport ? "outputs/phase10e2-local" : "outputs/phase10e2");
 mkdirSync(output, { recursive: true });
 const evidence = { started: new Date().toISOString(), frontendTransport: isLocalQa ? "LOCAL_QA" : "PUBLIC_HTTPS",
   simulatedGPS: true, physicalTravel: false, routes: [], checks: {} };
-const browser = await chromium.launch({ channel: "msedge", headless: true });
+const browser = await chromium.launch({
+  channel: "msedge",
+  headless: true,
+  ...(browserHostResolverRules
+    ? { args: [`--host-resolver-rules=${browserHostResolverRules}`] }
+    : {}),
+});
 const context = await browser.newContext({ viewport: { width: 390, height: 844 },
   permissions: ["geolocation"], geolocation: { latitude: -6.2151, longitude: 106.6842, accuracy: 5 } });
 await context.addInitScript(() => {
