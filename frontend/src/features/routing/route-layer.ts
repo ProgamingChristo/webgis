@@ -15,20 +15,25 @@ export const ROUTE_LAYER_IDS = {
 export const ROUTE_STYLE_TOKENS = {
   selected: {
     color: "#0891b2",
-    width: 6,
+    width: 8,
     opacity: 0.98,
-    casingColor: "#083344",
-    casingWidth: 10,
-    casingOpacity: 0.78,
+    casingColor: "#082f49",
+    casingWidth: 12,
+    casingOpacity: 0.85,
   },
   alternative: {
-    colors: ["#475569", "#4f46e5"] as const,
-    umkmColor: "#4d7c0f",
-    width: 4,
-    opacity: 0.38,
-    casingColor: "#f8fafc",
-    casingWidth: 7,
-    casingOpacity: 0.44,
+    alt1Color: "#2563eb",
+    alt1Opacity: 0.52,
+    alt2Color: "#64748b",
+    alt2Opacity: 0.40,
+    umkmColor: "#16a34a",
+    umkmOpacity: 0.55,
+    colors: ["#2563eb", "#64748b"] as const,
+    width: 5,
+    opacity: 0.46,
+    casingColor: "#0f172a",
+    casingWidth: 8,
+    casingOpacity: 0.25,
     hitWidth: 22,
   },
 } as const;
@@ -47,19 +52,31 @@ function orderRouteLayers(map: MapLibreMap) {
 }
 
 export function syncRouteAlternatives(map: MapLibreMap, candidates: RoutingCandidate[], selectedRouteId: string | null) {
-  const data: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: candidates
-    .filter((candidate) => candidate.route_id !== selectedRouteId && isRouteGeometry(candidate.geometry))
-    .map((candidate, index) => ({
-      type: "Feature",
-      properties: {
-        routeId: candidate.route_id,
-        routeCategory: candidate.route_category,
-        lineColor: candidate.route_category === "UMKM_AREA"
+  const data: GeoJSON.FeatureCollection = {
+    type: "FeatureCollection",
+    features: candidates
+      .filter((candidate) => candidate.route_id !== selectedRouteId && isRouteGeometry(candidate.geometry))
+      .map((candidate, index) => {
+        const isUmkm = candidate.route_category === "UMKM_AREA";
+        const color = isUmkm
           ? ROUTE_STYLE_TOKENS.alternative.umkmColor
-          : ROUTE_STYLE_TOKENS.alternative.colors[index % ROUTE_STYLE_TOKENS.alternative.colors.length],
-      },
-      geometry: candidate.geometry,
-    })) };
+          : (index === 0 ? ROUTE_STYLE_TOKENS.alternative.alt1Color : ROUTE_STYLE_TOKENS.alternative.alt2Color);
+        const opacity = isUmkm
+          ? ROUTE_STYLE_TOKENS.alternative.umkmOpacity
+          : (index === 0 ? ROUTE_STYLE_TOKENS.alternative.alt1Opacity : ROUTE_STYLE_TOKENS.alternative.alt2Opacity);
+        return {
+          type: "Feature",
+          properties: {
+            routeId: candidate.route_id,
+            routeCategory: candidate.route_category,
+            lineColor: color,
+            lineOpacity: opacity,
+            lineWidth: ROUTE_STYLE_TOKENS.alternative.width,
+          },
+          geometry: candidate.geometry,
+        };
+      }),
+  };
   const source = map.getSource(ROUTE_LAYER_IDS.alternativeSource) as import("maplibre-gl").GeoJSONSource | undefined;
   if (source) source.setData(data);
   if (!map.isStyleLoaded()) return;
@@ -79,13 +96,23 @@ export function syncRouteAlternatives(map: MapLibreMap, candidates: RoutingCandi
       paint: {
         "line-color": ["get", "lineColor"],
         "line-width": ROUTE_STYLE_TOKENS.alternative.width,
-        "line-opacity": ROUTE_STYLE_TOKENS.alternative.opacity,
+        "line-opacity": ["get", "lineOpacity"],
       } });
   }
   if (!map.getLayer(ROUTE_LAYER_IDS.alternativeHit)) {
     map.addLayer({ id: ROUTE_LAYER_IDS.alternativeHit, type: "line", source: ROUTE_LAYER_IDS.alternativeSource,
       layout: { "line-join": "round", "line-cap": "round" },
       paint: { "line-color": "#000000", "line-width": ROUTE_STYLE_TOKENS.alternative.hitWidth, "line-opacity": 0.01 } });
+  }
+  if (map.getLayer(ROUTE_LAYER_IDS.alternativeLine)) {
+    map.setPaintProperty(ROUTE_LAYER_IDS.alternativeLine, "line-color", ["get", "lineColor"]);
+    map.setPaintProperty(ROUTE_LAYER_IDS.alternativeLine, "line-width", ROUTE_STYLE_TOKENS.alternative.width);
+    map.setPaintProperty(ROUTE_LAYER_IDS.alternativeLine, "line-opacity", ["get", "lineOpacity"]);
+  }
+  if (map.getLayer(ROUTE_LAYER_IDS.alternativeCasing)) {
+    map.setPaintProperty(ROUTE_LAYER_IDS.alternativeCasing, "line-color", ROUTE_STYLE_TOKENS.alternative.casingColor);
+    map.setPaintProperty(ROUTE_LAYER_IDS.alternativeCasing, "line-width", ROUTE_STYLE_TOKENS.alternative.casingWidth);
+    map.setPaintProperty(ROUTE_LAYER_IDS.alternativeCasing, "line-opacity", ROUTE_STYLE_TOKENS.alternative.casingOpacity);
   }
   orderRouteLayers(map);
 }

@@ -121,9 +121,23 @@ export function getRouteContext(candidate: RoutingCandidate): string[] {
   ].filter((value): value is string => value !== null);
 }
 
-export function getRouteLabelAnchor(candidate: RoutingCandidate, index: number, count: number): [number, number] | null {
+function distanceMeters(a: [number, number], b: [number, number]): number {
+  const avgLat = ((a[1] + b[1]) / 2) * Math.PI / 180;
+  const dx = (b[0] - a[0]) * Math.cos(avgLat) * 111320;
+  const dy = (b[1] - a[1]) * 110540;
+  return Math.hypot(dx, dy);
+}
+
+export function getRouteLabelAnchor(
+  candidate: RoutingCandidate,
+  index: number,
+  allCandidatesOrCount: RoutingCandidate[] | number,
+): [number, number] | null {
   const coordinates = candidate.geometry.coordinates;
   if (coordinates.length < 2) return coordinates[0] ?? null;
+
+  const allCandidates = Array.isArray(allCandidatesOrCount) ? allCandidatesOrCount : null;
+  const count = allCandidates ? allCandidates.length : typeof allCandidatesOrCount === "number" ? allCandidatesOrCount : 1;
 
   const lengths = coordinates.slice(1).map((coordinate, coordinateIndex) => {
     const previous = coordinates[coordinateIndex];
@@ -134,6 +148,44 @@ export function getRouteLabelAnchor(candidate: RoutingCandidate, index: number, 
   });
   const total = lengths.reduce((sum, length) => sum + length, 0);
   if (total === 0) return coordinates[Math.floor(coordinates.length / 2)] ?? null;
+
+  if (allCandidates && allCandidates.length > 1) {
+    const otherCandidates = allCandidates.filter(
+      (other) => other.route_id !== candidate.route_id && (other.geometry?.coordinates?.length ?? 0) >= 2,
+    );
+    if (otherCandidates.length > 0) {
+      let traversedDist = 0;
+      let bestDivergencePoint: [number, number] | null = null;
+      let maxMinDist = 0;
+
+      for (let i = 0; i < lengths.length; i += 1) {
+        traversedDist += lengths[i];
+        const fraction = traversedDist / total;
+        if (fraction >= 0.20 && fraction <= 0.80) {
+          const pt = coordinates[i + 1];
+          let minDistanceToAnyOther = Infinity;
+          for (const other of otherCandidates) {
+            const step = Math.max(1, Math.floor(other.geometry.coordinates.length / 50));
+            for (let j = 0; j < other.geometry.coordinates.length; j += step) {
+              const otherPt = other.geometry.coordinates[j] as [number, number];
+              const d = distanceMeters(pt as [number, number], otherPt);
+              if (d < minDistanceToAnyOther) {
+                minDistanceToAnyOther = d;
+              }
+            }
+          }
+          if (minDistanceToAnyOther > maxMinDist) {
+            maxMinDist = minDistanceToAnyOther;
+            bestDivergencePoint = pt as [number, number];
+          }
+        }
+      }
+
+      if (maxMinDist >= 25 && bestDivergencePoint) {
+        return bestDivergencePoint;
+      }
+    }
+  }
 
   const spread = count > 1 ? (index / (count - 1) - 0.5) * 0.34 : 0;
   const target = total * (0.52 + spread);
@@ -153,10 +205,10 @@ export function getRouteLabelAnchor(candidate: RoutingCandidate, index: number, 
 
 const LABEL_OFFSETS: ReadonlyArray<readonly [number, number]> = [
   [0, 0],
-  [0, -20],
-  [0, 20],
-  [-18, -12],
-  [18, 12],
+  [0, -22],
+  [0, 22],
+  [-20, -14],
+  [20, 14],
 ];
 
 export function getRouteLabelOffset(index: number, count: number): [number, number] {

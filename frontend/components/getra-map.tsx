@@ -1858,7 +1858,7 @@ export function GetraMap({
   /*
    * Draw Route Line
    */
-  const lastFocusedRouteGeometry = useRef<GeoJSON.LineString | null>(null);
+  const lastFramedCandidateKey = useRef<string | null>(null);
 
   useEffect(() => {
     const map =
@@ -1883,8 +1883,11 @@ export function GetraMap({
 
     const candidateGeometries = routeCandidates.map((candidate) => candidate.geometry).filter(isRouteGeometry);
     if (isRouteGeometry(routeGeometry) && !journeyActive) {
-      if (lastFocusedRouteGeometry.current !== routeGeometry) {
-        lastFocusedRouteGeometry.current = routeGeometry;
+      const candidateIdsKey = routeCandidates.length > 0
+        ? routeCandidates.map((c) => c.route_id).sort().join(":")
+        : JSON.stringify(routeGeometry.coordinates[0]);
+      if (lastFramedCandidateKey.current !== candidateIdsKey) {
+        lastFramedCandidateKey.current = candidateIdsKey;
         const bounds =
           new LngLatBounds();
 
@@ -1923,8 +1926,8 @@ export function GetraMap({
           );
         }
       }
-    } else {
-      lastFocusedRouteGeometry.current = null;
+    } else if (!isRouteGeometry(routeGeometry)) {
+      lastFramedCandidateKey.current = null;
     }
     const unbind = onSelectRoute ? bindRouteAlternativeSelection(map, onSelectRoute) : undefined;
     return () => { map.off("idle", updateRoute); unbind?.(); };
@@ -1946,7 +1949,7 @@ export function GetraMap({
     if (!map || journeyActive) return;
 
     routeCandidates.forEach((candidate, index) => {
-      const anchor = getRouteLabelAnchor(candidate, index, routeCandidates.length);
+      const anchor = getRouteLabelAnchor(candidate, index, routeCandidates);
       if (!anchor) return;
       const selected = candidate.route_id === selectedRouteId;
       const element = document.createElement("button");

@@ -45,6 +45,6 @@ describe("route presentation", () => {
     expect(getRouteLabelOffset(0, 1)).toEqual([0, 0]);
     const offsets = Array.from({ length: 5 }, (_, index) => getRouteLabelOffset(index, 5));
     expect(new Set(offsets.map((offset) => offset.join(","))).size).toBe(5);
-    expect(offsets.every(([x, y]) => Math.abs(x) <= 18 && Math.abs(y) <= 20)).toBe(true);
+    expect(offsets.every(([x, y]) => Math.abs(x) <= 20 && Math.abs(y) <= 22)).toBe(true);
   });
 });

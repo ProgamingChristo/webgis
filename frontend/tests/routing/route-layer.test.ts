@@ -61,7 +61,7 @@ describe("MapLibre backend route source", () => {
     expect(map.addLayer).toHaveBeenCalledTimes(3);
     expect(layers.get(ROUTE_LAYER_IDS.alternativeLine).paint).toMatchObject({
       "line-width": ROUTE_STYLE_TOKENS.alternative.width,
-      "line-opacity": ROUTE_STYLE_TOKENS.alternative.opacity,
+      "line-opacity": ["get", "lineOpacity"],
     });
     expect(layers.get(ROUTE_LAYER_IDS.alternativeHit).paint["line-width"]).toBe(ROUTE_STYLE_TOKENS.alternative.hitWidth);
     syncRouteAlternatives(map as unknown as Map, candidates, "route-1");
