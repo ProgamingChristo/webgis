@@ -39,6 +39,7 @@ import { GetraMap } from "@/components/getra-map";
 import { useFairDiscovery, FairDiscoveryResults } from "@/src/features/fair-discovery";
 import { useProfilePoster, ProfilePoster } from "@/src/features/umkm-advertising";
 import { useRouting } from "@/src/hooks/use-routing";
+import { useCanonicalData } from "@/src/hooks/useCanonicalData";
 import { useActiveJourney } from "@/src/hooks/use-active-journey";
 import { JourneyControls } from "@/src/features/routing/components/journey-controls";
 import { RouteSelectionSheet } from "@/src/features/routing/components/route-selection-sheet";
@@ -1695,6 +1696,7 @@ function GeneralGetraDashboard() {
   ]);
 
   const { context: authContext } = useAuth();
+  const canonical = useCanonicalData(authContext?.user.id ?? null);
   const [activeMode, setActiveMode] = useState<RoutingMode>("walking");
   const [routePreference, setRoutePreference] = useState<RoutePreference>("FASTEST");
   const [routeSheetOpen, setRouteSheetOpen] = useState(false);
@@ -3803,6 +3805,7 @@ function GeneralGetraDashboard() {
             </div>
           ) : null}
           <GetraMap
+            transportNodes={canonical.data.transportNodes}
             datasetKey={datasetId}
             focusBounds={searchFocusBounds}
             focusKey={searchFocusKey}
@@ -3865,6 +3868,33 @@ function GeneralGetraDashboard() {
             </div>
             <Database size={20} />
           </div>
+
+          <section className="canonical-card" aria-label="Area dan transportasi">
+            <div className="canonical-card__header">
+              <div>
+                <span className="eyebrow">Data GETRA</span>
+                <strong>Area & Transportasi</strong>
+              </div>
+              <button type="button" onClick={canonical.reload} disabled={canonical.loading}>
+                {canonical.loading ? "Memuat..." : "Perbarui"}
+              </button>
+            </div>
+            {canonical.error ? (
+              <p className="canonical-state canonical-state--error" role="alert">{canonical.error}</p>
+            ) : canonical.loading ? (
+              <p className="canonical-state" role="status">Memuat area dan transportasi GETRA...</p>
+            ) : (
+              <dl className="canonical-grid">
+                <div><dt>Area dimuat</dt><dd>{canonical.data.studyAreas.length}</dd></div>
+                <div><dt>Titik dimuat</dt><dd>{canonical.data.transportNodes.length}</dd></div>
+                <div><dt>Koridor dimuat</dt><dd>{canonical.data.transportCorridors.length}</dd></div>
+              </dl>
+            )}
+            {!canonical.loading && !canonical.error && canonical.data.studyAreas.length === 0
+              && canonical.data.transportNodes.length === 0 && canonical.data.transportCorridors.length === 0 ? (
+                <p className="canonical-state">Belum ada area atau transportasi yang tersedia.</p>
+              ) : null}
+          </section>
 
           {primaryMode === "business-space" ? (
             <PropertyObservationDetail

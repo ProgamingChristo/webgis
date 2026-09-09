@@ -1,55 +1,46 @@
+> Historical Phase 8 report from branch integration/phase8-codex (430328d). The findings below describe that branch's original audit, not the current runtime. See docs/qa/FINALMERGE_BRANCH_AUDIT_2026-09-08.md for the later integration and validation.
+
 # GETRA — Phase 8 Codex Parallel Manifest
 
-## Status
+## Identity
 
-PHASE 8 STATUS: NOT STARTED
+- BASE_COMMIT: `ed918ec3152fd6758e8ac62bd5ca0e84a158815e`
+- BRANCH: `integration/phase8-codex`
+- WORKTREE: `D:\getra_phase8_codex`
+- LOCAL_COMMIT: none
 
-Phase 8 implementation has not started yet. The Phase 7 report has now been supplied and installed in the canonical docs location.
+## Files Modified
 
-## Git / Worktree Identity
-
-- CURRENT_WORKTREE: `D:\Getra_Production`
-- CURRENT_BRANCH: `finalmerge`
-- BASE_COMMIT_OBSERVED: `01d666357cbc13de2096d37d57eab1ad3e3bf9ac`
-- TARGET_PHASE8_BRANCH: `integration/phase8-codex`
-- PHASE8_WORKTREE_ISOLATION: NOT CREATED
-
-## Blocking Evidence
-
-- `docs/Integration_Phase_7_Final_Report.md` now exists and states `PHASE 7: PASS` plus `PHASE 8 READINESS: READY`.
-- Current worktree has uncommitted changes of unknown/mixed origin; `git status --porcelain` reported 72 entries at initial audit time.
-- No separate Phase 8 worktree exists; `git worktree list` showed only `D:\Getra_Production` on `finalmerge`.
-
-## Files Created for Phase 8 Closure
-
+- `frontend/app/globals.css`
+- `frontend/components/getra-dashboard.tsx`
+- `frontend/components/getra-map.tsx`
 - `docs/Integration_Phase_7_Final_Report.md`
-- `docs/Integration_Phase_8_Final_Report.md`
+
+## Files Created
+
+- `frontend/src/lib/api/client.ts`
+- `frontend/src/hooks/useCanonicalData.ts`
+- `frontend/src/types/canonical-api.ts`
 - `docs/parallel/phase8_codex_manifest.md`
+- `docs/Integration_Phase_8_Final_Report.md`
 
-## Application Files Modified by Phase 8
-
-None.
-
-Phase 8 did not modify frontend, backend, migration, schema, or data files.
-
-## Shared Hotspots
-
-Not touched by Phase 8:
+## Shared Hotspots Modified
 
 - `frontend/components/getra-dashboard.tsx`
 - `frontend/components/getra-map.tsx`
-- `frontend/app/page.tsx`
 
-## Phase 9 Reserved Scope
+## Phase 9 Reserved Files Touched
 
-Not touched by Phase 8:
+NONE
 
-- `frontend/components/stakeholder/**`
-- Stakeholder switching semantics
-- Stakeholder UX components
+No files under `frontend/components/stakeholder/**` were modified.
 
-## Merge Readiness
+## Scope Notes
 
-PARALLEL MERGE READINESS: NOT READY
-
-Reason: Phase 8 implementation still needs an isolated clean worktree/branch and completed quality gates before merge.
+- Phase 8 added a central GETRA backend API client.
+- Phase 8 added canonical frontend DTOs for Study Area and Transport core/reference data.
+- Phase 8 added a cancellation-safe React hook for canonical Study Area, Transport Nodes, and Transport Corridors.
+- Phase 8 wired backend transport nodes into MapLibre markers with longitude/latitude order preserved from GeoJSON Point coordinates.
+- Phase 8 did not implement Phase 9 stakeholder UX.
+- Phase 8 did not implement Phase 10 routing, pedestrian network, nearest transit, or accessibility calculations.
+- Phase 8 did not create database migrations.

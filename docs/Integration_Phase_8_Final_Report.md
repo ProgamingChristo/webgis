@@ -1,145 +1,203 @@
+> Historical Phase 8 report from branch integration/phase8-codex (430328d). The findings below describe that branch's original audit, not the current runtime. See docs/qa/FINALMERGE_BRANCH_AUDIT_2026-09-08.md for the later integration and validation.
+
 # GETRA — Integration Phase 8 Final Report
 
-## A. Overall Verdict
+## A. Overall
 
 PHASE 7 PRECONDITION: PASS
 
-PHASE 8: NOT STARTED
+PHASE 8: FAIL
 
 PARALLEL MERGE READINESS: NOT READY
 
-Phase 8 has not proceeded to implementation yet. The Phase 7 report was supplied after the initial block and has been installed at `docs/Integration_Phase_7_Final_Report.md` with `PHASE 7: PASS` and `PHASE 8 READINESS: READY`.
-
-Phase 8 still needs to start from a clean isolated worktree/branch before application code is changed.
+Phase 8 produced a small, isolated frontend integration patch, but cannot be marked PASS because runtime canonical backend endpoints are not all healthy and backend build fails on a pre-existing generated type encoding issue.
 
 ## B. Git Isolation
 
-- CURRENT_WORKTREE: `D:\Getra_Production`
-- CURRENT_BRANCH: `finalmerge`
-- BASE_COMMIT_OBSERVED: `01d666357cbc13de2096d37d57eab1ad3e3bf9ac`
-- REQUIRED_PHASE8_BRANCH: `integration/phase8-codex`
-- REQUIRED_PHASE8_WORKTREE: not created
-- LOCAL_PHASE8_COMMIT: none
-- WORKTREE_STATUS_AT_AUDIT: dirty, 72 porcelain entries
+- BASE_COMMIT: `ed918ec3152fd6758e8ac62bd5ca0e84a158815e`
+- BRANCH: `integration/phase8-codex`
+- WORKTREE: `D:\getra_phase8_codex`
+- LOCAL_COMMIT: none
 
-STATUS: NOT STARTED
+Phase 9 worktree observed separately at `D:\getra_phase9_gemini` on `integration/phase9-gemini`, same base commit.
 
-Reason: Phase 8 must be implemented from an isolated branch/worktree. The current main worktree contains mixed uncommitted changes and should not be used directly for Phase 8 application edits.
+## C. Runtime
 
-## C. Runtime Verification
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:8080`
 
-- FRONTEND_TARGET: `http://localhost:3000`
-- BACKEND_TARGET: `http://localhost:8080`
-- PHASE8_RUNTIME_SMOKE: NOT RUN
+Runtime smoke used the already-running processes on ports 3000 and 8080. Phase 8 did not start or stop those processes.
 
-Runtime smoke testing was not performed for Phase 8 because no Phase 8 implementation was allowed to proceed past the readiness gate.
+Observed:
 
-## D. Central Frontend API Client
+- `GET http://localhost:3000/`: 200
+- `GET http://localhost:8080/api/v1/study-areas`: 500, `{"error":"Internal Server Error"}`
+- `GET http://localhost:8080/api/v1/transport/nodes?limit=5&page=1`: 500, `{"error":"The repository operation failed"}`
+- `GET http://localhost:8080/api/v1/transport/corridors?limit=5&page=1`: 200, `{"limit":5,"offset":0,"page":1,"items":[],"total":0}`
 
-STATUS: NOT IMPLEMENTED / BLOCKED
+## D. Central API Client
 
-No Phase 8 API client changes were made.
+- LOCATION: `frontend/src/lib/api/client.ts`
+- BASE URL CONFIG: `NEXT_PUBLIC_API_URL`, fallback `http://localhost:8080`
+- AUTH: optional Bearer access token via existing `getAccessToken()`; refresh token is never sent
+- ERROR MODEL: centralized `GetraApiError` with network, 401, 403, 404, validation, rate-limit, server, invalid-response, and unknown categories
+- RACE SAFETY: requests accept `AbortSignal`
 
-## E. Study Area Integration
+## E. Study Area
 
-STATUS: NOT IMPLEMENTED / BLOCKED
+- OLD SOURCE: no canonical frontend consumer found
+- NEW SOURCE: `useCanonicalData()`
+- ENDPOINT: `GET /api/v1/study-areas`
+- STATUS: FAIL_RUNTIME_BACKEND_500
 
-- OLD_SOURCE: not changed by Phase 8
-- NEW_SOURCE: not integrated by Phase 8
-- BACKEND_ENDPOINT_AUDITED: no Phase 8 integration audit completed
+Frontend integration exists and handles loading, error, and empty states. Runtime backend endpoint returned 500 during smoke.
 
-## F. UMKM / POI Integration
+## F. UMKM / POI
 
-STATUS: NOT IMPLEMENTED / BLOCKED
+- OLD SOURCE: `frontend/components/getra-dashboard.tsx` consumes local coffee-shop GeoJSON dataset
+- NEW SOURCE: not replaced
+- ENDPOINT: no verified canonical `/api/v1/umkm` or `/api/v1/poi` endpoint found
+- STATUS: BLOCKED_BY_CANONICAL_BACKEND
 
-No canonical backend UMKM/POI frontend integration was performed.
+The existing coffee GeoJSON flow remains clearly labeled as GeoJSON/local data. Phase 8 did not silently pretend it is canonical backend data.
 
-## G. Transport Integration
+## G. Transport
 
-STATUS: NOT IMPLEMENTED / BLOCKED
+CORE REFERENCE DATA:
 
-No canonical backend transport corridor, stop, station, or route integration was performed.
+- NEW SOURCE: `useCanonicalData()`
+- ENDPOINTS:
+  - `GET /api/v1/transport/nodes`
+  - `GET /api/v1/transport/corridors`
+- MAP: transport node GeoJSON Point coordinates are rendered as MapLibre markers using `[longitude, latitude]`
+- STATUS: PARTIAL
 
-Routing and pedestrian network integration remain outside Phase 8 and should stay reserved for the appropriate later phase.
+Runtime result:
 
-## H. Community / Activity Integration
+- Corridors endpoint returned 200 with empty data.
+- Nodes endpoint returned 500.
 
-STATUS: NOT IMPLEMENTED / BLOCKED
+ROUTING / PEDESTRIAN:
 
-No canonical community activity frontend integration was performed.
+NOT IMPLEMENTED — PHASE 10
 
-## I. Survey Context Integration
+Phase 8 did not implement walking routes, nearest transport GIS, pgRouting, pedestrian network, accessibility calculation, or route generation.
 
-STATUS: NOT IMPLEMENTED / BLOCKED
+## H. Community
 
-No Phase 8 survey context integration was performed.
+- OLD SOURCE: no canonical frontend consumer integrated in this patch
+- NEW SOURCE: none
+- ENDPOINT: no verified canonical community endpoint found
+- STATUS: BLOCKED_BY_CANONICAL_BACKEND
+
+## I. Survey Context
+
+- OLD SOURCE: no canonical frontend consumer integrated in this patch
+- NEW SOURCE: none
+- ENDPOINT: no verified canonical publishable survey/demand endpoint found
+- STATUS: BLOCKED_BY_CANONICAL_BACKEND
+
+No raw individual survey submissions were exposed.
 
 ## J. Synthetic / Demo Cleanup
 
-STATUS: NOT PERFORMED / BLOCKED
+REMOVED:
 
-No synthetic/demo frontend sources were removed by Phase 8.
+- None.
 
-Known pre-existing demo/static data usage must be re-audited once Phase 7 is genuinely ready and canonical backend endpoints are confirmed.
+STILL PRESENT:
 
-## K. Loading / Error / Empty States
+- Coffee-shop GeoJSON dataset and consumers remain in the dashboard/map.
 
-STATUS: NOT IMPLEMENTED / BLOCKED
+WHY:
 
-No Phase 8 loading, error, or empty state changes were made.
+- No verified canonical UMKM/POI endpoint is available in the current backend source.
+- Phase 8 rules prohibit replacing unavailable canonical data with guessed APIs or silently falling back from failing real APIs to demo data.
 
-## L. MapLibre Integration
+## K. Loading / Error / Empty
 
-STATUS: NOT MODIFIED BY PHASE 8
+| Feature | Loading | Error | Empty | Status |
+| --- | --- | --- | --- | --- |
+| Study Area | PASS | PASS | PASS | Runtime backend 500 |
+| Transport Nodes | PASS | PASS | PASS | Runtime backend 500 |
+| Transport Corridors | PASS | PASS | PASS | Endpoint 200 empty |
+| UMKM / POI | N/A | N/A | N/A | BLOCKED_BY_CANONICAL_BACKEND |
+| Community | N/A | N/A | N/A | BLOCKED_BY_CANONICAL_BACKEND |
+| Survey Context | N/A | N/A | N/A | BLOCKED_BY_CANONICAL_BACKEND |
 
-No Phase 8 MapLibre changes were made. Existing map behavior remains outside this Phase 8 closure report.
+## L. MapLibre
 
-## M. Security Review
+- MAP RENDER: frontend build passes; runtime root responded 200 from existing process
+- WORKER: preserved; generated worker files were not committed by Phase 8
+- MARKERS: existing coffee markers preserved; canonical transport node marker layer added
+- ZOOM/COMPASS: existing MapLibre controls preserved
 
-STATUS: NO PHASE8 CODE CHANGES
+## M. Security
 
-- SERVICE_ROLE_FRONTEND: not added by Phase 8
-- MAPID_CREDENTIAL_FRONTEND: not added by Phase 8
-- TOKEN_LOGGING: not added by Phase 8
-- RAW_STAGING_FRONTEND_ACCESS: not added by Phase 8
+- SERVICE ROLE FRONTEND: ABSENT
+- MAPID CREDENTIAL FRONTEND: ABSENT
+- TOKEN LOGGING: ABSENT
+- RAW/STAGING FRONTEND ACCESS: ABSENT
+- DIRECT FRONTEND SUPABASE DOMAIN READS: ABSENT
 
-Because implementation was blocked, Phase 8 did not introduce new frontend credential exposure or raw/staging reads.
+Audit notes:
+
+- `supabase.from(...)` / `supabase.rpc(...)` were not found in frontend app/components/src/lib.
+- Raw/staging table names were not found in frontend app/components/src/lib.
+- Access/refresh token references are limited to existing auth files.
 
 ## N. Quality Gates
 
-STATUS: NOT RUN FOR PHASE 8 IMPLEMENTATION
-
-No Phase 8 application implementation exists to validate. Quality gates should be run after the Phase 7 gate is satisfied and Phase 8 integration is implemented in an isolated branch/worktree.
+| Check | Frontend | Backend |
+| --- | --- | --- |
+| Typecheck | PASS (`npm run typecheck -w frontend`) | PASS (`npm run typecheck -w backend`) |
+| Lint | PASS (`npm run lint -w frontend`) | NOT RUN |
+| Tests | NOT APPLICABLE — no frontend test script | PASS (`npm run test -w backend`: 52 passed, 1 skipped; 376 passed, 1 skipped) |
+| Build | PASS (`npm run build -w frontend`) | FAIL (`backend/src/types/database.types.ts` invalid UTF-8) |
+| Runtime | PARTIAL | FAIL/PARTIAL |
 
 ## O. Parallel Boundary
 
 PHASE 9 RESERVED FILES TOUCHED: NONE
 
-Shared Phase 8 hotspots touched by Phase 8: NONE
+Phase 8-owned hotspot files modified:
 
-No stakeholder components or stakeholder UX semantics were modified by Phase 8.
+- `frontend/components/getra-dashboard.tsx`
+- `frontend/components/getra-map.tsx`
+
+`frontend/app/page.tsx` was not modified.
 
 ## P. Remaining Issues
 
-1. Phase 8 isolated branch/worktree has not been created yet.
-2. Current main worktree is dirty with mixed/uncommitted changes.
-3. Canonical frontend data integration has not been started yet.
-4. Phase 8 quality gates have not been run yet.
+1. Backend `GET /api/v1/study-areas` returns 500 in runtime smoke.
+2. Backend `GET /api/v1/transport/nodes` returns 500 in runtime smoke.
+3. No canonical UMKM/POI endpoint was verified.
+4. No canonical Community endpoint was verified.
+5. No canonical Survey Context endpoint was verified.
+6. Backend build fails because `backend/src/types/database.types.ts` is invalid UTF-8.
+7. Phase 8 local commit was not created because merge readiness is not achieved.
 
 ## Q. Phase 9 Interaction
 
-Phase 8 has not yet produced an implementation branch or application changes for Phase 9 to consume.
+PHASE 8 owns core data integration.
 
-Phase 9 should not treat Phase 8 as ready.
+PHASE 9 owns General/stakeholder UX.
+
+Phase 9 must preserve:
+
+- API client at `frontend/src/lib/api/client.ts`
+- Canonical data hook at `frontend/src/hooks/useCanonicalData.ts`
+- Frontend DTOs at `frontend/src/types/canonical-api.ts`
+- Dashboard canonical data status/loading/error/empty wiring
+- MapLibre transport-node marker wiring
 
 ## R. Parallel Merge Readiness
 
-PARALLEL MERGE READINESS: NOT READY
+READY: NO
 
-Required before implementing Phase 8:
+Reasons:
 
-1. Start Phase 8 from a clean, isolated worktree/branch.
-2. Implement frontend canonical data integration against backend APIs.
-3. Remove or quarantine demo/static data consumers from production flows.
-4. Run Phase 8 quality gates.
-5. Produce a final Phase 8 implementation commit/report.
+- Backend canonical runtime has 500s for required endpoints.
+- Backend build fails.
+- UMKM/POI, Community, and Survey Context are blocked by missing verified canonical backend endpoints.
+- No local Phase 8 commit was created.

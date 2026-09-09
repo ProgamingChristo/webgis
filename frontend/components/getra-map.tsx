@@ -29,6 +29,7 @@ import {
 
 import { buildSponsoredPopupContent } from "@/src/lib/maplibre-popup";
 import type { Merchant, UserLocation } from "@/types/getra";
+import type { TransportNodeDto } from "@/src/types/canonical-api";
 import type { BusinessSpaceCandidate } from "@/src/features/business-space/types/business-space.types";
 import type { AccessibilityEvidence } from "@/src/features/accessibility-evidence/types/accessibility-evidence.types";
 import type { MapViewportBounds } from "@/src/services/mapid-layer.service";
@@ -68,8 +69,11 @@ setWorkerUrl(
 
 import { CampaignEventService, type SponsoredPinDTO } from "@/src/features/umkm-advertising";
 
+const EMPTY_TRANSPORT_NODES: TransportNodeDto[] = [];
+
 type GetraMapProps = {
   merchants: Merchant[];
+  transportNodes?: TransportNodeDto[];
   selectedId: string | null;
   propertyCandidates?: BusinessSpaceCandidate[];
   selectedPropertyId?: string | null;
@@ -291,6 +295,15 @@ function createRouteEndpointMarker(
     badge,
   );
 
+  return element;
+}
+
+function createTransportMarker(node: TransportNodeDto) {
+  const element = document.createElement("button");
+  element.type = "button";
+  element.className = "canonical-transport-marker";
+  element.title = node.name;
+  element.setAttribute("aria-label", `Lihat titik transportasi ${node.name}`);
   return element;
 }
 
@@ -578,6 +591,7 @@ function syncWalkingServiceArea(
 
 export function GetraMap({
   merchants,
+  transportNodes = EMPTY_TRANSPORT_NODES,
   selectedId,
   propertyCandidates = [],
   selectedPropertyId = null,
@@ -674,6 +688,8 @@ export function GetraMap({
     useRef<Map<string, Marker>>(
       new Map(),
     );
+
+  const transportMarkersRef = useRef<Map<string, Marker>>(new Map());
 
   const propertyMarkersRef =
     useRef<Map<string, Marker>>(
@@ -930,6 +946,8 @@ export function GetraMap({
     const merchantMarkers =
       merchantMarkersRef.current;
 
+    const transportMarkers = transportMarkersRef.current;
+
     const accessibilityMarkers =
       accessibilityMarkersRef.current;
 
@@ -1025,6 +1043,9 @@ export function GetraMap({
       );
 
       merchantMarkers.clear();
+
+      transportMarkers.forEach((marker) => marker.remove());
+      transportMarkers.clear();
 
       sponsoredMarkers.forEach(
         (marker) =>
@@ -1637,6 +1658,42 @@ export function GetraMap({
       sponsoredMarkersRef.current.set(placement.campaign_id, marker);
     }
   }, [sponsoredPlacements, onSelectSponsored]);
+
+  /*
+   * Transport references have their own lifecycle so layer updates do not
+   * remove route, merchant, property, or GPS markers.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    const transportMarkers = transportMarkersRef.current;
+    const clearTransportMarkers = () => {
+      transportMarkers.forEach((marker) => marker.remove());
+      transportMarkers.clear();
+    };
+    clearTransportMarkers();
+    if (!map) return;
+
+    for (const node of transportNodes) {
+      if (!node || typeof node.id !== "string" || typeof node.name !== "string"
+        || transportMarkers.has(node.id) || node.geometry?.type !== "Point"
+        || !Array.isArray(node.geometry.coordinates)) continue;
+
+      const [longitude, latitude] = node.geometry.coordinates;
+      if (!Number.isFinite(longitude) || !Number.isFinite(latitude)
+        || longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) continue;
+
+      const marker = new Marker({ element: createTransportMarker(node), anchor: "center" })
+        .setLngLat([longitude, latitude])
+        .setPopup(new Popup({ offset: 14 }).setDOMContent(createPopupContent(
+          node.name,
+          `${node.transport_mode ?? "Transportasi"} · ${node.node_type ?? "Titik transportasi"}`,
+        )))
+        .addTo(map);
+      transportMarkers.set(node.id, marker);
+    }
+
+    return clearTransportMarkers;
+  }, [transportNodes, styleRevision]);
 
   /*
    * User GPS marker
