@@ -37,98 +37,150 @@ export const ROUTE_STYLE_TOKENS = {
   },
   alternative: {
     alt1Color: "#2563eb",
-    alt1Opacity: 0.52,
+    alt1Opacity: 0.78,
     alt2Color: "#64748b",
-    alt2Opacity: 0.40,
+    alt2Opacity: 0.72,
     umkmColor: "#16a34a",
-    umkmOpacity: 0.55,
+    umkmOpacity: 0.85,
     colors: ["#2563eb", "#64748b"] as const,
-    width: 5,
-    opacity: 0.46,
+    width: 6,
+    opacity: 0.75,
     casingColor: "#0f172a",
-    casingWidth: 8,
-    casingOpacity: 0.25,
-    hitWidth: 22,
+    casingWidth: 10,
+    casingOpacity: 0.55,
+    hitWidth: 24,
   },
 } as const;
+
+export function isMapStyleReady(map: MapLibreMap): boolean {
+  if (map.isStyleLoaded()) return true;
+  try {
+    const style = map.getStyle();
+    return Boolean(style && Array.isArray(style.layers) && style.layers.length > 0);
+  } catch {
+    return false;
+  }
+}
 
 function orderRouteLayers(map: MapLibreMap) {
   const before = map.getLayer(ROUTE_LAYER_IDS.selectedCasing)
     ? ROUTE_LAYER_IDS.selectedCasing
-    : undefined;
+    : map.getLayer(ROUTE_LAYER_IDS.selectedLine)
+      ? ROUTE_LAYER_IDS.selectedLine
+      : undefined;
   for (const layer of [
     ROUTE_LAYER_IDS.alternativeCasing,
     ROUTE_LAYER_IDS.alternativeLine,
     ROUTE_LAYER_IDS.alternativeHit,
   ]) {
-    if (map.getLayer(layer)) map.moveLayer(layer, before);
+    if (map.getLayer(layer)) {
+      try {
+        map.moveLayer(layer, before);
+      } catch {
+        // ignore if layer cannot be moved relative to before
+      }
+    }
   }
 }
 
 export function syncRouteAlternatives(map: MapLibreMap, candidates: RoutingCandidate[], selectedRouteId: string | null) {
+  const features: GeoJSON.Feature[] = candidates
+    .filter((candidate) => candidate.route_id !== selectedRouteId && isRouteGeometry(candidate.geometry))
+    .map((candidate, index) => {
+      const isUmkm = candidate.route_category === "UMKM_AREA";
+      const color = isUmkm
+        ? ROUTE_STYLE_TOKENS.alternative.umkmColor
+        : (index === 0 ? ROUTE_STYLE_TOKENS.alternative.alt1Color : ROUTE_STYLE_TOKENS.alternative.alt2Color);
+      const opacity = isUmkm
+        ? ROUTE_STYLE_TOKENS.alternative.umkmOpacity
+        : (index === 0 ? ROUTE_STYLE_TOKENS.alternative.alt1Opacity : ROUTE_STYLE_TOKENS.alternative.alt2Opacity);
+      return {
+        type: "Feature" as const,
+        properties: {
+          routeId: candidate.route_id,
+          routeCategory: candidate.route_category,
+          lineColor: color,
+          lineOpacity: opacity,
+          lineWidth: ROUTE_STYLE_TOKENS.alternative.width,
+        },
+        geometry: candidate.geometry,
+      };
+    });
+
   const data: GeoJSON.FeatureCollection = {
     type: "FeatureCollection",
-    features: candidates
-      .filter((candidate) => candidate.route_id !== selectedRouteId && isRouteGeometry(candidate.geometry))
-      .map((candidate, index) => {
-        const isUmkm = candidate.route_category === "UMKM_AREA";
-        const color = isUmkm
-          ? ROUTE_STYLE_TOKENS.alternative.umkmColor
-          : (index === 0 ? ROUTE_STYLE_TOKENS.alternative.alt1Color : ROUTE_STYLE_TOKENS.alternative.alt2Color);
-        const opacity = isUmkm
-          ? ROUTE_STYLE_TOKENS.alternative.umkmOpacity
-          : (index === 0 ? ROUTE_STYLE_TOKENS.alternative.alt1Opacity : ROUTE_STYLE_TOKENS.alternative.alt2Opacity);
-        return {
-          type: "Feature",
-          properties: {
-            routeId: candidate.route_id,
-            routeCategory: candidate.route_category,
-            lineColor: color,
-            lineOpacity: opacity,
-            lineWidth: ROUTE_STYLE_TOKENS.alternative.width,
-          },
-          geometry: candidate.geometry,
-        };
-      }),
+    features,
   };
+
   const source = map.getSource(ROUTE_LAYER_IDS.alternativeSource) as import("maplibre-gl").GeoJSONSource | undefined;
-  if (source) source.setData(data);
-  if (!map.isStyleLoaded()) return;
-  if (!source) map.addSource(ROUTE_LAYER_IDS.alternativeSource, { type: "geojson", data });
-  if (!map.getLayer(ROUTE_LAYER_IDS.alternativeCasing)) {
-    map.addLayer({ id: ROUTE_LAYER_IDS.alternativeCasing, type: "line", source: ROUTE_LAYER_IDS.alternativeSource,
-      layout: { "line-join": "round", "line-cap": "round" },
-      paint: {
-        "line-color": ROUTE_STYLE_TOKENS.alternative.casingColor,
-        "line-width": ROUTE_STYLE_TOKENS.alternative.casingWidth,
-        "line-opacity": ROUTE_STYLE_TOKENS.alternative.casingOpacity,
-      } });
+  if (source) {
+    source.setData(data);
   }
-  if (!map.getLayer(ROUTE_LAYER_IDS.alternativeLine)) {
-    map.addLayer({ id: ROUTE_LAYER_IDS.alternativeLine, type: "line", source: ROUTE_LAYER_IDS.alternativeSource,
-      layout: { "line-join": "round", "line-cap": "round" },
-      paint: {
-        "line-color": ["get", "lineColor"],
-        "line-width": ROUTE_STYLE_TOKENS.alternative.width,
-        "line-opacity": ["get", "lineOpacity"],
-      } });
+
+  if (!isMapStyleReady(map)) return;
+
+  if (!source) {
+    try {
+      map.addSource(ROUTE_LAYER_IDS.alternativeSource, { type: "geojson", data });
+    } catch {
+      return;
+    }
   }
-  if (!map.getLayer(ROUTE_LAYER_IDS.alternativeHit)) {
-    map.addLayer({ id: ROUTE_LAYER_IDS.alternativeHit, type: "line", source: ROUTE_LAYER_IDS.alternativeSource,
-      layout: { "line-join": "round", "line-cap": "round" },
-      paint: { "line-color": "#000000", "line-width": ROUTE_STYLE_TOKENS.alternative.hitWidth, "line-opacity": 0.01 } });
+
+  try {
+    if (!map.getLayer(ROUTE_LAYER_IDS.alternativeCasing)) {
+      map.addLayer({
+        id: ROUTE_LAYER_IDS.alternativeCasing,
+        type: "line",
+        source: ROUTE_LAYER_IDS.alternativeSource,
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ROUTE_STYLE_TOKENS.alternative.casingColor,
+          "line-width": ROUTE_STYLE_TOKENS.alternative.casingWidth,
+          "line-opacity": ROUTE_STYLE_TOKENS.alternative.casingOpacity,
+        },
+      });
+    }
+    if (!map.getLayer(ROUTE_LAYER_IDS.alternativeLine)) {
+      map.addLayer({
+        id: ROUTE_LAYER_IDS.alternativeLine,
+        type: "line",
+        source: ROUTE_LAYER_IDS.alternativeSource,
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ["get", "lineColor"],
+          "line-width": ROUTE_STYLE_TOKENS.alternative.width,
+          "line-opacity": ["get", "lineOpacity"],
+        },
+      });
+    }
+    if (!map.getLayer(ROUTE_LAYER_IDS.alternativeHit)) {
+      map.addLayer({
+        id: ROUTE_LAYER_IDS.alternativeHit,
+        type: "line",
+        source: ROUTE_LAYER_IDS.alternativeSource,
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": "#000000",
+          "line-width": ROUTE_STYLE_TOKENS.alternative.hitWidth,
+          "line-opacity": 0.001,
+        },
+      });
+    }
+    if (map.getLayer(ROUTE_LAYER_IDS.alternativeLine)) {
+      map.setPaintProperty(ROUTE_LAYER_IDS.alternativeLine, "line-color", ["get", "lineColor"]);
+      map.setPaintProperty(ROUTE_LAYER_IDS.alternativeLine, "line-width", ROUTE_STYLE_TOKENS.alternative.width);
+      map.setPaintProperty(ROUTE_LAYER_IDS.alternativeLine, "line-opacity", ["get", "lineOpacity"]);
+    }
+    if (map.getLayer(ROUTE_LAYER_IDS.alternativeCasing)) {
+      map.setPaintProperty(ROUTE_LAYER_IDS.alternativeCasing, "line-color", ROUTE_STYLE_TOKENS.alternative.casingColor);
+      map.setPaintProperty(ROUTE_LAYER_IDS.alternativeCasing, "line-width", ROUTE_STYLE_TOKENS.alternative.casingWidth);
+      map.setPaintProperty(ROUTE_LAYER_IDS.alternativeCasing, "line-opacity", ROUTE_STYLE_TOKENS.alternative.casingOpacity);
+    }
+    orderRouteLayers(map);
+  } catch {
+    // ignore transient paint property errors during style transitions
   }
-  if (map.getLayer(ROUTE_LAYER_IDS.alternativeLine)) {
-    map.setPaintProperty(ROUTE_LAYER_IDS.alternativeLine, "line-color", ["get", "lineColor"]);
-    map.setPaintProperty(ROUTE_LAYER_IDS.alternativeLine, "line-width", ROUTE_STYLE_TOKENS.alternative.width);
-    map.setPaintProperty(ROUTE_LAYER_IDS.alternativeLine, "line-opacity", ["get", "lineOpacity"]);
-  }
-  if (map.getLayer(ROUTE_LAYER_IDS.alternativeCasing)) {
-    map.setPaintProperty(ROUTE_LAYER_IDS.alternativeCasing, "line-color", ROUTE_STYLE_TOKENS.alternative.casingColor);
-    map.setPaintProperty(ROUTE_LAYER_IDS.alternativeCasing, "line-width", ROUTE_STYLE_TOKENS.alternative.casingWidth);
-    map.setPaintProperty(ROUTE_LAYER_IDS.alternativeCasing, "line-opacity", ROUTE_STYLE_TOKENS.alternative.casingOpacity);
-  }
-  orderRouteLayers(map);
 }
 
 export function bindRouteAlternativeSelection(map: MapLibreMap, select: (routeId: string) => void) {
@@ -220,7 +272,7 @@ export function syncWalkingRoute(
   map: MapLibreMap,
   routeGeometry?: GeoJSON.LineString | null,
 ) {
-  if (!map.isStyleLoaded()) {
+  if (!isMapStyleReady(map)) {
     const existing = map.getSource(ROUTE_LAYER_IDS.selectedSource) as import("maplibre-gl").GeoJSONSource | undefined;
     existing?.setData(toRouteFeatureCollection(routeGeometry));
     return;
@@ -341,4 +393,5 @@ export function syncWalkingRoute(
     map.setPaintProperty(ROUTE_LAYER_IDS.selectedCasing, "line-width", ROUTE_STYLE_TOKENS.selected.casingWidth);
     map.setPaintProperty(ROUTE_LAYER_IDS.selectedCasing, "line-opacity", ROUTE_STYLE_TOKENS.selected.casingOpacity);
   }
+  orderRouteLayers(map);
 }

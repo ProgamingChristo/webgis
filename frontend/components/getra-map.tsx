@@ -915,6 +915,9 @@ export function GetraMap({
       });
 
     mapRef.current = map;
+    if (typeof window !== "undefined") {
+      (window as unknown as { __getraMapLibreInstance?: MapLibreMap }).__getraMapLibreInstance = map;
+    }
     const resizeObserver = new ResizeObserver(() => map.resize());
     resizeObserver.observe(map.getContainer());
 
@@ -1934,7 +1937,10 @@ export function GetraMap({
 
     // Existing data can be cleared while tiles load; a new style needs a ready event.
     updateRoute();
-    if (!map.isStyleLoaded()) map.once("idle", updateRoute);
+    if (!map.isStyleLoaded()) {
+      map.once("idle", updateRoute);
+      map.once("style.load", updateRoute);
+    }
 
     const candidateGeometries = routeCandidates.map((candidate) => candidate.geometry).filter(isRouteGeometry);
     if (isRouteGeometry(routeGeometry) && !journeyActive) {
@@ -1985,7 +1991,11 @@ export function GetraMap({
       lastFramedCandidateKey.current = null;
     }
     const unbind = onSelectRoute ? bindRouteAlternativeSelection(map, onSelectRoute) : undefined;
-    return () => { map.off("idle", updateRoute); unbind?.(); };
+    return () => {
+      map.off("idle", updateRoute);
+      map.off("style.load", updateRoute);
+      unbind?.();
+    };
   }, [
     routeGeometry,
     routeCandidates,
