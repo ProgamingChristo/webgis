@@ -839,61 +839,44 @@ export function merchantFocusBounds(merchant: Pick<Merchant, "latitude" | "longi
 
 function calculateMerchantBounds(
   merchants: Merchant[],
+  fallbackOrigin: { longitude: number; latitude: number } = COFFEE_SHOP_ORIGIN,
 ) {
   if (merchants.length === 0) {
     return {
-      west:
-        COFFEE_SHOP_ORIGIN.longitude - 0.03,
-      south:
-        COFFEE_SHOP_ORIGIN.latitude - 0.03,
-      east:
-        COFFEE_SHOP_ORIGIN.longitude + 0.03,
-      north:
-        COFFEE_SHOP_ORIGIN.latitude + 0.03,
+      west: fallbackOrigin.longitude - 0.04,
+      south: fallbackOrigin.latitude - 0.04,
+      east: fallbackOrigin.longitude + 0.04,
+      north: fallbackOrigin.latitude + 0.04,
     };
   }
 
-  return merchants.reduce(
-    (
-      bounds,
-      merchant,
-    ) => ({
-      west:
-        Math.min(
-          bounds.west,
-          merchant.longitude,
-        ),
-      south:
-        Math.min(
-          bounds.south,
-          merchant.latitude,
-        ),
-      east:
-        Math.max(
-          bounds.east,
-          merchant.longitude,
-        ),
-      north:
-        Math.max(
-          bounds.north,
-          merchant.latitude,
-        ),
+  const raw = merchants.reduce(
+    (bounds, merchant) => ({
+      west: Math.min(bounds.west, merchant.longitude),
+      south: Math.min(bounds.south, merchant.latitude),
+      east: Math.max(bounds.east, merchant.longitude),
+      north: Math.max(bounds.north, merchant.latitude),
     }),
     {
-      west:
-        merchants[0]?.longitude ??
-        COFFEE_SHOP_ORIGIN.longitude,
-      south:
-        merchants[0]?.latitude ??
-        COFFEE_SHOP_ORIGIN.latitude,
-      east:
-        merchants[0]?.longitude ??
-        COFFEE_SHOP_ORIGIN.longitude,
-      north:
-        merchants[0]?.latitude ??
-        COFFEE_SHOP_ORIGIN.latitude,
+      west: merchants[0]?.longitude ?? fallbackOrigin.longitude,
+      south: merchants[0]?.latitude ?? fallbackOrigin.latitude,
+      east: merchants[0]?.longitude ?? fallbackOrigin.longitude,
+      north: merchants[0]?.latitude ?? fallbackOrigin.latitude,
     },
   );
+
+  const minSpan = 0.04;
+  const spanLng = Math.abs(raw.east - raw.west);
+  const spanLat = Math.abs(raw.north - raw.south);
+  const centerLng = (raw.west + raw.east) / 2;
+  const centerLat = (raw.south + raw.north) / 2;
+
+  return {
+    west: spanLng < minSpan ? centerLng - minSpan / 2 : raw.west,
+    east: spanLng < minSpan ? centerLng + minSpan / 2 : raw.east,
+    south: spanLat < minSpan ? centerLat - minSpan / 2 : raw.south,
+    north: spanLat < minSpan ? centerLat + minSpan / 2 : raw.north,
+  };
 }
 
 function calculateMerchantOrigin(
@@ -904,23 +887,132 @@ function calculateMerchantOrigin(
     latitude: number;
   } = COFFEE_SHOP_ORIGIN,
 ) {
-  const bounds =
-    calculateMerchantBounds(
-      merchants,
-    );
+  const bounds = calculateMerchantBounds(merchants, fallback);
 
   return {
-    id:
-      "active-dataset-center",
-    name:
-      fallback.name,
-    longitude:
-      (bounds.west + bounds.east) /
-      2,
-    latitude:
-      (bounds.south + bounds.north) /
-      2,
+    id: "active-dataset-center",
+    name: fallback.name,
+    longitude: (bounds.west + bounds.east) / 2,
+    latitude: (bounds.south + bounds.north) / 2,
   };
+}
+
+const KNOWN_REGION_CENTERS: Record<string, { latitude: number; longitude: number }> = {
+  makasar: { latitude: -5.1477, longitude: 119.4327 },
+  makassar: { latitude: -5.1477, longitude: 119.4327 },
+  aceh: { latitude: 3.8333, longitude: 96.8833 },
+  gresik: { latitude: -7.1566, longitude: 112.6555 },
+  bekasi: { latitude: -6.2383, longitude: 106.9756 },
+  selatan: { latitude: -6.2615, longitude: 106.8106 },
+  timur: { latitude: -6.2250, longitude: 106.9004 },
+  barat: { latitude: -6.1683, longitude: 106.7588 },
+  pusat: { latitude: -6.1805, longitude: 106.8284 },
+  utara: { latitude: -6.1384, longitude: 106.8640 },
+  bandung: { latitude: -6.9175, longitude: 107.6191 },
+  surabaya: { latitude: -7.2575, longitude: 112.7521 },
+};
+
+function extractCoordinatesFromGeometry(geometry: GeoJSON.Geometry | null | undefined): Array<[number, number]> {
+  if (!geometry) return [];
+  if (geometry.type === "Point") return [geometry.coordinates as [number, number]];
+  if (geometry.type === "MultiPoint" || geometry.type === "LineString") return geometry.coordinates as Array<[number, number]>;
+  if (geometry.type === "MultiLineString" || geometry.type === "Polygon") {
+    return (geometry.coordinates as Array<Array<[number, number]>>).flat();
+  }
+  if (geometry.type === "MultiPolygon") {
+    return (geometry.coordinates as Array<Array<Array<[number, number]>>>).flat(2);
+  }
+  return [];
+}
+
+function getDatasetTargetBounds(
+  targetDatasetId: DatasetId,
+  adminImportedLayers: AdminImportedLayer[],
+  allMerchants: Merchant[],
+  mapidMerchants: Merchant[],
+): MapViewportBounds | null {
+  if (targetDatasetId === "all-areas") {
+    if (allMerchants.length > 0) {
+      return calculateMerchantBounds(allMerchants);
+    }
+    return {
+      west: 106.65,
+      south: -6.40,
+      east: 107.05,
+      north: -6.10,
+    };
+  }
+
+  if (targetDatasetId === "coffee-jakarta-barat") {
+    return calculateMerchantBounds(COFFEE_SHOPS);
+  }
+
+  if (targetDatasetId === "mapid-food-jakarta-pusat") {
+    if (mapidMerchants.length > 0) {
+      return calculateMerchantBounds(mapidMerchants);
+    }
+    return {
+      west: 106.80,
+      south: -6.22,
+      east: 106.86,
+      north: -6.16,
+    };
+  }
+
+  if (isAdminImportDataset(targetDatasetId)) {
+    const layerId = getAdminImportLayerId(targetDatasetId);
+    const layer = adminImportedLayers.find((l) => l.layer_id === layerId);
+    if (layer) {
+      if (layer.merchants && layer.merchants.length > 0) {
+        return calculateMerchantBounds(layer.merchants);
+      }
+
+      if (layer.boundaries?.features && layer.boundaries.features.length > 0) {
+        let minLng = Infinity;
+        let minLat = Infinity;
+        let maxLng = -Infinity;
+        let maxLat = -Infinity;
+
+        for (const feature of layer.boundaries.features) {
+          const coords = extractCoordinatesFromGeometry(feature.geometry);
+          for (const [lng, lat] of coords) {
+            if (lng < minLng) minLng = lng;
+            if (lng > maxLng) maxLng = lng;
+            if (lat < minLat) minLat = lat;
+            if (lat > maxLat) maxLat = lat;
+          }
+        }
+
+        if (minLng !== Infinity && minLat !== Infinity) {
+          const minSpan = 0.04;
+          const spanLng = maxLng - minLng;
+          const spanLat = maxLat - minLat;
+          const centerLng = (minLng + maxLng) / 2;
+          const centerLat = (minLat + maxLat) / 2;
+          return {
+            west: spanLng < minSpan ? centerLng - minSpan / 2 : minLng,
+            east: spanLng < minSpan ? centerLng + minSpan / 2 : maxLng,
+            south: spanLat < minSpan ? centerLat - minSpan / 2 : minLat,
+            north: spanLat < minSpan ? centerLat + minSpan / 2 : maxLat,
+          };
+        }
+      }
+
+      const lowerName = (layer.layer_name || "").toLowerCase();
+      for (const [key, center] of Object.entries(KNOWN_REGION_CENTERS)) {
+        if (lowerName.includes(key)) {
+          return {
+            west: center.longitude - 0.035,
+            east: center.longitude + 0.035,
+            south: center.latitude - 0.035,
+            north: center.latitude + 0.035,
+          };
+        }
+      }
+    }
+  }
+
+  return null;
 }
 
 export function GetraDashboard() {
@@ -1386,9 +1478,11 @@ function GeneralGetraDashboard() {
       () =>
         calculateMerchantBounds(
           baseMerchants,
+          datasetOrigin,
         ),
       [
         baseMerchants,
+        datasetOrigin,
       ],
     );
 
@@ -2382,9 +2476,22 @@ function GeneralGetraDashboard() {
         setExplicitRouteOrigin(null);
         clearRoute();
 
+        const targetBounds = getDatasetTargetBounds(
+          nextDatasetId,
+          adminImportedLayers,
+          allMerchants,
+          mapidMerchants,
+        );
+        if (targetBounds) {
+          setSearchFocusBounds(targetBounds);
+          setSearchFocusKey((prev) => prev + 1);
+        }
       },
       [
+        adminImportedLayers,
+        allMerchants,
         clearRoute,
+        mapidMerchants,
       ],
     );
 
@@ -2524,6 +2631,14 @@ function GeneralGetraDashboard() {
           setLocating(
             false,
           );
+
+          setSearchFocusBounds({
+            west: position.coords.longitude - 0.015,
+            east: position.coords.longitude + 0.015,
+            south: position.coords.latitude - 0.015,
+            north: position.coords.latitude + 0.015,
+          });
+          setSearchFocusKey((prev) => prev + 1);
         },
         (error) => {
           const message =

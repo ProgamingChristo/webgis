@@ -791,19 +791,29 @@ export function GetraMap({
     
     markSystemCameraIntent();
     
-    map.fitBounds(
-      [
-        [focusBounds.west, focusBounds.south],
-        [focusBounds.east, focusBounds.north],
-      ],
-      {
-        padding: compact
-          ? { top: 36, right: 28, bottom: 190, left: 28 }
-          : { top: 52, right: 52, bottom: 52, left: 52 },
-        maxZoom: 14,
-        duration: 500,
-      },
-    );
+    const spanLng = Math.abs(focusBounds.east - focusBounds.west);
+    const spanLat = Math.abs(focusBounds.north - focusBounds.south);
+    if (spanLng < 0.001 || spanLat < 0.001) {
+      map.flyTo({
+        center: [(focusBounds.west + focusBounds.east) / 2, (focusBounds.south + focusBounds.north) / 2],
+        zoom: 14,
+        duration: 800,
+      });
+    } else {
+      map.fitBounds(
+        [
+          [focusBounds.west, focusBounds.south],
+          [focusBounds.east, focusBounds.north],
+        ],
+        {
+          padding: compact
+            ? { top: 36, right: 28, bottom: 190, left: 28 }
+            : { top: 52, right: 52, bottom: 52, left: 52 },
+          maxZoom: 14,
+          duration: 800,
+        },
+      );
+    }
     setCameraFitKey(focusKey);
   }, [focusBounds, focusKey, markSystemCameraIntent]);
 
@@ -1255,23 +1265,33 @@ export function GetraMap({
     if (
       shouldFitDataset &&
       !selectedId &&
-      !routeGeometry &&
-      cameraOwnerRef.current !== "USER"
+      !routeGeometry
     ) {
+      markSystemCameraIntent();
+      const spanLng = Math.abs(datasetBounds.east - datasetBounds.west);
+      const spanLat = Math.abs(datasetBounds.north - datasetBounds.south);
+      const minSpan = 0.04;
+      const targetBounds = {
+        west: spanLng < minSpan ? (datasetBounds.west + datasetBounds.east) / 2 - minSpan / 2 : datasetBounds.west,
+        east: spanLng < minSpan ? (datasetBounds.west + datasetBounds.east) / 2 + minSpan / 2 : datasetBounds.east,
+        south: spanLat < minSpan ? (datasetBounds.south + datasetBounds.north) / 2 - minSpan / 2 : datasetBounds.south,
+        north: spanLat < minSpan ? (datasetBounds.south + datasetBounds.north) / 2 + minSpan / 2 : datasetBounds.north,
+      };
       map.fitBounds(
         [
           [
-            datasetBounds.west,
-            datasetBounds.south,
+            targetBounds.west,
+            targetBounds.south,
           ],
           [
-            datasetBounds.east,
-            datasetBounds.north,
+            targetBounds.east,
+            targetBounds.north,
           ],
         ],
         {
           padding: 52,
-          duration: 500,
+          maxZoom: 14,
+          duration: 800,
         },
       );
     }
@@ -1279,6 +1299,7 @@ export function GetraMap({
     datasetBounds,
     datasetOrigin,
     datasetKey,
+    markSystemCameraIntent,
     routeGeometry,
     selectedId,
   ]);
