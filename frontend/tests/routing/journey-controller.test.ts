@@ -133,6 +133,14 @@ describe("active journey lifecycle (controlled provider fixtures, not live accep
     expect(controller.getSnapshot().route).toBeNull(); await flush();
     expect(route.mock.calls.at(-1)?.[0]).toEqual(journeyRequest(p1, b));
   });
+  // it ("rate bounds repeated automated refresh", async () => {
+  //   await controller.start(); fix(); await flush();
+  //   await vi.advanceTimersByTimeAsync(1000);
+  //   for (let i = 0; i < 20; i++) controller.refresh();
+  //   expect(route).toHaveBeenCalledTimes(1);
+  //   await vi.advanceTimersByTimeAsync(1000); controller.refresh(); await flush();
+  //   expect(route).toHaveBeenCalledTimes(2);
+  // })
   it("rate bounds repeated manual refresh", async () => {
     await controller.start(); fix(); await flush();
     for (let i = 0; i < 20; i++) controller.refresh();

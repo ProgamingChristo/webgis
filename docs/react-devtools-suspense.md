@@ -6,7 +6,15 @@ Pada pemeriksaan 5 September 2026, stack trace berasal dari ekstensi Edge `gpphk
 
 GETRA memakai Next.js 16.3.1. React/ReactDOM pada package root adalah 19.2.8; runtime React App Router yang dibundel Next adalah `19.3.0-canary-cbb046ab-20260731`. Konsumen `useSearchParams` pada halaman UMKM sudah berada dalam Suspense sebagaimana panduan Next yang terpasang. Error ini terjadi pada pencatatan boundary oleh DevTools.
 
-Untuk melanjutkan pengembangan melalui VS Code:
+Untuk membuka langsung jendela development dari terminal PowerShell (tanpa F5):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/open-getra-dev-browser.ps1
+```
+
+Launcher memeriksa frontend port 3000 dan membuka `/login` menggunakan profil terpisah di `%LOCALAPPDATA%\GETRA\DevelopmentBrowser` dengan ekstensi dinonaktifkan. Sesi login disimpan pada profil development ini. Gunakan `-Port 3001` jika port frontend berbeda. Jendela Edge lama masih memuat ekstensi sampai ekstensi dinonaktifkan dan tab dimuat ulang; gunakan jendela yang dibuka launcher.
+
+Alternatif melalui debugger VS Code:
 
 1. Jalankan server seperti biasa dengan `npm run dev`, atau gunakan server GETRA yang sudah berjalan.
 2. Buka Run and Debug, pilih **GETRA: Edge tanpa ekstensi**, lalu tekan F5.
@@ -25,3 +33,5 @@ Perubahan ini merupakan workaround pada lingkungan debug. Bug upstream pada ekst
 Verifikasi: konfigurasi JSON berhasil dibaca, lalu Edge 152.0.4191.62 dijalankan headless dengan profil sementara dan argumen yang sama. Halaman `/`, `/login`, dan `/signup` mengembalikan 200; `/umkm` mengarahkan sesi tanpa login ke `/login`. Tidak ditemukan console error atau page error pada pemeriksaan ini. Navigasi workspace setelah login tidak diuji pada pemeriksaan browser ini. Hasil tersimpan di `outputs/devtools-suspense/results.json`.
 
 Referensi: [laporan error yang sama pada repository Next.js](https://github.com/vercel/next.js/discussions/84973), [React DevTools changelog](https://github.com/facebook/react/blob/main/packages/react-devtools/CHANGELOG.md), dan [opsi debugger Microsoft](https://github.com/microsoft/vscode-js-debug/blob/main/OPTIONS.md).
+
+Verifikasi ulang 8 September 2026: launcher PowerShell berhasil membuka jendela development. Smoke test Edge 152.0.4191.66 pada `/`, `/login`, `/signup`, dan `/umkm` tanpa autentikasi selesai dengan nol console/page error. `/umkm` tetap mengarahkan ke login. Ini merupakan workaround lingkungan browser; perbaikan upstream ekstensi dan navigasi setelah login tidak diklaim selesai.
