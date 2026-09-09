@@ -216,4 +216,3 @@ export function getRouteLabelOffset(index: number, count: number): [number, numb
   const offset = LABEL_OFFSETS[index % LABEL_OFFSETS.length];
   return [offset[0], offset[1]];
 }
-

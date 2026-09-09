@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import { RoutingClientError, routingService, type RoutePreference, type RoutingCandidate, type RoutingMode, type RoutingResult } from "../services/routing.service";
+import { RoutingClientError, routingService, selectRoutingCandidate, type RoutePreference, type RoutingCandidate, type RoutingMode, type RoutingResult } from "../services/routing.service";
 import type { Coordinate } from "@/src/types/spatial";
 
 export type RoutingState = "IDLE" | "LOADING" | "ROUTABLE" | "NOT_ROUTABLE" | "SERVICE_UNAVAILABLE" | "ERROR";
@@ -82,7 +82,7 @@ export function useRouting(input: {
   const current = snapshot?.identity === identity ? snapshot : null;
   const selectCandidate = useCallback((candidate: RoutingCandidate) => {
     setSnapshot((currentSnapshot) => currentSnapshot?.identity === identity && currentSnapshot.route
-      ? { ...currentSnapshot, route: { ...currentSnapshot.route, ...candidate, selected_route_id: candidate.route_id } }
+      ? { ...currentSnapshot, route: selectRoutingCandidate(currentSnapshot.route, candidate) }
       : currentSnapshot);
   }, [identity]);
   const idle = !ready || key === clearedKey;

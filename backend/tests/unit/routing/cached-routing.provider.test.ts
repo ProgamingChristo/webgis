@@ -14,9 +14,24 @@ describe("routing cache request isolation", () => {
   it("does not share primary, alternative, fastest, and UMKM preference entries", async () => {
     const provider = { route: vi.fn().mockResolvedValue(result) };
     const cached = new CachedRoutingProvider(provider);
-    await cached.route(input); await cached.route(input);
+    await cached.route({ ...input, includeAlternatives: false });
+    await cached.route({ ...input, includeAlternatives: false });
     await cached.route({ ...input, includeAlternatives: true, preference: "FASTEST" });
     await cached.route({ ...input, includeAlternatives: true, preference: "UMKM" });
     expect(provider.route).toHaveBeenCalledTimes(3);
+  });
+
+  it("shares legacy default alternatives with explicit alternatives while isolating a single route", async () => {
+    const provider = { route: vi.fn()
+      .mockResolvedValueOnce({ ...result, warnings: ["Alternatives response"] })
+      .mockResolvedValueOnce({ ...result, warnings: ["Single-route response"] }) };
+    const cached = new CachedRoutingProvider(provider);
+    const legacy = await cached.route(input);
+    const explicitAlternatives = await cached.route({ ...input, includeAlternatives: true });
+    const explicitSingle = await cached.route({ ...input, includeAlternatives: false });
+    expect(explicitAlternatives).toEqual(legacy);
+    expect(explicitSingle.warnings).toEqual(["Single-route response"]);
+    expect(legacy.warnings).toEqual(["Alternatives response"]);
+    expect(provider.route).toHaveBeenCalledTimes(2);
   });
 });

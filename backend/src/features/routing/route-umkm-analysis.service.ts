@@ -95,6 +95,7 @@ export function selectCandidate(
   return {
     ...result,
     ...candidateResultFields(selected),
+    warnings: result.routes?.find((route) => route.id === selected.route_id)?.warnings ?? result.warnings,
     route_candidates: normalized,
     route_preference: preference,
     selected_route_id: selected.route_id,

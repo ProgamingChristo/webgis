@@ -205,6 +205,16 @@ export function parseRoutingResult(value: unknown, mode: RoutingMode): RoutingRe
   return result as RoutingResult;
 }
 
+export function selectRoutingCandidate(result: RoutingResult, candidate: RoutingCandidate): RoutingResult {
+  const previousId = result.selected_route_id ?? result.routes?.[0]?.id;
+  const previousWarnings = result.routes?.find((route) => route.id === previousId)?.warnings ?? [];
+  const selectedWarnings = result.routes?.find((route) => route.id === candidate.route_id)?.warnings;
+  const warnings = selectedWarnings
+    ? [...new Set([...selectedWarnings, ...result.warnings.filter((warning) => !previousWarnings.includes(warning))])]
+    : result.warnings;
+  return { ...result, ...candidate, selected_route_id: candidate.route_id, warnings };
+}
+
 export const routingService = {
   async getRoute(
     request: RoutingRequest,

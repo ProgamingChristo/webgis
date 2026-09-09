@@ -1,26 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.GETRA_BACKEND_INTERNAL_URL || "http://127.0.0.1:3002";
-const FORWARDED_ORIGIN = process.env.GETRA_LOCAL_FORWARDED_ORIGIN || "http://localhost:3003";
+const HOP_BY_HOP = ["connection", "keep-alive", "proxy-authenticate", "proxy-authorization", "te", "trailer", "transfer-encoding", "upgrade"];
+
+function backendOrigin(): string | null {
+  try {
+    const url = new URL(process.env.GETRA_BACKEND_INTERNAL_URL ?? "");
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.pathname !== "/" || url.search || url.hash) return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+
+function forwardHeaders(source: Headers, excluded: string[]) {
+  const headers = new Headers(source);
+  const connectionHeaders = (source.get("connection") ?? "").split(",").map((header) => header.trim().toLowerCase()).filter(Boolean);
+  for (const name of [...HOP_BY_HOP, ...connectionHeaders, ...excluded]) headers.delete(name);
+  return headers;
+}
 
 async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
+  const backend = backendOrigin();
+  if (!backend) {
+    return NextResponse.json({ success: false, error: { code: "BACKEND_PROXY_UNCONFIGURED", message: "Proxy backend belum dikonfigurasi." } }, { status: 503 });
+  }
   const { path } = await params;
+  if (!path.length || path.some((segment) => !segment || segment === "." || segment === ".." || /[\\/]/.test(segment))) {
+    return NextResponse.json({ success: false, error: { code: "INVALID_API_PATH", message: "Path API tidak valid." } }, { status: 400 });
+  }
   const search = req.nextUrl.search;
-  const targetUrl = `${BACKEND_URL}/api/${path.join("/")}${search}`;
-  const headers = new Headers();
-  req.headers.forEach((value, key) => {
-    // Exclude hop-by-hop headers
-    if (!["host", "connection", "content-length"].includes(key.toLowerCase())) {
-      headers.set(key, value);
-    }
-  });
-  headers.set("host", new URL(BACKEND_URL).host);
-  headers.set("origin", FORWARDED_ORIGIN);
+  const targetUrl = `${backend}/api/${path.map(encodeURIComponent).join("/")}${search}`;
+  // The backend must evaluate the browser's actual Origin and bearer token.
+  const headers = forwardHeaders(req.headers, ["host", "content-length"]);
 
   const init: RequestInit = {
     method: req.method,
     headers,
     redirect: "manual",
+    cache: "no-store",
+    signal: req.signal,
   };
 
   if (!["GET", "HEAD"].includes(req.method)) {
@@ -29,24 +47,20 @@ async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
 
   try {
     const res = await fetch(targetUrl, init);
-    const responseHeaders = new Headers();
-    res.headers.forEach((value, key) => {
-      if (!["content-encoding", "transfer-encoding"].includes(key.toLowerCase())) {
-        responseHeaders.set(key, value);
-      }
-    });
+    // fetch decompresses responses, so upstream encoding/length are no longer valid.
+    const responseHeaders = forwardHeaders(res.headers, ["content-encoding", "content-length"]);
 
     return new NextResponse(res.body, {
       status: res.status,
       headers: responseHeaders,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         success: false,
         error: {
-          code: "ROUTING_PROVIDER_UNREACHABLE",
-          message: error instanceof Error ? error.message : "Backend unreachable",
+          code: "BACKEND_UNREACHABLE",
+          message: "Backend GETRA tidak dapat dijangkau.",
         },
       },
       { status: 502 },
@@ -74,13 +88,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ p
   return proxy(req, params);
 }
 
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "*",
-    },
-  });
+export async function HEAD(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  return proxy(req, params);
+}
+
+export async function OPTIONS(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  return proxy(req, params);
 }

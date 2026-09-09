@@ -42,7 +42,7 @@ function cacheKey(input: NavigationRouteRequest) {
   return [
     input.mode,
     input.preference ?? "FASTEST",
-    input.includeAlternatives ? "alternatives" : "primary",
+    input.includeAlternatives === false ? "primary" : "alternatives",
     coordinate(input.origin.latitude),
     coordinate(input.origin.longitude),
     coordinate(input.destination.latitude),

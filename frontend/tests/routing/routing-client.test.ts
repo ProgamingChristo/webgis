@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { routingService, parseRoutingResult, type RoutingMode } from "@/src/services/routing.service";
+import { routingService, parseRoutingResult, selectRoutingCandidate, type RoutingMode } from "@/src/services/routing.service";
 import { isRouteGeometry } from "@/src/features/routing/route-geometry";
 
 const session = vi.hoisted(() => vi.fn());
@@ -161,5 +161,27 @@ describe("strict routing response geometry", () => {
     expect(parsed.routes?.[0].is_fastest).toBe(true);
     expect(parsed.routes?.[1].name).toBe("Lewat Jalan Gatot Subroto");
     expect(parsed.routes?.[1].is_fastest).toBe(false);
+  });
+
+  it("switches route-specific warnings and preserves enrichment warnings when choosing another candidate", () => {
+    const routes = [0, 1].map((index) => ({
+      ...result("car"), id: `route-${index}`, name: `Route ${index}`, is_fastest: index === 0,
+      duration_seconds: 420 + index * 60,
+      warnings: [index === 0 ? "Primary route warning" : "Alternative route warning"],
+    }));
+    const parsed = parseRoutingResult({
+      ...result("car"), routes, selected_route_id: "route-0", umkm_enrichment_status: "UNAVAILABLE",
+      warnings: ["Primary route warning", "Data UMKM rute belum tersedia."],
+      route_candidates: routes.map((route, index) => ({
+        ...route, route_id: route.id, route_rank: index, route_category: index === 0 ? "FASTEST" : "ALTERNATIVE",
+        is_primary: index === 0, nearby_umkm_count: null, verified_umkm_count: null, distinct_category_count: null,
+      })),
+    }, "car");
+    const selected = selectRoutingCandidate(parsed, parsed.route_candidates![1]);
+    expect(selected).toMatchObject({ selected_route_id: "route-1", duration_seconds: 480 });
+    expect(selected.warnings).toEqual(["Alternative route warning", "Data UMKM rute belum tersedia."]);
+    expect(selected.routes).toEqual(parsed.routes);
+    expect(selectRoutingCandidate(selected, selected.route_candidates![0]).warnings)
+      .toEqual(["Primary route warning", "Data UMKM rute belum tersedia."]);
   });
 });

@@ -44,6 +44,22 @@ describe("route UMKM corridor ranking", () => {
     expect(result.umkm_preference_available).toBe(false);
   });
 
+  it("keeps provider warnings aligned with the selected route across both response contracts", () => {
+    const candidates = [candidate("route-0", 500, 1000, 2), candidate("route-1", 620, 1200, 8)];
+    const input = {
+      ...base(candidates),
+      warnings: ["Primary route warning"],
+      routes: candidates.map((item, index) => ({
+        ...pick(item), id: item.route_id, name: `Route ${index}`, is_fastest: index === 0,
+        warnings: index === 0 ? ["Primary route warning"] : ["Alternative route warning"],
+      })),
+    };
+    const result = selectCandidate(input, candidates, "UMKM");
+    expect(result.selected_route_id).toBe("route-1");
+    expect(result.warnings).toEqual(["Alternative route warning"]);
+    expect(result.routes).toEqual(input.routes);
+  });
+
   it("keeps valid routing and reports unavailable enrichment when PostGIS fails", async () => {
     const single = vi.fn().mockResolvedValue({ data: null, error: new Error("database unavailable") });
     const client = { rpc: vi.fn(() => ({ single })) };

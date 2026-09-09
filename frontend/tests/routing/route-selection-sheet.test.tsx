@@ -67,5 +67,3 @@ describe("route selection sheet", () => {
     expect(html).toContain("Belok kanan ke Jl. Boulevard UPJ");
   });
 });
-
-
