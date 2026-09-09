@@ -4711,40 +4711,133 @@ select:focus-visible {
 /* Route labels are interactive MapLibre markers backed by provider candidates. */
 .route-map-label {
   appearance: none;
+  display: inline-block;
   padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
   user-select: none;
+  line-height: 1;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), z-index 0.2s ease;
+  z-index: 5;
 }
+
+.route-map-label:focus-visible {
+  outline: 2px solid #0891b2;
+  outline-offset: 3px;
+  border-radius: 9999px;
+}
+
 .route-map-label__surface {
-  display: grid;
-  grid-template-columns: auto auto;
-  align-items: baseline;
-  gap: 1px 7px;
-  min-width: 86px;
-  padding: 7px 10px;
-  border: 1.5px solid #64748b;
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.98);
-  color: #0f172a;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.22);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-family: inherit;
   font-variant-numeric: tabular-nums;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+  pointer-events: auto;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.route-map-label:hover .route-map-label__surface {
+
+.route-map-label__duration,
+.route-map-label__surface > strong {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #0f172a;
+}
+
+.route-map-label__sep {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  user-select: none;
+}
+
+.route-map-label__distance,
+.route-map-label__surface > .route-map-label__distance {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.route-map-label__badge,
+.route-map-label__surface > b {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 2px;
+  padding: 1.5px 7px;
+  border-radius: 9999px;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Selected Active Route Pill */
+.route-map-label--selected {
+  background: #ffffff;
+  border: 2px solid #0891b2;
+  box-shadow: 0 4px 18px rgba(8, 145, 178, 0.32), 0 2px 6px rgba(0, 0, 0, 0.10);
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.route-map-label--selected .route-map-label__duration,
+.route-map-label--selected > strong {
+  color: #0891b2;
+}
+
+.route-map-label:hover .route-map-label--selected {
+  border-color: #06b6d4;
+  box-shadow: 0 6px 22px rgba(8, 145, 178, 0.42), 0 3px 8px rgba(0, 0, 0, 0.12);
+  transform: scale(1.08) translateY(-1px);
+}
+
+/* Alternative Route Pill */
+.route-map-label--alternative {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid #cbd5e1;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
+  transform: scale(0.96);
+  opacity: 0.94;
+}
+
+.route-map-label--alternative .route-map-label__duration,
+.route-map-label--alternative > strong {
+  color: #334155;
+}
+
+.route-map-label:hover .route-map-label--alternative {
+  background: #ffffff;
   border-color: #0891b2;
-  box-shadow: 0 6px 18px rgba(8, 145, 178, 0.32);
-  transform: translateY(-2px);
+  opacity: 1;
+  transform: scale(1.03) translateY(-1px);
+  box-shadow: 0 4px 16px rgba(8, 145, 178, 0.24);
 }
-.route-map-label__surface > strong { font-size: 12px; font-weight: 800; color: #0f172a; }
-.route-map-label__surface > .route-map-label__distance { font-size: 10px; color: #475569; font-weight: 600; }
-.route-map-label__surface > b { grid-column: 1 / -1; color: #166534; font-size: 9px; font-weight: 800; text-transform: uppercase; }
-.route-map-label--alternative { opacity: .76; transform: scale(.94); box-shadow: 0 3px 10px rgba(15, 23, 42, .16); }
-.route-map-label:hover .route-map-label--alternative { opacity: 1; transform: scale(1); }
-.route-map-label--selected { z-index: 2; border: 2px solid #0891b2; background: #ecfeff; opacity: 1; transform: scale(1.08); box-shadow: 0 6px 20px rgba(8, 145, 178, 0.35); }
-.route-map-label--umkm { border-bottom: 3px solid #65a30d; }
-.route-map-label:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+
+.route-map-label:hover .route-map-label--alternative .route-map-label__duration,
+.route-map-label:hover .route-map-label--alternative > strong {
+  color: #0891b2;
+}
+
+/* UMKM Route Variant */
+.route-map-label--umkm.route-map-label--selected {
+  border-color: #16a34a;
+  box-shadow: 0 4px 18px rgba(22, 163, 74, 0.30), 0 2px 6px rgba(0, 0, 0, 0.10);
+}
+
+.route-map-label--umkm.route-map-label--selected .route-map-label__duration,
+.route-map-label--umkm.route-map-label--selected > strong {
+  color: #16a34a;
+}
 
 /* Route endpoints summary card in desktop route planner */
 .route-endpoints-summary {

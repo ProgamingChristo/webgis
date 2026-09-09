@@ -2028,13 +2028,18 @@ export function GetraMap({
       const surface = document.createElement("span");
       surface.className = `route-map-label__surface ${selected ? "route-map-label--selected" : "route-map-label--alternative"}${candidate.route_category === "UMKM_AREA" ? " route-map-label--umkm" : ""}`;
       const duration = document.createElement("strong");
+      duration.className = "route-map-label__duration";
       duration.textContent = formatRouteMinutes(candidate.duration_seconds);
+      const sep = document.createElement("span");
+      sep.className = "route-map-label__sep";
+      sep.textContent = "·";
       const distance = document.createElement("span");
       distance.className = "route-map-label__distance";
       distance.textContent = formatRouteDistance(candidate.distance_meters);
-      surface.append(duration, distance);
+      surface.append(duration, sep, distance);
       if (candidate.route_category === "UMKM_AREA") {
         const umkm = document.createElement("b");
+        umkm.className = "route-map-label__badge";
         umkm.textContent = "UMKM";
         surface.append(umkm);
       }

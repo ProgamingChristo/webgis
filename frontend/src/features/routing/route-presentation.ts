@@ -128,16 +128,143 @@ function distanceMeters(a: [number, number], b: [number, number]): number {
   return Math.hypot(dx, dy);
 }
 
+export function computeCooperativeAnchors(candidates: RoutingCandidate[]): Map<string, [number, number]> {
+  const anchors = new Map<string, [number, number]>();
+  const placedAnchors: Array<[number, number]> = [];
+
+  for (let idx = 0; idx < candidates.length; idx += 1) {
+    const candidate = candidates[idx];
+    const coords = candidate.geometry?.coordinates;
+    if (!coords || coords.length < 2) {
+      if (coords && coords.length > 0) {
+        const pt = coords[0] as [number, number];
+        anchors.set(candidate.route_id, pt);
+        placedAnchors.push(pt);
+      }
+      continue;
+    }
+
+    const lengths: number[] = [];
+    for (let i = 0; i < coords.length - 1; i += 1) {
+      lengths.push(distanceMeters(coords[i] as [number, number], coords[i + 1] as [number, number]));
+    }
+    const total = lengths.reduce((s, l) => s + l, 0);
+
+    const getCoordAtFraction = (fraction: number): [number, number] => {
+      const target = total * Math.max(0, Math.min(1, fraction));
+      let traversed = 0;
+      for (let i = 0; i < lengths.length; i += 1) {
+        if (traversed + lengths[i] >= target) {
+          const ratio = lengths[i] === 0 ? 0 : (target - traversed) / lengths[i];
+          const s = coords[i] as [number, number];
+          const e = coords[i + 1] as [number, number];
+          return [s[0] + (e[0] - s[0]) * ratio, s[1] + (e[1] - s[1]) * ratio];
+        }
+        traversed += lengths[i];
+      }
+      return (coords.at(-1) as [number, number]) ?? (coords[0] as [number, number]);
+    };
+
+    if (idx === 0) {
+      const fraction = candidates.length >= 2 ? 0.32 : 0.50;
+      const anchor = getCoordAtFraction(fraction);
+      anchors.set(candidate.route_id, anchor);
+      placedAnchors.push(anchor);
+      continue;
+    }
+
+    const primaryCoords = candidates[0].geometry?.coordinates;
+
+    let maxDistToPrimary = 0;
+    if (primaryCoords && primaryCoords.length >= 2) {
+      const pStep = Math.max(1, Math.floor(primaryCoords.length / 40));
+      for (let i = 0; i < lengths.length; i += 1) {
+        const frac = (i + 1) / lengths.length;
+        if (frac >= 0.20 && frac <= 0.80) {
+          const pt = coords[i + 1] as [number, number];
+          let minDist = Infinity;
+          for (let j = 0; j < primaryCoords.length; j += pStep) {
+            const d = distanceMeters(pt, primaryCoords[j] as [number, number]);
+            if (d < minDist) minDist = d;
+          }
+          if (minDist > maxDistToPrimary) maxDistToPrimary = minDist;
+        }
+      }
+    }
+    const isDetour = candidate.route_category !== "UMKM_AREA" && maxDistToPrimary >= 400;
+
+    const minSeparation = 3200;
+    let bestPoint: [number, number] | null = null;
+    let bestScore = -Infinity;
+    let fallbackPoint: [number, number] | null = null;
+    let maxMinDistToPlaced = -Infinity;
+
+    let traversed = 0;
+    for (let i = 0; i < lengths.length; i += 1) {
+      traversed += lengths[i];
+      const frac = traversed / total;
+      if (frac >= 0.20 && frac <= 0.80) {
+        const pt = coords[i + 1] as [number, number];
+
+        let minDistToPlaced = Infinity;
+        for (const placed of placedAnchors) {
+          const d = distanceMeters(pt, placed);
+          if (d < minDistToPlaced) minDistToPlaced = d;
+        }
+
+        if (minDistToPlaced > maxMinDistToPlaced) {
+          maxMinDistToPlaced = minDistToPlaced;
+          fallbackPoint = pt;
+        }
+
+        if (minDistToPlaced >= minSeparation) {
+          let score = 0;
+          if (isDetour && primaryCoords && primaryCoords.length >= 2) {
+            let minDist = Infinity;
+            const pStep = Math.max(1, Math.floor(primaryCoords.length / 40));
+            for (let j = 0; j < primaryCoords.length; j += pStep) {
+              const d = distanceMeters(pt, primaryCoords[j] as [number, number]);
+              if (d < minDist) minDist = d;
+            }
+            score = 10000 + minDist;
+          } else {
+            const distToTargetFrac = Math.abs(frac - 0.68);
+            score = 10000 - distToTargetFrac * 15000;
+          }
+
+          if (score > bestScore) {
+            bestScore = score;
+            bestPoint = pt;
+          }
+        }
+      }
+    }
+
+    const chosen = bestPoint ?? fallbackPoint ?? getCoordAtFraction(0.50);
+    anchors.set(candidate.route_id, chosen);
+    placedAnchors.push(chosen);
+  }
+
+  return anchors;
+}
+
 export function getRouteLabelAnchor(
   candidate: RoutingCandidate,
   index: number,
   allCandidatesOrCount: RoutingCandidate[] | number,
 ): [number, number] | null {
-  const coordinates = candidate.geometry.coordinates;
+  const coordinates = candidate.geometry?.coordinates;
+  if (!coordinates || coordinates.length === 0) return null;
   if (coordinates.length < 2) return coordinates[0] ?? null;
 
   const allCandidates = Array.isArray(allCandidatesOrCount) ? allCandidatesOrCount : null;
   const count = allCandidates ? allCandidates.length : typeof allCandidatesOrCount === "number" ? allCandidatesOrCount : 1;
+
+  if (allCandidates && allCandidates.length > 1) {
+    const cooperativeMap = computeCooperativeAnchors(allCandidates);
+    const cooperativeAnchor = cooperativeMap.get(candidate.route_id);
+    if (cooperativeAnchor) return cooperativeAnchor;
+  }
 
   const lengths = coordinates.slice(1).map((coordinate, coordinateIndex) => {
     const previous = coordinates[coordinateIndex];
@@ -148,44 +275,6 @@ export function getRouteLabelAnchor(
   });
   const total = lengths.reduce((sum, length) => sum + length, 0);
   if (total === 0) return coordinates[Math.floor(coordinates.length / 2)] ?? null;
-
-  if (allCandidates && allCandidates.length > 1) {
-    const otherCandidates = allCandidates.filter(
-      (other) => other.route_id !== candidate.route_id && (other.geometry?.coordinates?.length ?? 0) >= 2,
-    );
-    if (otherCandidates.length > 0) {
-      let traversedDist = 0;
-      let bestDivergencePoint: [number, number] | null = null;
-      let maxMinDist = 0;
-
-      for (let i = 0; i < lengths.length; i += 1) {
-        traversedDist += lengths[i];
-        const fraction = traversedDist / total;
-        if (fraction >= 0.20 && fraction <= 0.80) {
-          const pt = coordinates[i + 1];
-          let minDistanceToAnyOther = Infinity;
-          for (const other of otherCandidates) {
-            const step = Math.max(1, Math.floor(other.geometry.coordinates.length / 50));
-            for (let j = 0; j < other.geometry.coordinates.length; j += step) {
-              const otherPt = other.geometry.coordinates[j] as [number, number];
-              const d = distanceMeters(pt as [number, number], otherPt);
-              if (d < minDistanceToAnyOther) {
-                minDistanceToAnyOther = d;
-              }
-            }
-          }
-          if (minDistanceToAnyOther > maxMinDist) {
-            maxMinDist = minDistanceToAnyOther;
-            bestDivergencePoint = pt as [number, number];
-          }
-        }
-      }
-
-      if (maxMinDist >= 25 && bestDivergencePoint) {
-        return bestDivergencePoint;
-      }
-    }
-  }
 
   const spread = count > 1 ? (index / (count - 1) - 0.5) * 0.34 : 0;
   const target = total * (0.52 + spread);
@@ -205,10 +294,10 @@ export function getRouteLabelAnchor(
 
 const LABEL_OFFSETS: ReadonlyArray<readonly [number, number]> = [
   [0, 0],
-  [0, -22],
-  [0, 22],
-  [-20, -14],
-  [20, 14],
+  [0, -20],
+  [0, 20],
+  [-18, -14],
+  [18, 14],
 ];
 
 export function getRouteLabelOffset(index: number, count: number): [number, number] {
@@ -216,3 +305,4 @@ export function getRouteLabelOffset(index: number, count: number): [number, numb
   const offset = LABEL_OFFSETS[index % LABEL_OFFSETS.length];
   return [offset[0], offset[1]];
 }
+
