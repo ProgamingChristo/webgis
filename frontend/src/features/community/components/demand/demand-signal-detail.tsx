@@ -30,8 +30,8 @@ export function DemandSignalDetail({ signalId }: DemandSignalDetailProps) {
     return (
       <CommunityShell activeView="requests">
         <section className={styles.feedState}>
-          <span className={styles.eyebrow}>Community Demand Signal</span>
-          <h2>Memuat signal...</h2>
+          <span className={styles.eyebrow}>Kebutuhan warga</span>
+          <h2>Memuat ringkasan...</h2>
         </section>
       </CommunityShell>
     );
@@ -60,7 +60,7 @@ export function DemandSignalDetail({ signalId }: DemandSignalDetailProps) {
       }
       state={{
         contributionCount: signal.requestCount,
-        statusLabel: "Sinyal Community",
+        statusLabel: "Kebutuhan warga",
       }}
     >
       <article className={styles.signalDetail}>
@@ -68,7 +68,7 @@ export function DemandSignalDetail({ signalId }: DemandSignalDetailProps) {
           <Link className={styles.locationLinkButton} href="/community?view=requests">
             Kembali ke Permintaan
           </Link>
-          <span className={styles.eyebrow}>Community Demand Signal</span>
+          <span className={styles.eyebrow}>Kebutuhan warga</span>
         </div>
         <header className={styles.requestDetailHeader}>
           <span className={styles.categoryBadge}>
@@ -76,8 +76,8 @@ export function DemandSignalDetail({ signalId }: DemandSignalDetailProps) {
           </span>
           <h2>{signal.requestCount} permintaan serupa</h2>
           <p>
-            Signal ini merangkum permintaan aktif dalam 7 hari terakhir pada
-            kategori, area, dan bucket budget yang sama.
+            Ringkasan ini menggabungkan permintaan serupa dalam tujuh hari
+            terakhir di area yang sama.
           </p>
         </header>
         <dl className={styles.requestFacts}>

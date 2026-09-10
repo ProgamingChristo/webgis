@@ -84,7 +84,7 @@ export function TargetingEditor({
       setFeedbackSuccess(null);
 
       if (selectedType === "STUDY_AREA" && !selectedStudyAreaId) {
-        setFeedbackError("Pilih salah satu Study Area terlebih dahulu.");
+        setFeedbackError("Pilih salah satu wilayah terlebih dahulu.");
         return;
       }
 
@@ -95,8 +95,8 @@ export function TargetingEditor({
       });
 
       setFeedbackSuccess("Target kampanye berhasil disimpan.");
-    } catch (err: any) {
-      setFeedbackError(err.message || "Gagal menyimpan targeting.");
+    } catch {
+      setFeedbackError("Wilayah sasaran belum dapat disimpan. Coba lagi.");
     }
   };
 
@@ -169,7 +169,7 @@ export function TargetingEditor({
               )}
             </button>
             <p className="text-[11px] text-gray-400 text-center mt-2">
-              Perubahan target area tersimpan sebagai konfigurasi draf campaign.
+              Perubahan wilayah tersimpan pada draf promosi.
             </p>
           </div>
 
@@ -182,7 +182,7 @@ export function TargetingEditor({
         {/* Right Column: Map Preview */}
         <div className="lg:col-span-7 space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs font-semibold text-gray-500">
-            <span className="break-words">Peta Preview Jangkauan Promosi</span>
+            <span className="break-words">Pratinjau jangkauan promosi</span>
             <span className="shrink-0 whitespace-nowrap font-bold text-emerald-700">
               {selectedType === "RADIUS" ? `${radiusMeters} Meter` : "Zona Poligon"}
             </span>

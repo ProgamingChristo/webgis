@@ -36,8 +36,8 @@ export function CampaignLifecycleActions({
     try {
       setActionError(null);
       await onPause();
-    } catch (err: any) {
-      setActionError(err?.message || "Gagal pause campaign.");
+    } catch {
+      setActionError("Promosi belum dapat dijeda. Coba lagi.");
     }
   };
 
@@ -45,8 +45,8 @@ export function CampaignLifecycleActions({
     try {
       setActionError(null);
       await onResume();
-    } catch (err: any) {
-      setActionError(err?.message || "Gagal resume campaign.");
+    } catch {
+      setActionError("Promosi belum dapat dilanjutkan. Coba lagi.");
     }
   };
 
@@ -55,8 +55,8 @@ export function CampaignLifecycleActions({
       setActionError(null);
       await onCancel();
       setShowCancelModal(false);
-    } catch (err: any) {
-      setActionError(err?.message || "Gagal membatalkan campaign.");
+    } catch {
+      setActionError("Promosi belum dapat dibatalkan. Coba lagi.");
     }
   };
 
@@ -94,7 +94,7 @@ export function CampaignLifecycleActions({
             ) : (
               <Pause className="w-3.5 h-3.5" />
             )}
-            Jeda Campaign
+            Jeda promosi
           </button>
         )}
 
@@ -122,7 +122,7 @@ export function CampaignLifecycleActions({
             className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 dark:border-rose-900/60 dark:bg-slate-900 dark:text-rose-400 dark:hover:bg-rose-950/40 disabled:opacity-50 transition-colors shadow-sm sm:ml-auto sm:flex-none"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            Batalkan Campaign
+            Batalkan promosi
           </button>
         )}
       </div>
@@ -136,12 +136,12 @@ export function CampaignLifecycleActions({
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <h3 className="break-words text-base font-bold leading-6 text-slate-900 dark:text-white">
-                Konfirmasi Pembatalan Campaign
+                Konfirmasi pembatalan promosi
               </h3>
             </div>
 
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-              Apakah Anda yakin ingin membatalkan campaign ini? Campaign yang dibatalkan akan langsung berhenti tayang dan tidak dapat diaktifkan kembali.
+              Yakin ingin membatalkan promosi ini? Promosi akan langsung berhenti dan tidak dapat diaktifkan kembali.
             </p>
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
@@ -160,7 +160,7 @@ export function CampaignLifecycleActions({
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50 transition-colors shadow-sm"
               >
                 {isUpdating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                Ya, Batalkan Campaign
+                Ya, batalkan promosi
               </button>
             </div>
           </div>

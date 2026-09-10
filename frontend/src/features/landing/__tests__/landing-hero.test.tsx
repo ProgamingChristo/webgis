@@ -9,18 +9,20 @@ import {
 } from "../utils/landing-map.utils";
 
 describe("LandingHero", () => {
-  it("communicates GETRA, the GIS/AI boundary, and the primary CTA", () => {
+  it("communicates the Figma-aligned city exploration value and primary CTA", () => {
     const html = renderToStaticMarkup(createElement(LandingHero));
 
-    expect(html).toContain("Spatial Intelligence Platform");
-    expect(html).toContain("Geo-Enabled");
-    expect(html).toContain("Transit &amp; Retail");
-    expect(html).toContain("Spatial intelligence untuk menghubungkan");
-    expect(html).toContain("GIS menghitung.");
-    expect(html).toContain("AI menginterpretasikan.");
+    expect(html).toContain("WebGIS untuk mobilitas dan UMKM");
+    expect(html).toContain("Jelajahi Kota Lebih Mudah.");
+    expect(html).toContain("Temukan Tempat, Rute, dan Usaha Lokal.");
+    expect(html).toContain("GETRA membantu Anda mencari tempat");
+    expect(html).toContain("getra-onboarding-map");
+    expect(html).toContain("Peta onboarding GETRA");
+    expect(html).not.toContain("figma-city-map.png");
+    expect(html).toContain("Buka GETRA");
     expect(html).toContain('href="/login"');
-    expect(html).toContain('href="#tentang"');
-    expect(html).toContain("Belum memiliki akun?");
+    expect(html).toContain('href="#cara-kerja"');
+    expect(html).toContain("Belum punya akun?");
   });
 
   it("uses deterministic illustrative map data without campaign attribution", () => {

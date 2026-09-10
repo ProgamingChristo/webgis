@@ -131,7 +131,7 @@ describe("/api/ai/ask security", () => {
       success: false,
       error: {
         code: "AI_PROVIDER_CONFIGURATION",
-        message: "Provider AI belum tersedia. Periksa konfigurasi server.",
+        message: "Asisten sedang tidak dapat digunakan. Coba lagi beberapa saat nanti.",
       },
     });
     expect(JSON.stringify(body)).not.toContain("0 UMKM");

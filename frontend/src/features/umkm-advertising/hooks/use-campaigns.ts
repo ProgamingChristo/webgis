@@ -13,8 +13,8 @@ export function useCampaigns(merchantId: string) {
       const data = await CampaignService.getCampaigns(merchantId);
       setCampaigns(data);
       setError(null);
-    } catch (err: any) {
-      setError(err.message || "Gagal memuat daftar campaign");
+    } catch {
+      setError("Daftar promosi belum dapat dimuat. Coba lagi.");
     } finally {
       setLoading(false);
     }

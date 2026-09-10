@@ -205,16 +205,16 @@ export function CommunityContributionPage() {
     <main className={styles.page}>
       <header className={styles.header}>
         <div>
-          <span className={styles.eyebrow}>GETRA Community</span>
+          <span className={styles.eyebrow}>Komunitas GETRA</span>
           <h1>Laporkan Kondisi Akses</h1>
           <p>
-            Kirim laporan terstruktur dengan titik lokasi eksplisit. Semua laporan
-            masuk sebagai PENDING untuk pemeriksaan.
+            Tandai lokasi dan jelaskan kondisi yang Anda temukan. Setiap laporan
+            akan diperiksa sebelum ditampilkan.
           </p>
         </div>
         <Link className={styles.backLink} href="/community">
           <ArrowLeft aria-hidden="true" size={16} />
-          Kembali ke Community
+          Kembali ke komunitas
         </Link>
       </header>
 
@@ -267,11 +267,11 @@ export function CommunityContributionPage() {
 
           <div className={styles.summaryGrid} aria-label="Ringkasan kontribusi">
             <div>
-              <span>Contribution Points</span>
+              <span>Poin kontribusi</span>
               <strong>{history?.summary.contributionPoints ?? 0}</strong>
             </div>
             <div>
-              <span>Trust Score</span>
+              <span>Skor kepercayaan</span>
               <strong>{history?.summary.trustScore ?? 50}/100</strong>
             </div>
             <div>
@@ -293,7 +293,7 @@ export function CommunityContributionPage() {
           </div>
 
           <p className={styles.trustExplanation}>
-            Trust Score mencerminkan konsistensi kontribusi yang telah selesai
+            Skor kepercayaan mencerminkan konsistensi kontribusi yang telah selesai
             diperiksa. Kontribusi yang masih menunggu pemeriksaan belum
             memengaruhi skor.
           </p>
@@ -477,8 +477,7 @@ export function CommunityContributionPage() {
               <span className={styles.eyebrow}>Form Laporan</span>
               <h2 id="contribution-form-title">{selectedLabel}</h2>
               <p>
-                Backend tetap menjadi otoritas untuk validasi dan penyimpanan
-                PostGIS.
+                Isi laporan berdasarkan kondisi yang Anda lihat langsung.
               </p>
             </div>
 
@@ -499,7 +498,7 @@ export function CommunityContributionPage() {
                     Kirim laporan lain
                   </button>
                   <Link className={styles.backLink} href="/community">
-                    Kembali ke Community
+                Kembali ke komunitas
                   </Link>
                 </div>
               </section>

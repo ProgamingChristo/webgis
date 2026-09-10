@@ -271,7 +271,7 @@ export function SponsoredPinPreviewMap({
             <span className="text-slate-600">|</span>
             <span className="flex items-center gap-1 text-amber-400 font-bold">
               <span>📣</span>
-              Sponsored Pin Aktif
+              Penanda promosi aktif
             </span>
           </>
         )}

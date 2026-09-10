@@ -34,26 +34,26 @@ export function CreativeEditor({ creative, onSaveDraft, onMarkReady, onUploadIma
   return (
     <div className="space-y-4">
       <div className="bg-white border border-gray-200 rounded p-4 shadow-sm">
-        <h3 className="font-semibold text-lg mb-4">Creative Content</h3>
+        <h3 className="font-semibold text-lg mb-4">Materi promosi</h3>
         
         {!creative && (
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Creative Type</label>
+            <label className="block text-sm font-medium mb-1">Jenis materi</label>
             <select 
               value={creativeType} 
               onChange={e => setCreativeType(e.target.value as CreativeType)}
               className="w-full border rounded p-2 text-sm"
               disabled={loading}
             >
-              <option value="SPONSORED_PIN">Sponsored Pin</option>
-              <option value="CONTEXTUAL_BANNER">Contextual Banner</option>
-              <option value="PROFILE_POSTER">Profile Poster</option>
+              <option value="SPONSORED_PIN">Penanda promosi</option>
+              <option value="CONTEXTUAL_BANNER">Banner sesuai lokasi</option>
+              <option value="PROFILE_POSTER">Poster profil</option>
             </select>
           </div>
         )}
 
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Headline</label>
+          <label className="block text-sm font-medium mb-1">Judul</label>
           <input 
             type="text" 
             value={headline}
@@ -67,7 +67,7 @@ export function CreativeEditor({ creative, onSaveDraft, onMarkReady, onUploadIma
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Description (Optional)</label>
+          <label className="block text-sm font-medium mb-1">Deskripsi (opsional)</label>
           <textarea 
             value={description}
             onChange={e => setDescription(e.target.value)}
@@ -81,7 +81,7 @@ export function CreativeEditor({ creative, onSaveDraft, onMarkReady, onUploadIma
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Call to Action (CTA)</label>
+          <label className="block text-sm font-medium mb-1">Tombol tindakan</label>
           <select 
             value={ctaType} 
             onChange={e => setCtaType(e.target.value as CtaType)}
@@ -95,7 +95,7 @@ export function CreativeEditor({ creative, onSaveDraft, onMarkReady, onUploadIma
 
         {creative && creative.status === "DRAFT" && (
           <div className="mb-4 pt-4 border-t border-gray-100">
-            <label className="block text-sm font-medium mb-1">Image (Optional)</label>
+            <label className="block text-sm font-medium mb-1">Gambar (opsional)</label>
             <input 
               type="file" 
               accept="image/jpeg,image/png,image/webp"
@@ -114,7 +114,7 @@ export function CreativeEditor({ creative, onSaveDraft, onMarkReady, onUploadIma
               disabled={loading || !headline.trim()}
               className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded text-sm font-medium transition-colors disabled:opacity-50"
             >
-              Simpan Draft
+              Simpan draf
             </button>
           )}
           {creative && creative.status === "DRAFT" && (
@@ -123,12 +123,12 @@ export function CreativeEditor({ creative, onSaveDraft, onMarkReady, onUploadIma
               disabled={loading || !headline.trim()}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors disabled:opacity-50"
             >
-              Mark as Ready
+              Tandai siap
             </button>
           )}
           {creative && creative.status === "READY" && (
             <div className="text-green-600 text-sm font-semibold flex items-center">
-              ✓ Creative is Ready
+              Materi siap digunakan
             </div>
           )}
         </div>

@@ -19,14 +19,14 @@ export function MerchantSubmissionStatusBadge({ status, size = "md" }: StatusBad
       return (
         <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full font-medium bg-slate-700/80 border border-slate-600 text-slate-300 ${paddingClass}`}>
           <FileText size={iconSize} />
-          Draft
+          Draf
         </span>
       );
     case "PENDING_REVIEW":
       return (
         <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full font-medium bg-amber-950/80 border border-amber-500/30 text-amber-300 ${paddingClass}`}>
           <Clock size={iconSize} />
-          Menunggu Review
+          Menunggu pemeriksaan
         </span>
       );
     case "APPROVED":

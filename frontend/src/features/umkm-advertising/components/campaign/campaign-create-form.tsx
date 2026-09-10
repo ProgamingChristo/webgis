@@ -33,7 +33,7 @@ export function CampaignCreateForm({ merchantId, onSuccess }: { merchantId: stri
         disabled={loading || !name.trim()}
         className="min-h-10 rounded-xl bg-gradient-to-r from-lime-400 to-cyan-400 px-5 text-sm font-black text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {loading ? "Menyimpan..." : "Simpan Draft"}
+        {loading ? "Menyimpan..." : "Simpan draf"}
       </button>
     </form>
   );

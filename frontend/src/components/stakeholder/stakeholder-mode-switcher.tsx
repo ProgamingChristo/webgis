@@ -18,7 +18,7 @@ export function StakeholderModeSwitcher() {
   };
 
   const labels: Record<ExperienceMode, string> = {
-    GENERAL: "General",
+    GENERAL: "Umum",
     UMKM: "UMKM",
     INVESTOR: "Investor",
     GOVERNMENT: "Pemerintah", // Using actual localized term from constraints

@@ -1,43 +1,48 @@
 import { WHAT_IS_GETRA_NODES } from "../data/landing-content";
-import { GetraLogo } from "./getra-logo";
+import { GetraBrandMark } from "./getra-logo";
 import { SectionShell } from "./section-shell";
 
 export function WhatIsGetraSection() {
   return (
     <SectionShell
       id="cara-kerja"
-      eyebrow="What is GETRA?"
-      title="Spatial Decision Support System untuk membaca kota sebagai jaringan akses."
-      description="GETRA menghubungkan transportasi massal, akses pedestrian, UMKM, demand lokal, Community, dan konteks kawasan dalam satu sistem spasial-temporal. A map-powered application layer designed to support spatial collaboration, survey execution, and location-based communities."
+      eyebrow="Personalisasi sudut pandang"
+      title="GETRA beradaptasi dengan cara Anda melihat kota."
+      description="Satu platform dengan pengalaman berbeda untuk setiap kebutuhan: dari langkah pejalan kaki, denyut toko lokal, hingga analisis prospek wilayah."
     >
-      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-6">
-          <div className="grid place-items-center rounded-3xl border border-getra-cyan/20 bg-slate-950/62 p-8 text-center shadow-2xl shadow-cyan-950/20 backdrop-blur">
-            <GetraLogo variant="footer" className="w-full max-w-[310px]" />
-            <p className="mt-5 max-w-sm text-sm leading-7 text-slate-300">
-              A map-powered application layer designed to support spatial collaboration, survey execution, and location-based communities.
-            </p>
-            <div className="mt-6 grid w-full gap-2 text-xs font-black uppercase tracking-[0.12em] text-slate-300 sm:grid-cols-2">
-              <span className="rounded-full border border-getra-cyan/30 px-3 py-2">Transit</span>
-              <span className="rounded-full border border-getra-green/30 px-3 py-2">Pedestrian</span>
-              <span className="rounded-full border border-getra-cyan/30 px-3 py-2">Community</span>
-              <span className="rounded-full border border-getra-green/30 px-3 py-2">UMKM</span>
-            </div>
+      <div className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
+        <article className="rounded-[2rem] border border-[#464b71]/12 bg-[#f6fbfb] p-6 shadow-[0_14px_34px_rgba(70,75,113,0.06)] sm:p-8">
+          <GetraBrandMark showTagline className="text-2xl" />
+          <p className="mt-6 max-w-md text-base leading-8 text-[#66708d]">
+            Gunakan peta untuk mencari tempat, menilai akses, membagikan
+            temuan, dan memahami kondisi area dari konteks yang Anda butuhkan.
+          </p>
+          <div className="mt-7 flex flex-wrap gap-2">
+            {["Transit", "Pejalan kaki", "Komunitas", "UMKM"].map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-[#118ab2]/18 bg-white px-3 py-1.5 text-xs font-black text-[#464b71]"
+              >
+                {item}
+              </span>
+            ))}
           </div>
-        </div>
+        </article>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          {WHAT_IS_GETRA_NODES.map((node) => (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {WHAT_IS_GETRA_NODES.map((node, index) => (
             <article
               key={node.title}
-              className="rounded-3xl border border-white/10 bg-slate-900/40 p-5"
+              className="relative overflow-hidden rounded-[1.5rem] border border-[#464b71]/12 bg-white p-5 shadow-[0_10px_28px_rgba(70,75,113,0.05)]"
             >
-              <h3 className="text-base font-black text-white">
-                {node.title}
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-slate-400">
-                {node.description}
-              </p>
+              <span className="absolute -right-1 -top-5 text-7xl font-black tracking-[-0.1em] text-[#118ab2]/8">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span className="relative text-[10px] font-black uppercase tracking-[0.16em] text-[#118ab2]">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <h3 className="relative mt-4 text-lg font-black text-[#464b71]">{node.title}</h3>
+              <p className="relative mt-3 text-sm leading-6 text-[#66708d]">{node.description}</p>
             </article>
           ))}
         </div>

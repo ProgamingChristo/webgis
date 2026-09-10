@@ -18,6 +18,7 @@ import {
 } from "@/src/lib/auth-client";
 import { GetraLogo } from "@/src/components/getra-ui";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
+import { getUserFacingApiError } from "@/src/lib/user-facing-api-error";
 
 import styles from "../auth.module.css";
 
@@ -139,10 +140,11 @@ export default function SignupPage() {
         !response.ok ||
         !json.success
       ) {
-        throw new Error(
-          json.error?.message ||
-          "Pendaftaran gagal.",
-        );
+        throw new Error(getUserFacingApiError({
+          code: json.error?.code,
+          status: response.status,
+          fallback: "Pendaftaran belum dapat diselesaikan. Coba lagi.",
+        }));
       }
 
       const session =
@@ -181,15 +183,15 @@ export default function SignupPage() {
       }
 
       throw new Error(
-        "Registrasi belum mengembalikan session. Pastikan email verification Supabase sedang OFF untuk development.",
+        "Akun belum dapat diaktifkan. Periksa email Anda atau coba masuk setelah beberapa saat.",
       );
     } catch (
       error: unknown
     ) {
       setErrorMessage(
-        error instanceof Error
+        error instanceof Error && error.name !== "TypeError"
           ? error.message
-          : "Pendaftaran gagal.",
+          : "Layanan pendaftaran belum dapat dihubungi. Coba lagi beberapa saat nanti.",
       );
     } finally {
       setLoading(
@@ -203,21 +205,11 @@ export default function SignupPage() {
       <section className={styles.hero}>
         <div className={styles.brand}>
           <GetraLogo className={styles.brandLogo} />
-
-          <div className={styles.brandText}>
-            <strong>
-              GETRA
-            </strong>
-
-            <span>
-              Geo-Enabled Transit & Retail Analytics
-            </span>
-          </div>
         </div>
 
         <div className={styles.heroContent}>
           <span className={styles.eyebrow}>
-            Build your spatial profile
+            Siapkan pengalaman GETRA Anda
           </span>
 
           <h1>
@@ -228,32 +220,32 @@ export default function SignupPage() {
 
           <p>
             Semua akun mendapat akses
-            eksplorasi GETRA. Mode tambahan
+            untuk menjelajahi GETRA. Pengalaman tambahan
             UMKM, Investor, dan Pemerintah
             dapat dipilih setelah akun dibuat.
           </p>
 
           <div className={styles.signalRow}>
             <span className={styles.signal}>
-              GENERAL ACCESS
+              AKSES UMUM
             </span>
 
             <span className={styles.signal}>
-              UMKM MODE
+              PENGALAMAN UMKM
             </span>
 
             <span className={styles.signal}>
-              INVESTOR MODE
+              PENGALAMAN INVESTOR
             </span>
 
             <span className={styles.signal}>
-              GOVERNMENT MODE
+              PENGALAMAN PEMERINTAH
             </span>
           </div>
         </div>
 
         <div className={styles.heroFooter}>
-          Tidak ada role selector pada public signup.
+          Hak akses akun dikelola secara aman oleh GETRA.
         </div>
       </section>
 
@@ -261,7 +253,7 @@ export default function SignupPage() {
         <div className={styles.card}>
           <header className={styles.cardHeader}>
             <span>
-              New account
+              Akun baru
             </span>
 
             <h2>
@@ -325,7 +317,7 @@ export default function SignupPage() {
 
             <div className={styles.field}>
               <label htmlFor="password">
-                Password
+                Kata sandi
               </label>
 
               <input

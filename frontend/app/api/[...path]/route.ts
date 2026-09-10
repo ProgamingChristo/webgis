@@ -60,7 +60,7 @@ async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
         success: false,
         error: {
           code: "BACKEND_UNREACHABLE",
-          message: "Backend GETRA tidak dapat dijangkau.",
+          message: "Layanan GETRA belum dapat dihubungi. Coba lagi.",
         },
       },
       { status: 502 },

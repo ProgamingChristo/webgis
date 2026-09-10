@@ -103,7 +103,7 @@ export function GlobalSearchControls(props: GlobalSearchControlsProps) {
       <fieldset className="global-search__commuter-filters">
         <legend>Filter perjalanan</legend>
         <label>
-          <span>Budget maksimum</span>
+          <span>Anggaran maksimal</span>
           <input
             type="number"
             inputMode="numeric"

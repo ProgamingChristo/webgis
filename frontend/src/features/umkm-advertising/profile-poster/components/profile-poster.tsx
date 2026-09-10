@@ -35,7 +35,7 @@ export function ProfilePoster({
     <div
       ref={ref}
       role="region"
-      aria-label="Promosi Merchant Bersponsor"
+      aria-label="Promosi usaha"
       className={`relative overflow-hidden rounded-xl border border-amber-500/50 bg-gradient-to-br from-slate-900 via-amber-950/20 to-slate-900 p-4 shadow-md shadow-amber-950/40 ${className}`}
     >
       {/* Badge Header */}
@@ -80,7 +80,7 @@ export function ProfilePoster({
       {/* Action Footer */}
       <div className="mt-3 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
         <span className="text-[10px] text-slate-500 italic">
-          Promosi resmi merchant
+          Promosi resmi usaha
         </span>
 
         {onRequestRoute && (

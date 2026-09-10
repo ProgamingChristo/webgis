@@ -1,6 +1,7 @@
 import { apiClient } from "@/src/lib/api-client";
 import { authenticatedFetch } from "@/src/lib/auth-client";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
+import { getUserFacingApiError } from "@/src/lib/user-facing-api-error";
 import {
   CreateMerchantSubmissionInput,
   UpdateMerchantSubmissionInput,
@@ -84,11 +85,11 @@ export class MerchantSubmissionService {
     };
 
     if (!response.ok || !result.success || !result.data) {
-      throw new Error(
-        result.error?.message ||
-        result.error?.code ||
-        "Upload foto usaha gagal.",
-      );
+      throw new Error(getUserFacingApiError({
+        code: result.error?.code,
+        status: response.status,
+        fallback: "Foto usaha belum dapat diunggah. Coba lagi.",
+      }));
     }
 
     return result.data;

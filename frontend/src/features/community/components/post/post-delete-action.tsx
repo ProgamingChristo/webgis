@@ -30,8 +30,8 @@ export function PostDeleteAction({ authorName, deleting = false, moderation = fa
     <dialog ref={dialog} aria-labelledby={titleId} className={styles.deleteDialog} onCancel={(event) => { event.preventDefault(); setConfirming(false); }}>
       <h3 id={titleId}>{moderation ? "Hapus postingan sebagai admin?" : "Hapus postingan?"}</h3>
       <p>{moderation
-        ? `Postingan milik ${authorName} akan dihapus dari Community.`
-        : "Postingan ini akan dihapus dari Community."}</p>
+        ? `Postingan milik ${authorName} akan dihapus dari komunitas.`
+        : "Postingan ini akan dihapus dari komunitas."}</p>
       <div className={styles.deleteDialogActions}>
         <button ref={cancel} type="button" disabled={deleting} onClick={() => setConfirming(false)}>Batal</button>
         <button type="button" disabled={deleting} className={styles.dangerButton} onClick={async () => {

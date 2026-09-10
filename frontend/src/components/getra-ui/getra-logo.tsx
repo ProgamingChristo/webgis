@@ -1,40 +1,37 @@
-const GETRA_LOGO_SRC =
-  "/brand/getra-logo.png?v=20260826";
+import Image from "next/image";
 
 type GetraLogoProps = {
   className?: string;
   compact?: boolean;
 };
 
+/**
+ * App chrome uses the same compact mark as the public Figma-aligned landing
+ * page, while retaining a text label for accessible authenticated navigation.
+ */
 export function GetraLogo({
   className = "",
   compact = false,
 }: GetraLogoProps) {
-  if (compact) {
-    return (
-      <span
-        aria-label="GETRA"
-        className={`inline-grid size-10 place-items-center rounded-2xl border border-cyan-300/40 bg-cyan-300/10 text-sm font-black text-cyan-200 shadow-[0_0_28px_rgba(34,211,238,0.14)] ${className}`}
-      >
-        G
-      </span>
-    );
-  }
-
   return (
-    // Static app chrome logo: use a plain image to keep SSR/client markup
-    // deterministic in Client Providers and avoid Next Image hydration drift.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      alt="GETRA"
-      className={`h-auto w-36 rounded-xl object-contain sm:w-40 ${className}`}
-      height={173}
-      decoding="async"
-      draggable={false}
-      fetchPriority="high"
-      loading="eager"
-      src={GETRA_LOGO_SRC}
-      width={486}
-    />
+    <span
+      className={`getra-app-logo ${compact ? "getra-app-logo--compact" : ""} ${className}`.trim()}
+    >
+      <span className="getra-app-logo__mark" aria-hidden="true">
+        <Image
+          src="/brand/getra-figma-mark.svg"
+          alt=""
+          width={20}
+          height={20}
+          priority
+        />
+      </span>
+      {!compact ? (
+        <span className="getra-app-logo__copy">
+          <strong>GETRA</strong>
+          <small>Peta Cerdas Kota</small>
+        </span>
+      ) : null}
+    </span>
   );
 }

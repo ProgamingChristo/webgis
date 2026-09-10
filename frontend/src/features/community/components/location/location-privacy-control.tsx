@@ -36,7 +36,7 @@ export function LocationPrivacyControl({
         />
         <span>
           <strong>Lokasi presisi</strong>
-          <small>Titik ini akan terlihat oleh pengguna Community.</small>
+          <small>Titik ini akan terlihat oleh pengguna komunitas.</small>
         </span>
       </label>
     </fieldset>

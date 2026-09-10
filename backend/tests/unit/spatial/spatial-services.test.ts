@@ -124,7 +124,7 @@ describe("Phase 7 spatial services", () => {
 
     expect(error).toMatchObject({
       code: "SPATIAL_QUERY_FAILED",
-      message: "Spatial query failed",
+      message: "Informasi lokasi belum dapat dimuat. Coba lagi.",
       retryable: true,
     });
     expect(String(error)).not.toContain(privateDetail);

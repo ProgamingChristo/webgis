@@ -13,10 +13,12 @@ export class AnalyticsInterpretationService {
     const response = await generateStructured({
       schema: interpretationSchema,
       schemaName: "getra_demand_interpretation",
-      instructions: `Explain only the supplied GETRA observed-signal facts in concise Indonesian.
+      instructions: `Explain only the supplied GETRA observation facts in concise, natural Indonesian.
+Lead with what is known, then state the important limitation and a useful next action.
 Never invent or modify numbers. Never claim total population demand, revenue, profit, ROI,
-market size, guaranteed opportunity, or guaranteed business success. Mention the category,
-time window, evidence confidence, and that field validation may be needed.`,
+market size, guaranteed opportunity, or guaranteed business success. Explain the category,
+observation period, confidence in plain language, and when a field check may be useful.
+Do not mention grounding, providers, schemas, raw payloads, model names, or internal status codes.`,
       input: JSON.stringify({
         region: row.spatial_unit.name,
         category: result.category.name,
@@ -52,10 +54,10 @@ time window, evidence confidence, and that field validation may be needed.`,
 
 function deterministicInterpretation(result: DemandIntelligenceResult, row: AnalyticsRow): string {
   if (row.evidence.confidence === "INSUFFICIENT_DATA") {
-    return `Data ${result.category.name} di ${row.spatial_unit.name} belum cukup untuk menghitung Retail Gap secara andal pada window ini.`;
+    return `GETRA belum memiliki cukup catatan ${result.category.name} di ${row.spatial_unit.name} untuk membandingkan kebutuhan dan usaha yang tersedia secara andal pada periode ini.`;
   }
   const gap = row.retail_gap === null ? "belum dapat dihitung" : `${row.retail_gap}`;
-  return `Berdasarkan sinyal yang tercatat di GETRA untuk ${result.category.name} di ${row.spatial_unit.name}, Demand Score ${row.demand_score}, Supply Score ${row.supply_score}, dan Retail Gap ${gap}. Bukti berstatus ${row.evidence.confidence}; hasil ini adalah indikasi relatif dan perlu validasi lapangan.`;
+  return `Catatan GETRA untuk ${result.category.name} di ${row.spatial_unit.name} menunjukkan skor kebutuhan ${row.demand_score}, skor usaha tersedia ${row.supply_score}, dan celah kebutuhan ${gap}. Hasil ini merupakan indikasi relatif dari periode pengamatan dan sebaiknya diperiksa kembali di lapangan sebelum digunakan untuk mengambil keputusan.`;
 }
 
 function numbersIn(value: string) {

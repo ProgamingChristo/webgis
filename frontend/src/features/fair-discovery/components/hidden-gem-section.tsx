@@ -28,7 +28,7 @@ export function HiddenGemSection({
       <div className="flex items-center justify-between">
         <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
           <Gem className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-          Hidden Gem Rekomendasi ({hiddenGems.length})
+          Pilihan komunitas ({hiddenGems.length})
         </h4>
         <span className="text-[10px] text-emerald-500 font-semibold bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800">
           Kurasi Komunitas
@@ -58,7 +58,7 @@ export function HiddenGemSection({
                     </h5>
                     <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-extrabold text-emerald-300 border border-emerald-500/30">
                       <Sparkles className="w-2 h-2" />
-                      Gem
+                      Pilihan
                     </span>
                   </div>
                   <p className="text-[11px] font-medium text-slate-400 mt-0.5">

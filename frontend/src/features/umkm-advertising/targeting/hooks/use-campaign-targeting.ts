@@ -34,8 +34,8 @@ export function useCampaignTargeting(merchantId: string, campaignId: string) {
       if (data.studyAreaId) {
         setSelectedStudyAreaId(data.studyAreaId);
       }
-    } catch (err: any) {
-      setError(err.message || "Gagal memuat targeting campaign");
+    } catch {
+      setError("Wilayah sasaran belum dapat dimuat. Coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -67,8 +67,8 @@ export function useCampaignTargeting(merchantId: string, campaignId: string) {
       setTarget(updated);
       setSuccessMessage("Target kampanye berhasil disimpan.");
       return updated;
-    } catch (err: any) {
-      setError(err.message || "Gagal menyimpan targeting");
+    } catch (err: unknown) {
+      setError("Wilayah sasaran belum dapat disimpan. Coba lagi.");
       throw err;
     } finally {
       setSaving(false);

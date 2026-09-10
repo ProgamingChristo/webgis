@@ -151,7 +151,7 @@ export default function UserProfilePage() {
             </div>
 
             <p className="mt-6 text-center text-xs font-black uppercase tracking-[0.22em] text-cyan-200">
-              Public profile
+              Profil publik
             </p>
             <h1 className="mt-2 text-center text-3xl font-semibold tracking-tight">
               {loading
@@ -266,9 +266,9 @@ export default function UserProfilePage() {
                         <strong>{badge.label}</strong>
                         <p>
                           {badge.tone === "general"
-                            ? "Akses peta, pencarian, rute, community, dan eksplorasi area."
+                            ? "Akses peta, pencarian, rute, komunitas, dan jelajahi area."
                             : badge.tone === "umkm"
-                              ? "Konteks usaha lokal, merchant, promosi, dan analisis sekitar lokasi."
+                              ? "Kelola usaha lokal, promosi, dan lihat informasi sekitar lokasi."
                               : badge.tone === "investor"
                                 ? "Konteks peluang area, kelayakan lokasi, dan potensi investasi."
                                 : "Konteks pemerintahan, layanan kota, dan agregasi wilayah."}

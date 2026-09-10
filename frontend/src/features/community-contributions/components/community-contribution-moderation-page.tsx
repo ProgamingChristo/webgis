@@ -179,11 +179,11 @@ export function CommunityContributionModerationPage() {
     <main className={styles.page}>
       <header className={styles.header}>
         <div>
-          <span className={styles.eyebrow}>Admin Community</span>
+          <span className={styles.eyebrow}>Admin komunitas</span>
           <h1>Moderasi Kontribusi Akses</h1>
           <p>
-            Review laporan PENDING, setujui untuk memberi poin, atau tolak
-            dengan alasan aman untuk pengguna.
+            Periksa laporan yang menunggu, lalu terima untuk memberi poin atau
+            tolak dengan alasan yang jelas.
           </p>
         </div>
         <Link className={styles.backLink} href="/community">
@@ -254,7 +254,7 @@ export function CommunityContributionModerationPage() {
             </div>
             <button className={styles.secondaryButton} onClick={refreshQueue} type="button">
               <RefreshCw aria-hidden="true" size={15} />
-              Refresh
+              Perbarui
             </button>
           </div>
 
@@ -263,7 +263,7 @@ export function CommunityContributionModerationPage() {
           {!loading && queue?.items.length === 0 ? (
             <div className={styles.emptyState}>
               <strong>Tidak ada kontribusi pada filter ini.</strong>
-              <span>Antrean PENDING diurutkan dari laporan tertua.</span>
+              <span>Laporan yang menunggu diurutkan dari yang paling lama.</span>
             </div>
           ) : null}
 

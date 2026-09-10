@@ -6,7 +6,7 @@ export function HeroSearchPreview() {
   return (
     <section
       className="rounded-3xl border border-white/10 bg-slate-950/70 p-4 shadow-2xl shadow-black/20"
-      aria-label="Contoh smart search GETRA"
+      aria-label="Contoh pencarian GETRA"
     >
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-getra-cyan/12 text-getra-cyan">
@@ -18,7 +18,7 @@ export function HeroSearchPreview() {
             “Makan di bawah Rp30 ribu, maksimal 10 menit jalan”
           </p>
           <p className="mt-1 text-xs leading-5 text-slate-400">
-            Preview konsep UI. Belum memanggil AI/backend.
+            Contoh cara mencari tempat berdasarkan anggaran dan waktu berjalan.
           </p>
         </div>
       </div>

@@ -29,7 +29,7 @@ function listFromEnvelope<T>(body: ApiListEnvelope<T> | PaginatedEnvelope<T>): T
     if ("data" in body && Array.isArray(body.data)) return body.data;
     if ("items" in body && Array.isArray(body.items)) return body.items;
   }
-  throw new GetraApiError("Format data canonical tidak dikenali.", "INVALID_RESPONSE");
+  throw new GetraApiError("Data GETRA belum dapat dibaca. Coba muat ulang.", "INVALID_RESPONSE");
 }
 
 export async function loadCanonicalData(signal: AbortSignal): Promise<CanonicalData> {
@@ -76,7 +76,7 @@ export function useCanonicalData(userId: string | null = null) {
         if (controller.signal.aborted) return;
         setState({
           userId, reloadKey, data: emptyData(), loading: false,
-          error: error instanceof GetraApiError ? error.message : "Gagal memuat data canonical GETRA.",
+          error: error instanceof GetraApiError ? error.message : "Data GETRA belum dapat dimuat. Coba lagi.",
         });
       });
     return () => controller.abort();

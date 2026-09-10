@@ -30,7 +30,7 @@ export function useAdministrativeBoundaries(regionIds: string[]) {
         setBoundaries(await administrativeBoundaryService.getByIds(stableIds, controller.signal));
       } catch (cause) {
         if (controller.signal.aborted) return;
-        setError(cause instanceof Error ? cause.message : "Boundary wilayah tidak dapat dimuat.");
+        setError(cause instanceof Error ? cause.message : "Batas wilayah belum dapat dimuat. Coba lagi.");
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }

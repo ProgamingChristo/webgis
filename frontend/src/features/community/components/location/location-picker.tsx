@@ -275,7 +275,7 @@ export function LocationPicker({
       <section className={styles.locationDialog} aria-labelledby="location-picker-title">
         <header className={styles.locationDialogHeader}>
           <div>
-            <span className={styles.eyebrow}>Lokasi Community</span>
+            <span className={styles.eyebrow}>Lokasi komunitas</span>
             <h3 id="location-picker-title">Tambahkan Lokasi</h3>
           </div>
           <button

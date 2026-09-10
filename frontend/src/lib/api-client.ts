@@ -2,6 +2,7 @@
 
 import { authenticatedFetch } from "@/src/lib/auth-client";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
+import { getUserFacingApiError } from "@/src/lib/user-facing-api-error";
 
 interface ApiSuccess<T> {
   success: true;
@@ -51,14 +52,11 @@ async function request<T>(
     !response.ok ||
     !json.success
   ) {
+    const code = json.success ? undefined : json.error?.code;
     throw new ApiError(
-      json.success
-        ? "Request GETRA gagal."
-        : json.error?.message ||
-          json.error?.code ||
-          "Request GETRA gagal.",
+      getUserFacingApiError({ code, status: response.status }),
       response.status,
-      json.success ? undefined : json.error?.code,
+      code,
     );
   }
 

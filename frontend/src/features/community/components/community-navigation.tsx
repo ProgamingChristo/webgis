@@ -25,7 +25,7 @@ type CommunityNavigationEntry =
 const communityNavigationItems: readonly CommunityNavigationEntry[] = [
   { label: "Beranda", status: "available", value: "home" },
   { label: "Temuan Komuter", status: "available", value: "findings" },
-  { label: "Cultural Map", status: "available", value: "map" },
+  { label: "Peta Budaya", status: "available", value: "map" },
   { label: "Permintaan", status: "available", value: "requests" },
   { label: "Laporkan Kondisi", status: "available", value: "contributions" },
   { label: "Teman", status: "available", value: "friends" },
@@ -42,7 +42,7 @@ export function CommunityNavigation({
 }: CommunityNavigationProps) {
   return (
     <nav
-      aria-label="Navigasi Community"
+      aria-label="Navigasi komunitas"
       className={styles.navigation}
     >
       {communityNavigationItems.map((item) =>

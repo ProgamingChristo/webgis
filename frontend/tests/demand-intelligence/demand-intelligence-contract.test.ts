@@ -25,14 +25,14 @@ describe("Phase 09 analytics frontend contract", () => {
   it("renders exact region polygons, a legend-ready scale, charts, and textual metrics", () => {
     expect(mapLayers).toContain('type: "fill"');
     expect(mapLayers).toContain('"retail_gap"');
-    expect(panel).toContain("Demand vs represented supply");
-    expect(panel).toContain("Retail Gap relatif");
+    expect(panel).toContain("Kebutuhan dan usaha tersedia");
+    expect(panel).toContain("Celah kebutuhan relatif");
     expect(panel).toContain('<table className="analytics-table">');
-    expect(panel).toContain("transaction observation");
+    expect(panel).toContain("catatan transaksi");
   });
 
   it("uses safe claims and never labels Struk observations as revenue", () => {
-    expect(panel).toContain("bukan total demand penduduk atau proyeksi pendapatan");
+    expect(panel).toContain("bukan seluruh kebutuhan penduduk atau proyeksi pendapatan");
     expect(panel).not.toMatch(/pasti laku|ROI tinggi|merchant sales/i);
   });
 });

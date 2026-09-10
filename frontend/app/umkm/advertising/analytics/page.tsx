@@ -7,9 +7,9 @@ import { AnalyticsDashboard } from "@/src/features/umkm-advertising/analytics";
 export default function CampaignAnalyticsPage() {
   return (
     <GetraAppShell
-      description="Pantau impressions, promo clicks, profile opens, dan route requests tanpa mengklaim sales atau ROI."
-      eyebrow="GETRA Spatial Promotion"
-      title="Analytics Promosi"
+      description="Pantau tayangan dan interaksi promosi tanpa menganggapnya sebagai penjualan."
+      eyebrow="Promosi GETRA"
+      title="Statistik promosi"
       tone="umkm"
     >
       <Suspense

@@ -53,7 +53,7 @@ describe("merchant search-first registration", () => {
     expect(html).toContain("Lanjutkan Pendaftaran");
     expect(html).toContain('value="Warung Nusantara"');
     expect(html).toContain("Kopi dan makanan rumahan");
-    expect(html).toContain("Simpan Draft");
+    expect(html).toContain("Simpan Draf");
     expect(html).toContain('aria-current="step"');
     expect(html).not.toContain('id="claim-merchant-search"');
     expect(html).not.toContain("Map picker");

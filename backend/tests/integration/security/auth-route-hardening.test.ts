@@ -140,7 +140,7 @@ describe("auth route public hardening", () => {
       details: {
         source: "GETRA_RATE_LIMIT",
       },
-      message: "Too many requests. Please try again later",
+      message: "Terlalu banyak permintaan dalam waktu singkat. Coba lagi nanti.",
       retryable: true,
     });
     expect(mocks.getServerSupabaseClient).not.toHaveBeenCalled();

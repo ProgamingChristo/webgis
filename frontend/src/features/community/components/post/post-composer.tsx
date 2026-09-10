@@ -143,7 +143,7 @@ export function PostComposer({
     if (!CLIENT_ALLOWED_PHOTO_TYPES.has(file.type)) {
       setPhotoError(
         file.type === "image/svg+xml"
-          ? "Format SVG tidak didukung untuk foto Community."
+          ? "Format SVG tidak dapat digunakan sebagai foto."
           : "Format foto tidak didukung. Gunakan JPEG, PNG, atau WebP.",
       );
       return;
@@ -179,7 +179,7 @@ export function PostComposer({
       <div className={styles.composerBody}>
         <div className={styles.composerHeader}>
           <div>
-            <span className={styles.eyebrow}>Beranda Community</span>
+            <span className={styles.eyebrow}>Beranda komunitas</span>
             <h2 id="community-composer">Apa yang kamu temukan?</h2>
           </div>
           <span>{authorName}</span>

@@ -28,7 +28,7 @@ import styles from "./mission-data.module.css";
 const SOURCE_DETAILS = {
   MENU_GO: {
     label: "Menu Go",
-    domain: "Observasi merchant lapangan",
+    domain: "Observasi usaha di lapangan",
     icon: Store,
   },
   STRUK_GO: {
@@ -314,13 +314,6 @@ function formatDuration(milliseconds: number): string {
 }
 
 function getSafeUiError(error: unknown, fallback: string): string {
-  if (!(error instanceof Error)) return fallback;
-  if (
-    error.message === "Failed to fetch" ||
-    error.message === "Internal server error" ||
-    error.message === "Request GETRA gagal."
-  ) {
-    return "Server GETRA tidak dapat menyelesaikan sinkronisasi.";
-  }
-  return error.message;
+  void error;
+  return fallback;
 }

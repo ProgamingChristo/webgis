@@ -29,11 +29,11 @@ export function CommunityShell({
   return (
     <GetraAppShell
       description="Ruang kolaborasi berbasis lokasi untuk temuan warga, permintaan komuter, sinyal demand, dan peta budaya komunitas."
-      eyebrow="GETRA WebGIS"
-      title="GETRA Community"
+      eyebrow="GETRA"
+      title="Komunitas GETRA"
       tone="community"
       actions={
-        <dl className={styles.status} aria-label="Status Community">
+        <dl className={styles.status} aria-label="Status komunitas">
           <div>
             <dt>Kontribusi</dt>
             <dd>{state.contributionCount}</dd>

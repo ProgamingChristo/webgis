@@ -37,6 +37,6 @@ describe("owned merchant archive UI", () => {
     expect(source).toContain("Hapus {merchant.name} dari GETRA?");
     expect(source).toContain("tidak akan tampil lagi di peta dan pencarian");
     expect(source).toContain("Ya, Hapus Usaha");
-    expect(source).toContain("Campaign aktif harus diselesaikan atau dibatalkan lebih dulu");
+    expect(source).toContain("Promosi aktif harus diselesaikan atau dibatalkan lebih dulu");
   });
 });

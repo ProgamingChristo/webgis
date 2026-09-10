@@ -34,7 +34,7 @@ export const MERCHANT_DESCRIPTION_ACTIONS: ReadonlyArray<{
 ];
 
 export function getMerchantDescriptionAssistantLabel(value: string): string {
-  return value.trim() ? "Perbaiki dengan AI" : "Bantu tulis dengan AI";
+  return value.trim() ? "Perbaiki tulisan" : "Bantu tulis";
 }
 
 interface MerchantDescriptionAssistantProps {
@@ -140,7 +140,7 @@ export function MerchantDescriptionAssistant({
       );
 
       if (valueRef.current !== originalDescription) {
-        setError("Deskripsi berubah saat AI memproses. Coba lagi agar tulisan Anda tidak tertimpa.");
+        setError("Deskripsi berubah saat saran disiapkan. Coba lagi agar tulisan Anda tidak tertimpa.");
         return;
       }
 
@@ -211,7 +211,7 @@ export function MerchantDescriptionAssistant({
           {hasDescription ? (
             <div className="space-y-1">
               <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-cyan-300">
-                Perbaiki dengan AI
+                Perbaiki tulisan
               </p>
               {MERCHANT_DESCRIPTION_ACTIONS.map((action) => (
                 <button
@@ -231,7 +231,7 @@ export function MerchantDescriptionAssistant({
               <div>
                 <p className="text-sm font-semibold text-white">Bantu tulis deskripsi</p>
                 <p className="mt-1 text-[11px] leading-4 text-slate-400">
-                  Nama usaha dan kategori digunakan otomatis. AI hanya memakai informasi yang Anda berikan.
+                  Nama dan kategori usaha digunakan untuk menyiapkan saran. Periksa kembali sebelum menyimpan.
                 </p>
               </div>
 

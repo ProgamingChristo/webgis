@@ -2,6 +2,7 @@
 
 import { authenticatedFetch, AuthSessionError } from "@/src/lib/auth-client";
 import { getGetraApiBaseUrl, getGetraApiUrl } from "@/src/lib/api-base-url";
+import { getUserFacingApiError } from "@/src/lib/user-facing-api-error";
 
 export type ApiErrorCode =
   | "NETWORK_ERROR"
@@ -63,7 +64,7 @@ async function safeJson(response: Response): Promise<unknown> {
   } catch {
     if (!response.ok) return null;
     throw new GetraApiError(
-      "Respons backend tidak valid.",
+      getUserFacingApiError({ code: "INVALID_RESPONSE", status: response.status }),
       "INVALID_RESPONSE",
       response.status,
     );
@@ -106,14 +107,13 @@ export async function getraApiGet<T>(
     const detail = typeof body === "object" && body !== null && "error" in body
       ? body.error
       : null;
-    const message = typeof detail === "string"
-      ? detail
-      : typeof detail === "object" && detail !== null && "message" in detail && typeof detail.message === "string"
-        ? detail.message
-        : "Request backend gagal.";
+    const backendCode =
+      typeof detail === "object" && detail !== null && "code" in detail && typeof detail.code === "string"
+        ? detail.code
+        : undefined;
 
     throw new GetraApiError(
-      message,
+      getUserFacingApiError({ code: backendCode, status: response.status }),
       errorCodeForStatus(response.status),
       response.status,
     );

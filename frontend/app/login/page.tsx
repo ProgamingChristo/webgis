@@ -18,6 +18,8 @@ import {
 } from "@/src/lib/auth-client";
 import { GetraLogo } from "@/src/components/getra-ui";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
+import { getUserFacingApiError } from "@/src/lib/user-facing-api-error";
+import { LandingMapArtwork } from "@/src/features/landing/components/landing-map-artwork";
 
 import styles from "../auth.module.css";
 
@@ -130,14 +132,14 @@ export default function LoginPage() {
         !response.ok ||
         !json.success
       ) {
-        const message =
-          json.error?.message ||
-          "Login gagal. Periksa email dan password.";
-
         throw new Error(
-          message === "Unauthorized"
-            ? "Email atau password tidak cocok. Untuk akun dev gunakan getra.admin.test@example.com dan password fixture development."
-            : message,
+          json.error?.code === "UNAUTHORIZED"
+            ? "Email atau kata sandi tidak cocok."
+            : getUserFacingApiError({
+                code: json.error?.code,
+                status: response.status,
+                fallback: "Belum dapat masuk. Periksa kembali informasi Anda.",
+              }),
         );
       }
 
@@ -149,7 +151,7 @@ export default function LoginPage() {
         !session.refresh_token
       ) {
         throw new Error(
-          "Session login tidak tersedia.",
+          "Sesi belum dapat dibuat. Silakan coba masuk kembali.",
         );
       }
 
@@ -171,19 +173,17 @@ export default function LoginPage() {
     } catch (
       error: unknown
     ) {
-      const rawMessage =
-        error instanceof Error
+      const safeMessage =
+        error instanceof Error && error.name !== "TypeError"
           ? error.message
-          : "Login gagal.";
+          : "Layanan masuk belum dapat dihubungi. Coba lagi beberapa saat nanti.";
 
       setErrorMessage(
         email.trim().endsWith(
           "@example.co",
         )
-          ? "Email fixture kurang huruf m: gunakan @example.com, bukan @example.co."
-          : rawMessage === "Failed to fetch"
-            ? "Backend GETRA belum bisa dijangkau. Periksa NEXT_PUBLIC_GETRA_API_URL dan pastikan backend aktif."
-            : rawMessage,
+          ? "Periksa kembali alamat email Anda."
+          : safeMessage,
       );
     } finally {
       setLoading(
@@ -197,58 +197,53 @@ export default function LoginPage() {
       <section className={styles.hero}>
         <div className={styles.brand}>
           <GetraLogo className={styles.brandLogo} />
-
-          <div className={styles.brandText}>
-            <strong>
-              GETRA
-            </strong>
-
-            <span>
-              Geo-Enabled Transit & Retail Analytics
-            </span>
-          </div>
         </div>
 
         <div className={styles.heroContent}>
           <span className={styles.eyebrow}>
-            Spatial intelligence platform
+            WebGIS untuk mobilitas dan UMKM
           </span>
 
           <h1>
-            Akses kota,
-            bisnis lokal,
-            dan transit
-            dalam satu peta.
+            Jelajahi kota lebih mudah.
+            <span>
+              Temukan tempat, rute, dan usaha lokal.
+            </span>
           </h1>
 
           <p>
-            Jelajahi akses transportasi,
-            UMKM, pedestrian network,
-            dan evidence spasial melalui
-            satu workspace GETRA.
+            Masuk untuk melanjutkan pencarian tempat, melihat rute,
+            memahami akses sekitar, dan menemukan usaha lokal dalam satu peta.
           </p>
 
           <div className={styles.signalRow}>
             <span className={styles.signal}>
-              TRANSIT
+              CARI TEMPAT
             </span>
 
             <span className={styles.signal}>
-              UMKM
+              RUTE JALAN KAKI
             </span>
 
             <span className={styles.signal}>
-              PEDESTRIAN
-            </span>
-
-            <span className={styles.signal}>
-              COMMUNITY DATA
+              USAHA LOKAL
             </span>
           </div>
         </div>
 
+        <figure
+          className={styles.mapPreview}
+          aria-label="Ilustrasi peta GETRA berisi transit, rute pejalan kaki, dan usaha lokal"
+        >
+          <LandingMapArtwork className={styles.mapPreviewArtwork} />
+          <figcaption>
+            <span>Peta sebagai titik awal</span>
+            <strong>Transit, rute, dan usaha lokal</strong>
+          </figcaption>
+        </figure>
+
         <div className={styles.heroFooter}>
-          GETRA · Geo-Enabled Transit & Retail Analytics
+          GETRA · Peta Transit dan Usaha
         </div>
       </section>
 
@@ -256,7 +251,7 @@ export default function LoginPage() {
         <div className={styles.card}>
           <header className={styles.cardHeader}>
             <span>
-              Account access
+              Akses akun
             </span>
 
             <h2>
@@ -264,9 +259,7 @@ export default function LoginPage() {
             </h2>
 
             <p>
-              Gunakan akun GETRA untuk
-              membuka workspace dan fitur
-              sesuai akses akun kamu.
+              Masuk untuk membuka peta, rute, dan fitur yang sesuai dengan akses akun Anda.
             </p>
           </header>
 
@@ -298,7 +291,7 @@ export default function LoginPage() {
 
             <div className={styles.field}>
               <label htmlFor="password">
-                Password
+                Kata sandi
               </label>
 
               <input
@@ -312,7 +305,7 @@ export default function LoginPage() {
                     event.target.value,
                   )
                 }
-                placeholder="Masukkan password"
+                placeholder="Masukkan kata sandi"
                 autoComplete="current-password"
                 required
               />
@@ -338,13 +331,12 @@ export default function LoginPage() {
           <p className={styles.switchText}>
             Belum punya akun?{" "}
             <Link href="/signup">
-              Daftar GETRA
+              Daftar sekarang
             </Link>
           </p>
 
           <p className={styles.securityNote}>
-            Session dikelola melalui
-            Supabase Authentication.
+            Sesi akun dikelola secara aman.
           </p>
         </div>
       </section>

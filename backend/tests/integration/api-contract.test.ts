@@ -25,7 +25,7 @@ describe("API Contract Foundation", () => {
         success: false,
         error: {
           code: "NOT_FOUND",
-          message: "Resource not found",
+          message: "Informasi yang Anda cari belum ditemukan.",
           retryable: false
         },
         request_id: "req-123"

@@ -60,8 +60,8 @@ export function DemandIntelligencePanel({
     xAxis: { type: "category", data: data?.rows.map((row) => shortRegion(row.spatial_unit.name)) ?? [], axisLabel: { color: "#9fb6bf", rotate: 22, fontSize: 9 } },
     yAxis: { type: "value", min: 0, max: 100, name: "Skor 0-100", nameTextStyle: { color: "#8ca5ae", fontSize: 9 }, axisLabel: { color: "#8ca5ae", fontSize: 9 }, splitLine: { lineStyle: { color: "rgba(148, 180, 190, .12)" } } },
     series: [
-      { name: "Demand", type: "bar", data: data?.rows.map((row) => row.demand_score) ?? [], itemStyle: { color: "#22d3ee" } },
-      { name: "Supply", type: "bar", data: data?.rows.map((row) => row.supply_score) ?? [], itemStyle: { color: "#a3e635" } },
+      { name: "Kebutuhan", type: "bar", data: data?.rows.map((row) => row.demand_score) ?? [], itemStyle: { color: "#22d3ee" } },
+      { name: "Usaha tersedia", type: "bar", data: data?.rows.map((row) => row.supply_score) ?? [], itemStyle: { color: "#a3e635" } },
     ],
   }), [data]);
 
@@ -73,7 +73,7 @@ export function DemandIntelligencePanel({
     xAxis: { type: "category", data: data?.rows.map((row) => shortRegion(row.spatial_unit.name)) ?? [], axisLabel: { color: "#9fb6bf", rotate: 22, fontSize: 9 } },
     yAxis: { type: "value", min: -100, max: 100, name: "Gap relatif", nameTextStyle: { color: "#8ca5ae", fontSize: 9 }, axisLabel: { color: "#8ca5ae", fontSize: 9 }, splitLine: { lineStyle: { color: "rgba(148, 180, 190, .12)" } } },
     series: [{
-      name: "Retail Gap",
+      name: "Celah kebutuhan",
       type: "bar",
       data: data?.rows.map((row) => ({
         value: row.retail_gap,
@@ -90,16 +90,16 @@ export function DemandIntelligencePanel({
       tooltip: { trigger: "item" },
       legend: { bottom: 0, textStyle: { color: "#bdd5dd", fontSize: 8 } },
       series: [{
-        name: "Raw signal count",
+        name: "Jumlah catatan",
         type: "pie",
         radius: ["34%", "62%"],
         center: ["50%", "42%"],
         label: { color: "#d5e5e9", fontSize: 9 },
         data: counts ? [
-          { name: "Search", value: counts.search_events },
-          { name: "Route", value: counts.route_requests },
-          { name: "Commuter", value: counts.commuter_requests },
-          { name: "Struk obs.", value: counts.transaction_observations },
+          { name: "Pencarian", value: counts.search_events },
+          { name: "Permintaan rute", value: counts.route_requests },
+          { name: "Permintaan warga", value: counts.commuter_requests },
+          { name: "Catatan struk", value: counts.transaction_observations },
         ].filter((item) => item.value > 0) : [],
       }],
     };
@@ -128,13 +128,13 @@ export function DemandIntelligencePanel({
       data-analytics-row-count={data?.rows.length ?? 0}
     >
       <header className="demand-intelligence__header">
-        <div><span className="eyebrow">Observed analytics</span><h3 id="demand-intelligence-title">Demand Intelligence</h3></div>
+        <div><span className="eyebrow">Catatan GETRA</span><h3 id="demand-intelligence-title">Kebutuhan Area</h3></div>
         <BarChart3 size={18} aria-hidden="true" />
       </header>
 
-      <div className="analytics-segments" aria-label="Mode analytics">
-        <button type="button" aria-pressed={query.mode === "DEMAND"} onClick={() => onModeChange("DEMAND")}>Demand</button>
-        <button type="button" aria-pressed={query.mode === "RETAIL_GAP"} onClick={() => onModeChange("RETAIL_GAP")}>Retail Gap</button>
+      <div className="analytics-segments" aria-label="Jenis analisis">
+        <button type="button" aria-pressed={query.mode === "DEMAND"} onClick={() => onModeChange("DEMAND")}>Kebutuhan</button>
+        <button type="button" aria-pressed={query.mode === "RETAIL_GAP"} onClick={() => onModeChange("RETAIL_GAP")}>Celah kebutuhan</button>
       </div>
 
       <div className="analytics-filters">
@@ -143,26 +143,26 @@ export function DemandIntelligencePanel({
           <option value="restaurant">Restoran</option><option value="warung">Warung / Tenda</option><option value="street-food">Kaki Lima</option>
           <option value="fast-food">Fast Food</option><option value="minimarket">Minimarket</option><option value="pharmacy">Apotek</option>
         </select></label>
-        <label><span>Window</span><select value={query.days} onChange={(event) => onDaysChange(Number(event.target.value) as 7 | 30)}>
+        <label><span>Periode</span><select value={query.days} onChange={(event) => onDaysChange(Number(event.target.value) as 7 | 30)}>
           <option value={7}>7 hari</option><option value={30}>30 hari</option>
         </select></label>
       </div>
 
-      {loading ? <p className="analytics-state" role="status"><LoaderCircle className="analytics-spin" size={16} /> Menghitung agregat...</p> : null}
+      {loading ? <p className="analytics-state" role="status"><LoaderCircle className="analytics-spin" size={16} /> Sedang menyiapkan ringkasan...</p> : null}
       {error ? <p className="analytics-state analytics-state--error" role="alert">{error}</p> : null}
       {!loading && data ? <>
-        <p className="analytics-caveat"><Info size={14} /> Sinyal observasi GETRA, bukan total demand penduduk atau proyeksi pendapatan.</p>
+        <p className="analytics-caveat"><Info size={14} /> Ringkasan ini memakai catatan GETRA, bukan seluruh kebutuhan penduduk atau proyeksi pendapatan.</p>
         <AnalyticsLegend mode={query.mode} />
-        <div className="analytics-region-tabs" aria-label="Wilayah analytics">
+        <div className="analytics-region-tabs" aria-label="Wilayah analisis">
           {data.rows.map((row) => <button key={row.spatial_unit.id} type="button" aria-pressed={selected?.spatial_unit.id === row.spatial_unit.id} onClick={() => onSelectRegion(row.spatial_unit.id)}>{shortRegion(row.spatial_unit.name)}</button>)}
         </div>
         {selected ? <AnalyticsSummary row={selected} /> : null}
-        <div className="analytics-chart-tabs" tabIndex={0} aria-label="Grafik analytics, gulir horizontal untuk melihat grafik berikutnya">
-          <section><h4>Demand vs represented supply</h4><AnalyticsChart option={demandSupplyOption} label="Perbandingan Demand Score dan Supply Score per wilayah" /></section>
-          <section><h4>Retail Gap relatif</h4><AnalyticsChart option={gapOption} label="Retail Gap per wilayah dari minus seratus sampai seratus" /></section>
-          <section><h4>Komposisi raw signal</h4><AnalyticsChart option={sourceOption} label={`Komposisi sinyal mentah ${selected?.spatial_unit.name ?? "wilayah"}`} /></section>
+        <div className="analytics-chart-tabs" tabIndex={0} aria-label="Grafik analisis, gulir horizontal untuk melihat grafik berikutnya">
+          <section><h4>Kebutuhan dan usaha tersedia</h4><AnalyticsChart option={demandSupplyOption} label="Perbandingan kebutuhan dan usaha tersedia per wilayah" /></section>
+          <section><h4>Celah kebutuhan relatif</h4><AnalyticsChart option={gapOption} label="Celah kebutuhan per wilayah dari minus seratus sampai seratus" /></section>
+          <section><h4>Sumber catatan</h4><AnalyticsChart option={sourceOption} label={`Komposisi catatan ${selected?.spatial_unit.name ?? "wilayah"}`} /></section>
         </div>
-        <div className="analytics-table-wrap" tabIndex={0} aria-label="Tabel ringkasan analytics">
+        <div className="analytics-table-wrap" tabIndex={0} aria-label="Tabel ringkasan analisis">
           <table className="analytics-table"><thead><tr><th>Wilayah</th><th>D</th><th>S</th><th>Gap</th><th>Bukti</th></tr></thead><tbody>
             {data.rows.map((row) => <tr key={row.spatial_unit.id}><th>{shortRegion(row.spatial_unit.name)}</th><td>{row.demand_score}</td><td>{row.supply_score}</td><td>{row.retail_gap ?? "-"}</td><td>{CONFIDENCE_LABELS[row.evidence.confidence]}</td></tr>)}
           </tbody></table>
@@ -170,8 +170,8 @@ export function DemandIntelligencePanel({
         <button className="analytics-explain-button" type="button" onClick={explain} disabled={!selected || interpretationLoading}>
           <BrainCircuit size={15} /> {interpretationLoading ? "Memeriksa fakta..." : "Jelaskan data terpilih"}
         </button>
-        {visibleInterpretation ? <div className="analytics-interpretation" role="status"><strong>{visibleInterpretation.status === "AI" ? "Interpretasi AI ter-grounding" : "Penjelasan deterministik"}</strong><p>{visibleInterpretation.answer}</p></div> : null}
-        {visibleInterpretationError ? <p className="analytics-state analytics-state--error" role="alert">{visibleInterpretationError} Angka, peta, dan chart tetap tersedia.</p> : null}
+        {visibleInterpretation ? <div className="analytics-interpretation" role="status"><strong>Penjelasan data GETRA</strong><p>{visibleInterpretation.answer}</p></div> : null}
+        {visibleInterpretationError ? <p className="analytics-state analytics-state--error" role="alert">{visibleInterpretationError} Angka, peta, dan grafik tetap tersedia.</p> : null}
         <footer className="analytics-model">{data.demand_model_version} / {data.retail_gap_model_version}</footer>
       </> : null}
     </section>
@@ -187,12 +187,12 @@ function AnalyticsSummary({ row }: { row: AnalyticsRow }) {
     data-sample-size={row.evidence.sample_size}
     data-retail-gap={row.retail_gap ?? "INSUFFICIENT_DATA"}
   >
-    <div><span>Demand</span><strong>{row.demand_score}</strong></div>
-    <div><span>Supply</span><strong>{row.supply_score}</strong></div>
-    <div><span>Retail Gap</span><strong>{row.retail_gap ?? "-"}</strong></div>
-    <div><span>Sample</span><strong>{row.evidence.sample_size}</strong></div>
-    <p>{row.evidence.confidence === "INSUFFICIENT_DATA" ? "Data belum cukup untuk menghitung Retail Gap secara andal." : CONFIDENCE_LABELS[row.evidence.confidence]}</p>
-    <p>Raw: {row.raw_counts.search_events} search, {row.raw_counts.route_requests} route, {row.raw_counts.commuter_requests} commuter request, {row.raw_counts.transaction_observations} transaction observation, {row.raw_counts.canonical_merchants} merchant canonical.</p>
+    <div><span>Kebutuhan</span><strong>{row.demand_score}</strong></div>
+    <div><span>Usaha tersedia</span><strong>{row.supply_score}</strong></div>
+    <div><span>Celah kebutuhan</span><strong>{row.retail_gap ?? "-"}</strong></div>
+    <div><span>Jumlah catatan</span><strong>{row.evidence.sample_size}</strong></div>
+    <p>{row.evidence.confidence === "INSUFFICIENT_DATA" ? "Data belum cukup untuk menghitung celah kebutuhan secara andal." : CONFIDENCE_LABELS[row.evidence.confidence]}</p>
+    <p>Catatan yang digunakan: {row.raw_counts.search_events} pencarian, {row.raw_counts.route_requests} permintaan rute, {row.raw_counts.commuter_requests} permintaan warga, {row.raw_counts.transaction_observations} catatan transaksi, dan {row.raw_counts.canonical_merchants} usaha.</p>
   </div>;
 }
 
@@ -204,9 +204,9 @@ function AnalyticsLegend({ mode }: { mode: AnalyticsMode }) {
       { className: "analytics-legend__swatch--demand-high", label: "70-100 tinggi" },
     ]
     : [
-      { className: "analytics-legend__swatch--gap-negative", label: "-100 sampai -1: supply relatif lebih tinggi" },
+      { className: "analytics-legend__swatch--gap-negative", label: "-100 sampai -1: usaha tersedia relatif lebih banyak" },
       { className: "analytics-legend__swatch--gap-neutral", label: "0: seimbang" },
-      { className: "analytics-legend__swatch--gap-positive", label: "1 sampai 100: demand relatif lebih tinggi" },
+      { className: "analytics-legend__swatch--gap-positive", label: "1 sampai 100: kebutuhan relatif lebih tinggi" },
     ];
 
   return <div className="analytics-legend" aria-label={`Legenda peta ${mode === "DEMAND" ? "Demand Score" : "Retail Gap"}`}>

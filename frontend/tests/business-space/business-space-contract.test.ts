@@ -41,7 +41,7 @@ describe("Business Space frontend contract", () => {
 
   it("exposes Business Space as a primary map mode with direct Properti Go search filters", () => {
     expect(dashboard).toContain("primaryMode");
-    expect(dashboard).toContain("Business Space");
+    expect(dashboard).toContain("Ruang Usaha");
     expect(dashboard).toContain("Cari properti atau area...");
     expect(dashboard).toContain("transaction_type");
     expect(dashboard).toContain("property_category");
@@ -61,8 +61,8 @@ describe("Business Space frontend contract", () => {
 
   it("exposes Menu Go media as safe canonical merchant enrichment", () => {
     expect(dashboard).toContain("MerchantMediaGallery");
-    expect(dashboard).toContain("Foto tempat merchant");
-    expect(dashboard).toContain("Foto menu merchant");
+    expect(dashboard).toContain("Foto tempat");
+    expect(dashboard).toContain("Foto menu");
     expect(dashboard).toContain("Harga observasi");
     expect(dashboard).toContain("Sumber data:");
     expect(nextConfig).toContain("remotePatterns");

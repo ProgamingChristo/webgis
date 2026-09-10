@@ -10,7 +10,7 @@ export function CreativePreview({ creative, merchantName }: CreativePreviewProps
   if (!creative) {
     return (
       <div className="border border-dashed border-gray-300 rounded p-4 text-center text-gray-500 text-sm h-full flex items-center justify-center min-h-[300px]">
-        Preview will appear here
+        Pratinjau akan muncul di sini
       </div>
     );
   }
@@ -22,7 +22,7 @@ export function CreativePreview({ creative, merchantName }: CreativePreviewProps
         <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="break-words text-sm font-semibold leading-5 text-gray-900 line-clamp-2">{merchantName}</div>
-          <div className="text-xs text-gray-500">Sponsored</div>
+          <div className="text-xs text-gray-500">Promosi</div>
         </div>
       </div>
 
@@ -32,19 +32,19 @@ export function CreativePreview({ creative, merchantName }: CreativePreviewProps
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 
             src={creative.imagePath.startsWith('http') ? creative.imagePath : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/advertising-creatives/${creative.imagePath}`} 
-            alt="Creative"
+            alt="Materi promosi"
             className="w-full h-full object-cover"
           />
         </div>
       ) : (
         <div className="aspect-video bg-gray-50 flex items-center justify-center border-b border-gray-100">
-          <span className="text-gray-400 text-sm">No Image</span>
+          <span className="text-gray-400 text-sm">Belum ada gambar</span>
         </div>
       )}
 
       {/* Content */}
       <div className="p-3">
-        <h4 className="mb-1 break-words text-base font-bold leading-6 text-gray-900">{creative.headline || "Headline"}</h4>
+        <h4 className="mb-1 break-words text-base font-bold leading-6 text-gray-900">{creative.headline || "Judul"}</h4>
         {creative.description && (
           <p className="mb-3 break-words text-sm leading-6 text-gray-600">{creative.description}</p>
         )}

@@ -19,7 +19,7 @@ export function DemandSignalCard({ signal }: DemandSignalCardProps) {
     <article className={styles.signalCard}>
       <header className={styles.signalCardHeader}>
         <div>
-          <span className={styles.eyebrow}>Community Demand Signal</span>
+          <span className={styles.eyebrow}>Kebutuhan warga</span>
           <h3>{formatCommuterRequestCategory(signal.category)}</h3>
         </div>
         <strong>{signal.requestCount} permintaan</strong>

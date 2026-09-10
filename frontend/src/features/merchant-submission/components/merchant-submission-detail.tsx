@@ -34,7 +34,7 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
         setSubmission(data);
       } catch (err: any) {
         console.error("[MerchantSubmissionDetail] Load error:", err);
-        setError(err.message || "Gagal memuat detail pengajuan.");
+        setError("Detail pengajuan belum dapat dimuat. Coba lagi.");
       } finally {
         setLoading(false);
       }
@@ -51,7 +51,7 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
       setSubmission(updated);
     } catch (err: any) {
       console.error("[MerchantSubmissionDetail] Cancel error:", err);
-      setError(err.message || "Gagal membatalkan pengajuan.");
+      setError("Pengajuan belum dapat dibatalkan. Coba lagi.");
     } finally {
       setCancelling(false);
     }
@@ -71,14 +71,14 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
       <div className="max-w-2xl mx-auto p-6 text-center py-12">
         <div className="p-6 rounded-2xl border border-rose-500/30 bg-rose-950/20 max-w-md mx-auto">
           <AlertTriangle size={24} className="text-rose-400 mx-auto mb-3" />
-          <h2 className="text-sm font-semibold text-white">Gagal Memuat Pengajuan</h2>
-          <p className="text-xs text-slate-400 mt-1 mb-4">{error || "Data tidak ditemukan."}</p>
+          <h2 className="text-sm font-semibold text-white">Pengajuan Belum Dapat Dimuat</h2>
+          <p className="text-xs text-slate-400 mt-1 mb-4">{error || "Pengajuan tidak ditemukan."}</p>
           <Link
             href="/umkm"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
           >
             <ArrowLeft size={13} />
-            Kembali ke Workspace
+            Kembali ke Ruang Kelola
           </Link>
         </div>
       </div>
@@ -96,7 +96,7 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
           className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
         >
           <ArrowLeft size={13} />
-          Kembali ke Workspace UMKM
+          Kembali ke Ruang Kelola UMKM
         </Link>
       </div>
 
@@ -155,7 +155,7 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
             <div>
               <h4 className="text-xs font-semibold text-amber-200">Sedang Dalam Tahap Verifikasi</h4>
               <p className="text-xs text-amber-400/90 mt-0.5 leading-relaxed">
-                Tim kurasi GETRA sedang meninjau kelayakan data dan koordinat usaha Anda. Anda akan mendapatkan notifikasi setelah review selesai.
+                Tim GETRA sedang memeriksa data dan lokasi usaha Anda. Anda akan menerima notifikasi setelah pemeriksaan selesai.
               </p>
             </div>
           </div>
@@ -167,7 +167,7 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
             <div>
               <h4 className="text-xs font-semibold text-emerald-200">Pengajuan Telah Disetujui!</h4>
               <p className="text-xs text-emerald-400/90 mt-0.5 leading-relaxed">
-                Merchant Anda kini telah aktif dalam katalog terverifikasi GETRA dan siap dikelola pada menu Merchant Saya.
+                Usaha Anda kini aktif di GETRA dan dapat dikelola melalui menu Usaha Saya.
               </p>
             </div>
           </div>
@@ -193,7 +193,7 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
           </div>
 
           <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
-            <span className="text-slate-400">Titik Koordinat PostGIS</span>
+            <span className="text-slate-400">Lokasi usaha</span>
             <p className="break-all text-slate-200 font-mono font-medium">
               Lng: {lng.toFixed(6)}, Lat: {lat.toFixed(6)}
             </p>

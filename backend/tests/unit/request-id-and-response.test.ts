@@ -43,7 +43,7 @@ describe("request IDs and API response envelopes", () => {
       success: false,
       error: {
         code: "DATABASE_UNAVAILABLE",
-        message: "Database connection failed",
+        message: "Data sedang tidak dapat dimuat. Coba lagi beberapa saat nanti.",
         retryable: true,
       },
       request_id: expect.any(String),

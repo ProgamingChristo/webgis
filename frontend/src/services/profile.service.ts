@@ -6,6 +6,7 @@ import {
   type UserContext,
 } from "@/src/lib/auth-client";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
+import { getUserFacingApiError } from "@/src/lib/user-facing-api-error";
 
 export interface ProfileUpdatePayload {
   display_name?: string;
@@ -22,9 +23,11 @@ async function readJson<T>(
   const json = await response.json().catch(() => null);
 
   if (!response.ok || !json?.success) {
-    throw new Error(
-      json?.error?.message ?? fallbackMessage,
-    );
+    throw new Error(getUserFacingApiError({
+      code: json?.error?.code,
+      status: response.status,
+      fallback: fallbackMessage,
+    }));
   }
 
   return json.data as T;
@@ -144,7 +147,7 @@ export const profileService = {
 
     return readJson<PublicProfile>(
       response,
-      "Gagal memuat profil user.",
+      "Profil pengguna belum dapat dimuat.",
     );
   },
 };

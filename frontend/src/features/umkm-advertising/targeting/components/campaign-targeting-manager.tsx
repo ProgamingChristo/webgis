@@ -32,7 +32,7 @@ export function CampaignTargetingManager({
     return (
       <div className="mt-4 pt-4 border-t border-gray-200 text-sm text-gray-500 flex items-center space-x-2">
         <span className="animate-spin inline-block w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full" />
-        <span>Memuat data targeting campaign...</span>
+        <span>Memuat wilayah sasaran...</span>
       </div>
     );
   }
@@ -41,14 +41,14 @@ export function CampaignTargetingManager({
     <div className="mt-4 pt-4 border-t border-gray-200">
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h4 className="font-bold text-gray-800 text-base">Geographic & Spatial Targeting</h4>
+          <h4 className="font-bold text-gray-800 text-base">Wilayah sasaran promosi</h4>
           <p className="text-xs text-gray-500">
-            Tentukan area geografis tempat iklan akan ditayangkan kepada pengguna GETRA.
+            Tentukan area tempat promosi akan ditampilkan kepada pengguna GETRA.
           </p>
         </div>
         {!isEditable && (
           <span className="text-xs px-2.5 py-1 bg-gray-100 text-gray-600 rounded">
-            Hanya dapat diedit saat status DRAFT
+            Hanya dapat diedit saat masih berupa draf
           </span>
         )}
       </div>

@@ -41,7 +41,7 @@ describe("Merchant description AI assistant", () => {
       />,
     );
 
-    expect(html).toContain("Bantu tulis dengan AI");
+    expect(html).toContain("Bantu tulis");
     expect(html).toContain("aria-haspopup=\"dialog\"");
     expect(html).toContain("type=\"button\"");
     expect(html).toContain("bottom-3 right-6");
@@ -62,7 +62,7 @@ describe("Merchant description AI assistant", () => {
       />,
     );
 
-    expect(html).toContain("Perbaiki dengan AI");
+    expect(html).toContain("Perbaiki tulisan");
     expect(html).toContain("aria-haspopup=\"menu\"");
     expect(MERCHANT_DESCRIPTION_ACTIONS).toEqual([
       { mode: "improve", label: "Perbaiki tulisan" },
@@ -70,7 +70,7 @@ describe("Merchant description AI assistant", () => {
       { mode: "shorten", label: "Buat lebih singkat" },
       { mode: "proofread", label: "Rapikan bahasa" },
     ]);
-    expect(getMerchantDescriptionAssistantLabel("  ")).toBe("Bantu tulis dengan AI");
+    expect(getMerchantDescriptionAssistantLabel("  ")).toBe("Bantu tulis");
   });
 
   it("calls only the authenticated GETRA backend and returns its clean contract", async () => {
@@ -106,6 +106,6 @@ describe("Merchant description AI assistant", () => {
     await expect(AiService.assistMerchantDescription({
       mode: "improve",
       description: "Warung menjual teh.",
-    })).rejects.toThrow("Gagal membuat deskripsi. Coba lagi.");
+    })).rejects.toThrow("Deskripsi belum dapat disiapkan. Coba lagi.");
   });
 });

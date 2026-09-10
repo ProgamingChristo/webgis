@@ -1,100 +1,93 @@
 import Link from "next/link";
+import { ArrowRight, Footprints, Search, Store } from "lucide-react";
 
-import { HeroMetricStrip } from "./hero-metric-strip";
-import { HeroSearchPreview } from "./hero-search-preview";
-import { HeroSpatialOverlay } from "./hero-spatial-overlay";
 import { WebgisHeroMap } from "./webgis-hero-map";
+
+const HERO_PILLARS = [
+  { icon: Search, label: "Cari tempat sesuai kebutuhan" },
+  { icon: Footprints, label: "Rute pejalan kaki" },
+  { icon: Store, label: "Temukan usaha lokal" },
+] as const;
 
 export function LandingHero() {
   return (
-    <section className="relative isolate overflow-hidden px-4 pb-14 pt-28 sm:px-6 lg:min-h-svh lg:px-8 lg:pb-16 lg:pt-32">
+    <section className="relative isolate overflow-hidden px-4 pb-12 pt-28 sm:px-6 sm:pt-32 lg:px-8 lg:pb-16">
       <div
-        className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_18%_18%,rgba(41,199,216,0.18),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(122,212,59,0.14),transparent_24%),linear-gradient(135deg,#07111f,#0a1628_48%,#07111f)]"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute inset-0 -z-10 bg-[linear-gradient(rgba(41,199,216,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(41,199,216,0.055)_1px,transparent_1px)] bg-[size:40px_40px]"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[680px] bg-[radial-gradient(circle_at_76%_8%,rgba(98,214,200,0.16),transparent_25%),radial-gradient(circle_at_92%_22%,rgba(17,138,178,0.12),transparent_30%)]"
         aria-hidden="true"
       />
 
-      <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[minmax(0,0.88fr)_minmax(560px,1.12fr)]">
-        <div className="max-w-2xl">
-          <p className="getra-hero-step inline-flex rounded-full border border-getra-cyan/25 bg-getra-cyan/10 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-getra-cyan">
-            GETRA · Spatial Intelligence Platform
+      <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[minmax(0,0.88fr)_minmax(460px,1.12fr)] lg:gap-6">
+        <div className="max-w-2xl lg:pb-4">
+          <p className="getra-hero-step inline-flex rounded-full border border-[#118ab2]/15 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#118ab2] shadow-[0_6px_16px_rgba(70,75,113,0.06)]">
+            WebGIS untuk mobilitas dan UMKM
           </p>
 
-          <h1 className="getra-hero-step mt-7 text-5xl font-black tracking-[-0.055em] text-white sm:text-6xl lg:text-7xl">
-            Geo-Enabled
-            <span className="block text-getra-cyan">Transit & Retail</span>
-            Analytics
+          <h1 className="getra-hero-step mt-6 text-[clamp(2.7rem,5.2vw,4.4rem)] font-black leading-[0.98] tracking-[-0.065em] text-[#464b71]">
+            Jelajahi Kota Lebih Mudah.
+            <span className="block text-[#118ab2]">
+              Temukan Tempat, Rute, dan Usaha Lokal.
+            </span>
           </h1>
 
-          <p className="getra-hero-step mt-6 max-w-xl text-base leading-8 text-slate-300 sm:text-lg">
-            Spatial intelligence untuk menghubungkan transportasi massal,
-            akses pedestrian, UMKM, dan aktivitas kawasan transit dalam satu
-            WebGIS. A map-powered application layer designed to support spatial collaboration, survey execution, and location-based communities.
+          <p className="getra-hero-step mt-6 max-w-xl text-base leading-8 text-[#66708d] sm:text-lg">
+            GETRA membantu Anda mencari tempat, melihat rute, memahami akses
+            sekitar, dan menemukan usaha lokal melalui satu peta.
           </p>
 
-          <div className="getra-hero-step mt-7 grid gap-3 rounded-3xl border border-white/10 bg-white/[0.035] p-4 sm:grid-cols-2">
-            <div>
-              <span className="text-xs font-black uppercase tracking-[0.18em] text-getra-green">
-                GIS menghitung.
-              </span>
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                Distance, walking time, route, service area, containment, dan
-                score tetap hasil spatial computation.
-              </p>
-            </div>
-            <div>
-              <span className="text-xs font-black uppercase tracking-[0.18em] text-getra-cyan">
-                AI menginterpretasikan.
-              </span>
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                AI membaca intent dan menjelaskan output GIS yang sudah
-                dihitung—bukan menggantikan komputasi spasial.
-              </p>
-            </div>
-          </div>
-
-          <div className="getra-hero-step mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="getra-hero-step mt-8 flex flex-wrap items-center gap-3">
             <Link
               href="/login"
-              className="inline-flex min-h-12 items-center justify-center rounded-full bg-gradient-to-r from-getra-green to-getra-cyan px-6 text-sm font-black text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-getra-cyan"
+              className="inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#118ab2] px-6 text-sm font-black text-white shadow-[0_10px_25px_-4px_rgba(17,138,178,0.38),0_4px_6px_-2px_rgba(17,138,178,0.2)] transition hover:bg-[#0d7495] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#118ab2]"
             >
-              Masuk ke GETRA
+              Buka GETRA
+              <ArrowRight size={17} aria-hidden="true" />
             </Link>
 
             <a
-              href="#tentang"
-              className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/15 px-6 text-sm font-black text-white transition hover:border-getra-cyan/55 hover:bg-getra-cyan/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-getra-cyan"
+              href="#cara-kerja"
+              className="inline-flex min-h-12 items-center justify-center rounded-full px-4 text-sm font-bold text-[#464b71] transition hover:text-[#118ab2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#118ab2]"
             >
-              Lihat Cara Kerja
+              Lihat cara kerja
             </a>
           </div>
 
-          <p className="mt-5 text-sm text-slate-400">
-            Belum memiliki akun?{" "}
+          <p className="getra-hero-step mt-5 text-sm text-[#66708d]">
+            Belum punya akun?{" "}
             <Link
               href="/signup"
-              className="inline-flex min-h-8 items-center rounded-md font-bold text-getra-cyan hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-getra-cyan"
+              className="rounded font-bold text-[#118ab2] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#118ab2]"
             >
-              Daftar
+              Daftar sekarang
             </Link>
           </p>
         </div>
 
-        <div className="getra-hero-map grid gap-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_220px]">
-            <WebgisHeroMap />
-            <HeroSpatialOverlay />
+        <div className="getra-hero-step relative min-h-[320px] overflow-hidden rounded-[2rem] border border-white/80 bg-[#e9f5f6] shadow-[0_24px_65px_rgba(70,75,113,0.14)] sm:min-h-[430px] lg:min-h-[560px] lg:rounded-[2.5rem]">
+          <WebgisHeroMap className="absolute inset-0 h-full w-full" />
+          <div
+            className="pointer-events-none absolute inset-y-0 left-0 w-2/5 bg-gradient-to-r from-white/70 via-white/10 to-transparent"
+            aria-hidden="true"
+          />
+          <div className="absolute bottom-4 left-4 rounded-full border border-white/80 bg-white/90 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-[#464b71] shadow-[0_8px_20px_rgba(70,75,113,0.1)] backdrop-blur sm:bottom-6 sm:left-6">
+            Peta sebagai titik awal
           </div>
-
-          <HeroSearchPreview />
         </div>
       </div>
 
-      <div className="mx-auto mt-8 max-w-7xl">
-        <HeroMetricStrip />
+      <div className="mx-auto mt-9 max-w-7xl lg:mt-12">
+        <div className="grid border-t border-[#464b71]/15 pt-5 sm:grid-cols-3 sm:gap-6">
+          {HERO_PILLARS.map(({ icon: Icon, label }) => (
+            <div key={label} className="flex items-center gap-3 py-3 sm:py-0">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#118ab2]/8 text-[#118ab2]">
+                <Icon size={20} aria-hidden="true" />
+              </span>
+              <span className="max-w-[180px] text-sm font-bold leading-5 text-[#464b71]">
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

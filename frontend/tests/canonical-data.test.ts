@@ -79,7 +79,7 @@ describe("canonical v1 data integration", () => {
 
   it("preserves structured backend error messages for retryable failures", async () => {
     fetchMock.mockResolvedValue(respond({ success: false, error: { message: "Coba lagi nanti." } }, 429));
-    await expect(getraApiGet("/api/v1/transport/nodes")).rejects.toMatchObject({ code: "RATE_LIMITED", message: "Coba lagi nanti." });
+    await expect(getraApiGet("/api/v1/transport/nodes")).rejects.toMatchObject({ code: "RATE_LIMITED", message: "Terlalu banyak permintaan. Tunggu sebentar, lalu coba lagi." });
   });
 
   it("does not start an already cancelled request", async () => {

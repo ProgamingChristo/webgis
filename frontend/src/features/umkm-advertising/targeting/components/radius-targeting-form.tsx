@@ -42,7 +42,7 @@ export function RadiusTargetingForm({
         ) : (
           <div className="flex items-start gap-2 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <span>Lokasi merchant belum terdeteksi. Pastikan data merchant memiliki koordinat yang valid.</span>
+            <span>Lokasi usaha belum tersedia. Periksa kembali titik lokasi usaha.</span>
           </div>
         )}
       </div>

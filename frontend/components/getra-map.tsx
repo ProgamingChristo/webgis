@@ -1243,7 +1243,7 @@ export function GetraMap({
             }).setDOMContent(
               createPopupContent(
                 datasetOrigin.name,
-                "Pusat extent dataset aktif",
+                "Pusat area data aktif",
               ),
             ),
           )
@@ -1562,7 +1562,7 @@ export function GetraMap({
         .setPopup(
           new Popup({ offset: 16 }).setDOMContent(
             createPopupContent(
-              candidate.property_category ?? "Property observation",
+              candidate.property_category ?? "Catatan properti",
               detail,
             ),
           ),
@@ -1598,7 +1598,7 @@ export function GetraMap({
             ? "Perlu verifikasi"
             : "Observasi lapangan",
         evidence.freshness_status,
-        `Sumber: ${evidence.source_type === "GETRA_COMMUNITY" ? "GETRA Community" : "MAPID Activities"}`,
+        `Sumber: ${evidence.source_type === "GETRA_COMMUNITY" ? "Komunitas GETRA" : "Catatan lapangan"}`,
       ].join(" - ");
       const marker = new Marker({ element: markerElements.element, anchor: "center" })
         .setLngLat(evidence.geometry.coordinates)
@@ -2142,7 +2142,7 @@ export function GetraMap({
 
         <div>
           <strong>
-            BASEMAP
+            JENIS PETA
           </strong>
 
           <span>
@@ -2150,7 +2150,7 @@ export function GetraMap({
               (option) =>
                 option.id ===
                 activeBasemapId,
-            )?.description ?? "MAPID basemap"}
+            )?.description ?? "Peta MAPID"}
           </span>
         </div>
       </div>
@@ -2176,7 +2176,7 @@ export function GetraMap({
       <summary hidden={!journeyActive} aria-label="Tampilan peta" title="Tampilan peta"><Layers size={20} /></summary>
       <div
         className="basemap-switcher"
-        aria-label="Pilih basemap"
+        aria-label="Pilih jenis peta"
       >
         {BASEMAP_OPTIONS.map(
           (option) => (

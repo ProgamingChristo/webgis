@@ -120,7 +120,7 @@ function SubmissionCard({ item }: { item: SummaryItem }) {
         <div className="min-w-0 break-words text-xs leading-5 text-slate-400">
           <p>{getStateDescription(item.status)}</p>
           <p className="text-slate-500">
-            {item.status === "DRAFT" ? "Draft dibuat" : "Pengajuan dibuat"} {formatDate(item.createdAt)}
+            {item.status === "DRAFT" ? "Draf dibuat" : "Pengajuan dibuat"} {formatDate(item.createdAt)}
             {item.updatedAt ? ` / Diperbarui ${formatDate(item.updatedAt)}` : ""}
           </p>
         </div>
@@ -168,7 +168,7 @@ function getStatusPresentation(status: SummaryItem["status"]) {
     case "PENDING_REVIEW":
       return {
         icon: Clock,
-        label: "Menunggu Review",
+        label: "Menunggu pemeriksaan",
         tone: "border-amber-500/30 bg-amber-950/40 text-amber-200",
       };
     case "APPROVED":

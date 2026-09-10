@@ -3,18 +3,18 @@ import { CheckCircle2, Clock3, Route } from "lucide-react";
 const ITEMS = [
   {
     icon: Clock3,
-    label: "Walking time",
-    value: "8 min walk",
+    label: "Waktu berjalan",
+    value: "8 menit",
   },
   {
     icon: Route,
-    label: "Service area",
-    value: "10 min catchment",
+    label: "Jangkauan",
+    value: "10 menit berjalan",
   },
   {
     icon: CheckCircle2,
-    label: "Source",
-    value: "Illustrative / verified concept",
+    label: "Keterangan",
+    value: "Contoh tampilan",
   },
 ] as const;
 

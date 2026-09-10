@@ -7,55 +7,55 @@ import type {
 
 export const LANDING_METRICS: LandingMetric[] = [
   {
-    label: "Pedestrian Network",
-    value: "Walking-aware",
+    label: "Jaringan Jalan Kaki",
+    value: "Sesuai rute",
     description: "Akses dinilai dari keterjangkauan jalan kaki, bukan jarak lurus.",
   },
   {
-    label: "Service Area",
-    value: "Catchment",
-    description: "GIS membentuk area layanan dari jaringan dan waktu tempuh.",
+    label: "Area Terjangkau",
+    value: "Berbasis waktu",
+    description: "Area terjangkau dibentuk dari jalur dan waktu tempuh berjalan kaki.",
   },
   {
-    label: "Fair Discovery",
-    value: "Contextual",
-    description: "Hasil discovery dipisahkan antara original, hidden gem, dan sponsored.",
+    label: "Penelusuran Adil",
+    value: "Sesuai kebutuhan",
+    description: "Hasil biasa, pilihan lokal, dan promosi ditampilkan secara jelas.",
   },
   {
-    label: "UMKM Intelligence",
-    value: "Spatial",
+    label: "Informasi UMKM",
+    value: "Berbasis lokasi",
     description: "Konteks lokasi membantu membaca peluang usaha di sekitar transit.",
   },
 ];
 
 export const LANDING_PROBLEM_TAGS: LandingProblemTag[] = [
   {
-    title: "Distance ≠ Access",
-    layer: "Access layer",
+    title: "Dekat belum tentu mudah dicapai",
+    layer: "Akses",
     description: "Dekat secara garis lurus belum tentu mudah dijangkau pejalan kaki.",
   },
   {
-    title: "Demand & Supply Terpisah",
-    layer: "Demand layer",
+    title: "Kebutuhan dan usaha sering terpisah",
+    layer: "Kebutuhan area",
     description: "Aktivitas komuter dan titik usaha sering dilihat di sistem berbeda.",
   },
   {
-    title: "Popularitas ≠ Relevansi",
-    layer: "Fairness layer",
+    title: "Populer belum tentu paling sesuai",
+    layer: "Kesesuaian hasil",
     description: "Tempat yang paling ramai belum tentu paling relevan untuk konteks lokasi.",
   },
   {
-    title: "Data Membutuhkan Freshness",
-    layer: "Trust layer",
-    description: "Kota berubah cepat; evidence lokasi perlu status dan sumber yang jelas.",
+    title: "Data perlu terus diperbarui",
+    layer: "Keandalan data",
+    description: "Kota berubah cepat; catatan lokasi perlu waktu dan sumber yang jelas.",
   },
 ];
 
 export const HERO_SEARCH_CHIPS = [
-  "Food",
+  "Makanan",
   "≤ Rp30.000",
-  "≤ 10 min",
-  "Open now",
+  "≤ 10 menit",
+  "Buka sekarang",
 ] as const;
 
 export const WHAT_IS_GETRA_NODES: LandingStoryCard[] = [
@@ -64,101 +64,101 @@ export const WHAT_IS_GETRA_NODES: LandingStoryCard[] = [
     description: "Transit menjadi titik awal konteks, bukan akhir perjalanan.",
   },
   {
-    title: "Akses pedestrian",
+    title: "Akses pejalan kaki",
     description: "Jaringan jalan kaki, waktu tempuh, dan rute menjadi dasar akses.",
   },
   {
-    title: "UMKM & demand lokal",
+    title: "UMKM dan kebutuhan lokal",
     description: "Kebutuhan komuter dibaca bersama keberadaan usaha sekitar.",
   },
   {
-    title: "Community & freshness",
-    description: "Temuan warga memperkaya data dengan status, waktu, dan provenance.",
+    title: "Komunitas dan pembaruan data",
+    description: "Temuan warga memperkaya data dengan status, waktu, dan sumber yang jelas.",
   },
 ];
 
 export const FEATURE_EXPLORER: LandingFeature[] = [
   {
     id: "smart-search",
-    label: "Smart Search",
-    eyebrow: "Intent → filter",
-    title: "Natural language diterjemahkan menjadi parameter.",
+    label: "Pencarian Pintar",
+    eyebrow: "Pertanyaan menjadi filter",
+    title: "Cari dengan kalimat sehari-hari.",
     description:
-      "AI membantu membaca intent seperti kategori, harga, jam buka, dan batas jalan kaki. GIS tetap menghitung kandidat dan eligibility.",
-    chips: ["category=food", "max_price=30000", "max_walk=10", "open_now=true"],
+      "GETRA memahami kategori, harga, jam buka, dan batas jalan kaki dari pertanyaan Anda, lalu mencari tempat yang sesuai.",
+    chips: ["Makanan", "Maks. Rp30.000", "Maks. 10 menit", "Buka sekarang"],
   },
   {
     id: "pedestrian-routing",
-    label: "Pedestrian Routing",
-    eyebrow: "Network route",
+    label: "Rute Jalan Kaki",
+    eyebrow: "Mengikuti jaringan jalan",
     title: "Jarak dekat belum tentu akses mudah.",
     description:
-      "GETRA membedakan garis lurus dari rute jaringan pedestrian. Distance, walking time, dan route tetap domain GIS/pgRouting.",
-    chips: ["straight line: illustrative 450 m", "network: illustrative 670 m", "walking time: illustrative"],
+      "GETRA membedakan jarak lurus dan rute yang benar-benar dapat dilalui pejalan kaki.",
+    chips: ["Jarak lurus: contoh 450 m", "Rute jalan: contoh 670 m", "Waktu berjalan: contoh"],
   },
   {
     id: "service-area",
-    label: "Service Area",
-    eyebrow: "Catchment",
+    label: "Area Terjangkau",
+    eyebrow: "Berdasarkan waktu berjalan",
     title: "Area layanan mengikuti jaringan, bukan lingkaran generik.",
     description:
-      "Service area divisualkan sebagai catchment tidak beraturan agar tidak disalahpahami sebagai radius sederhana.",
-    chips: ["5 min", "10 min", "15 min", "network-like catchment"],
+      "Area yang dapat dicapai mengikuti jaringan jalan, sehingga bentuknya tidak selalu berupa lingkaran.",
+    chips: ["5 menit", "10 menit", "15 menit", "Mengikuti jaringan jalan"],
   },
   {
     id: "fair-discovery",
-    label: "Fair Discovery",
-    eyebrow: "Original · Hidden Gem · Sponsored",
+    label: "Penelusuran Adil",
+    eyebrow: "Hasil biasa · Pilihan lokal · Promosi",
     title: "Promosi terlihat, relevansi tidak dibeli.",
     description:
-      "Sponsored placement harus tetap melewati constraint. Organic ranking tidak diam-diam digantikan oleh pembayaran.",
-    chips: ["Original", "Hidden Gem", "Sponsored labeled", "hard constraints first"],
+      "Tempat berpromosi tetap harus sesuai dengan lokasi dan kebutuhan pencarian. Pembayaran tidak menggantikan relevansi.",
+    chips: ["Hasil biasa", "Pilihan lokal", "Promosi diberi tanda", "Kesesuaian lebih dulu"],
   },
 ];
 
 export const COMMUTER_FEATURES = [
-  "Smart Search",
-  "Manual Filters",
-  "Walking Time",
-  "Pedestrian Route",
-  "Service Area",
-  "Route Switch",
-  "Smart Alternative",
-  "Merchant Profile",
+  "Pencarian Pintar",
+  "Filter Manual",
+  "Waktu Berjalan",
+  "Rute Jalan Kaki",
+  "Area Terjangkau",
+  "Pilihan Rute",
+  "Rute Alternatif",
+  "Profil Usaha",
 ] as const;
 
 export const COMMUNITY_SIGNALS = [
-  ["Trotoar terhalang", "Pending", "Source: commuter finding"],
-  ["Crossing sulit diakses", "Confirmed", "Timestamp tersedia"],
-  ["Permintaan sarapan pagi", "Updated", "Replies + location context"],
-  ["Informasi lokasi diperbarui", "Moderated", "Provenance tracked"],
+  ["Trotoar terhalang", "Menunggu pemeriksaan", "Sumber: temuan warga"],
+  ["Penyeberangan sulit diakses", "Terkonfirmasi", "Waktu pengamatan tersedia"],
+  ["Permintaan sarapan pagi", "Diperbarui", "Tanggapan dan lokasi tersedia"],
+  ["Informasi lokasi diperbarui", "Telah diperiksa", "Sumber data tercatat"],
 ] as const;
 
 export const ADD_UMKM_STEPS = [
-  "USER + UMKM stakeholder mode",
+  "Pilih pengalaman UMKM",
   "Tambah UMKM",
   "Isi profil usaha",
-  "Pilih lokasi di map",
-  "PENDING REVIEW",
-  "Trusted Review",
-  "APPROVED",
-  "Verified Merchant",
+  "Pilih lokasi di peta",
+  "Menunggu pemeriksaan",
+  "Pemeriksaan data",
+  "Disetujui",
+  "Usaha terverifikasi",
 ] as const;
 
 export const ADVERTISING_ITEMS = [
-  "Campaign",
-  "Creative",
-  "Spatial Targeting",
-  "Schedule",
-  "Sponsored Pin",
-  "Banner",
-  "Profile Poster",
-  "Midtrans Sandbox",
+  "Promosi",
+  "Materi Iklan",
+  "Target Wilayah",
+  "Jadwal",
+  "Pin Promosi",
+  "Banner Promosi",
+  "Poster Profil",
+  "Simulasi Pembayaran",
 ] as const;
 
 export const ANALYTICS_METRICS = [
-  "Impressions",
-  "Sponsored Pin Clicks",
-  "Profile Opens",
-  "Route Requests",
+  "Tayangan",
+  "Klik Pin Promosi",
+  "Kunjungan Profil",
+  "Permintaan Rute",
 ] as const;

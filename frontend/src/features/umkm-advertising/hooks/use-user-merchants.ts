@@ -16,8 +16,8 @@ export function useUserMerchants() {
       setRecommendedMerchants(res.recommendedMerchants || []);
       setIneligibleMerchants(res.ineligibleMerchants || []);
       setError(null);
-    } catch (err: any) {
-      setError(err.message || "Failed to load merchants");
+    } catch {
+      setError("Daftar usaha belum dapat dimuat. Coba lagi.");
     } finally {
       setLoading(false);
     }

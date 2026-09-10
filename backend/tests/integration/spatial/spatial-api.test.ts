@@ -193,7 +193,7 @@ describe("Phase 7 spatial API handlers", () => {
       );
 
       const body = await expectErrorResponse(response, 401, "UNAUTHORIZED");
-      expect(body.error.message).toBe("Unauthorized");
+      expect(body.error.message).toBe("Sesi Anda telah berakhir. Silakan masuk kembali.");
       expect(JSON.stringify(body)).not.toContain("internal token detail");
       expect(harness.createService).not.toHaveBeenCalled();
       expect(harness.checkLimit).not.toHaveBeenCalled();
@@ -422,7 +422,7 @@ describe("Phase 7 spatial API handlers", () => {
 
       expect(body.error).toEqual({
         code: "SPATIAL_QUERY_FAILED",
-        message: "Spatial query failed",
+        message: "Informasi lokasi belum dapat dimuat. Coba lagi.",
         retryable: true,
       });
       expect(JSON.stringify(body)).not.toContain(internalDetail);

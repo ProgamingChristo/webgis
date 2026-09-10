@@ -33,8 +33,12 @@ export function useAi() {
       setMessages([...nextMessages, assistantMessage]);
       setProvider(res.provider);
       setState("SUCCESS");
-    } catch (err: any) {
-      setError(err.message || "Failed to get AI response");
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Asisten sedang tidak dapat digunakan. Coba lagi.",
+      );
       setProvider(null);
       setState("ERROR");
     }

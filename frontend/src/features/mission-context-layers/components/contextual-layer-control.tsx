@@ -21,7 +21,7 @@ interface ContextualLayerControlProps {
 }
 
 const options = [
-  { key: "merchant", label: "Merchant", Icon: Store },
+  { key: "merchant", label: "Tempat", Icon: Store },
   { key: "property", label: "Properti", emptyLabel: "observasi properti", Icon: Building2, source: "PROPERTI_GO" },
   { key: "transaction", label: "Observasi transaksi", emptyLabel: "observasi transaksi", Icon: ReceiptText, source: "STRUK_GO" },
   { key: "activities", label: "Observasi lapangan", emptyLabel: "observasi lapangan", Icon: MapPinned, source: "ACTIVITIES" },
@@ -37,10 +37,10 @@ export function ContextualLayerControl({
     <details className="contextual-layer-control" data-testid="contextual-layer-control">
       <summary>
         <Layers3 size={17} aria-hidden="true" />
-        <span>Layers</span>
+        <span>Lapisan</span>
       </summary>
       <div className="contextual-layer-control__panel">
-        <strong>Layer peta</strong>
+        <strong>Lapisan peta</strong>
         {options.map(({ key, label, Icon, ...option }) => {
           const source = "source" in option ? option.source : null;
           const status = source ? data[source] : null;
@@ -65,7 +65,7 @@ export function ContextualLayerControl({
             </label>
           );
         })}
-        <div className="contextual-layer-legend" aria-label="Legenda layer kontekstual">
+        <div className="contextual-layer-legend" aria-label="Legenda lapisan peta">
           <span><i className="legend-swatch legend-swatch--property" /> Properti</span>
           <span><i className="legend-swatch legend-swatch--transaction" /> Transaksi</span>
           <span><i className="legend-swatch legend-swatch--activity" /> Lapangan</span>
@@ -77,7 +77,7 @@ export function ContextualLayerControl({
             return [<p key={`${key}-error`} className="contextual-layer-message contextual-layer-message--error">{status.error}</p>];
           }
           if (!status.loading && status.collection.features.length === 0) {
-            return [<p key={`${key}-empty`} className="contextual-layer-message">Tidak ada {option.emptyLabel} di viewport ini.</p>];
+            return [<p key={`${key}-empty`} className="contextual-layer-message">Belum ada {option.emptyLabel} di area peta ini.</p>];
           }
           return [];
         })}

@@ -41,7 +41,7 @@ describe("service error mapping", () => {
 
     const mapped = mapRepositoryError(repositoryError);
 
-    expect(mapped.message).toBe("Database operation failed");
+    expect(mapped.message).toBe("Data belum dapat diproses. Coba lagi.");
     expect(mapped.message).not.toContain(internalDetail);
   });
 
@@ -52,7 +52,7 @@ describe("service error mapping", () => {
 
     expect(mapped).toMatchObject({
       code: "INTERNAL_ERROR",
-      message: "Internal server error",
+      message: "Terjadi kendala saat memuat informasi. Coba lagi.",
       retryable: false,
     });
   });

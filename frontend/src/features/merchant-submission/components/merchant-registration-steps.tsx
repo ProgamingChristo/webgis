@@ -5,7 +5,7 @@ export const MERCHANT_REGISTRATION_STEPS = [
   "Lokasi",
   "Operasional",
   "Menu & Harga",
-  "Foto & Preview",
+  "Foto & Pratinjau",
   "Verifikasi",
 ] as const;
 

@@ -15,8 +15,8 @@ export function useStudyAreas() {
       setError(null);
       const data = await TargetingService.getStudyAreas();
       setStudyAreas(data);
-    } catch (err: any) {
-      setError(err.message || "Gagal memuat study areas");
+    } catch {
+      setError("Daftar wilayah belum dapat dimuat. Coba lagi.");
     } finally {
       setLoading(false);
     }

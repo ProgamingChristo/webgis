@@ -23,7 +23,7 @@ export function CommunityUserProfilePage({
     }
 
     if (profile.relationshipState === "SELF") {
-      return <span className={styles.friendState}>Profil Community kamu</span>;
+      return <span className={styles.friendState}>Profil komunitas Anda</span>;
     }
 
     if (profile.relationshipState === "NONE") {
@@ -97,13 +97,13 @@ export function CommunityUserProfilePage({
     <CommunityShell
       state={{
         contributionCount: profile?.friendCount ?? 0,
-        statusLabel: "Community Profile",
+        statusLabel: "Profil komunitas",
       }}
     >
       <div className={styles.detailLayout}>
         <div className={styles.detailToolbar}>
           <Link className={styles.locationLinkButton} href="/community">
-            Kembali ke Community
+            Kembali ke komunitas
           </Link>
           <Link className={styles.locationLinkButton} href="/community/friends">
             Teman
@@ -118,7 +118,7 @@ export function CommunityUserProfilePage({
         ) : detail.error || !profile ? (
           <section className={styles.feedState} role="alert">
             <span className={styles.eyebrow}>Profil error</span>
-            <h2>Profil Community belum bisa dimuat.</h2>
+            <h2>Profil komunitas belum bisa dimuat.</h2>
             <p>{detail.error ?? "Profil tidak ditemukan."}</p>
             <button
               className={styles.secondaryButton}

@@ -86,10 +86,10 @@ export function AnalyticsFilters({
             onChange={(e) => onPlacementChange(e.target.value || undefined)}
             className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-300 outline-none focus:border-blue-500 transition-colors"
           >
-            <option value="">Semua Placement</option>
-            <option value="SPONSORED_PIN">Sponsored Pin</option>
-            <option value="CONTEXTUAL_BANNER">Promo Banner</option>
-            <option value="PROFILE_POSTER">Profile Poster</option>
+            <option value="">Semua jenis tampilan</option>
+            <option value="SPONSORED_PIN">Penanda promosi</option>
+            <option value="CONTEXTUAL_BANNER">Banner promosi</option>
+            <option value="PROFILE_POSTER">Poster profil</option>
           </select>
         </div>
       </div>

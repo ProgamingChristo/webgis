@@ -44,8 +44,8 @@ export function FairDiscoveryResults({
     return (
       <div className={`flex flex-col items-center justify-center p-8 text-center text-slate-400 space-y-3 ${className}`}>
         <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
-        <p className="text-xs font-semibold">Memuat penelusuran berimbang GETRA...</p>
-        <span className="text-[10px] text-slate-500">Mengevaluasi hasil organik, hidden gem, dan sponsor relevan</span>
+        <p className="text-xs font-semibold">Mencari tempat...</p>
+        <span className="text-[10px] text-slate-500">Menyiapkan hasil yang sesuai dengan pilihan Anda</span>
       </div>
     );
   }
@@ -89,7 +89,7 @@ export function FairDiscoveryResults({
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-8 text-center text-slate-500">
           <Store className="w-8 h-8 text-slate-600 mb-2" />
           <p className="text-xs font-semibold text-slate-400">
-            Tidak ada merchant yang cocok di sekitar lokasi ini.
+            Belum ada tempat yang cocok di sekitar lokasi ini.
           </p>
           <p className="text-[11px] text-slate-600 mt-1">
             Coba ubah kata kunci atau perluas jangkauan pencarian Anda.

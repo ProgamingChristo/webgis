@@ -33,7 +33,7 @@ describe("Phase 09 grounded analytics interpretation", () => {
     vi.mocked(generateStructured).mockResolvedValue({ data: { answer: "Demand Score 80 dan pasti untung besar dengan ROI tinggi." }, source: "openai" });
     const response = await new AnalyticsInterpretationService().explain(result, "jakarta-selatan");
     expect(response.status).toBe("DETERMINISTIC_FALLBACK");
-    expect(response.answer).toContain("Demand Score 72");
+    expect(response.answer).toContain("skor kebutuhan 72");
     expect(response.answer).not.toContain("80");
   });
 
@@ -41,6 +41,6 @@ describe("Phase 09 grounded analytics interpretation", () => {
     vi.mocked(generateStructured).mockResolvedValue(null);
     const response = await new AnalyticsInterpretationService().explain(result, "jakarta-selatan");
     expect(response.status).toBe("DETERMINISTIC_FALLBACK");
-    expect(response.answer).toContain("Retail Gap 34");
+    expect(response.answer).toContain("celah kebutuhan 34");
   });
 });

@@ -23,7 +23,7 @@ describe("rate-limit API response", () => {
         details: {
           source: "GETRA_RATE_LIMIT",
         },
-        message: "Too many requests. Please try again later",
+        message: "Terlalu banyak permintaan dalam waktu singkat. Coba lagi nanti.",
         retryable: true,
       },
       request_id: TEST_REQUEST_ID,
