@@ -77,13 +77,13 @@ export function MerchantSearchField({
             }
             onChange(null);
           }}
-          placeholder="Cari nama usaha canonical..."
+          placeholder="Cari nama usaha terdaftar..."
           type="search"
           value={query}
         />
       </label>
       <p className={styles.help} id="merchant-search-help">
-        Pilih usaha dari hasil pencarian. ID canonical dikirim ke backend.
+        Pilih usaha yang sesuai dari hasil pencarian.
       </p>
       {value ? (
         <p className={styles.statusText}>

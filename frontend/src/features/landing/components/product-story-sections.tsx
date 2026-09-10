@@ -10,46 +10,53 @@ import {
 import { LANDING_TECHNOLOGY } from "../data/technology.data";
 import { SectionShell } from "./section-shell";
 
+const CARD =
+  "rounded-[1.5rem] border border-[#464b71]/12 bg-white p-5 shadow-[0_12px_30px_rgba(70,75,113,0.055)]";
+const EYEBROW =
+  "text-[10px] font-black uppercase tracking-[0.17em] text-[#118ab2]";
+
 export function FairDiscoverySection() {
   return (
     <SectionShell
-      eyebrow="Fair Discovery"
+      eyebrow="Penelusuran Adil"
       title="Promosi boleh terlihat. Relevansi tidak boleh dibeli."
-      description="GETRA memisahkan hasil Original, Hidden Gem, dan Sponsored. Sponsored harus tetap lolos constraint lokasi, kategori, harga, open now, dan walking limit sebelum tampil."
+      description="GETRA membedakan hasil biasa, pilihan lokal, dan promosi. Semua hasil tetap harus sesuai dengan lokasi, kategori, harga, jam buka, dan batas waktu berjalan."
     >
-      <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-        <div className="rounded-[2rem] border border-getra-cyan/20 bg-getra-cyan/8 p-5">
-          <h3 className="text-lg font-black text-white">Search constraints</h3>
+      <div className="grid gap-4 lg:grid-cols-[0.78fr_1.22fr]">
+        <article className={`${CARD} bg-[#eef9fa]`}>
+          <span className={EYEBROW}>Syarat pencarian</span>
           <div className="mt-4 flex flex-wrap gap-2">
-            {["Location", "Category", "Price", "Open Now", "Walking Limit"].map((item) => (
-              <span key={item} className="rounded-full border border-getra-cyan/25 bg-slate-950/60 px-3 py-1 text-xs font-black text-getra-cyan">
-                {item}
-              </span>
-            ))}
+            {["Lokasi", "Kategori", "Harga", "Buka Sekarang", "Batas Jalan Kaki"].map(
+              (item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-[#118ab2]/20 bg-white px-3 py-1.5 text-xs font-bold text-[#464b71]"
+                >
+                  {item}
+                </span>
+              ),
+            )}
           </div>
-          <p className="mt-5 text-sm leading-7 text-slate-400">
-            Hard constraints selalu mendahului placement. Payment tidak menjadi input organic rank.
+          <p className="mt-5 text-sm leading-7 text-[#66708d]">
+            Kesesuaian dengan pencarian selalu didahulukan. Pembayaran tidak
+            menentukan urutan hasil biasa.
           </p>
-        </div>
+        </article>
 
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3">
           {[
-            ["Original", "Organic discovery result based on canonical relevance rules."],
-            ["Hidden Gem", "Relevant merchant with less conventional popularity exposure."],
-            ["Sponsored", "Paid promotion, clearly labeled, still contextually eligible."],
-          ].map(([label, copy]) => (
+            ["Hasil biasa", "Tempat yang sesuai dengan kebutuhan pencarian dan kondisi area."],
+            ["Pilihan lokal", "Usaha lokal yang relevan meskipun belum banyak dikenal."],
+            ["Promosi", "Promosi berbayar yang diberi tanda jelas dan tetap harus sesuai dengan pencarian."],
+          ].map(([label, copy], index) => (
             <article
               key={label}
-              className={`rounded-3xl border p-5 ${
-                label === "Sponsored"
-                  ? "border-getra-amber/50 bg-getra-amber/10"
-                  : "border-white/10 bg-white/[0.035]"
+              className={`${CARD} ${
+                index === 2 ? "border-[#d8a519]/35 bg-[#fffaf0]" : ""
               }`}
             >
-              <span className="text-xs font-black uppercase tracking-[0.18em] text-getra-cyan">
-                {label}
-              </span>
-              <p className="mt-4 text-sm leading-6 text-slate-300">{copy}</p>
+              <span className={EYEBROW}>{label}</span>
+              <p className="mt-4 text-sm leading-6 text-[#66708d]">{copy}</p>
             </article>
           ))}
         </div>
@@ -61,16 +68,50 @@ export function FairDiscoverySection() {
 export function CommuterSection() {
   return (
     <SectionShell
-      eyebrow="GETRA for commuters"
+      eyebrow="GETRA untuk perjalanan harian"
       title="Dari stasiun menuju pilihan yang benar-benar bisa dicapai."
-      description="General/Commuter adalah pengalaman dasar untuk semua user. Ini bukan authorization role dan tidak disimpan sebagai stakeholder mode."
+      description="Cari tempat yang dapat dijangkau dari stasiun atau halte berdasarkan rute, waktu berjalan, harga, dan kebutuhan Anda."
     >
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {COMMUTER_FEATURES.map((feature) => (
-          <div key={feature} className="rounded-2xl border border-white/10 bg-slate-900/45 p-4 text-sm font-black text-white">
-            {feature}
+      <div className="grid gap-5 lg:grid-cols-[0.86fr_1.14fr]">
+        <article className={`${CARD} relative overflow-hidden bg-[#f6fbfb]`}>
+          <span className="absolute -right-3 -top-6 text-7xl font-black tracking-[-0.1em] text-[#118ab2]/8">
+            01
+          </span>
+          <span className={EYEBROW}>Bergerak lebih mudah</span>
+          <h3 className="mt-3 text-2xl font-black tracking-[-0.04em] text-[#464b71]">
+            Lihat konteks sebelum berjalan.
+          </h3>
+          <p className="mt-3 text-sm leading-7 text-[#66708d]">
+            Rute, akses, transportasi, dan kondisi sekitar dibaca sebagai satu
+            perjalanan yang saling terhubung.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {["Cari tempat", "Rute pejalan kaki", "Transportasi", "Aksesibilitas"].map(
+              (item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-[#118ab2]/18 bg-white px-3 py-1 text-xs font-bold text-[#464b71]"
+                >
+                  {item}
+                </span>
+              ),
+            )}
           </div>
-        ))}
+        </article>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {COMMUTER_FEATURES.map((feature, index) => (
+            <div
+              key={feature}
+              className="rounded-2xl border border-[#464b71]/12 bg-white p-4 text-sm font-black text-[#464b71] shadow-[0_8px_22px_rgba(70,75,113,0.04)]"
+            >
+              <span className="mb-3 block text-[10px] font-black text-[#118ab2]">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              {feature}
+            </div>
+          ))}
+        </div>
       </div>
     </SectionShell>
   );
@@ -79,23 +120,28 @@ export function CommuterSection() {
 export function CommunitySection() {
   return (
     <SectionShell
-      eyebrow="GETRA Community"
-      title="Peta yang hidup membutuhkan orang-orang yang hidup di dalamnya."
-      description="Community memperkaya peta dengan temuan komuter, cultural map, permintaan lokal, replies, media, location context, moderation, dan reputation."
+      eyebrow="Komunitas GETRA"
+      title="Peta yang terus belajar dari kondisi nyata."
+      description="Warga dapat membagikan temuan, permintaan lokal, foto, dan informasi lokasi untuk membantu memperbarui peta bersama."
     >
       <div className="grid gap-4 lg:grid-cols-2">
         {COMMUNITY_SIGNALS.map(([title, status, meta]) => (
-          <article key={title} className="rounded-3xl border border-white/10 bg-white/[0.035] p-5">
-            <span className="text-xs font-black uppercase tracking-[0.18em] text-getra-green">
-              {status}
-            </span>
-            <h3 className="mt-3 text-lg font-black text-white">{title}</h3>
-            <p className="mt-2 text-sm text-slate-400">{meta}</p>
+          <article key={title} className={CARD}>
+            <div className="flex items-start justify-between gap-4">
+              <span className="rounded-full bg-[#62d6c8]/20 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-[#367e77]">
+                {status}
+              </span>
+              <span className="size-2 shrink-0 rounded-full bg-[#118ab2]" aria-hidden="true" />
+            </div>
+            <h3 className="mt-4 text-lg font-black text-[#464b71]">{title}</h3>
+            <p className="mt-2 text-sm text-[#66708d]">{meta}</p>
           </article>
         ))}
       </div>
-      <p className="mt-5 rounded-2xl border border-getra-amber/25 bg-getra-amber/10 p-4 text-sm leading-7 text-slate-300">
-        Community contribution tidak otomatis menjadi canonical truth. GETRA tetap menampilkan timestamp/freshness, verification status, provenance, moderation, dan trust mechanism.
+      <p className="mt-5 rounded-2xl border border-[#d8a519]/25 bg-[#fffaf0] p-4 text-sm leading-7 text-[#66708d]">
+        Kontribusi warga tidak otomatis dianggap sebagai kondisi terkini. GETRA
+        menampilkan waktu, sumber, dan status pemeriksaan agar informasi dapat
+        dipahami dengan tepat.
       </p>
     </SectionShell>
   );
@@ -105,34 +151,40 @@ export function UmkmSection() {
   return (
     <SectionShell
       id="umkm"
-      eyebrow="GETRA for UMKM"
+      eyebrow="GETRA untuk UMKM"
       title="Bukan sekadar muncul di peta."
       description="GETRA membantu UMKM memahami konteks lokasi, mengelola keberadaan usaha, dan menjangkau komuter secara transparan."
     >
-      <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-[2rem] border border-getra-cyan/20 bg-slate-950/70 p-5">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
-            <strong className="text-white">GETRA UMKM</strong>
-            <span className="rounded-full border border-getra-green/30 px-3 py-1 text-xs font-black text-lime-200">
-              UMKM stakeholder mode
+      <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+        <article className={`${CARD} overflow-hidden bg-[#f6fbfb]`}>
+          <div className="flex items-center justify-between border-b border-[#464b71]/10 pb-4">
+            <strong className="text-[#464b71]">GETRA UMKM</strong>
+            <span className="rounded-full border border-[#62d6c8]/35 bg-white px-3 py-1 text-xs font-black text-[#367e77]">
+              Pengalaman UMKM
             </span>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {["Merchant Saya", "Tambah UMKM", "Advertising", "Analytics"].map((item) => (
-              <div key={item} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 font-black text-white">
+            {["Usaha Saya", "Tambah UMKM", "Promosi", "Analitik"].map((item) => (
+              <div
+                key={item}
+                className="rounded-2xl border border-[#464b71]/10 bg-white p-4 font-black text-[#464b71]"
+              >
                 {item}
               </div>
             ))}
           </div>
-        </div>
-        <div className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-6 text-sm leading-7 text-slate-300">
+        </article>
+        <article className={`${CARD} text-sm leading-7 text-[#66708d]`}>
           <p>
-            UMKM adalah stakeholder mode, bukan auth role. Account role tetap USER atau ADMIN.
+            Pengalaman UMKM membantu pemilik usaha mengakses fitur yang sesuai
+            tanpa mengubah hak akses akunnya.
           </p>
-          <p className="mt-4">
-            Merchant ownership diverifikasi terpisah. Memiliki UMKM mode tidak otomatis berarti memiliki merchant.
+          <p className="mt-4 border-t border-[#464b71]/10 pt-4">
+            Kepemilikan usaha tetap diperiksa secara terpisah. Memilih
+            pengalaman UMKM tidak otomatis memberikan akses untuk mengelola
+            sebuah usaha.
           </p>
-        </div>
+        </article>
       </div>
     </SectionShell>
   );
@@ -141,20 +193,25 @@ export function UmkmSection() {
 export function MerchantSubmissionSection() {
   return (
     <SectionShell
-      eyebrow="Add UMKM to GETRA"
-      title="Pengajuan lokasi usaha harus melalui review tepercaya."
-      description="Landing ini hanya menampilkan workflow ilustratif. Form produksi tetap ada di aplikasi authenticated."
+      eyebrow="Tambahkan UMKM ke GETRA"
+      title="Daftarkan atau klaim usaha dengan proses yang jelas."
+      description="Cari usaha terlebih dahulu, lengkapi informasi yang diperlukan, lalu kirim untuk diperiksa."
     >
-      <ol className="grid gap-3 md:grid-cols-4">
+      <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {ADD_UMKM_STEPS.map((step, index) => (
-          <li key={step} className="rounded-2xl border border-white/10 bg-slate-900/45 p-4">
-            <span className="text-xs font-black text-getra-cyan">{index + 1}</span>
-            <strong className="mt-2 block text-sm text-white">{step}</strong>
+          <li key={step} className={`${CARD} min-h-32`}>
+            <span className="text-xs font-black text-[#118ab2]">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <strong className="mt-3 block text-sm leading-6 text-[#464b71]">
+              {step}
+            </strong>
           </li>
         ))}
       </ol>
-      <p className="mt-5 rounded-2xl border border-getra-amber/25 bg-getra-amber/10 p-4 text-sm text-slate-300">
-        Pengajuan tidak otomatis menjadi merchant terverifikasi.
+      <p className="mt-5 rounded-2xl border border-[#d8a519]/25 bg-[#fffaf0] p-4 text-sm text-[#66708d]">
+        Pengajuan baru akan tampil sebagai usaha terverifikasi setelah selesai
+        diperiksa.
       </p>
     </SectionShell>
   );
@@ -163,36 +220,43 @@ export function MerchantSubmissionSection() {
 export function AdvertisingSection() {
   return (
     <SectionShell
-      eyebrow="Advertising Manager"
-      title="Promosi berbasis konteks spasial, bukan sekadar slot iklan."
-      description="Advertising Manager direpresentasikan sebagai campaign, creative, spatial targeting, schedule, sponsored placements, dan analytics preview. Landing tidak membuka checkout dan tidak membuat event campaign."
+      eyebrow="Kelola Promosi"
+      title="Promosi yang sesuai dengan lokasi, bukan sekadar slot iklan."
+      description="Siapkan materi, pilih wilayah sasaran, atur jadwal, dan pantau interaksi promosi secara transparan."
     >
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2">
         <div className="grid gap-3 sm:grid-cols-2">
-          {ADVERTISING_ITEMS.map((item) => (
-            <span key={item} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm font-black text-white">
-              {item}
+          {ADVERTISING_ITEMS.map((item, index) => (
+            <span key={item} className={`${CARD} flex min-h-24 items-end`}>
+              <span>
+                <span className="mb-2 block text-[10px] font-black text-[#118ab2]">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="text-sm font-black text-[#464b71]">{item}</span>
+              </span>
             </span>
           ))}
         </div>
-        <div className="rounded-[2rem] border border-getra-cyan/20 bg-slate-950/70 p-5">
-          <span className="text-xs font-black uppercase tracking-[0.18em] text-getra-cyan">
-            Campaign interaction analytics preview
-          </span>
+        <article className={`${CARD} bg-[#f6fbfb]`}>
+          <span className={EYEBROW}>Contoh ringkasan interaksi promosi</span>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {ANALYTICS_METRICS.map((metric) => (
-              <div key={metric} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-                <strong className="text-sm text-white">{metric}</strong>
-                <div className="mt-3 h-2 rounded-full bg-slate-800">
-                  <div className="h-2 w-2/3 rounded-full bg-gradient-to-r from-getra-green to-getra-cyan" />
+            {ANALYTICS_METRICS.map((metric, index) => (
+              <div key={metric} className="rounded-2xl border border-[#464b71]/10 bg-white p-4">
+                <strong className="text-sm text-[#464b71]">{metric}</strong>
+                <div className="mt-3 h-2 rounded-full bg-[#e8ecef]">
+                  <div
+                    className="h-2 rounded-full bg-[#118ab2]"
+                    style={{ width: `${58 + index * 9}%` }}
+                  />
                 </div>
               </div>
             ))}
           </div>
-          <p className="mt-4 text-xs leading-5 text-slate-400">
-            Illustrative analytics only. Tidak menampilkan klaim keuangan, profit, atau transaksi.
+          <p className="mt-4 text-xs leading-5 text-[#66708d]">
+            Angka pada contoh ini hanya ilustrasi dan bukan klaim penjualan,
+            keuntungan, atau transaksi.
           </p>
-        </div>
+        </article>
       </div>
     </SectionShell>
   );
@@ -201,21 +265,44 @@ export function AdvertisingSection() {
 export function BusinessSpaceSection() {
   return (
     <SectionShell
-      eyebrow="Business Space Intelligence"
-      title="Spatial Screening untuk membaca peluang ruang usaha."
-      description="Business Space Intelligence membantu screening konteks akses, demand sekitar, dan kedekatan ke transit. Ini pilot/spatial screening, bukan rekomendasi investasi atau jaminan performa properti."
+      eyebrow="Informasi Ruang Usaha"
+      title="Data lokasi menjadi lebih berarti saat bisa dipahami."
+      description="Ruang Usaha membantu membaca akses, kebutuhan sekitar, dan kedekatan ke transit sebagai bahan pertimbangan awal."
     >
-      <div className="grid gap-4 sm:grid-cols-3">
-        {["Pilot label", "Spatial Screening", "No investment guarantee"].map((item) => (
-          <article key={item} className="rounded-3xl border border-white/10 bg-white/[0.035] p-5">
-            <h3 className="text-base font-black text-white">{item}</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              {item === "No investment guarantee"
-                ? "GETRA tidak menjanjikan imbal hasil, okupansi, atau kelayakan investasi."
-                : "Konteks spasial digunakan sebagai bahan baca awal, bukan klaim final."}
-            </p>
-          </article>
-        ))}
+      <div className="grid gap-5 lg:grid-cols-[0.94fr_1.06fr]">
+        <article className={`${CARD} bg-[#f6fbfb]`}>
+          <span className={EYEBROW}>Contoh pembacaan area</span>
+          <div className="mt-5 flex items-end gap-4 border-b border-[#464b71]/10 pb-5">
+            <strong className="text-6xl font-black tracking-[-0.08em] text-[#118ab2]">74%</strong>
+            <span className="pb-2 text-sm font-bold text-[#464b71]">
+              Indeks kebutuhan belum terpenuhi di koridor komersial utama
+            </span>
+          </div>
+          <p className="mt-4 text-sm leading-7 text-[#66708d]">
+            Kondisi area digunakan sebagai bahan pertimbangan awal, bukan
+            kesimpulan akhir.
+          </p>
+          <Link
+            href="/login"
+            className="mt-5 inline-flex min-h-10 items-center rounded-full text-sm font-black text-[#118ab2] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#118ab2]"
+          >
+            Pelajari Analisis Wilayah GETRA →
+          </Link>
+        </article>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {["Tahap uji coba", "Pemeriksaan lokasi", "Tanpa jaminan investasi"].map(
+            (item) => (
+              <article key={item} className={CARD}>
+                <h3 className="text-base font-black text-[#464b71]">{item}</h3>
+                <p className="mt-3 text-sm leading-6 text-[#66708d]">
+                  {item === "Tanpa jaminan investasi"
+                    ? "GETRA tidak menjanjikan imbal hasil, okupansi, atau kelayakan investasi."
+                    : "Kondisi lokasi digunakan sebagai bahan pertimbangan awal, bukan kesimpulan akhir."}
+                </p>
+              </article>
+            ),
+          )}
+        </div>
       </div>
     </SectionShell>
   );
@@ -224,16 +311,21 @@ export function BusinessSpaceSection() {
 export function DataTrustSection() {
   return (
     <SectionShell
-      eyebrow="Trusted Spatial Data"
-      title="Data spasial harus punya sumber, waktu, status, dan jejak."
-      description="GETRA menjaga provenance dan freshness agar user paham apakah sebuah titik berasal dari sumber resmi, import, community contribution, atau review."
+      eyebrow="Data yang Dapat Dipahami"
+      title="Data lokasi harus memiliki sumber, waktu, status, dan riwayat."
+      description="GETRA menampilkan sumber, waktu pembaruan, dan status pemeriksaan agar Anda memahami asal serta keterbatasan setiap catatan."
     >
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {["Source", "Timestamp / Freshness", "Verification", "Provenance"].map((item) => (
-          <div key={item} className="rounded-2xl border border-getra-cyan/20 bg-getra-cyan/8 p-5">
-            <strong className="text-sm text-white">{item}</strong>
-          </div>
-        ))}
+        {["Sumber", "Waktu pembaruan", "Status pemeriksaan", "Riwayat data"].map(
+          (item, index) => (
+            <div key={item} className={`${CARD} bg-[#f6fbfb]`}>
+              <span className="text-xs font-black text-[#118ab2]">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <strong className="mt-4 block text-sm text-[#464b71]">{item}</strong>
+            </div>
+          ),
+        )}
       </div>
     </SectionShell>
   );
@@ -243,15 +335,18 @@ export function TechnologySection() {
   return (
     <SectionShell
       id="teknologi"
-      eyebrow="Technology"
-      title="Stack GETRA dirancang untuk komputasi spasial yang grounded."
-      description="Teknologi ditampilkan berdasarkan stack yang ada di project. ECharts tidak ditulis sebagai dependency aktif karena belum tersedia di package saat audit Phase 02."
+      eyebrow="Teknologi"
+      title="Teknologi GETRA menjaga perhitungan lokasi tetap akurat."
+      description="Setiap bagian sistem memiliki peran yang jelas untuk peta, perhitungan rute, keamanan data, dan penjelasan informasi."
     >
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {LANDING_TECHNOLOGY.map((item) => (
-          <article key={item.name} className="rounded-3xl border border-white/10 bg-white/[0.035] p-5">
-            <h3 className="text-base font-black text-white">{item.name}</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-400">{item.role}</p>
+        {LANDING_TECHNOLOGY.map((item, index) => (
+          <article key={item.name} className={CARD}>
+            <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#118ab2]">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <h3 className="mt-3 text-base font-black text-[#464b71]">{item.name}</h3>
+            <p className="mt-3 text-sm leading-6 text-[#66708d]">{item.role}</p>
           </article>
         ))}
       </div>
@@ -261,24 +356,34 @@ export function TechnologySection() {
 
 export function FinalCtaSection() {
   return (
-    <section className="relative overflow-hidden px-4 py-18 sm:px-6 lg:px-8">
+    <section className="relative isolate overflow-hidden bg-[#118ab2] px-4 py-20 text-white sm:px-6 lg:px-8">
       <div
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,rgba(41,199,216,0.18),transparent_30%),radial-gradient(circle_at_74%_70%,rgba(122,212,59,0.12),transparent_28%)]"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_8%_84%,transparent_0_22%,rgba(255,255,255,0.1)_22.4%,transparent_22.8%),radial-gradient(ellipse_at_76%_12%,transparent_0_20%,rgba(255,255,255,0.1)_20.4%,transparent_20.8%)]"
         aria-hidden="true"
       />
       <div className="mx-auto max-w-4xl text-center">
-        <span className="text-xs font-black uppercase tracking-[0.2em] text-getra-green">
-          Start using GETRA
+        <span className="text-xs font-black uppercase tracking-[0.2em] text-white/75">
+          Mulai gunakan GETRA
         </span>
-        <h2 className="mt-4 text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl">
-          Masuk ke WebGIS yang membaca akses, bukan sekadar titik.
+        <h2 className="mt-4 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">
+          Lihat kota dari perspektif yang lebih luas.
         </h2>
+        <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/85">
+          Mulai jelajahi tempat, rute, usaha lokal, dan peluang melalui GETRA
+          sekarang. Tanpa batasan, ramah pejalan kaki.
+        </p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <Link href="/login" className="inline-flex min-h-12 items-center justify-center rounded-full bg-gradient-to-r from-getra-green to-getra-cyan px-6 text-sm font-black text-slate-950">
-            Masuk ke GETRA
+          <Link
+            href="/signup"
+            className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 text-sm font-black text-[#118ab2] shadow-[0_10px_24px_rgba(33,84,103,0.18)] transition hover:bg-[#f5fbfc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+          >
+            Daftar Akun
           </Link>
-          <Link href="/signup" className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/15 px-6 text-sm font-black text-white">
-            Daftar GETRA
+          <Link
+            href="/login"
+            className="inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-black text-white underline underline-offset-4 transition hover:text-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+          >
+            Sudah punya akun? Masuk
           </Link>
         </div>
       </div>

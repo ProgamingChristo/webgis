@@ -22,15 +22,15 @@ export function UMKMContext({
       <div className="stakeholder-notice stakeholder-notice--umkm">
         <Store size={16} />
         <span>
-          <strong>Mode UMKM:</strong> fokus pada potensi pasar, merchant,
-          rute pelanggan, dan promosi usaha lokal.
+          <strong>Pengalaman UMKM:</strong> lihat kebutuhan area, kelola usaha,
+          pahami rute pelanggan, dan siapkan promosi.
         </span>
         <Link
           className="stakeholder-notice__action"
           href="/umkm/advertising"
         >
           <Megaphone size={13} />
-          Advertising & Promosi
+          Kelola Promosi
         </Link>
       </div>
       {children}

@@ -6,7 +6,7 @@ import { CampaignCreateForm } from "./campaign-create-form";
 export function CampaignList({ merchantId, merchantName = "Usaha Anda" }: { merchantId: string; merchantName?: string }) {
   const { campaigns, loading, error, refetch } = useCampaigns(merchantId);
 
-  if (loading) return <div className="rounded-xl border border-slate-800 p-4 text-sm text-slate-400">Memuat daftar campaign…</div>;
+  if (loading) return <div className="rounded-xl border border-slate-800 p-4 text-sm text-slate-400">Memuat daftar promosi…</div>;
   if (error) return <div className="rounded-xl border border-red-400/25 bg-red-400/[0.06] p-4 text-sm text-red-200">{error}</div>;
 
   return (

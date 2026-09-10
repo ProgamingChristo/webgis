@@ -13,8 +13,8 @@ import { authenticatedFetch, clearAuthSession } from "@/src/lib/auth-client";
 import { GetraLogo } from "./getra-logo";
 
 const GLOBAL_NAV = [
-  { href: "/app", label: "General", icon: MapPinned, experience: "GENERAL" as const },
-  { href: "/community", label: "Community", icon: UsersRound, experience: "GENERAL" as const },
+  { href: "/app", label: "Peta", icon: MapPinned, experience: "GENERAL" as const },
+  { href: "/community", label: "Komunitas", icon: UsersRound, experience: "GENERAL" as const },
   { href: "/umkm", label: "UMKM", icon: Store, experience: "UMKM" as const },
 ];
 
@@ -81,7 +81,7 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
 
   return (
     <header className="getra-global-header">
-      <Link className="getra-global-header__brand" href="/app" aria-label="Buka General GETRA"><GetraLogo /></Link>
+      <Link className="getra-global-header__brand" href="/app" aria-label="Buka peta GETRA"><GetraLogo /></Link>
       <nav className="getra-global-nav" aria-label="Navigasi utama GETRA">
         {GLOBAL_NAV.map((item) => {
           const Icon = item.icon;
@@ -100,13 +100,13 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
           <button aria-expanded={utilityOpen} className="getra-utility-menu__trigger" onClick={() => setUtilityOpen((open) => !open)} type="button">Fitur</button>
           {utilityOpen ? (
             <div className="getra-utility-menu__panel">
-              <Link href="/business-space" onClick={closeMenus}><Building2 size={16} />Business Space</Link>
+              <Link href="/business-space" onClick={closeMenus}><Building2 size={16} />Ruang Usaha</Link>
               {isAdmin ? (
                 <>
                   <span className="getra-utility-menu__label">Admin</span>
-                  <Link href="/admin/umkm" onClick={closeMenus}><Store size={16} />Review UMKM</Link>
-                  <Link href="/admin/mission-data" onClick={closeMenus}><RefreshCw size={16} />Mission Data</Link>
-                  <Link href="/admin/import" onClick={closeMenus}><Database size={16} />Import Data</Link>
+                  <Link href="/admin/umkm" onClick={closeMenus}><Store size={16} />Pemeriksaan UMKM</Link>
+                  <Link href="/admin/mission-data" onClick={closeMenus}><RefreshCw size={16} />Data Lapangan</Link>
+                  <Link href="/admin/import" onClick={closeMenus}><Database size={16} />Impor Data</Link>
                   <Link href="/admin/community/contributions" onClick={closeMenus}><ShieldCheck size={16} />Moderasi Kontribusi</Link>
                 </>
               ) : null}
@@ -135,12 +135,12 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
                   </Link>
                 );
               })}
-              <Link href="/business-space" onClick={closeMenus}><Building2 size={17} />Business Space</Link>
+              <Link href="/business-space" onClick={closeMenus}><Building2 size={17} />Ruang Usaha</Link>
               {isAdmin ? (
                 <>
-                  <Link href="/admin/umkm" onClick={closeMenus}><Store size={17} />Review UMKM</Link>
-                  <Link href="/admin/mission-data" onClick={closeMenus}><RefreshCw size={17} />Mission Data</Link>
-                  <Link href="/admin/import" onClick={closeMenus}><Database size={17} />Import Data</Link>
+                  <Link href="/admin/umkm" onClick={closeMenus}><Store size={17} />Pemeriksaan UMKM</Link>
+                  <Link href="/admin/mission-data" onClick={closeMenus}><RefreshCw size={17} />Data Lapangan</Link>
+                  <Link href="/admin/import" onClick={closeMenus}><Database size={17} />Impor Data</Link>
                   <Link href="/admin/community/contributions" onClick={closeMenus}><ShieldCheck size={17} />Moderasi Kontribusi</Link>
                 </>
               ) : null}

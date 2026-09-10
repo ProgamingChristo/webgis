@@ -10,19 +10,14 @@ import { LandingHeader } from "../components/landing-header";
 import { LandingPage } from "../components/landing-page";
 
 describe("Landing Phase 03 polish", () => {
-  it("renders the real GETRA map screenshot component with optimized asset and alt text", () => {
+  it("renders a data-safe onboarding map illustration instead of a UI screenshot", () => {
     const html = renderToStaticMarkup(createElement(GetraMapScreenshot));
-    const assetPath = path.join(
-      process.cwd(),
-      "public/images/landing/getra-pedestrian-route-showcase.webp",
-    );
 
-    expect(fs.existsSync(assetPath)).toBe(true);
-    expect(fs.statSync(assetPath).size).toBeLessThan(250_000);
-    expect(html).toContain("getra-pedestrian-route-showcase.webp");
-    expect(html).toContain("Foto penuh peta GETRA");
-    expect(html).not.toContain("Test route scenario");
-    expect(html).not.toContain("Start point");
+    expect(html).toContain("Peta onboarding GETRA");
+    expect(html).toContain("Peta onboarding");
+    expect(html).toContain("<svg");
+    expect(html).not.toContain("figma-map-showcase.png");
+    expect(html).not.toContain("figma-city-map.png");
   });
 
   it("renders the final public footer with working routes and anchors", () => {
@@ -30,9 +25,9 @@ describe("Landing Phase 03 polish", () => {
 
     [
       "GETRA",
-      "Geo-Enabled Transit &amp; Retail Analytics",
-      "GIS menghitung",
-      "AI menginterpretasikan",
+      "Peta Transit dan Usaha",
+      "Data lokasi menghitung",
+      "Asisten menjelaskan",
       'href="#tentang"',
       'href="#cara-kerja"',
       'href="#fitur"',
@@ -52,16 +47,21 @@ describe("Landing Phase 03 polish", () => {
 
     expect(html).toContain('aria-controls="landing-mobile-menu"');
     expect(html).toContain('aria-expanded="false"');
+    expect(html).toContain('aria-haspopup="dialog"');
     expect(html).toContain("Menu");
     expect(html).toContain("Masuk");
   });
 
-  it("renders skip link, screenshot, final footer, and no dead placeholder links on the page", () => {
+  it("renders skip link, onboarding map, final footer, and no dead placeholder links on the page", () => {
     const html = renderToStaticMarkup(createElement(LandingPage));
 
     expect(html).toContain("Lewati ke konten utama");
-    expect(html).toContain("getra-pedestrian-route-showcase.webp");
-    expect(html).toContain("MAPID 2025 / 2026 competition context");
+    expect(html).toContain('href="#main-content"');
+    expect(html).toContain("getra-onboarding-map");
+    expect(html).not.toContain("figma-city-map.png");
+    expect(html).not.toContain("figma-map-showcase.png");
+    expect(html).toContain('href="#faq"');
+    expect(html).toContain("Halaman pengenalan ini memakai data contoh");
     expect(html).not.toContain('href="#"');
     expect(html).not.toContain("javascript:void");
   });

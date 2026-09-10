@@ -12,8 +12,8 @@ export function useCreateCampaign(onSuccess?: () => void) {
       setError(null);
       await CampaignService.createCampaign(input);
       if (onSuccess) onSuccess();
-    } catch (err: any) {
-      setError(err.message || "Gagal membuat campaign draft.");
+    } catch {
+      setError("Draf promosi belum dapat dibuat. Coba lagi.");
     } finally {
       setLoading(false);
     }

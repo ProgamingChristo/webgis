@@ -78,7 +78,7 @@ describe("bounded JSON request body reader", () => {
 
     expect(error).toMatchObject({
       code: "REQUEST_TOO_LARGE",
-      message: "Request body is too large",
+      message: "Data yang dikirim terlalu besar. Kurangi ukurannya lalu coba lagi.",
     });
   });
 
@@ -100,7 +100,7 @@ describe("bounded JSON request body reader", () => {
 
     expect(error).toMatchObject({
       code: "SPATIAL_REQUEST_TOO_LARGE",
-      message: "Spatial request body is too large",
+      message: "Area atau data lokasi terlalu besar. Perkecil pilihan lalu coba lagi.",
     });
   });
 
@@ -127,7 +127,7 @@ describe("bounded JSON request body reader", () => {
     expect(body).toEqual({
       error: {
         code: "VALIDATION_ERROR",
-        message: "Request validation failed",
+        message: "Informasi yang dimasukkan belum sesuai. Periksa kembali lalu coba lagi.",
         retryable: false,
       },
       request_id: TEST_REQUEST_ID,

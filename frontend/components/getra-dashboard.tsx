@@ -125,7 +125,7 @@ const MAX_ROUTE_SEARCH_RESULTS =
   6;
 
 const PROPERTY_REGION_OPTIONS = [
-  { id: "", label: "Viewport aktif" },
+  { id: "", label: "Area peta saat ini" },
   { id: "jakarta-selatan", label: "Jakarta Selatan" },
   { id: "jakarta-pusat", label: "Jakarta Pusat" },
   { id: "jakarta-barat", label: "Jakarta Barat" },
@@ -144,13 +144,13 @@ const PROPERTY_BUSINESS_CATEGORIES: Array<{ value: BusinessCategorySlug; label: 
 const ACCESSIBILITY_SOURCE_OPTIONS: Array<{ value: "" | AccessibilityEvidenceSource; label: string }> = [
   { value: "", label: "Semua sumber" },
   { value: "MAPID_ACTIVITY", label: "MAPID Activities" },
-  { value: "GETRA_COMMUNITY", label: "GETRA Community" },
+  { value: "GETRA_COMMUNITY", label: "Komunitas GETRA" },
 ];
 
 const ACCESSIBILITY_CATEGORY_OPTIONS: Array<{ value: "" | AccessibilityEvidenceCategory; label: string }> = [
   { value: "", label: "Semua kategori" },
   { value: "ACCESSIBILITY_OBSERVATION", label: "Aksesibilitas" },
-  { value: "PEDESTRIAN_OBSERVATION", label: "Pedestrian" },
+  { value: "PEDESTRIAN_OBSERVATION", label: "Pejalan kaki" },
   { value: "TRANSIT_OBSERVATION", label: "Transit" },
   { value: "UNCLASSIFIED", label: "Belum terklasifikasi" },
 ];
@@ -160,7 +160,7 @@ const ACCESSIBILITY_STATUS_OPTIONS: Array<{ value: "" | AccessibilityValidationS
   { value: "OBSERVED", label: "Observasi" },
   { value: "NEEDS_REVIEW", label: "Perlu verifikasi" },
   { value: "CONFIRMED", label: "Terkonfirmasi" },
-  { value: "STALE", label: "Stale" },
+  { value: "STALE", label: "Perlu diperbarui" },
 ];
 
 const SAFE_MEDIA_HOSTS = new Set([
@@ -280,10 +280,10 @@ function routeModeLabel(mode: RoutingMode) {
 }
 
 function freshnessLabel(value: string | null | undefined) {
-  if (value === "FRESH") return "Fresh";
-  if (value === "AGING") return "Aging";
+  if (value === "FRESH") return "Masih baru";
+  if (value === "AGING") return "Perlu diperiksa";
   if (value === "STALE") return "Perlu konfirmasi ulang";
-  return "Freshness tidak diketahui";
+  return "Waktu pembaruan belum diketahui";
 }
 
 function transactionLabel(value: string | null | undefined) {
@@ -298,7 +298,7 @@ function accessibilityCategoryLabel(value: string | null | undefined) {
     case "ACCESSIBILITY_OBSERVATION":
       return "Observasi aksesibilitas";
     case "PEDESTRIAN_OBSERVATION":
-      return "Observasi pedestrian";
+      return "Observasi pejalan kaki";
     case "TRANSIT_OBSERVATION":
       return "Observasi transit";
     case "ECONOMIC_UMKM_OBSERVATION":
@@ -317,7 +317,7 @@ function accessibilitySubcategoryLabel(value: string | null | undefined) {
     case "CROSSING":
       return "Penyeberangan";
     case "GUIDING_BLOCK":
-      return "Guiding block";
+      return "Jalur pemandu";
     case "WHEELCHAIR_ACCESS":
       return "Akses kursi roda";
     case "OBSTRUCTION":
@@ -350,14 +350,20 @@ function accessibilityStatusLabel(value: string | null | undefined) {
 
 function accessibilitySourceLabel(value: string | null | undefined) {
   return value === "GETRA_COMMUNITY"
-    ? "GETRA Community"
-    : "MAPID Activities";
+    ? "Komunitas GETRA"
+    : "Aktivitas MAPID";
+}
+
+function accessibilityRelationLabel(value: string | null | undefined) {
+  if (value === "CONFIRMED_RELATION") return "Sudah dikonfirmasi";
+  if (value === "REJECTED_RELATION") return "Tidak terkait";
+  return "Perlu diperiksa";
 }
 
 function formatNullableNumber(value: number | null | undefined) {
   return typeof value === "number" && Number.isFinite(value)
     ? String(value)
-    : "Insufficient Data";
+    : "Data belum cukup";
 }
 
 function isSafeMediaUrl(value: string) {
@@ -454,7 +460,7 @@ function MerchantResultRow({
               <LocateFixed size={13} />
               Jarak langsung {formatDistance(merchant.userDistanceMeters)}
               {merchant.networkDurationSeconds ? (
-                <><span>-</span>{Math.ceil(merchant.networkDurationSeconds / 60)} menit jaringan</>
+                <><span>-</span>{Math.ceil(merchant.networkDurationSeconds / 60)} menit berjalan kaki</>
               ) : null}
             </>
           ) : (
@@ -568,36 +574,36 @@ function PropertyObservationDetail({
         <SafeMediaImage alt="Foto spanduk properti" src={candidate.banner_photo_url} />
       </div>
       <section className="evidence-section">
-        <h4>Property observation detail</h4>
+        <h4>Detail catatan properti</h4>
         <dl className="evidence-list evidence-list--compact">
           <OptionalDetail label="Kategori properti" value={candidate.property_category} />
           <OptionalDetail label="Jenis" value={transactionLabel(candidate.property_transaction_type)} />
           <OptionalDetail label="Alamat" value={candidate.address} />
-          <OptionalDetail label="Observed at" value={candidate.observed_at} />
-          <OptionalDetail label="Freshness" value={freshnessLabel(candidate.freshness)} />
-          <OptionalDetail label="Region" value={detail?.administrative_context.region_name} />
+          <OptionalDetail label="Waktu pengamatan" value={candidate.observed_at} />
+          <OptionalDetail label="Pembaruan data" value={freshnessLabel(candidate.freshness)} />
+          <OptionalDetail label="Wilayah" value={detail?.administrative_context.region_name} />
           <OptionalDetail label="Sumber" value="Properti Go" />
         </dl>
       </section>
       <section className="evidence-section">
         <h4>Analisis lokasi usaha</h4>
         {loading ? (
-          <p className="limitation-box" role="status">Menghitung Business Space context...</p>
+          <p className="limitation-box" role="status">Sedang menilai lokasi usaha...</p>
         ) : detail ? (
           <dl className="evidence-list evidence-list--compact">
-            <OptionalDetail label="Demand" value={formatNullableNumber(detail.market_context.demand_score)} />
-            <OptionalDetail label="Supply" value={formatNullableNumber(detail.market_context.supply_score)} />
-            <OptionalDetail label="Retail Gap" value={formatNullableNumber(detail.market_context.retail_gap)} />
-            <OptionalDetail label="Transit" value={detail.transit_context.nearest ? `${detail.transit_context.nearest.network_walking_minutes} menit jaringan` : "Tidak tersedia"} />
-            <OptionalDetail label="Walking" value={detail.walking_context.status === "ROUTABLE" ? `${detail.walking_context.catchment_minutes} menit network` : "Tidak tersedia"} />
+            <OptionalDetail label="Kebutuhan sekitar" value={formatNullableNumber(detail.market_context.demand_score)} />
+            <OptionalDetail label="Usaha sejenis" value={formatNullableNumber(detail.market_context.supply_score)} />
+            <OptionalDetail label="Celah kebutuhan" value={formatNullableNumber(detail.market_context.retail_gap)} />
+            <OptionalDetail label="Transit terdekat" value={detail.transit_context.nearest ? `${detail.transit_context.nearest.network_walking_minutes} menit berjalan kaki` : "Tidak tersedia"} />
+            <OptionalDetail label="Jangkauan berjalan" value={detail.walking_context.status === "ROUTABLE" ? `${detail.walking_context.catchment_minutes} menit` : "Tidak tersedia"} />
           </dl>
         ) : (
-          <p className="limitation-box">Klik observasi untuk membuka konteks Business Space. Tidak ada klaim ketersediaan saat ini.</p>
+          <p className="limitation-box">Pilih catatan properti untuk melihat kondisi area. Informasi ini tidak memastikan ketersediaan saat ini.</p>
         )}
       </section>
       <section className="evidence-section">
         <h4>Catatan</h4>
-        <p className="limitation-box">Properti Go adalah observasi sumber. Ketersediaan jual/sewa harus dikonfirmasi ulang.</p>
+        <p className="limitation-box">Catatan Properti Go berasal dari pengamatan sebelumnya. Ketersediaan jual atau sewa perlu dikonfirmasi kembali.</p>
       </section>
     </>
   );
@@ -630,8 +636,8 @@ function AccessibilityEvidenceResultRow({
         </span>
       </span>
       <span className="score-box">
-        <strong>{evidence.routing_effect_enabled ? "ON" : "OFF"}</strong>
-        <span>routing</span>
+        <strong>{evidence.routing_effect_enabled ? "Aktif" : "Belum aktif"}</strong>
+        <span>pengaruh pada rute</span>
       </span>
     </button>
   );
@@ -648,7 +654,7 @@ function AccessibilityEvidenceDetailPanel({
 }) {
   const evidence = detail ?? fallback;
   if (!evidence) {
-    return <div className="empty-state">Pilih observasi aksesibilitas pada peta atau daftar evidence.</div>;
+    return <div className="empty-state">Pilih catatan aksesibilitas pada peta atau daftar hasil.</div>;
   }
   return (
     <>
@@ -679,31 +685,31 @@ function AccessibilityEvidenceDetailPanel({
           <OptionalDetail label="Kategori" value={accessibilityCategoryLabel(evidence.category)} />
           <OptionalDetail label="Subkategori" value={accessibilitySubcategoryLabel(evidence.subcategory)} />
           <OptionalDetail label="Status" value={accessibilityStatusLabel(evidence.validation_status)} />
-          <OptionalDetail label="Freshness" value={freshnessLabel(evidence.freshness_status)} />
-          <OptionalDetail label="Observed at" value={evidence.observed_at} />
+          <OptionalDetail label="Pembaruan data" value={freshnessLabel(evidence.freshness_status)} />
+          <OptionalDetail label="Waktu pengamatan" value={evidence.observed_at} />
           <OptionalDetail label="Sumber" value={accessibilitySourceLabel(evidence.source_type)} />
           <OptionalDetail label="Deskripsi" value={evidence.description} />
         </dl>
       </section>
       <section className="evidence-section">
-        <h4>Hubungan jaringan kandidat</h4>
+        <h4>Keterkaitan dengan jalur pejalan kaki</h4>
         {loading ? (
-          <p className="limitation-box" role="status">Memeriksa kandidat jaringan pedestrian...</p>
+          <p className="limitation-box" role="status">Sedang memeriksa akses jalan kaki...</p>
         ) : detail?.spatial_relation ? (
           <dl className="evidence-list evidence-list--compact">
-            <OptionalDetail label="Tipe fitur" value="Pedestrian edge" />
-            <OptionalDetail label="Jarak kandidat" value={`${detail.spatial_relation.distance_m} m`} />
-            <OptionalDetail label="Status relasi" value={detail.spatial_relation.relation_status} />
-            <OptionalDetail label="Routing effect" value="Tidak aktif pada Phase 12" />
+            <OptionalDetail label="Jenis jalur" value="Jalur pejalan kaki" />
+            <OptionalDetail label="Jarak ke jalur" value={`${detail.spatial_relation.distance_m} m`} />
+            <OptionalDetail label="Keterkaitan" value={accessibilityRelationLabel(detail.spatial_relation.relation_status)} />
+            <OptionalDetail label="Pengaruh pada rute" value="Belum digunakan dalam perhitungan rute" />
           </dl>
         ) : (
-          <p className="limitation-box">Belum ada kandidat jaringan dalam batas jarak aman. Evidence tetap tidak mengubah rute.</p>
+          <p className="limitation-box">Belum ada jalur yang cukup dekat dengan catatan ini. Catatan tersebut tidak mengubah rute.</p>
         )}
       </section>
       <section className="evidence-section">
         <h4>Batas klaim</h4>
         <p className="limitation-box">
-          Evidence ini adalah temuan lapangan atau kontribusi terkurasi. Phase 12 tidak menyatakan rute berbahaya dan tidak mengubah biaya pgRouting.
+          Informasi ini berasal dari temuan lapangan atau kontribusi yang telah diperiksa. Catatan tersebut belum digunakan untuk menyatakan rute berbahaya atau mengubah perhitungan rute.
         </p>
       </section>
     </>
@@ -712,9 +718,9 @@ function AccessibilityEvidenceDetailPanel({
 
 function MerchantMediaGallery({ merchant }: { merchant: Merchant }) {
   const items = [
-    { label: "Foto tempat merchant", src: merchant.photo },
+    { label: "Foto tempat", src: merchant.photo },
     ...(merchant.menuPhotos ?? []).slice(0, 2).map((src, index) => ({
-      label: `Foto menu merchant ${index + 1}`,
+      label: `Foto menu ${index + 1}`,
       src,
     })),
   ];
@@ -743,7 +749,7 @@ function MerchantSourceEvidence({ merchant }: { merchant: Merchant }) {
           <OptionalDetail label="Harga observasi" value={merchant.observedPrice} />
           <OptionalDetail label="Kondisi tempat" value={merchant.observedCondition} />
           <OptionalDetail label="Mobilitas" value={merchant.mobility} />
-          <OptionalDetail label="Observed at" value={merchant.observedAt} />
+          <OptionalDetail label="Waktu pengamatan" value={merchant.observedAt} />
         </dl>
       ) : null}
     </section>
@@ -1314,7 +1320,7 @@ function GeneralGetraDashboard() {
             ?.layer_name ??
           adminImportedLayer
             ?.layer_name ??
-          "Layer import database"
+          "Data impor"
         : datasetId ===
           "mapid-food-jakarta-pusat"
         ? "Makanan-minuman Jakarta Pusat"
@@ -1339,7 +1345,7 @@ function GeneralGetraDashboard() {
             ?.limitation ??
           adminImportedLayer
             ?.limitation ??
-          "Layer import database"
+          "Data impor"
         : datasetId ===
           "mapid-food-jakarta-pusat"
         ? mapidLayerName
@@ -1394,7 +1400,7 @@ function GeneralGetraDashboard() {
                           ?.layer_name ??
                         adminImportedLayer
                           ?.layer_name ??
-                        "layer import"
+                        "data impor"
                       }`,
                   },
                 ),
@@ -1404,7 +1410,7 @@ function GeneralGetraDashboard() {
                       ?.layer_name ??
                     adminImportedLayer
                       ?.layer_name ??
-                    "layer import"
+                    "data impor"
                   }`,
               }
             : COFFEE_SHOP_ORIGIN,
@@ -1973,13 +1979,9 @@ function GeneralGetraDashboard() {
           setSearchFocusBounds(layer.intent.scope.bounds);
           setSearchFocusKey((key) => key + 1);
         }
-      } catch (error) {
+      } catch {
         if (controller.signal.aborted) return;
-        setMapidError(
-          error instanceof Error
-            ? error.message
-            : "Merchant pada area peta belum bisa dimuat.",
-        );
+        setMapidError("Tempat di area peta belum dapat dimuat. Coba lagi.");
       } finally {
         if (canonicalRequestRef.current === controller) {
           canonicalRequestRef.current = null;
@@ -2042,11 +2044,11 @@ function GeneralGetraDashboard() {
         const region = PROPERTY_REGION_OPTIONS.find((item) => item.id === inferredRegionId);
         if (region) setPropertyRegionId(region.id);
       }
-    } catch (error) {
+    } catch {
       if (controller.signal.aborted) return;
       setPropertyCandidates([]);
       setSelectedPropertyId(null);
-      setPropertyError(error instanceof Error ? error.message : "Properti Go belum bisa dimuat.");
+      setPropertyError("Ruang usaha belum dapat dimuat. Coba lagi.");
     } finally {
       if (propertyRequestRef.current === controller) {
         propertyRequestRef.current = null;
@@ -2106,16 +2108,12 @@ function GeneralGetraDashboard() {
           ? current
           : result.evidence[0]?.id ?? null,
       );
-    } catch (error) {
+    } catch {
       if (controller.signal.aborted) return;
       setAccessibilityEvidence([]);
       setAccessibilityNeed(null);
       setSelectedAccessibilityEvidenceId(null);
-      setAccessibilityError(
-        error instanceof Error
-          ? error.message
-          : "Observasi aksesibilitas belum bisa dimuat.",
-      );
+      setAccessibilityError("Informasi aksesibilitas belum dapat dimuat. Coba lagi.");
     } finally {
       if (accessibilityRequestRef.current === controller) {
         accessibilityRequestRef.current = null;
@@ -2403,7 +2401,7 @@ function GeneralGetraDashboard() {
                 layer_id:
                   "persisted-admin-imports",
                 layer_name:
-                  `${result.total_layers} layer import database`,
+                  `${result.total_layers} lapisan data tersimpan`,
                 source_type:
                   "JSON_PAYLOAD",
                 total_features:
@@ -2412,7 +2410,7 @@ function GeneralGetraDashboard() {
                 persisted:
                   true,
                 limitation:
-                  "Layer tersimpan di database sebagai SURVEYED.",
+                  "Data tersimpan dan siap digunakan di peta.",
                 boundaries: {
                   type:
                     "FeatureCollection",
@@ -2751,7 +2749,7 @@ function GeneralGetraDashboard() {
   }, [clearRoute, journey.controller]);
 
   return (
-    <main className="workspace">
+    <main className="workspace workspace--figma">
       <GetraGlobalHeader
         contextActions={<StakeholderModeSwitcher />}
         utilities={<CommunityNotificationsMenu />}
@@ -2765,15 +2763,15 @@ function GeneralGetraDashboard() {
               <span className="eyebrow">
                 {datasetId ===
                 "all-areas"
-                  ? "GETRA search"
+                  ? "Pencarian GETRA"
                   : isAdminImportDataset(
                       datasetId,
                     )
-                    ? "Import search"
+                    ? "Pencarian data impor"
                     : datasetId ===
                       "mapid-food-jakarta-pusat"
-                    ? "MAPID search"
-                    : "GeoJSON search"}
+                    ? "Pencarian MAPID"
+                    : "Pencarian data peta"}
               </span>
               <h1>
                 {datasetTitle}
@@ -2824,7 +2822,7 @@ function GeneralGetraDashboard() {
           <section className="dataset-switcher">
             <div>
               <span className="eyebrow">
-                Data map
+                Data peta
               </span>
               <strong>
                 Filter cakupan data
@@ -2918,7 +2916,7 @@ function GeneralGetraDashboard() {
               datasetId ===
                 "mapid-food-jakarta-pusat") ? (
               <p className="dataset-message">
-                Mengambil layer MAPID...
+                Memuat data MAPID...
               </p>
             ) : null}
             {mapidError &&
@@ -2936,7 +2934,7 @@ function GeneralGetraDashboard() {
             <div className="route-planner__header">
               <div>
                 <span className="eyebrow">
-                  Rute commuter
+                  Rute perjalanan
                 </span>
                 <strong>
                   {journeyOpen ? `Menuju ${routeDestination?.name ?? "tujuan"}` : (route && !editingEndpoints) ? "Opsi Rute" : "Mulai dari mana?"}
@@ -3031,8 +3029,8 @@ function GeneralGetraDashboard() {
                       {userLocation
                         ? "Lokasi saya"
                         : locating
-                          ? "Mengambil GPS..."
-                          : "Aktifkan GPS"}
+                          ? "Mengambil lokasi..."
+                          : "Aktifkan lokasi"}
                     </button>
                     <button
                       className={
@@ -3407,7 +3405,7 @@ function GeneralGetraDashboard() {
               aria-pressed={primaryMode === "merchant"}
               onClick={activateMerchantMode}
             >
-              Merchant
+              Tempat
             </button>
             <button
               type="button"
@@ -3415,7 +3413,7 @@ function GeneralGetraDashboard() {
               aria-pressed={primaryMode === "business-space"}
               onClick={activateBusinessSpaceMode}
             >
-              Business Space
+              Ruang Usaha
             </button>
             <button
               type="button"
@@ -3510,7 +3508,7 @@ function GeneralGetraDashboard() {
                 <ShieldCheck size={17} />
                 <div>
                   <strong>Observasi aksesibilitas</strong>
-                  <span>Evidence viewport, bukan routing penalty.</span>
+                  <span>Catatan pada area peta ini belum memengaruhi perhitungan rute.</span>
                 </div>
               </div>
               <div className="property-filter-grid">
@@ -3551,14 +3549,14 @@ function GeneralGetraDashboard() {
                 <Search size={15} />
                 Terapkan filter
               </button>
-              {accessibilityLoading ? <p className="route-message" role="status">Memuat observasi aksesibilitas pada viewport aktif...</p> : null}
+              {accessibilityLoading ? <p className="route-message" role="status">Memuat catatan aksesibilitas di area peta saat ini...</p> : null}
               {accessibilityError ? <p className="route-message route-message--error" role="alert">{accessibilityError}</p> : null}
               {accessibilityNeed ? (
                 <div className="accessibility-summary" data-accessibility-sample-size={accessibilityNeed.sample_size}>
                   <span><strong>{accessibilityNeed.observation_count}</strong> observasi</span>
                   <span><strong>{accessibilityNeed.confirmed_count}</strong> terkonfirmasi</span>
                   <span><strong>{accessibilityNeed.needs_review_count}</strong> perlu verifikasi</span>
-                  <span><strong>{accessibilityNeed.recent_count}</strong> recent</span>
+                  <span><strong>{accessibilityNeed.recent_count}</strong> terbaru</span>
                 </div>
               ) : null}
               {accessibilityNeed?.low_sample ? (
@@ -3574,15 +3572,15 @@ function GeneralGetraDashboard() {
               Jangkauan jaringan {serviceArea.threshold_minutes} menit: {serviceArea.reachable_edge_count ?? 0} segmen terjangkau.
             </p>
           ) : primaryMode === "merchant" && maxWalkingMinutes ? (
-            <p className="route-message" role="status">Jaringan pedestrian tidak tersedia dari titik awal ini.</p>
+            <p className="route-message" role="status">Jangkauan jalan kaki belum tersedia dari titik awal ini.</p>
           ) : null}
 
           {primaryMode === "merchant" && searchActive && searchTotal === 0 ? (
             <section className="commuter-no-results" aria-live="polite">
-              <strong>Tidak ada merchant yang memenuhi semua batas.</strong>
-              <span>GETRA tidak melonggarkan budget, status buka, atau waktu berjalan secara otomatis.</span>
+              <strong>Belum ada tempat yang sesuai dengan semua filter.</strong>
+              <span>GETRA tidak mengubah filter Anda secara otomatis. Ubah anggaran, status buka, atau batas waktu berjalan untuk memperluas hasil.</span>
               <div>
-                {maxBudget ? <button type="button" onClick={() => setMaxBudget("")}>Hapus budget</button> : null}
+                {maxBudget ? <button type="button" onClick={() => setMaxBudget("")}>Hapus batas anggaran</button> : null}
                 {openOnly ? <button type="button" onClick={() => setOpenOnly(false)}>Abaikan status buka</button> : null}
                 {maxWalkingMinutes ? (
                   <button type="button" onClick={() => {
@@ -3633,14 +3631,14 @@ function GeneralGetraDashboard() {
           <div className="section-divider" />
 
           {/* View Mode Switcher */}
-          {primaryMode === "merchant" ? <div className="mb-3 flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950/70 p-1">
+          {primaryMode === "merchant" ? <div className="workspace-view-switcher" aria-label="Mode tampilan hasil usaha">
             <button
               type="button"
               onClick={() => setViewMode("fair-discovery")}
-              className={`flex-1 rounded-md py-1.5 text-xs font-bold transition-all ${
+              className={`workspace-view-switcher__button workspace-view-switcher__button--fair ${
                 viewMode === "fair-discovery"
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "workspace-view-switcher__button--active"
+                  : ""
               }`}
             >
               ✨ Penelusuran Adil
@@ -3648,24 +3646,24 @@ function GeneralGetraDashboard() {
             <button
               type="button"
               onClick={() => setViewMode("dataset")}
-              className={`flex-1 rounded-md py-1.5 text-xs font-bold transition-all ${
+              className={`workspace-view-switcher__button workspace-view-switcher__button--dataset ${
                 viewMode === "dataset"
-                  ? "bg-slate-800 text-white shadow-sm"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "workspace-view-switcher__button--active"
+                  : ""
               }`}
             >
-              📁 Katalog Dataset
+              📁 Daftar Data
             </button>
             <button
               type="button"
               onClick={() => setViewMode("analytics")}
-              className={`flex-1 rounded-md py-1.5 text-xs font-bold transition-all ${
+              className={`workspace-view-switcher__button workspace-view-switcher__button--analytics ${
                 viewMode === "analytics"
-                  ? "bg-emerald-700 text-white shadow-sm"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "workspace-view-switcher__button--active"
+                  : ""
               }`}
             >
-              <BarChart3 size={13} aria-hidden="true" /> Analytics
+              <BarChart3 size={13} aria-hidden="true" /> Analisis
             </button>
           </div> : null}
 
@@ -3700,10 +3698,10 @@ function GeneralGetraDashboard() {
             <>
               <div className="results-header">
                 <div>
-                  <span className="eyebrow">Accessibility Evidence</span>
-                  <strong>{accessibilityEvidence.length} observasi pada viewport</strong>
+                  <span className="eyebrow">Catatan Aksesibilitas</span>
+                  <strong>{accessibilityEvidence.length} catatan di area peta</strong>
                 </div>
-                <span className="source-stamp">EVIDENCE</span>
+                <span className="source-stamp">CATATAN</span>
               </div>
               <div className="result-list" data-accessibility-result-count={accessibilityEvidence.length}>
                 {accessibilityEvidence.length === 0 ? (
@@ -3783,7 +3781,7 @@ function GeneralGetraDashboard() {
                           }`
                         : datasetId === "mapid-food-jakarta-pusat"
                         ? "Hasil MAPID"
-                        : "Hasil GeoJSON"}
+                        : "Hasil data peta"}
                   </span>
                   <strong>
                     {merchants.length} dari {baseMerchants.length} titik
@@ -3816,7 +3814,7 @@ function GeneralGetraDashboard() {
                   <div className="empty-state" role="status">
                     {searchIntent?.keyword
                       ? `"${searchIntent.keyword}" tidak ditemukan di ${searchIntent.location_text ?? "area ini"}.`
-                      : "Tidak ada merchant canonical di area ini."}
+                      : "Belum ada tempat yang tercatat di area ini."}
                   </div>
                 ) : regionResultGroups.length > 0 ? (
                   regionResultGroups.map((group) => (
@@ -3860,7 +3858,7 @@ function GeneralGetraDashboard() {
               <span>
                 {datasetId ===
                 "all-areas"
-                  ? "Semua layer aktif ditampilkan bersama. Pakai filter cakupan data untuk fokus ke layer import, Jakarta Pusat, atau Jakarta Barat."
+                  ? "Semua lapisan aktif ditampilkan bersama. Gunakan filter area untuk fokus pada data tertentu, Jakarta Pusat, atau Jakarta Barat."
                   : isAdminImportDataset(
                       datasetId,
                     )
@@ -3870,10 +3868,10 @@ function GeneralGetraDashboard() {
                         adminImportedLayer
                           ?.layer_name ??
                         "Data hasil import"
-                      } tersimpan di database dan dapat digunakan untuk pencarian maupun routing.`
+                      } sudah tersedia untuk pencarian dan rute.`
                     : datasetId ===
                       "mapid-food-jakarta-pusat"
-                    ? "Layer MAPID dinormalisasi lewat backend GETRA agar bisa dicari, dipilih, dan dipakai routing."
+                    ? "Data MAPID sudah tersedia untuk dicari, dipilih, dan digunakan sebagai tujuan rute."
                     : "Aktifkan lokasi perangkat agar daftar diurutkan dari titik kamu saat ini."}
               </span>
             </div>
@@ -3975,7 +3973,7 @@ function GeneralGetraDashboard() {
           <div className="panel-heading">
             <div>
               <span className="eyebrow">
-                Evidence
+                Detail
               </span>
               <h2>
                 Detail lokasi
@@ -4035,7 +4033,7 @@ function GeneralGetraDashboard() {
                         "mapid-food-",
                       )
                       ? "MAPID"
-                      : "GeoJSON"}
+                      : "Data GETRA"}
                 </span>
                 <h3>
                   {selectedMerchant.name}
@@ -4165,7 +4163,7 @@ function GeneralGetraDashboard() {
                 </h4>
                 <p className="limitation-box">
                   {selectedMerchant.address ||
-                    "Alamat tidak tersedia pada GeoJSON."}
+                    "Alamat belum tersedia pada data peta ini."}
                 </p>
               </section>
 

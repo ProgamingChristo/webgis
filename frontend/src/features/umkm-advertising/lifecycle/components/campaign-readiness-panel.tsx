@@ -30,31 +30,31 @@ export function CampaignReadinessPanel({
   const items = [
     {
       id: "merchant",
-      title: "Kelayakan Toko UMKM",
+      title: "Kesiapan usaha",
       passed: checks.merchant,
-      descPassed: "Profil lengkap, koordinat valid, dan kepemilikan terverifikasi",
+      descPassed: "Profil dan lokasi lengkap, serta kepemilikan sudah terverifikasi",
       descFailed: "Klaim kepemilikan atau profil toko belum memenuhi syarat",
       icon: Store,
     },
     {
       id: "creative",
-      title: "Materi Iklan (Creative)",
+      title: "Materi promosi",
       passed: checks.creative,
-      descPassed: "Minimal 1 materi iklan berstatus Siap (Ready)",
-      descFailed: "Belum ada materi iklan yang diset Siap (Ready)",
+      descPassed: "Setidaknya satu materi promosi sudah siap",
+      descFailed: "Belum ada materi promosi yang siap",
       icon: Palette,
     },
     {
       id: "targeting",
-      title: "Target Wilayah (Spatial)",
+      title: "Wilayah sasaran",
       passed: checks.targeting,
-      descPassed: "Radius atau Study Area telah ditentukan",
-      descFailed: "Target jangkauan wilayah belum dikonfigurasi",
+      descPassed: "Jangkauan atau wilayah sudah ditentukan",
+      descFailed: "Jangkauan wilayah belum diatur",
       icon: MapPin,
     },
     {
       id: "schedule",
-      title: "Jadwal Waktu (Schedule)",
+      title: "Jadwal promosi",
       passed: checks.schedule,
       descPassed: "Rentang waktu mulai dan selesai valid",
       descFailed: "Jadwal belum diisi atau waktu selesai di masa lalu",
@@ -70,7 +70,7 @@ export function CampaignReadinessPanel({
         <div>
           <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
             <h3 className="break-words text-base font-semibold leading-6 text-slate-900 dark:text-white">
-              Kesiapan Aktivasi Campaign
+              Kesiapan promosi
             </h3>
             {ready ? (
               <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
@@ -83,7 +83,7 @@ export function CampaignReadinessPanel({
             )}
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Semua 4 parameter wajib terpenuhi agar campaign dapat aktif tayang secara otomatis.
+            Lengkapi keempat bagian agar promosi dapat mulai ditayangkan.
           </p>
         </div>
 
@@ -149,7 +149,7 @@ export function CampaignReadinessPanel({
           <Info className="w-4 h-4 shrink-0 mt-0.5" />
           <div>
             <span className="font-semibold">Perhatian: </span>
-            Lengkapi parameter di atas agar campaign masuk ke jadwal penayangan iklan.
+            Lengkapi bagian di atas agar promosi dapat dijadwalkan.
           </div>
         </div>
       )}

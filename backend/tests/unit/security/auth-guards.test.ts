@@ -282,7 +282,7 @@ describe(
               "UNAUTHORIZED",
 
             message:
-              "Unauthorized",
+              "Sesi Anda telah berakhir. Silakan masuk kembali.",
 
             retryable:
               false,
@@ -366,7 +366,7 @@ describe(
             "UNAUTHORIZED",
 
           message:
-            "Unauthorized",
+            "Sesi Anda telah berakhir. Silakan masuk kembali.",
 
           retryable:
             false,
@@ -469,7 +469,7 @@ describe(
             "FORBIDDEN",
 
           message:
-            "Forbidden",
+            "Anda tidak memiliki akses untuk melakukan tindakan ini.",
 
           retryable:
             false,

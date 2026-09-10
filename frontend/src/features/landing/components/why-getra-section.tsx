@@ -6,31 +6,39 @@ export function WhyGetraSection() {
   return (
     <SectionShell
       id="tentang"
-      eyebrow="Why GETRA exists"
-      title="Sebuah kota tidak berhenti di pintu stasiun."
-      description="Perjalanan setelah turun dari transportasi massal sering kali justru menjadi bagian yang paling sulit dinilai. GETRA membaca akses, demand, relevance, dan freshness sebagai layer spasial yang saling terkait."
+      eyebrow="Satu peta, banyak kebutuhan"
+      title="Kota yang sama. Kebutuhan yang berbeda."
+      description="GETRA menghubungkan mobilitas, usaha lokal, dan peluang wilayah dalam satu pengalaman berbasis lokasi yang hidup dan adaptif."
     >
-      <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-[2.4rem] border border-getra-cyan/20 bg-[radial-gradient(circle_at_28%_20%,rgba(41,199,216,0.14),transparent_28%),linear-gradient(145deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-3 sm:p-5">
+      <div className="grid gap-6 lg:grid-cols-[1.06fr_0.94fr]">
+        <div className="relative overflow-hidden rounded-[2rem] border border-[#464b71]/10 bg-[#f6fbfb] p-3 sm:p-5">
           <GetraMapScreenshot />
+          <div className="absolute bottom-8 left-7 rounded-2xl border border-white/80 bg-white/92 p-4 shadow-[0_12px_24px_rgba(70,75,113,0.12)] backdrop-blur sm:bottom-10 sm:left-10">
+            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-[#118ab2]">
+              Semua berawal dari peta
+            </span>
+            <p className="mt-1 text-sm font-black text-[#464b71]">
+              Akses dan kebutuhan dibaca bersama.
+            </p>
+          </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          {LANDING_PROBLEM_TAGS.map((tag) => (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          {LANDING_PROBLEM_TAGS.map((tag, index) => (
             <article
               key={tag.title}
-              className="group rounded-3xl border border-white/10 bg-white/[0.035] p-5 transition hover:border-getra-cyan/40 hover:bg-getra-cyan/5 focus-within:border-getra-cyan/40"
-              tabIndex={0}
+              className="group rounded-[1.5rem] border border-[#464b71]/12 bg-white p-5 shadow-[0_10px_28px_rgba(70,75,113,0.05)] transition hover:-translate-y-0.5 hover:border-[#118ab2]/30"
             >
-              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-getra-green">
-                {tag.layer}
-              </span>
-              <h3 className="mt-3 text-base font-black text-white">
-                {tag.title}
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-slate-400">
-                {tag.description}
-              </p>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#118ab2]">
+                  {tag.layer}
+                </span>
+                <span className="text-2xl font-black tracking-[-0.08em] text-[#464b71]/12">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+              </div>
+              <h3 className="mt-2 text-base font-black text-[#464b71]">{tag.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-[#66708d]">{tag.description}</p>
             </article>
           ))}
         </div>

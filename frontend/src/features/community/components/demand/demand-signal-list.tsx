@@ -34,8 +34,8 @@ export function DemandSignalList({
   if (error) {
     return (
       <section className={styles.feedState} role="alert">
-        <span className={styles.eyebrow}>Signal error</span>
-        <h2>Sinyal Community belum bisa dimuat.</h2>
+        <span className={styles.eyebrow}>Kebutuhan warga</span>
+        <h2>Kebutuhan warga belum bisa dimuat.</h2>
         <p>{error}</p>
         <button className={styles.secondaryButton} onClick={onRetry} type="button">
           Coba lagi
@@ -47,15 +47,15 @@ export function DemandSignalList({
   if (items.length === 0) {
     return (
       <section className={styles.feedState}>
-        <span className={styles.eyebrow}>Sinyal Community</span>
+        <span className={styles.eyebrow}>Kebutuhan warga</span>
         <h2>Belum ada pola permintaan yang cukup kuat.</h2>
-        <p>Minimal tiga permintaan serupa diperlukan untuk membentuk Sinyal Community.</p>
+        <p>Ringkasan muncul setelah ada sedikitnya tiga permintaan serupa.</p>
       </section>
     );
   }
 
   return (
-    <section className={styles.requestFeed} aria-label="Sinyal Community">
+    <section className={styles.requestFeed} aria-label="Kebutuhan warga">
       {items.map((signal) => (
         <DemandSignalCard key={signal.id} signal={signal} />
       ))}

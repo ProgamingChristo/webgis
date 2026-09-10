@@ -77,7 +77,7 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
     return (
       <CommunityShell activeView="requests">
         <section className={styles.feedState} role="alert">
-          <span className={styles.eyebrow}>Request error</span>
+          <span className={styles.eyebrow}>Permintaan belum dimuat</span>
           <h2>Permintaan belum bisa dimuat.</h2>
           <p>{error ?? "Permintaan tidak ditemukan."}</p>
           <Link className={styles.locationLinkButton} href="/community?view=requests">
@@ -115,7 +115,7 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
         </header>
         <dl className={styles.requestFacts}>
           <div>
-            <dt>Budget maksimal</dt>
+            <dt>Anggaran maksimal</dt>
             <dd>{formatIdr(request.maxBudget)}</dd>
           </div>
           <div>

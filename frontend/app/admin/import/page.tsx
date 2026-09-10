@@ -48,9 +48,9 @@ export default function AdminImportPage() {
 
   const previewExamples = useMemo(
     () => [
-      "GeoJSON FeatureCollection",
+      "Kumpulan fitur GeoJSON",
       "Array objek dengan latitude dan longitude",
-      "Respons API dengan features atau records",
+      "Respons layanan publik berisi fitur atau rekaman",
     ],
     [],
   );
@@ -93,7 +93,7 @@ export default function AdminImportPage() {
         <section className="w-full max-w-md rounded-3xl border border-cyan-400/15 bg-slate-950/80 p-8 text-center shadow-2xl shadow-cyan-950/20">
           <ShieldCheck className="mx-auto mb-5 text-cyan-300" size={34} />
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
-            Admin only
+            Khusus admin
           </p>
           <h1 className="mt-3 text-2xl font-semibold">Akses admin dibutuhkan</h1>
           <p className="mt-3 text-sm leading-6 text-slate-400">
@@ -130,7 +130,7 @@ export default function AdminImportPage() {
       setError(
         previewError instanceof Error
           ? previewError.message
-          : "Preview import gagal.",
+          : "Pratinjau impor belum dapat dibuat. Coba lagi.",
       );
     } finally {
       setPreviewing(false);
@@ -157,13 +157,13 @@ export default function AdminImportPage() {
         committed.total_features +
           " titik dan " +
           (committed.regions?.length ?? 0) +
-          " batas cakupan berhasil disimpan ke database.",
+          " batas cakupan berhasil disimpan.",
       );
     } catch (commitError) {
       setError(
         commitError instanceof Error
           ? commitError.message
-          : "Penyimpanan database gagal.",
+          : "Data belum dapat disimpan. Coba lagi.",
       );
     } finally {
       setSaving(false);
@@ -172,7 +172,7 @@ export default function AdminImportPage() {
 
   async function handleDeleteLayer(savedLayer: AdminImportedLayer) {
     const approved = window.confirm(
-      `Hapus layer "${savedLayer.layer_name}" dari database? Semua titik dan batas cakupan hasil import layer ini akan dihapus.`,
+      `Hapus lapisan "${savedLayer.layer_name}"? Semua titik dan batas cakupan dari lapisan ini akan dihapus.`,
     );
 
     if (!approved) {
@@ -203,7 +203,7 @@ export default function AdminImportPage() {
       setError(
         deleteError instanceof Error
           ? deleteError.message
-          : "Layer import gagal dihapus.",
+          : "Lapisan impor belum dapat dihapus. Coba lagi.",
       );
     } finally {
       setDeletingLayerId(null);
@@ -212,7 +212,7 @@ export default function AdminImportPage() {
 
   async function handleRenameLayer(savedLayer: AdminImportedLayer) {
     const nextName = window.prompt(
-      "Nama layer baru",
+      "Nama lapisan baru",
       savedLayer.layer_name,
     );
 
@@ -252,7 +252,7 @@ export default function AdminImportPage() {
       setError(
         updateError instanceof Error
           ? updateError.message
-          : "Layer import gagal diperbarui.",
+          : "Lapisan impor belum dapat diperbarui. Coba lagi.",
       );
     } finally {
       setUpdatingLayerId(null);
@@ -279,9 +279,9 @@ export default function AdminImportPage() {
 
   return (
     <GetraAppShell
-      description="Import JSON, GeoJSON, atau API publik; validasi preview; lalu simpan/hapus/rename layer dari database GETRA."
-      eyebrow="Admin spatial data"
-      title="Map data import & CRUD"
+      description="Impor JSON, GeoJSON, atau data publik; periksa pratinjau; lalu kelola lapisan data GETRA."
+      eyebrow="Data peta admin"
+      title="Impor dan kelola data peta"
       tone="admin"
     >
       <div className="mx-auto max-w-6xl text-slate-100">
@@ -296,7 +296,7 @@ export default function AdminImportPage() {
           </button>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
             <ShieldCheck size={15} />
-            Admin workspace
+            Ruang admin
           </div>
         </nav>
 
@@ -305,15 +305,14 @@ export default function AdminImportPage() {
           <div className="relative max-w-3xl">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/8 px-3 py-1.5 text-xs font-semibold text-cyan-200">
               <Database size={14} />
-              Persistent spatial ingestion
+              Penyimpanan data peta
             </div>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               Import data peta, periksa, lalu simpan.
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
-              GETRA membaca JSON atau API publik, menormalisasi koordinat,
-              mendeteksi wilayah, membuat batas cakupan, lalu menyimpan hasilnya
-              ke database agar tersedia di dashboard.
+              GETRA memeriksa format dan lokasi data sebelum menyimpannya agar
+              dapat digunakan di peta utama.
             </p>
           </div>
         </header>
@@ -330,7 +329,7 @@ export default function AdminImportPage() {
               <ModeButton
                 active={mode === "PUBLIC_API_URL"}
                 icon={<Globe2 size={16} />}
-                label="API publik"
+                label="Layanan data publik"
                 onClick={() => setMode("PUBLIC_API_URL")}
               />
               <ModeButton
@@ -342,7 +341,7 @@ export default function AdminImportPage() {
             </div>
 
             <div className="mt-6 space-y-5">
-              <ImportField label="Nama layer">
+              <ImportField label="Nama lapisan">
                 <input
                   className="getra-input"
                   value={layerName}
@@ -355,7 +354,7 @@ export default function AdminImportPage() {
               {mode === "PUBLIC_API_URL" ? (
                 <ImportField
                   label="URL API publik"
-                  hint="Query rahasia tidak disimpan ke metadata database."
+                  hint="Parameter rahasia tidak disimpan bersama data."
                 >
                   <div className="relative">
                     <CloudDownload
@@ -424,7 +423,7 @@ export default function AdminImportPage() {
               ) : (
                 <Sparkles size={17} />
               )}
-              {previewing ? "Menganalisis data..." : "Buat preview aman"}
+              {previewing ? "Memeriksa data..." : "Buat pratinjau"}
             </button>
           </form>
 
@@ -458,7 +457,7 @@ export default function AdminImportPage() {
               <section className="rounded-3xl border border-emerald-300/20 bg-emerald-300/[0.055] p-5 sm:p-6">
                 <div className="flex items-center justify-between gap-3">
                   <span className="rounded-full bg-emerald-300/12 px-3 py-1 text-xs font-bold text-emerald-200">
-                    {layer.persisted ? "TERSIMPAN" : "PREVIEW"}
+                    {layer.persisted ? "TERSIMPAN" : "PRATINJAU"}
                   </span>
                   <span className="text-xs text-slate-500">
                     {layer.source_type === "PUBLIC_API_URL" ? "API" : "JSON"}
@@ -499,7 +498,7 @@ export default function AdminImportPage() {
                     ) : (
                       <Database size={17} />
                     )}
-                    {saving ? "Menyimpan..." : "Simpan ke database"}
+                    {saving ? "Menyimpan..." : "Simpan data"}
                   </button>
                 )}
               </section>
@@ -509,12 +508,12 @@ export default function AdminImportPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                    Database
+                    Penyimpanan GETRA
                   </p>
-                  <h2 className="mt-1 font-semibold">Import tersimpan</h2>
+                  <h2 className="mt-1 font-semibold">Impor tersimpan</h2>
                 </div>
                 <span className="rounded-full bg-white/5 px-3 py-1 text-xs text-slate-400">
-                  {savedLayers.length} layer
+                  {savedLayers.length} lapisan
                 </span>
               </div>
               <button
@@ -523,7 +522,7 @@ export default function AdminImportPage() {
                 onClick={() => void loadSavedLayers()}
               >
                 <RefreshCw size={15} />
-                Refresh data
+                Muat ulang data
               </button>
               <div className="mt-4 space-y-2">
                 {savedLayers.length > 0 ? (
@@ -545,7 +544,7 @@ export default function AdminImportPage() {
                           <button
                             className="inline-grid size-9 place-items-center rounded-xl border border-cyan-300/20 text-cyan-200 transition hover:border-cyan-300/60 hover:bg-cyan-400/10 disabled:cursor-wait disabled:opacity-50"
                             type="button"
-                            title="Rename layer import"
+                            title="Ubah nama lapisan impor"
                             onClick={() => void handleRenameLayer(savedLayer)}
                             disabled={updatingLayerId === savedLayer.layer_id}
                           >
@@ -559,7 +558,7 @@ export default function AdminImportPage() {
                           <button
                             className="inline-grid size-9 place-items-center rounded-xl border border-rose-300/20 text-rose-200 transition hover:border-rose-300/60 hover:bg-rose-400/10 disabled:cursor-wait disabled:opacity-50"
                             type="button"
-                            title="Hapus layer import dari database"
+                            title="Hapus lapisan impor"
                             onClick={() => void handleDeleteLayer(savedLayer)}
                             disabled={deletingLayerId === savedLayer.layer_id}
                           >
@@ -575,7 +574,7 @@ export default function AdminImportPage() {
                   ))
                 ) : (
                   <p className="text-sm leading-6 text-slate-500">
-                    Belum ada layer hasil import di database.
+                    Belum ada lapisan hasil impor.
                   </p>
                 )}
               </div>

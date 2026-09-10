@@ -58,9 +58,9 @@ export function MerchantOpportunityPanel({ merchantId, intelligence, days, onDay
             <p className="mt-3 text-xs leading-5 text-slate-500">Jumlah aktivitas tidak sama dengan jumlah orang. Semua angka mengikuti kategori, wilayah, dan periode pengamatan di atas.</p>
           </div> : null}
           <div className="mt-5 border-t border-slate-800 pt-4">
-            <button type="button" disabled={explanation.loading} onClick={() => void explanation.explain()} className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-cyan-700/60 px-4 py-2 text-sm font-medium text-cyan-200 hover:bg-cyan-950/30 disabled:opacity-50 sm:w-auto"><Sparkles size={16} aria-hidden="true" />{explanation.loading ? "Menyiapkan penjelasan..." : "Jelaskan insight"}</button>
+            <button type="button" disabled={explanation.loading} onClick={() => void explanation.explain()} className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-cyan-700/60 px-4 py-2 text-sm font-medium text-cyan-200 hover:bg-cyan-950/30 disabled:opacity-50 sm:w-auto"><Sparkles size={16} aria-hidden="true" />{explanation.loading ? "Menyiapkan penjelasan..." : "Jelaskan peluang"}</button>
             <p className="mt-2 text-xs leading-5 text-slate-400">Apa artinya untuk usaha saya? Penjelasan menggunakan data GETRA yang tersedia.</p>
-            {explanation.data ? <div className="mt-3 border-l-2 border-cyan-600 pl-4" role="status"><p className="text-xs font-semibold text-cyan-200">{explanation.data.status === "AI" ? "Penjelasan dengan bantuan AI" : "Penjelasan dari data GETRA"}</p><p className="mt-1 whitespace-pre-line text-sm leading-6 text-slate-300">{explanation.data.answer}</p></div> : null}
+            {explanation.data ? <div className="mt-3 border-l-2 border-cyan-600 pl-4" role="status"><p className="text-xs font-semibold text-cyan-200">Penjelasan dari data GETRA</p><p className="mt-1 whitespace-pre-line text-sm leading-6 text-slate-300">{explanation.data.answer}</p></div> : null}
             {explanation.error ? <p className="mt-3 text-sm text-rose-300" role="alert">{explanation.error}</p> : null}
           </div>
         </section>

@@ -64,23 +64,23 @@ export class AiService {
     });
 
     if (!response.ok) {
-      let message = `Server error: ${response.status}`;
+      let code: string | undefined;
       try {
         const errorData = await response.json();
-        if (errorData.error?.message) {
-          message = errorData.error.message;
-        }
+        code = typeof errorData?.error?.code === "string"
+          ? errorData.error.code
+          : undefined;
       } catch {}
-      throw new Error(message);
+      throw new Error(aiErrorMessage(code, response.status));
     }
 
     const json = await response.json();
     if (!json.success || !json.data) {
-      throw new Error("Invalid response format from AI service");
+      throw new Error("Jawaban belum dapat disiapkan. Coba lagi.");
     }
 
     if (!["sub2api", "deterministic"].includes(json.data.provider)) {
-      throw new Error("Invalid provider metadata from AI service");
+      throw new Error("Jawaban belum dapat disiapkan. Coba lagi.");
     }
 
     return json.data as AiAskResponse;
@@ -111,9 +111,25 @@ export class AiService {
       !body.data?.description ||
       body.data.description.length > 450
     ) {
-      throw new Error("Gagal membuat deskripsi. Coba lagi.");
+      throw new Error("Deskripsi belum dapat disiapkan. Coba lagi.");
     }
 
     return body.data;
   }
+}
+
+function aiErrorMessage(code: string | undefined, status: number): string {
+  if (code === "UNAUTHORIZED" || status === 401) {
+    return "Sesi Anda telah berakhir. Masuk kembali untuk menggunakan Asisten GETRA.";
+  }
+  if (code === "RATE_LIMIT_EXCEEDED" || status === 429) {
+    return "Terlalu banyak pertanyaan dalam waktu singkat. Coba lagi sebentar lagi.";
+  }
+  if (code === "VALIDATION_ERROR" || status === 400 || status === 422) {
+    return "Pertanyaan belum dapat diproses. Periksa kembali lalu coba lagi.";
+  }
+  if (code === "AI_PROVIDER_TIMEOUT") {
+    return "Asisten membutuhkan waktu terlalu lama untuk menjawab. Coba lagi.";
+  }
+  return "Asisten sedang tidak dapat digunakan. Coba lagi beberapa saat nanti.";
 }

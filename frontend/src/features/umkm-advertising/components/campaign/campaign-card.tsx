@@ -145,7 +145,7 @@ export function CampaignCard({
           }`}
         >
           <MapPin className="w-3.5 h-3.5" />
-          {activeTab === "targeting" ? "Tutup Targeting" : "Targeting Wilayah"}
+          {activeTab === "targeting" ? "Tutup sasaran" : "Wilayah sasaran"}
         </button>
 
         <button
@@ -171,7 +171,7 @@ export function CampaignCard({
           }`}
         >
           <Sparkles className="w-3.5 h-3.5" />
-          {activeTab === "preview" ? "Tutup Uji Penayangan" : "Uji Penayangan (Preview)"}
+          {activeTab === "preview" ? "Tutup uji penayangan" : "Uji penayangan"}
         </button>
 
         <button

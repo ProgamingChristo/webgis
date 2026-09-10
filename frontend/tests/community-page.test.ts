@@ -88,7 +88,7 @@ describe("Community feature UI", () => {
       ),
     );
 
-    expect(html).toContain("GETRA Community");
+    expect(html).toContain("Komunitas GETRA");
     expect(html).toContain("Beranda");
     expect(html).toContain("Temuan Komuter");
     expect(html).toContain("Apa yang kamu temukan?");
@@ -131,7 +131,7 @@ describe("Community feature UI", () => {
       }),
     );
 
-    expect(previewHtml).toContain("Preview foto Community");
+    expect(previewHtml).toContain("Pratinjau foto komunitas");
     expect(previewHtml).toContain("temuan.jpg");
     expect(previewHtml).toContain("Hapus");
     expect(postPhotoHtml).toContain("https://signed.example/photo.webp");
@@ -266,7 +266,7 @@ describe("Community feature UI", () => {
       }),
     );
 
-    expect(html).toContain("Belum ada postingan Community.");
+    expect(html).toContain("Belum ada postingan komunitas.");
   });
 
   it("inserts selected emoji at the caret position", () => {

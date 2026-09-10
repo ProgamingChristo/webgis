@@ -18,7 +18,7 @@ describe("commuter browser safety", () => {
   });
 
   it("keeps explicit relaxation and smart-alternative controls", () => {
-    expect(dashboard).toContain("tidak melonggarkan budget");
+    expect(dashboard).toContain("tidak mengubah filter Anda secara otomatis");
     expect(dashboard).toContain("Tujuan UMKM berikutnya");
     expect(dashboard).toContain("serviceAreaGeometry");
   });

@@ -17,7 +17,7 @@ export function AnalyticsEmptyState({ type }: EmptyStateProps) {
         </div>
         <h3 className="text-sm font-semibold text-white">Belum ada usaha yang Anda kelola.</h3>
         <p className="text-xs text-slate-400 mt-1 mb-5">
-          Daftarkan usaha baru atau klaim usaha yang sudah tersedia sebelum melihat analytics promosi.
+          Daftarkan usaha baru atau klaim usaha yang tersedia sebelum melihat statistik promosi.
         </p>
         <Link
           href="/umkm/merchants/new"
@@ -37,7 +37,7 @@ export function AnalyticsEmptyState({ type }: EmptyStateProps) {
         </div>
         <h3 className="text-sm font-semibold text-white">Belum Ada Promosi Spasial</h3>
         <p className="text-xs text-slate-400 mt-1 mb-5">
-          Buat campaign Sponsored Pin, promo card, atau poster profil untuk menjangkau komuter secara kontekstual.
+          Buat promosi untuk menjangkau orang yang berada di area yang sesuai.
         </p>
         <Link
           href="/umkm/advertising"

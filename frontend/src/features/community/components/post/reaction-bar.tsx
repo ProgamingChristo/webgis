@@ -59,7 +59,7 @@ export function ReactionBar({
   );
 
   return (
-    <div className={styles.reactionBar} aria-label="Reaction Community">
+    <div className={styles.reactionBar} aria-label="Tanggapan komunitas">
       {reactionConfig.map(({ type, label, countKey, Icon }) => {
         const active = reactions.viewerReactions.includes(type);
         const pending = pendingReaction === type;

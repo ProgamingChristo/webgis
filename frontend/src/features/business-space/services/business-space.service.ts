@@ -1,5 +1,6 @@
 import { authenticatedFetch } from "@/src/lib/auth-client";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
+import { getUserFacingApiError } from "@/src/lib/user-facing-api-error";
 import type {
   BusinessCategorySlug,
   BusinessSpaceCandidateDetail,
@@ -22,9 +23,13 @@ export interface CandidateQuery {
 }
 
 async function readData<T>(response: Response): Promise<T> {
-  const json = await response.json();
+  const json = await response.json().catch(() => null);
   if (!response.ok || !json.success) {
-    throw new Error(json.error?.message || "Business Space API tidak tersedia.");
+    throw new Error(getUserFacingApiError({
+      code: json?.error?.code,
+      status: response.status,
+      fallback: "Ruang usaha belum dapat dimuat. Coba lagi.",
+    }));
   }
   return json.data as T;
 }

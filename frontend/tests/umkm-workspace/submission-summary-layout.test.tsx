@@ -23,8 +23,8 @@ describe("UMKM submission summary layout", () => {
 
     expect(html).toContain(merchantName);
     expect(html).toContain("Pendaftaran usaha baru");
-    expect(html).toContain(">Menunggu Review<");
-    expect(html).not.toContain("Pendaftaran Menunggu Review");
+    expect(html).toContain(">Menunggu pemeriksaan<");
+    expect(html).not.toContain("Pendaftaran Menunggu pemeriksaan");
     expect(html).toContain("break-words");
     expect(html).toContain("whitespace-nowrap");
     expect(html).toContain("w-full");

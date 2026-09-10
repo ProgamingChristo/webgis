@@ -184,7 +184,7 @@ describe("AiService grounding", () => {
       intent: "ASSISTANT_IDENTITY",
       provider: "deterministic",
     });
-    expect(result.answer).toContain("Asisten GETRA AI");
+    expect(result.answer).toContain("Asisten GETRA");
     expect(result.answer).not.toContain("0 UMKM");
     expect(mocks.generateStructured).toHaveBeenCalledTimes(1);
     expect(mocks.getRequestSupabaseClient).not.toHaveBeenCalled();
@@ -207,7 +207,7 @@ describe("AiService grounding", () => {
       intent: "UNKNOWN",
       provider: "deterministic",
     });
-    expect(result.answer).toContain("belum dapat menghubungkan");
+    expect(result.answer).toContain("belum memahami");
     expect(result.answer).not.toContain("0 UMKM");
     expect(mocks.getRequestSupabaseClient).not.toHaveBeenCalled();
     expect(mocks.findNearby).not.toHaveBeenCalled();
@@ -229,7 +229,7 @@ describe("AiService grounding", () => {
       intent: "CASUAL_CHAT",
       provider: "deterministic",
     });
-    expect(result.answer).toContain("saya aktif");
+    expect(result.answer).toContain("saya siap membantu");
     expect(result.answer).not.toContain("Data terverifikasi yang tersedia belum cukup");
     expect(mocks.getRequestSupabaseClient).not.toHaveBeenCalled();
     expect(mocks.findNearby).not.toHaveBeenCalled();
@@ -257,6 +257,6 @@ describe("AiService grounding", () => {
       intent: "GENERAL_AREA",
       provider: "deterministic",
     });
-    expect(result.answer).toContain("2 UMKM");
+    expect(result.answer).toContain("2 usaha");
   });
 });

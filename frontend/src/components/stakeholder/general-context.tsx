@@ -20,9 +20,8 @@ export function GeneralContext({
       <div className="stakeholder-notice stakeholder-notice--general">
         <Compass size={16} />
         <span>
-          <strong>Mode General / Commuter:</strong> akses default untuk peta,
-          pencarian, rute, community, dan eksplorasi area. Mode ini tidak
-          disimpan sebagai stakeholder database.
+          <strong>Pengalaman umum:</strong> gunakan peta, pencarian, rute,
+          komunitas, dan eksplorasi area.
         </span>
       </div>
       {children}

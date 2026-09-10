@@ -2,6 +2,7 @@
 
 import { authenticatedFetch } from "@/src/lib/auth-client";
 import { getGetraApiBaseUrl } from "@/src/lib/api-base-url";
+import { getUserFacingApiError } from "@/src/lib/user-facing-api-error";
 import type {
   CommunityContribution,
   CommunityContributionHistoryFilters,
@@ -52,7 +53,7 @@ function readFailureMessage(json: ApiFailureEnvelope, fallback: string) {
     return "Data laporan belum sesuai. Periksa kembali isian Anda.";
   }
 
-  return json.error?.message || json.error?.code || fallback;
+  return getUserFacingApiError({ code: json.error?.code, fallback });
 }
 
 export async function createCommunityContribution(

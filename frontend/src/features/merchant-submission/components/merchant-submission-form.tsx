@@ -246,7 +246,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
       setMode("CLAIM");
     } catch (err: any) {
       console.error("[MerchantSubmissionForm] Claim search error:", err);
-      setError(err.message || "Gagal mencari usaha. Coba lagi.");
+      setError("Pencarian usaha belum berhasil. Coba lagi.");
     } finally {
       setSubmitting(false);
     }
@@ -275,7 +275,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
       router.push("/umkm");
     } catch (err: any) {
       console.error("[MerchantSubmissionForm] Claim merchant error:", err);
-      setError(err.message || "Gagal mengajukan klaim usaha.");
+      setError("Klaim usaha belum dapat dikirim. Coba lagi.");
     } finally {
       setClaimingId(null);
     }
@@ -312,7 +312,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
       }
     } catch (err: any) {
       console.error("[MerchantSubmissionForm] Save draft error:", err);
-      setError(err.message || "Gagal menyimpan draft pengajuan.");
+      setError("Draf belum dapat disimpan. Coba lagi.");
     } finally {
       setSubmitting(false);
     }
@@ -339,7 +339,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
       router.push(`/umkm/submissions/${submissionId}`);
     } catch (err: any) {
       console.error("[MerchantSubmissionForm] Submit review error:", err);
-      setError(err.message || "Gagal mengajukan usaha untuk verifikasi.");
+      setError("Pengajuan usaha belum dapat dikirim untuk diperiksa. Coba lagi.");
     } finally {
       setSubmitting(false);
     }
@@ -775,7 +775,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={photoPreviewUrl}
-                      alt="Preview foto utama usaha"
+                      alt="Pratinjau foto utama usaha"
                       className="mb-2 h-40 w-full rounded-lg object-cover sm:h-52"
                     />
                   ) : null}
@@ -839,7 +839,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                 <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-700 bg-slate-950 px-4 py-5 text-center hover:border-cyan-500/70">
                   {menuPhotoPreviewUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={menuPhotoPreviewUrl} alt="Preview foto menu" className="mb-2 h-40 w-full rounded-lg object-cover sm:h-52" />
+                    <img src={menuPhotoPreviewUrl} alt="Pratinjau foto menu" className="mb-2 h-40 w-full rounded-lg object-cover sm:h-52" />
                   ) : null}
                   <Upload size={18} className="text-cyan-300" />
                   <span className="max-w-full break-all text-xs font-semibold leading-5 text-slate-200">{menuPhotoFile?.name || (menuPhotoUrl ? "Ganti foto menu" : "Upload Foto Menu")}</span>
@@ -870,7 +870,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
 
             {registrationStep >= 4 ? <section className="space-y-4">
               <SectionHeader
-                title={registrationStep === 5 ? "Periksa sebelum mengirim" : "Preview Usaha"}
+                title={registrationStep === 5 ? "Periksa sebelum mengirim" : "Pratinjau usaha"}
                 description={registrationStep === 5
                   ? "Periksa alamat, titik lokasi, jadwal, dan foto. Admin akan memverifikasi pendaftaran sebelum fitur pengelolaan usaha diaktifkan."
                   : "Ringkasan ini menggunakan data yang Anda isi. Anda dapat kembali ke langkah sebelumnya untuk memperbaikinya."}
@@ -890,7 +890,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                   <span key={key}>{label}: {openingHours[key]?.is_closed ? "Tutup" : `${openingHours[key]?.opens_at || "Belum diisi"} - ${openingHours[key]?.closes_at || "Belum diisi"}`}</span>
                 ))}
               />
-              {registrationStep === 5 ? <p className="text-xs leading-5 text-slate-400">Belum siap mengirim? Simpan sebagai draft dan lanjutkan nanti. Status pemeriksaan dapat dilihat di Usaha Saya.</p> : null}
+              {registrationStep === 5 ? <p className="text-xs leading-5 text-slate-400">Belum siap mengirim? Simpan sebagai draf dan lanjutkan nanti. Status pemeriksaan dapat dilihat di Usaha Saya.</p> : null}
             </section> : null}
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -944,7 +944,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                   className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 text-xs font-semibold text-white transition-colors hover:bg-slate-700 disabled:opacity-50 sm:w-auto"
                 >
                   <Save size={14} />
-                  <span>Simpan Draft</span>
+                  <span>Simpan Draf</span>
                 </button>
 
                 {registrationStep === MERCHANT_REGISTRATION_STEPS.length - 1 ? <button
@@ -980,7 +980,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                 </h2>
                 <p className="mt-1 text-xs leading-5 text-slate-400">
                   {initialData
-                    ? "Semua input di layar, lokasi, jadwal, dan foto akan dikosongkan. Draft tersimpan tidak berubah sampai Anda menyimpannya kembali."
+                    ? "Semua isian di layar, lokasi, jadwal, dan foto akan dikosongkan. Draf tersimpan tidak berubah sampai Anda menyimpannya kembali."
                     : "Semua input, lokasi, jadwal, dan foto yang belum disimpan akan dihapus dan tidak dapat dipulihkan."}
                 </p>
               </div>

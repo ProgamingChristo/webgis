@@ -17,7 +17,7 @@ export function UmkmWorkspaceSummaryView({ summary }: UmkmWorkspaceSummaryProps)
           <Store size={24} />
         </div>
         <div className="min-w-0">
-          <p className="break-words text-xs font-medium leading-5 text-slate-400">Merchant Terverifikasi</p>
+          <p className="break-words text-xs font-medium leading-5 text-slate-400">Usaha terverifikasi</p>
           <p className="text-2xl font-bold text-white mt-0.5">{summary.verified_merchants_count}</p>
         </div>
       </div>
@@ -39,7 +39,7 @@ export function UmkmWorkspaceSummaryView({ summary }: UmkmWorkspaceSummaryProps)
           <Megaphone size={24} />
         </div>
         <div className="min-w-0">
-          <p className="break-words text-xs font-medium leading-5 text-slate-400">Campaign Aktif</p>
+          <p className="break-words text-xs font-medium leading-5 text-slate-400">Promosi aktif</p>
           <p className="text-2xl font-bold text-white mt-0.5">{summary.active_campaigns_count}</p>
         </div>
       </div>

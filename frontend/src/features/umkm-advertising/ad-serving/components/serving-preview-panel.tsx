@@ -71,22 +71,22 @@ export function ServingPreviewPanel({
   const getBlockerMessage = (code: string) => {
     switch (code) {
       case "CAMPAIGN_NOT_ACTIVE":
-        return "Status campaign bukan ACTIVE (sedang Draft, Terjadwal, Dijeda, atau Selesai).";
+        return "Promosi belum aktif atau sudah selesai.";
       case "MERCHANT_NOT_ELIGIBLE":
-        return "Toko belum eligible untuk beriklan (periksa klaim kepemilikan dan profil).";
+        return "Usaha belum memenuhi ketentuan untuk berpromosi. Periksa kepemilikan dan profil usaha.";
       case "MERCHANT_GEOMETRY_INVALID":
         return "Koordinat lokasi toko UMKM tidak valid.";
       case "CREATIVE_NOT_FOUND":
       case "WRONG_CREATIVE_TYPE":
       case "CREATIVE_NOT_READY":
-        return "Belum ada materi iklan tipe SPONSORED_PIN berstatus Siap (Ready).";
+        return "Belum ada materi promosi berbentuk pin peta yang siap digunakan.";
       case "TARGET_NOT_CONFIGURED":
       case "TARGET_INVALID":
-        return "Targeting wilayah (Radius / Study Area) belum dikonfigurasi.";
+        return "Jangkauan atau wilayah promosi belum diatur.";
       case "OUTSIDE_TARGET":
-        return "Titik lokasi uji berada di luar jangkauan target wilayah campaign ini.";
+        return "Lokasi uji berada di luar wilayah promosi.";
       default:
-        return code;
+        return "Promosi belum dapat ditayangkan. Periksa kembali kelengkapannya.";
     }
   };
 
@@ -99,10 +99,10 @@ export function ServingPreviewPanel({
         <div>
           <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-400" />
-            Uji Penayangan Iklan (Ad Serving Preview)
+            Uji penayangan promosi
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Simulasikan lokasi commuter/pengguna untuk menguji apakah iklan Anda berhak tayang sebagai Sponsored Pin secara real-time.
+            Pilih lokasi untuk melihat apakah promosi Anda dapat ditampilkan di sana.
           </p>
         </div>
 
@@ -116,7 +116,7 @@ export function ServingPreviewPanel({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
             <MapPin className="w-3.5 h-3.5 text-blue-400" />
-            Titik Lokasi Konteks Uji (User / Map Context)
+            Lokasi uji
           </label>
 
           {merchantLocation && (
@@ -188,10 +188,10 @@ export function ServingPreviewPanel({
               <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-sm font-bold text-emerald-100">
-                  ✨ Campaign Eligible untuk Ditayangkan (Servable)!
+                  Promosi dapat ditayangkan di lokasi ini.
                 </h4>
                 <p className="text-xs text-emerald-300/90 mt-0.5">
-                  Iklan Sponsored Pin memenuhi seluruh kriteria status, materi iklan, kelayakan toko, dan berada di dalam jangkauan targeting.
+                  Status, materi, usaha, dan wilayah promosi sudah memenuhi ketentuan.
                 </p>
               </div>
             </div>
@@ -200,7 +200,7 @@ export function ServingPreviewPanel({
               <XCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-sm font-bold text-amber-100">
-                  Campaign Tidak Ditayangkan pada Lokasi Ini
+                  Promosi tidak ditayangkan di lokasi ini
                 </h4>
                 <div className="text-xs text-amber-300/90 mt-1 space-y-0.5">
                   {result.blockers.map((b) => (
@@ -218,22 +218,22 @@ export function ServingPreviewPanel({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className={`p-2.5 rounded-lg border text-center ${result.checks.lifecycle ? "border-emerald-800 bg-emerald-950/30 text-emerald-300" : "border-slate-800 bg-slate-900 text-slate-400"}`}>
               <span className="block text-[10px] uppercase font-bold text-slate-500">1. Status</span>
-              <span className="text-xs font-semibold">{result.checks.lifecycle ? "✓ Active" : `✕ ${result.effectiveStatus}`}</span>
+              <span className="text-xs font-semibold">{result.checks.lifecycle ? "✓ Aktif" : "✕ Belum aktif"}</span>
             </div>
 
             <div className={`p-2.5 rounded-lg border text-center ${result.checks.merchant ? "border-emerald-800 bg-emerald-950/30 text-emerald-300" : "border-slate-800 bg-slate-900 text-slate-400"}`}>
               <span className="block text-[10px] uppercase font-bold text-slate-500">2. Toko UMKM</span>
-              <span className="text-xs font-semibold">{result.checks.merchant ? "✓ Eligible" : "✕ Belum Lolos"}</span>
+              <span className="text-xs font-semibold">{result.checks.merchant ? "✓ Memenuhi syarat" : "✕ Belum memenuhi syarat"}</span>
             </div>
 
             <div className={`p-2.5 rounded-lg border text-center ${result.checks.creative ? "border-emerald-800 bg-emerald-950/30 text-emerald-300" : "border-slate-800 bg-slate-900 text-slate-400"}`}>
-              <span className="block text-[10px] uppercase font-bold text-slate-500">3. Materi Iklan</span>
-              <span className="text-xs font-semibold">{result.checks.creative ? "✓ Pin Ready" : "✕ Belum Ready"}</span>
+              <span className="block text-[10px] uppercase font-bold text-slate-500">3. Materi promosi</span>
+              <span className="text-xs font-semibold">{result.checks.creative ? "✓ Pin siap" : "✕ Pin belum siap"}</span>
             </div>
 
             <div className={`p-2.5 rounded-lg border text-center ${result.checks.targeting ? "border-emerald-800 bg-emerald-950/30 text-emerald-300" : "border-slate-800 bg-slate-900 text-slate-400"}`}>
-              <span className="block text-[10px] uppercase font-bold text-slate-500">4. Targeting</span>
-              <span className="text-xs font-semibold">{result.checks.targeting ? "✓ Didalam Area" : "✕ Diluar Area"}</span>
+              <span className="block text-[10px] uppercase font-bold text-slate-500">4. Wilayah sasaran</span>
+              <span className="text-xs font-semibold">{result.checks.targeting ? "✓ Di dalam area" : "✕ Di luar area"}</span>
             </div>
           </div>
         </div>
@@ -259,7 +259,7 @@ export function ServingPreviewPanel({
 
         <div>
           <span className="block text-xs font-semibold text-slate-300 mb-2">
-            Pratinjau Kartu Sponsored Pin
+            Pratinjau penanda promosi
           </span>
           {result?.placement ? (
             <SponsoredPinCard placement={result.placement} />
@@ -267,7 +267,7 @@ export function ServingPreviewPanel({
             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-700 bg-slate-950/40 p-6 text-center text-slate-500 h-80">
               <Store className="w-8 h-8 text-slate-600 mb-2" />
               <p className="text-xs font-medium">
-                Kartu Sponsored Pin akan muncul di sini jika campaign eligible untuk ditayangkan.
+                Pratinjau akan muncul setelah promosi memenuhi ketentuan penayangan.
               </p>
               <p className="text-[11px] text-slate-600 mt-1">
                 Klik tombol &quot;Uji Penayangan&quot; untuk mengevaluasi.

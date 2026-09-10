@@ -2,6 +2,7 @@
 
 import { authenticatedFetch } from "../../../lib/auth-client";
 import { getGetraApiBaseUrl } from "../../../lib/api-base-url";
+import { getUserFacingApiError } from "../../../lib/user-facing-api-error";
 import type {
   CommunityComment,
   CommunityCommentResponse,
@@ -55,11 +56,10 @@ type ApiFailureEnvelope = {
 const getApiBaseUrl = getGetraApiBaseUrl;
 
 function readFailureMessage(json: ApiFailureEnvelope): string {
-  return (
-    json.error?.message ||
-    json.error?.code ||
-    "Request Community gagal."
-  );
+  return getUserFacingApiError({
+    code: json.error?.code,
+    fallback: "Tindakan komunitas belum dapat diselesaikan. Coba lagi.",
+  });
 }
 
 export async function getCommunityFeed(

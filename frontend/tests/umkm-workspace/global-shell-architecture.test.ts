@@ -7,8 +7,8 @@ const root = resolve(import.meta.dirname, "../..");
 describe("GETRA global shell architecture", () => {
   it("keeps exactly General, Community, and UMKM in global navigation", () => {
     const header = readFileSync(resolve(root, "src/components/getra-ui/getra-global-header.tsx"), "utf8");
-    expect(header).toMatch(/label: "General"/);
-    expect(header).toMatch(/label: "Community"/);
+    expect(header).toMatch(/label: "Peta"/);
+    expect(header).toMatch(/label: "Komunitas"/);
     expect(header).toMatch(/label: "UMKM"/);
     expect(header).not.toMatch(/label: "Promosi"/);
     expect(header).not.toMatch(/label: "Profile"/);
@@ -27,7 +27,7 @@ describe("GETRA global shell architecture", () => {
     const header = readFileSync(resolve(root, "src/components/getra-ui/getra-global-header.tsx"), "utf8");
     expect(header).toMatch(/const isAdmin/);
     expect(header).toMatch(/isAdmin \?/);
-    expect(header).toMatch(/Review UMKM/);
+    expect(header).toMatch(/Pemeriksaan UMKM/);
   });
 
   it("uses bounded responsive map columns without a page-wide minimum width", () => {

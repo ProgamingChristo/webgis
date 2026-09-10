@@ -11,8 +11,8 @@ export default function Error({
   return (
     <main className={styles.feature}>
       <section className={styles.empty}>
-        <span className={styles.eyebrow}>GETRA Community</span>
-        <h1>Community belum bisa dimuat.</h1>
+        <span className={styles.eyebrow}>Komunitas GETRA</span>
+        <h1>Komunitas belum dapat dimuat.</h1>
         <p>Coba muat ulang halaman tanpa mengubah sesi aktif.</p>
         <button
           className={`${styles.navItem} ${styles.navItemActive}`}

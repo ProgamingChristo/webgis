@@ -34,7 +34,7 @@ export function RequestFeed({
   if (error) {
     return (
       <section className={styles.feedState} role="alert">
-        <span className={styles.eyebrow}>Request error</span>
+        <span className={styles.eyebrow}>Permintaan belum dimuat</span>
         <h2>Permintaan Komuter belum bisa dimuat.</h2>
         <p>{error}</p>
         <button className={styles.secondaryButton} onClick={onRetry} type="button">

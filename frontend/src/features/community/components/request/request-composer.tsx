@@ -141,7 +141,7 @@ export function RequestComposer({
         </label>
 
         <label>
-          <span>Budget maksimal</span>
+          <span>Anggaran maksimal</span>
           <input
             inputMode="numeric"
             onBlur={() => {

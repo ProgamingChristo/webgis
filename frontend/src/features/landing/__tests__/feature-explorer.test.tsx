@@ -12,8 +12,9 @@ describe("FeatureExplorerSection", () => {
     FEATURE_EXPLORER.forEach((feature) => {
       expect(html).toContain(feature.label);
     });
-    expect(html).toContain("Natural language diterjemahkan menjadi parameter.");
-    expect(html).toContain("category=food");
-    expect(html).toContain("max_walk=10");
+    expect(html).toContain("Cari dengan kalimat sehari-hari.");
+    expect(html).toContain("GETRA memahami kategori, harga, jam buka");
+    expect(html).not.toContain("category=food");
+    expect(html).not.toContain("max_walk=10");
   });
 });

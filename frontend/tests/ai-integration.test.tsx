@@ -91,22 +91,22 @@ describe("GETRA AI frontend integration", () => {
     }), { status: 504 }));
 
     await expect(AiService.askQuestion({ question: "Apa kondisi area ini?" }))
-      .rejects.toThrow("Provider AI tidak merespons tepat waktu");
+      .rejects.toThrow("Asisten membutuhkan waktu terlalu lama untuk menjawab. Coba lagi.");
   });
 
   it("shows an AI-connected status only after a Sub2API success", () => {
     mocks.hookState = hookState({ provider: "sub2api" });
     const html = renderToStaticMarkup(<AiPanel activeExperience="GENERAL" />);
-    expect(html).toContain("AI terhubung");
-    expect(html).toContain("interpretasi AI");
+    expect(html).toContain("Asisten siap");
+    expect(html).toContain("Jawaban dibuat berdasarkan data GETRA yang tersedia.");
     expect(html).not.toContain("Mode fallback data");
   });
 
   it("labels deterministic mode and does not claim the answer was interpreted by AI", () => {
     mocks.hookState = hookState({ provider: "deterministic" });
     const html = renderToStaticMarkup(<AiPanel activeExperience="GENERAL" />);
-    expect(html).toContain("Mode fallback data");
-    expect(html).toContain("tanpa interpretasi AI");
+    expect(html).toContain("Jawaban data GETRA");
+    expect(html).toContain("Jawaban dibuat berdasarkan data GETRA yang tersedia.");
     expect(html).not.toContain("AI terhubung");
   });
 
@@ -118,8 +118,9 @@ describe("GETRA AI frontend integration", () => {
       state: "ERROR",
     });
     const html = renderToStaticMarkup(<AiPanel activeExperience="GENERAL" />);
-    expect(html).toContain("GETRA AI belum bisa menjawab");
-    expect(html).toContain("Provider AI sementara tidak tersedia");
+    expect(html).toContain("Asisten belum bisa menjawab");
+    expect(html).toContain("Asisten belum dapat digunakan. Coba lagi sebentar lagi.");
+    expect(html).not.toContain("Provider AI sementara tidak tersedia");
     expect(html).not.toContain("AI terhubung");
   });
 });

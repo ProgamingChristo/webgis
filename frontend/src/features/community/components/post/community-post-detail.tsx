@@ -36,7 +36,7 @@ export function CommunityPostDetail({ postId }: CommunityPostDetailProps) {
         }}
       >
         <section className={styles.feedState}>
-          <span className={styles.eyebrow}>Thread</span>
+          <span className={styles.eyebrow}>Diskusi</span>
           <h2>Memuat diskusi...</h2>
         </section>
       </CommunityShell>
@@ -52,8 +52,8 @@ export function CommunityPostDetail({ postId }: CommunityPostDetailProps) {
         }}
       >
         <section className={styles.feedState} role="alert">
-          <span className={styles.eyebrow}>Thread error</span>
-          <h2>Diskusi Community belum bisa dimuat.</h2>
+          <span className={styles.eyebrow}>Diskusi belum dimuat</span>
+          <h2>Diskusi komunitas belum dapat dimuat.</h2>
           <p>{detail.error ?? "Post tidak ditemukan."}</p>
           <button
             className={styles.secondaryButton}
@@ -85,7 +85,7 @@ export function CommunityPostDetail({ postId }: CommunityPostDetailProps) {
           <Link className={styles.locationLinkButton} href="/community">
             Kembali ke feed
           </Link>
-          <span className={styles.eyebrow}>Thread Community</span>
+          <span className={styles.eyebrow}>Diskusi Komunitas</span>
         </div>
         <PostCard
           pendingReaction={detail.pendingReaction}

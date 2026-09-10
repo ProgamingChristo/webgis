@@ -66,7 +66,7 @@ export function CommunityPage() {
         contributionCount,
         statusLabel:
           activeView === "map"
-            ? "Spatial Discovery"
+            ? "Jelajahi area"
             : activeView === "requests"
               ? "Permintaan Komuter"
             : activeView === "findings"
@@ -79,7 +79,7 @@ export function CommunityPage() {
       ) : activeView === "friends" ? (
         <section className={styles.feedState}>
           <span className={styles.eyebrow}>Teman</span>
-          <h2>Kelola teman Community.</h2>
+          <h2>Kelola teman komunitas.</h2>
           <button
             className={styles.primaryButton}
             onClick={() => router.push("/community/friends")}
@@ -120,7 +120,7 @@ export function CommunityPage() {
               role="tab"
               type="button"
             >
-              Sinyal Community
+              Kebutuhan warga
             </button>
           </div>
           {requestTab === "signals" ? (

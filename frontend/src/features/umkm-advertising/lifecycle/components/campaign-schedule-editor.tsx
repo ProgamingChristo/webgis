@@ -138,8 +138,8 @@ export function CampaignScheduleEditor({
       });
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err: any) {
-      setFormError(err?.message || "Gagal menyimpan jadwal campaign.");
+    } catch {
+      setFormError("Jadwal promosi belum dapat disimpan. Coba lagi.");
     } finally {
       setIsSaving(false);
     }
@@ -260,7 +260,7 @@ export function CampaignScheduleEditor({
         {saveSuccess && (
           <div className="flex items-center gap-2 p-3 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg dark:bg-emerald-950/40 dark:border-emerald-900/50 dark:text-emerald-300">
             <Check className="w-4 h-4 shrink-0" />
-            <span>Jadwal campaign berhasil disimpan!</span>
+            <span>Jadwal promosi berhasil disimpan.</span>
           </div>
         )}
 
@@ -277,7 +277,7 @@ export function CampaignScheduleEditor({
           </div>
         ) : (
           <div className="text-xs text-slate-500 dark:text-slate-400 italic pt-1">
-            Jadwal tidak dapat diubah saat campaign aktif atau telah selesai. Pause campaign terlebih dahulu jika perlu melakukan revisi waktu.
+            Jadwal tidak dapat diubah saat promosi aktif atau sudah selesai. Jeda promosi terlebih dahulu untuk mengubah waktu.
           </div>
         )}
       </form>

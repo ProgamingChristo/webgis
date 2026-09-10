@@ -25,7 +25,7 @@ export function CommentThread({ comments, onReply }: CommentThreadProps) {
   }
 
   return (
-    <section className={styles.commentThread} aria-label="Balasan Community">
+    <section className={styles.commentThread} aria-label="Balasan komunitas">
       <div className={styles.commentList}>
         {comments.map((comment) => (
           <article

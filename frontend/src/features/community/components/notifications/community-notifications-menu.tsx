@@ -108,7 +108,7 @@ export function CommunityNotificationsMenu() {
   return (
     <div className={styles.notificationMenu}>
       <button
-        aria-label="Notifikasi Community"
+        aria-label="Notifikasi komunitas"
         className={styles.notificationButton}
         onClick={() => setOpen((current) => !current)}
         type="button"
@@ -122,7 +122,7 @@ export function CommunityNotificationsMenu() {
       {open ? (
         <div className={styles.notificationPanel}>
           <header className={styles.notificationHeader}>
-            <strong>Community</strong>
+            <strong>Komunitas</strong>
             <button
               className={styles.locationLinkButton}
               disabled={unreadCount === 0}

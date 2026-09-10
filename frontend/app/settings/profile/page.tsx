@@ -88,7 +88,7 @@ async function createCroppedAvatarFile(
     const context = canvas.getContext("2d");
 
     if (!context) {
-      throw new Error("Browser tidak dapat memproses crop avatar.");
+      throw new Error("Browser tidak dapat menyiapkan foto profil. Pilih foto lain.");
     }
 
     canvas.width = size;
@@ -119,7 +119,7 @@ async function createCroppedAvatarFile(
     );
 
     if (!blob) {
-      throw new Error("Crop avatar gagal dibuat.");
+      throw new Error("Foto profil belum dapat disiapkan. Coba lagi.");
     }
 
     return new File([blob], "getra-avatar.webp", {
@@ -450,7 +450,7 @@ export default function ProfileSettingsPage() {
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
                       Foto profil
                     </p>
-                    <h3 className="mt-1 font-semibold">Crop lingkaran</h3>
+                    <h3 className="mt-1 font-semibold">Sesuaikan foto</h3>
                   </div>
                   <span className="grid size-10 place-items-center rounded-2xl bg-cyan-300/10 text-cyan-200">
                     <ImageUp size={18} />
@@ -462,7 +462,7 @@ export default function ProfileSettingsPage() {
                     {avatarImage ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        alt="Preview crop avatar"
+                        alt="Pratinjau foto profil"
                         className="h-full w-full object-cover"
                         src={avatarImage}
                         style={
@@ -542,7 +542,7 @@ export default function ProfileSettingsPage() {
                   onClick={() => setCrop(DEFAULT_CROP)}
                 >
                   <RotateCcw size={14} />
-                  Reset crop
+                  Atur ulang foto
                 </button>
 
                 <div className="mt-5">
@@ -562,8 +562,8 @@ export default function ProfileSettingsPage() {
                 </div>
 
                 <p className="mt-4 text-xs leading-5 text-slate-500">
-                  Format: JPG, PNG, WEBP, GIF. Maksimal 2 MB. Upload diproses
-                  melalui backend GETRA lalu disimpan ke bucket avatar.
+                  Format: JPG, PNG, WEBP, atau GIF. Maksimal 2 MB. Foto akan
+                  diunggah dan disimpan dengan aman oleh GETRA.
                 </p>
               </section>
             </div>
@@ -668,14 +668,14 @@ function SuccessAlert({
           </div>
 
           <p className="mt-5 text-xs font-black uppercase tracking-[0.22em] text-cyan-100">
-            Profile updated
+            Profil diperbarui
           </p>
 
           <h2
             className="mt-2 text-3xl font-black tracking-tight text-white"
             id="profile-success-title"
           >
-            Welcome to GETRA, {name}
+            Selamat datang di GETRA, {name}
           </h2>
 
           <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-slate-300">

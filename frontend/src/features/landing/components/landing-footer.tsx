@@ -1,21 +1,22 @@
 import Link from "next/link";
 
-import { GetraLogo } from "./getra-logo";
+import { GetraBrandMark } from "./getra-logo";
 
 const footerGroups = [
   {
-    title: "Explore",
+    title: "Menu",
     links: [
-      ["Tentang", "#tentang"],
-      ["Cara Kerja", "#cara-kerja"],
+      ["Jelajahi", "#tentang"],
+      ["Untuk Siapa", "#cara-kerja"],
       ["Fitur", "#fitur"],
-      ["Untuk UMKM", "#umkm"],
+      ["Peluang", "#umkm"],
       ["Teknologi", "#teknologi"],
     ],
   },
   {
-    title: "Access",
+    title: "Bantuan",
     links: [
+      ["FAQ", "#faq"],
       ["Masuk", "/login"],
       ["Daftar GETRA", "/signup"],
       ["Kembali ke atas", "#top"],
@@ -25,47 +26,47 @@ const footerGroups = [
 
 export function LandingFooter() {
   return (
-    <footer className="bg-[radial-gradient(circle_at_20%_0%,rgba(41,199,216,0.12),transparent_28%)] px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+    <footer className="border-t border-[#464b71]/12 bg-white px-4 py-14 sm:px-6 lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.25fr_0.75fr]">
         <div>
           <Link
             href="/"
-            className="inline-flex items-center rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-getra-cyan"
+            className="inline-flex rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#118ab2]"
             aria-label="GETRA home"
           >
-            <GetraLogo variant="footer" />
+            <GetraBrandMark showTagline className="text-xl" />
           </Link>
 
-          <p className="mt-6 max-w-xl text-sm leading-7 text-slate-400">
-            GETRA adalah WebGIS spatial decision support system untuk membaca
-            akses transit, jaringan pedestrian, UMKM, community signal, dan
-            konteks kawasan secara grounded.
+          <p className="mt-5 max-w-xl text-sm leading-7 text-[#66708d]">
+            Peta Transit dan Usaha. GETRA membantu memahami mobilitas, usaha
+            lokal, dan peluang di sekitar kota secara inklusif dan
+            berkelanjutan.
           </p>
 
-          <div className="mt-6 grid gap-3 rounded-3xl border border-white/10 bg-white/[0.035] p-4 sm:grid-cols-2">
-            <div>
-              <span className="text-xs font-black uppercase tracking-[0.18em] text-getra-green">
-                GIS menghitung
+          <div className="mt-6 grid max-w-2xl gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-[#464b71]/10 bg-[#f6fbfb] p-4">
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-[#118ab2]">
+                Data lokasi menghitung
               </span>
-              <p className="mt-2 text-xs leading-5 text-slate-400">
-                Route, distance, service area, dan spatial eligibility.
+              <p className="mt-2 text-xs leading-5 text-[#66708d]">
+                Rute, jarak, area terjangkau, dan kesesuaian lokasi.
               </p>
             </div>
-            <div>
-              <span className="text-xs font-black uppercase tracking-[0.18em] text-getra-cyan">
-                AI menginterpretasikan
+            <div className="rounded-2xl border border-[#464b71]/10 bg-[#f6fbfb] p-4">
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-[#118ab2]">
+                Asisten menjelaskan
               </span>
-              <p className="mt-2 text-xs leading-5 text-slate-400">
-                Intent, filter, dan explanation yang tetap grounded.
+              <p className="mt-2 text-xs leading-5 text-[#66708d]">
+                Pertanyaan, filter, dan penjelasan berdasarkan data GETRA.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-8 sm:grid-cols-2">
           {footerGroups.map((group) => (
             <nav key={group.title} aria-label={`Footer ${group.title}`}>
-              <h2 className="text-xs font-black uppercase tracking-[0.18em] text-getra-cyan">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.18em] text-[#118ab2]">
                 {group.title}
               </h2>
               <ul className="mt-4 grid gap-3">
@@ -73,7 +74,7 @@ export function LandingFooter() {
                   <li key={href}>
                     <Link
                       href={href}
-                      className="inline-flex min-h-10 items-center rounded-lg py-1 text-sm font-bold text-slate-300 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-getra-cyan"
+                      className="inline-flex min-h-8 items-center rounded text-sm font-semibold text-[#464b71] transition hover:text-[#118ab2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#118ab2]"
                     >
                       {label}
                     </Link>
@@ -85,12 +86,9 @@ export function LandingFooter() {
         </div>
       </div>
 
-      <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-3 pt-6 text-xs leading-6 text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-        <p>
-          MAPID 2025 / 2026 competition context: public landing showcase memakai
-          data test/fixture dan tidak membuka API privat.
-        </p>
-        <p>© 2026 GETRA. Built for spatially grounded city decisions.</p>
+      <div className="mx-auto mt-12 flex max-w-7xl flex-col gap-3 border-t border-[#464b71]/10 pt-6 text-xs leading-6 text-[#66708d] sm:flex-row sm:items-center sm:justify-between">
+        <p>Halaman pengenalan ini memakai data contoh dan tidak menampilkan data pribadi atau data produksi.</p>
+        <p>© 2026 GETRA. Membantu keputusan kota berdasarkan data lokasi.</p>
       </div>
     </footer>
   );

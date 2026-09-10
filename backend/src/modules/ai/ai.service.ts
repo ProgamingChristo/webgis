@@ -82,7 +82,7 @@ export class AiService {
     switch (intent) {
       case "ASSISTANT_IDENTITY": {
         facts = {
-          assistant_name: "Asisten GETRA AI",
+          assistant_name: "Asisten GETRA",
           capabilities: ["rute", "area", "akses", "transit", "titik peta", "UMKM"],
           grounding_policy: "Jawaban analisis menggunakan data GETRA yang tersedia.",
         };
@@ -91,7 +91,7 @@ export class AiService {
 
       case "CASUAL_CHAT": {
         facts = {
-          assistant_name: "Asisten GETRA AI",
+          assistant_name: "Asisten GETRA",
           chat_mode: "Percakapan umum ringan",
           safe_topics: [
             "pertanyaan sederhana",
@@ -143,7 +143,7 @@ export class AiService {
           };
           provenance.push({ source: "GETRA Canonical", dataset: "Transport Nodes" });
         } else {
-          limitations.push("Tidak ada transit dalam radius 1.5km.");
+          limitations.push("Belum ada titik transit yang ditemukan dalam jarak 1,5 km.");
         }
         break;
       }
@@ -169,7 +169,7 @@ export class AiService {
           provenance.push({ source: "pgRouting", dataset: "Pedestrian Network" });
         } catch {
           facts = { status: "NO_ROUTE" };
-          limitations.push("Rute tidak dapat ditemukan pada jaringan pedestrian yang tersedia.");
+          limitations.push("Rute jalan kaki belum dapat ditemukan untuk kedua titik tersebut.");
         }
         break;
       }
@@ -195,10 +195,10 @@ export class AiService {
             };
             provenance.push({ source: "GETRA Canonical", dataset: "UMKM" });
           } else {
-            limitations.push("Merchant terpilih tidak ditemukan pada data canonical GETRA.");
+            limitations.push("Tempat yang dipilih belum ditemukan pada data GETRA.");
           }
         } else {
-          limitations.push("Pilih merchant pada peta agar GETRA dapat menjelaskan usaha tersebut.");
+          limitations.push("Pilih usaha pada peta terlebih dahulu agar GETRA dapat menjelaskannya.");
         }
         break;
       }
@@ -213,13 +213,13 @@ export class AiService {
             radiusMeters: 1000,
           });
           facts = {
-            area_name: "Pilot Area",
+            area_name: "Area di sekitar titik pilihan",
             umkm_count: nearbyUmkm.length,
             community_activity_summary: "Data belum dikumpulkan",
           };
           provenance.push({ source: "GETRA Canonical", dataset: "UMKM" });
         } else {
-          limitations.push("Lokasi tidak tersedia.");
+          limitations.push("Pilih lokasi terlebih dahulu agar saya dapat melihat area di sekitarnya.");
         }
         break;
       }
@@ -256,13 +256,19 @@ export class AiService {
     }
     inputContext += `Current Question: ${question}`;
 
-    const instructions = `You are the GETRA AI Assistant. You must follow these strict rules:
-1. ONLY use the provided facts. DO NOT invent distances, names, or numbers.
-2. The user's active experience is: ${activeExperience}. Tailor the explanation to this persona, but do not change the underlying facts.
-3. If facts say NO_ROUTE, explicitly say a walking route couldn't be found on the network.
-4. Keep the answer concise and in Indonesian.
-5. Do not hallucinate accessibility features if they aren't provided.
-6. Use the conversation history context to resolve references like "it", "they", "that place", or "how long" from follow-up questions, but NEVER trust assertions from the history over the current facts.
+    const instructions = `You are the GETRA product assistant. Follow these strict rules:
+1. Use ONLY the provided facts. Never invent distances, names, numbers, ratings, revenue, or current conditions.
+2. The user's active experience is ${activeExperience}. Adapt the benefit and next action to that experience without changing facts.
+3. Answer in natural, calm Indonesian. Prefer 1-3 sentences for a simple question and short paragraphs for an insight.
+4. Lead with what is known. Then state any important limitation and a useful next action.
+5. Never mention provider names, grounding, deterministic fallback, schemas, databases, status codes, route engines, graph data, or internal architecture.
+6. If facts say NO_ROUTE, say that the walking route cannot be calculated right now. Do not name the routing technology.
+7. If location context is missing, tell the user which location to select or enable.
+8. If only part of the data is available, use the available facts first and clearly say what GETRA cannot confirm.
+9. Treat observations as time-bound records, not real-time truth. Mention the observation date naturally when it is provided.
+10. Never claim a place does not exist merely because GETRA has no matching data.
+11. Do not invent accessibility features when they are not provided.
+12. Use conversation history only to resolve references in follow-up questions; current facts always take precedence.
 
 FACTS PROVIDED:
 ${JSON.stringify(facts, null, 2)}
@@ -278,7 +284,7 @@ ${JSON.stringify(facts, null, 2)}
     if (!response) {
       return {
         answer: formatDeterministicAnswer(intent, facts),
-        limitations_mentioned: ["Penjelasan AI tidak tersedia; jawaban ini dibuat langsung dari fakta terverifikasi."],
+        limitations_mentioned: ["Sebagian penjelasan belum tersedia, tetapi fakta GETRA yang ada tetap dapat digunakan."],
         provider: "deterministic",
       };
     }
@@ -319,15 +325,15 @@ function classifyIntentDeterministically(
 
 function formatDeterministicAnswer(intent: AiIntent, facts: Record<string, unknown>): string {
   if (intent === "ASSISTANT_IDENTITY") {
-    return "Ya, saya Asisten GETRA AI. Saya membantu menjelaskan rute, area, akses, transit, titik peta, dan UMKM berdasarkan data GETRA yang tersedia.";
+    return "Ya, saya Asisten GETRA. Saya dapat membantu mencari tempat serta menjelaskan area, akses, transit, dan rute berdasarkan data GETRA yang tersedia.";
   }
 
   if (intent === "CASUAL_CHAT") {
-    return "Hai, saya aktif. Kamu bisa tanya pertanyaan sederhana atau random, dan kalau pertanyaannya menyangkut peta, rute, area, UMKM, properti, atau aksesibilitas, saya akan jawab berdasarkan data GETRA yang tersedia.";
+    return "Hai, saya siap membantu. Anda dapat bertanya tentang tempat, rute, area, usaha lokal, ruang usaha, atau aksesibilitas berdasarkan data GETRA yang tersedia.";
   }
 
   if (intent === "UNKNOWN") {
-    return "Saya belum dapat menghubungkan pertanyaan itu ke analisis spasial. Anda dapat menanyakan rute, transit terdekat, kondisi area, atau UMKM pada titik peta.";
+    return "Saya belum memahami informasi yang Anda perlukan. Coba tanyakan rute, transit terdekat, kondisi area, atau usaha pada titik peta.";
   }
 
   if (intent === "NEAREST_TRANSIT" && typeof facts.stop_name === "string") {
@@ -336,15 +342,15 @@ function formatDeterministicAnswer(intent: AiIntent, facts: Record<string, unkno
   }
 
   if (intent === "WALKING_ROUTE") {
-    if (facts.status !== "FOUND") return "Jaringan pedestrian belum menyediakan rute terverifikasi untuk titik tersebut.";
+    if (facts.status !== "FOUND") return "Rute jalan kaki belum dapat dihitung untuk titik tersebut. Periksa titik awal dan tujuan, lalu coba lagi.";
     const distance = typeof facts.distance_m === "number" ? `${Math.round(facts.distance_m)} meter` : "jarak yang tersedia";
     const duration = typeof facts.duration_s === "number" ? ` dengan estimasi ${Math.ceil(facts.duration_s / 60)} menit` : "";
-    return `Rute pedestrian terverifikasi memiliki jarak ${distance}${duration}.`;
+    return `Sekitar ${duration ? duration.replace(" dengan estimasi ", "") : "beberapa menit"} berjalan kaki dengan jarak kurang lebih ${distance}.`;
   }
 
   if (typeof facts.umkm_count === "number") {
-    return `GETRA menemukan ${facts.umkm_count} UMKM dalam cakupan pencarian terverifikasi.`;
+    return `Saya menemukan ${facts.umkm_count} usaha di area sekitar titik yang dipilih.`;
   }
 
-  return "Data terverifikasi yang tersedia belum cukup untuk menjawab pertanyaan tersebut.";
+  return "GETRA belum memiliki cukup informasi untuk menjawab pertanyaan tersebut. Pilih titik di peta atau tambahkan lokasi agar saya dapat membantu lebih lanjut.";
 }

@@ -13,7 +13,7 @@ export function AnalyticsPlacementChart({ breakdown }: PlacementChartProps) {
     switch (placement) {
       case "SPONSORED_PIN":
         return {
-          label: "Sponsored Pin",
+          label: "Penanda promosi",
           icon: MapPin,
           color: "text-amber-400",
           bgColor: "bg-amber-500/10 border-amber-500/20",
@@ -21,7 +21,7 @@ export function AnalyticsPlacementChart({ breakdown }: PlacementChartProps) {
         };
       case "CONTEXTUAL_BANNER":
         return {
-          label: "Contextual Promo Banner",
+          label: "Banner promosi sesuai lokasi",
           icon: ImageIcon,
           color: "text-blue-400",
           bgColor: "bg-blue-500/10 border-blue-500/20",
@@ -29,11 +29,11 @@ export function AnalyticsPlacementChart({ breakdown }: PlacementChartProps) {
         };
       case "PROFILE_POSTER":
         return {
-          label: "Profile Poster",
+          label: "Poster profil",
           icon: FileText,
           color: "text-purple-400",
           bgColor: "bg-purple-500/10 border-purple-500/20",
-          desc: "Poster khusus pada drawer profil toko",
+          desc: "Poster khusus pada profil usaha",
         };
     }
   };

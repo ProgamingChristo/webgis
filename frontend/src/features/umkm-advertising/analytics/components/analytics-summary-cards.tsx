@@ -14,7 +14,7 @@ export function AnalyticsSummaryCards({ summary }: SummaryCardsProps) {
       {/* 1. Impressions */}
       <div className="p-4 rounded-xl border border-slate-700/60 bg-slate-800/50 backdrop-blur">
         <div className="flex items-center justify-between gap-2 mb-2">
-          <span className="text-xs text-slate-400 font-medium">Tayangan (Impressions)</span>
+          <span className="text-xs text-slate-400 font-medium">Tayangan</span>
           <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
             <Eye size={16} />
           </div>
@@ -22,7 +22,7 @@ export function AnalyticsSummaryCards({ summary }: SummaryCardsProps) {
         <p className="text-2xl font-bold text-white tracking-tight">
           {summary.impressions.toLocaleString("id-ID")}
         </p>
-        <span className="text-[10px] text-slate-400 mt-1 block">Muncul di layar / viewport peta</span>
+        <span className="text-[10px] text-slate-400 mt-1 block">Muncul di layar atau area peta</span>
       </div>
 
       {/* 2. Sponsored Pin Clicks */}
@@ -70,7 +70,7 @@ export function AnalyticsSummaryCards({ summary }: SummaryCardsProps) {
       {/* 5. Sponsored Pin CTR */}
       <div className="p-4 rounded-xl border border-slate-700/60 bg-slate-800/50 backdrop-blur">
         <div className="flex items-center justify-between gap-2 mb-2">
-          <span className="text-xs text-slate-400 font-medium">Sponsored Pin CTR</span>
+          <span className="text-xs text-slate-400 font-medium">Rasio klik penanda promosi</span>
           <div className="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
             <Percent size={16} />
           </div>

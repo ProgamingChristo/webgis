@@ -3,42 +3,42 @@ import type { LandingTechnologyItem } from "../types/landing.types";
 export const LANDING_TECHNOLOGY: LandingTechnologyItem[] = [
   {
     name: "Next.js 16",
-    role: "Public routing, app shell, metadata, dan production build.",
+    role: "Menjalankan halaman aplikasi, navigasi, dan penyajian informasi.",
   },
   {
     name: "TypeScript",
-    role: "Kontrak UI, data fixture, dan frontend safety.",
+    role: "Menjaga bentuk data tetap konsisten dan mengurangi kesalahan aplikasi.",
   },
   {
     name: "Tailwind CSS v4",
-    role: "Design token dan responsive storytelling.",
+    role: "Menjaga tampilan konsisten dan nyaman di berbagai ukuran layar.",
   },
   {
     name: "MapLibre GL",
-    role: "WebGIS hero dan peta interaktif aplikasi.",
+    role: "Menampilkan peta interaktif dan informasi lokasi.",
   },
   {
     name: "Supabase",
-    role: "Auth, PostgreSQL, storage, dan API data melalui backend.",
+    role: "Mengelola akun, penyimpanan, dan data aplikasi dengan aman.",
   },
   {
     name: "PostgreSQL + PostGIS",
-    role: "Spatial query, containment, distance, dan indexing.",
+    role: "Mengolah lokasi, jarak, area, dan pencarian data peta.",
   },
   {
     name: "pgRouting",
-    role: "Konsep routing jaringan pedestrian.",
+    role: "Menghitung rute melalui jaringan jalan yang tersedia.",
   },
   {
     name: "Zod",
-    role: "Validasi kontrak API dan input backend.",
+    role: "Memeriksa data masukan sebelum diproses.",
   },
   {
-    name: "AI Provider Router",
-    role: "Intent parsing dan grounded explanation; bukan kalkulator spasial.",
+    name: "Asisten GETRA",
+    role: "Memahami pertanyaan dan menjelaskan hasil berdasarkan data GETRA.",
   },
   {
-    name: "Midtrans Sandbox",
-    role: "Sandbox payment untuk advertising flow; landing tidak checkout.",
+    name: "Midtrans",
+    role: "Mendukung proses pembayaran promosi pada lingkungan yang sesuai.",
   },
 ];

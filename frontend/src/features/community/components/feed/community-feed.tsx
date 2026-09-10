@@ -55,8 +55,8 @@ export function CommunityFeed({
   if (error) {
     return (
       <section className={styles.feedState} role="alert">
-        <span className={styles.eyebrow}>Feed error</span>
-        <h2>Feed Community belum bisa dimuat.</h2>
+        <span className={styles.eyebrow}>Kabar komunitas</span>
+        <h2>Kabar komunitas belum bisa dimuat.</h2>
         <p>{error}</p>
         <button className={styles.secondaryButton} onClick={onRetry} type="button">
           Coba lagi
@@ -70,7 +70,7 @@ export function CommunityFeed({
   }
 
   return (
-    <section className={styles.feed} aria-label="Feed Community">
+    <section className={styles.feed} aria-label="Kabar komunitas">
       {items.map((post) => (
         <PostCard
           key={post.id}

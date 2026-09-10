@@ -92,7 +92,7 @@ describe("Merchant visibility and opportunities", () => {
     expect(html).toContain(">42<");
     expect(html).toContain("Warung Tetangga");
     expect(html).toContain("belum memastikan usaha tersebut menjadi pesaing langsung");
-    expect(html).toContain("Jelaskan insight");
+    expect(html).toContain("Jelaskan peluang");
     expect(html).not.toContain("UMKM Copilot");
     expect(html).not.toContain("<select");
   });

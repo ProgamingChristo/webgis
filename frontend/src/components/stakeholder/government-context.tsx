@@ -20,8 +20,8 @@ export function GovernmentContext({
       <div className="stakeholder-notice stakeholder-notice--government">
         <Building2 size={16} />
         <span>
-          <strong>Mode Pemerintah:</strong> fokus pada cakupan layanan kota,
-          batas wilayah, akses publik, dan agregasi spasial.
+          <strong>Pengalaman pemerintah:</strong> lihat cakupan layanan kota,
+          batas wilayah, akses publik, dan ringkasan per wilayah.
         </span>
       </div>
       {children}

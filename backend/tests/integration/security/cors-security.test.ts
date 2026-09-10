@@ -90,7 +90,7 @@ describe("API wrapper CORS and security integration", () => {
     expect(body).toEqual({
       error: {
         code: "CORS_ORIGIN_DENIED",
-        message: "Request origin is not allowed",
+        message: "Permintaan dari halaman ini tidak diizinkan.",
         retryable: false,
       },
       request_id: TEST_REQUEST_ID,
@@ -143,7 +143,7 @@ describe("API wrapper CORS and security integration", () => {
     expect(body).toEqual({
       error: {
         code: "CORS_PREFLIGHT_DENIED",
-        message: "CORS preflight request is not allowed",
+        message: "Permintaan dari halaman ini tidak diizinkan.",
         retryable: false,
       },
       request_id: TEST_REQUEST_ID,

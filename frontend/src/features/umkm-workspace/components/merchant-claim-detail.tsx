@@ -55,7 +55,7 @@ export function MerchantClaimDetailView({ claim }: { claim: MerchantClaimBrief }
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 text-slate-100 sm:px-6 sm:py-12">
       <Link className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white" href="/umkm">
-        <ArrowLeft size={14} /> Kembali ke Workspace UMKM
+        <ArrowLeft size={14} /> Kembali ke Ruang Kelola UMKM
       </Link>
 
       <article className="mt-5 rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-2xl shadow-slate-950/30 sm:p-7">
@@ -71,7 +71,7 @@ export function MerchantClaimDetailView({ claim }: { claim: MerchantClaimBrief }
           </div>
           <span className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${pending ? "border-amber-500/30 bg-amber-950/40 text-amber-200" : approved ? "border-emerald-500/30 bg-emerald-950/40 text-emerald-200" : "border-rose-500/30 bg-rose-950/40 text-rose-200"}`}>
             <Icon className="mr-1.5" size={13} />
-            {pending ? "Menunggu Review" : approved ? "Disetujui" : "Ditolak"}
+            {pending ? "Menunggu pemeriksaan" : approved ? "Disetujui" : "Ditolak"}
           </span>
         </header>
 
@@ -107,7 +107,7 @@ function DetailFact({ label, value }: { label: string; value: string }) {
 function ClaimState({ error = false, message }: { error?: boolean; message: string }) {
   return (
     <div className="grid min-h-[60vh] place-items-center p-6 text-center text-slate-100">
-      <div><p className={error ? "text-sm text-rose-300" : "text-sm text-slate-300"}>{message}</p><Link className="mt-4 inline-flex text-xs font-semibold text-cyan-300" href="/umkm">Kembali ke Workspace UMKM</Link></div>
+      <div><p className={error ? "text-sm text-rose-300" : "text-sm text-slate-300"}>{message}</p><Link className="mt-4 inline-flex text-xs font-semibold text-cyan-300" href="/umkm">Kembali ke Ruang Kelola UMKM</Link></div>
     </div>
   );
 }

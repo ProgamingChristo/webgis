@@ -1,63 +1,66 @@
 import { SectionShell } from "./section-shell";
 
 const FLOW = [
-  "User Question",
-  "AI Intent Parsing",
-  "Structured Parameters",
-  "PostGIS / pgRouting",
-  "Spatial Computation",
-  "Ranked / Route Result",
-  "Grounded AI Explanation",
+  "Pengguna mengajukan pertanyaan",
+  "Asisten memahami kebutuhan",
+  "Kriteria pencarian disiapkan",
+  "Data lokasi diperiksa",
+  "Jarak dan rute dihitung",
+  "Hasil yang sesuai dipilih",
+  "Asisten menjelaskan hasil",
 ] as const;
 
 export function GisAiSection() {
   return (
     <SectionShell
-      eyebrow="GIS vs AI"
-      title="GIS menghitung. AI menginterpretasikan."
-      description="Landing ini tidak memanggil production AI. Contoh di bawah hanya menjelaskan pembagian peran: AI menyusun intent, GIS menghitung rute, distance, walking time, service area, containment, dan eligibility."
+      eyebrow="Cara GETRA bekerja"
+      title="Data menghitung. Asisten menjelaskan."
+      description="Dari kebutuhan menjadi keputusan: GETRA menghitung jarak, waktu berjalan, rute, dan area terjangkau dari data lokasi. Asisten kemudian menjelaskan hasil tersebut dengan bahasa yang mudah dipahami."
     >
-      <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-        <div className="grid gap-4 rounded-[2rem] border border-white/10 bg-white/[0.035] p-6">
-          <div>
-            <span className="text-xs font-black uppercase tracking-[0.18em] text-getra-green">
-              Example query
-            </span>
-            <p className="mt-3 rounded-2xl border border-getra-cyan/20 bg-slate-950/70 p-4 text-lg font-black text-white">
-              “makan di bawah 30 ribu maksimal 10 menit jalan”
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-getra-cyan/20 bg-getra-cyan/10 p-4">
-              <strong className="text-sm text-getra-cyan">AI interprets</strong>
-              <ul className="mt-3 space-y-2 text-sm text-slate-300">
-                <li>category = food</li>
-                <li>max_price = 30000</li>
-                <li>max_walk_time = 10</li>
+      <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
+        <article className="rounded-[2rem] border border-[#464b71]/12 bg-[#f6fbfb] p-6 shadow-[0_14px_34px_rgba(70,75,113,0.06)]">
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#118ab2]">
+            Contoh pertanyaan
+          </span>
+          <p className="mt-4 rounded-2xl border border-[#118ab2]/18 bg-white p-4 text-lg font-black leading-7 text-[#464b71]">
+            “Makan di bawah Rp30.000, maksimal 10 menit jalan.”
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="rounded-2xl border border-[#118ab2]/15 bg-white p-4">
+              <strong className="text-sm text-[#118ab2]">Asisten memahami</strong>
+              <ul className="mt-3 space-y-2 text-sm text-[#66708d]">
+                <li>Kategori: makanan</li>
+                <li>Harga: maksimal Rp30.000</li>
+                <li>Waktu berjalan: maksimal 10 menit</li>
               </ul>
             </div>
-            <div className="rounded-2xl border border-getra-green/20 bg-getra-green/10 p-4">
-              <strong className="text-sm text-lime-200">GIS calculates</strong>
-              <ul className="mt-3 space-y-2 text-sm text-slate-300">
-                <li>candidate merchants</li>
-                <li>walking route</li>
-                <li>network distance</li>
-                <li>service area eligibility</li>
+            <div className="rounded-2xl border border-[#62d6c8]/25 bg-[#edfbf8] p-4">
+              <strong className="text-sm text-[#367e77]">GETRA menghitung</strong>
+              <ul className="mt-3 space-y-2 text-sm text-[#66708d]">
+                <li>Tempat yang sesuai</li>
+                <li>Rute jalan kaki</li>
+                <li>Jarak melalui jaringan jalan</li>
+                <li>Area yang dapat dijangkau</li>
               </ul>
             </div>
           </div>
-        </div>
+        </article>
 
-        <ol className="grid gap-3">
+        <ol className="relative grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {FLOW.map((step, index) => (
             <li
               key={step}
-              className="grid grid-cols-[42px_minmax(0,1fr)] items-center gap-4 rounded-2xl border border-white/10 bg-slate-900/45 p-4"
+              className="relative min-h-28 overflow-hidden rounded-[1.4rem] border border-[#464b71]/12 bg-white p-4 shadow-[0_8px_22px_rgba(70,75,113,0.04)]"
             >
-              <span className="grid size-10 place-items-center rounded-full border border-getra-cyan/40 bg-getra-cyan/10 text-xs font-black text-getra-cyan">
+              <span className="absolute -right-1 -top-5 text-6xl font-black tracking-[-0.1em] text-[#118ab2]/8">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span className="relative grid size-8 place-items-center rounded-xl bg-[#118ab2] text-xs font-black text-white">
                 {index + 1}
               </span>
-              <span className="font-black text-white">{step}</span>
+              <span className="relative mt-4 block text-sm font-black leading-6 text-[#464b71]">
+                {step}
+              </span>
             </li>
           ))}
         </ol>

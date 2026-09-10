@@ -2,13 +2,13 @@
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 32px;
+  padding: clamp(18px, 4vw, 46px);
   overflow: hidden;
   background:
-    radial-gradient(circle at 15% 14%, rgba(34, 211, 238, 0.18), transparent 32%),
-    radial-gradient(circle at 88% 74%, rgba(154, 242, 74, 0.14), transparent 28%),
-    linear-gradient(135deg, #07111b 0%, #092131 42%, #061018 100%);
-  color: var(--getra-ink);
+    radial-gradient(circle at 84% 8%, rgba(98, 214, 200, 0.22), transparent 26%),
+    radial-gradient(circle at 12% 91%, rgba(17, 138, 178, 0.12), transparent 30%),
+    #f6fbfb;
+  color: #464b71;
 }
 
 .page::before {
@@ -16,24 +16,23 @@
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(129, 211, 230, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(129, 211, 230, 0.07) 1px, transparent 1px);
-  background-size: 36px 36px;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.35));
+    linear-gradient(rgba(17, 138, 178, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 138, 178, 0.035) 1px, transparent 1px);
+  background-size: 38px 38px;
   content: "";
 }
 
 .shell {
   position: relative;
   z-index: 1;
-  width: min(1120px, 100%);
-  min-height: 680px;
+  width: min(1160px, 100%);
   display: grid;
-  grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.1fr);
-  border: 1px solid rgba(129, 211, 230, 0.18);
-  background: rgba(5, 11, 18, 0.68);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42);
-  backdrop-filter: blur(18px);
+  grid-template-columns: minmax(330px, 0.86fr) minmax(440px, 1.14fr);
+  overflow: hidden;
+  border: 1px solid rgba(70, 75, 113, 0.12);
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 28px 80px rgba(70, 75, 113, 0.15);
 }
 
 .brandPanel,
@@ -45,26 +44,25 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 34px;
+  padding: clamp(26px, 3.3vw, 42px);
   overflow: hidden;
-  border-right: 1px solid rgba(129, 211, 230, 0.16);
+  border-right: 1px solid rgba(70, 75, 113, 0.1);
   background:
-    linear-gradient(160deg, rgba(34, 211, 238, 0.16), rgba(154, 242, 74, 0.05)),
-    rgba(9, 19, 29, 0.72);
+    radial-gradient(circle at 18% 9%, rgba(98, 214, 200, 0.24), transparent 28%),
+    linear-gradient(150deg, #f6ffff 0%, #eaf8f7 100%);
 }
 
 .brandPanel::after {
   position: absolute;
-  right: -110px;
-  bottom: -130px;
-  width: 320px;
-  height: 320px;
-  border: 1px solid rgba(34, 211, 238, 0.22);
+  right: -120px;
+  bottom: -122px;
+  width: 315px;
+  height: 315px;
+  border: 1px solid rgba(17, 138, 178, 0.14);
   border-radius: 50%;
   box-shadow:
-    inset 0 0 0 34px rgba(34, 211, 238, 0.035),
-    inset 0 0 0 84px rgba(154, 242, 74, 0.025);
+    inset 0 0 0 36px rgba(17, 138, 178, 0.025),
+    inset 0 0 0 90px rgba(98, 214, 200, 0.04);
   content: "";
 }
 
@@ -73,20 +71,23 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
 }
 
 .brandMark {
-  width: 42px;
-  height: 42px;
   display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
   place-items: center;
-  border: 1px solid var(--getra-primary);
-  color: var(--getra-primary);
-  font-weight: 900;
-  box-shadow:
-    inset 0 0 0 4px rgba(34, 211, 238, 0.08),
-    0 0 24px rgba(34, 211, 238, 0.16);
+  border-radius: 50%;
+  background: #118ab2;
+  box-shadow: 0 9px 20px rgba(17, 138, 178, 0.25);
+}
+
+.brandMark img {
+  width: 22px;
+  height: 22px;
 }
 
 .brand strong,
@@ -95,98 +96,125 @@
 }
 
 .brand strong {
-  font-size: 14px;
-  letter-spacing: 0.16em;
+  color: #464b71;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
 }
 
 .brand span {
-  margin-top: 3px;
-  color: #a7bdd0;
-  font-size: 12px;
+  margin-top: 2px;
+  color: #66708d;
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .heroCopy {
   position: relative;
   z-index: 1;
-  max-width: 440px;
+  margin-top: clamp(34px, 5vw, 64px);
 }
 
 .eyebrow,
 .generalEyebrow {
   display: block;
-  color: var(--getra-primary);
-  font-size: 11px;
+  color: #118ab2;
+  font-size: 10px;
   font-weight: 900;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.17em;
   text-transform: uppercase;
 }
 
 .heroCopy h1 {
-  margin: 12px 0 14px;
-  font-size: clamp(32px, 4vw, 48px);
-  line-height: 1.02;
-  letter-spacing: 0;
+  max-width: 450px;
+  margin: 12px 0 0;
+  color: #464b71;
+  font-size: clamp(31px, 3.35vw, 48px);
+  font-weight: 900;
+  line-height: 0.99;
+  letter-spacing: -0.065em;
 }
 
 .heroCopy p,
 .header p,
 .generalCard p,
 .modeText small {
-  color: #a7bdd0;
-  line-height: 1.6;
+  color: #66708d;
+  font-size: 13px;
+  line-height: 1.65;
 }
 
 .heroCopy p {
-  margin: 0;
-  font-size: 14px;
+  max-width: 430px;
+  margin: 16px 0 0;
+}
+
+.mapArtwork {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  min-height: 184px;
+  margin: 27px 0 22px;
+  overflow: hidden;
+  border: 1px solid rgba(70, 75, 113, 0.11);
+  border-radius: 23px;
+  background: #eaf6f5;
+  box-shadow: 0 15px 34px rgba(70, 75, 113, 0.1);
 }
 
 .signalGrid {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .signalGrid div {
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 12px;
-  border: 1px solid rgba(129, 211, 230, 0.16);
-  background: rgba(5, 11, 18, 0.44);
-  color: #d8f6fb;
+  display: grid;
+  min-height: 72px;
+  align-content: center;
+  justify-items: start;
+  gap: 7px;
+  padding: 10px 11px;
+  border: 1px solid rgba(70, 75, 113, 0.1);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.72);
 }
 
 .signalGrid svg {
-  color: var(--getra-action);
+  color: #118ab2;
 }
 
 .signalGrid span {
-  font-size: 12px;
-  font-weight: 800;
+  color: #464b71;
+  font-size: 10px;
+  font-weight: 850;
+  line-height: 1.35;
 }
 
 .formPanel {
-  padding: 34px;
-  background: rgba(7, 16, 24, 0.82);
+  padding: clamp(28px, 4vw, 52px);
+  background: #fff;
 }
 
 .header {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .header h2 {
-  margin: 8px 0 8px;
-  font-size: 27px;
-  line-height: 1.12;
+  margin: 10px 0 9px;
+  color: #464b71;
+  font-size: clamp(27px, 3vw, 36px);
+  font-weight: 900;
+  line-height: 1.04;
+  letter-spacing: -0.055em;
 }
 
 .header p {
   max-width: 570px;
   margin: 0;
-  font-size: 13px;
 }
 
 .generalCard {
@@ -195,26 +223,28 @@
   gap: 14px;
   align-items: start;
   padding: 18px;
-  border: 1px solid rgba(34, 211, 238, 0.46);
-  background:
-    linear-gradient(135deg, rgba(34, 211, 238, 0.16), rgba(154, 242, 74, 0.06)),
-    rgba(9, 19, 29, 0.8);
+  border: 1px solid rgba(17, 138, 178, 0.27);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(17, 138, 178, 0.085), rgba(98, 214, 200, 0.1));
 }
 
 .generalIcon,
 .modeIcon {
   display: grid;
+  width: 40px;
+  height: 40px;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  border: 1px solid rgba(34, 211, 238, 0.34);
-  background: rgba(34, 211, 238, 0.09);
-  color: var(--getra-primary);
+  border-radius: 14px;
+  background: #fff;
+  color: #118ab2;
+  box-shadow: 0 7px 16px rgba(70, 75, 113, 0.08);
 }
 
 .generalCard h3 {
   margin: 4px 0 4px;
-  font-size: 18px;
+  color: #464b71;
+  font-size: 17px;
+  line-height: 1.2;
 }
 
 .generalCard p {
@@ -225,30 +255,34 @@
 .generalBadge {
   display: inline-flex;
   align-items: center;
-  min-height: 24px;
+  min-height: 25px;
+  border: 1px solid rgba(54, 126, 119, 0.28);
+  border-radius: 999px;
   padding: 0 9px;
-  border: 1px solid rgba(154, 242, 74, 0.55);
-  color: var(--getra-action);
+  background: rgba(255, 255, 255, 0.75);
+  color: #367e77;
   font-size: 10px;
   font-weight: 900;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
 .modeHeader {
   display: flex;
+  align-items: end;
   justify-content: space-between;
   gap: 12px;
-  align-items: end;
-  margin: 26px 0 12px;
+  margin: 29px 0 12px;
 }
 
 .modeHeader h3 {
   margin: 0;
+  color: #464b71;
   font-size: 15px;
 }
 
 .modeHeader span {
-  color: var(--getra-ink-soft);
+  color: #66708d;
   font-size: 11px;
   font-weight: 800;
 }
@@ -260,14 +294,15 @@
 
 .modeCard {
   width: 100%;
-  min-height: 92px;
+  min-height: 91px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
   padding: 14px;
-  border: 1px solid rgba(129, 211, 230, 0.15);
-  background: rgba(5, 11, 18, 0.48);
+  border: 1px solid rgba(70, 75, 113, 0.13);
+  border-radius: 18px;
+  background: #fff;
   color: inherit;
   text-align: left;
   cursor: pointer;
@@ -279,19 +314,23 @@
 }
 
 .modeCard:hover {
-  border-color: rgba(34, 211, 238, 0.44);
-  background: rgba(34, 211, 238, 0.08);
+  border-color: rgba(17, 138, 178, 0.38);
+  background: #f8fcfc;
   transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(70, 75, 113, 0.07);
 }
 
 .modeCard.selected {
-  border-color: var(--getra-primary);
-  background:
-    linear-gradient(135deg, rgba(34, 211, 238, 0.16), rgba(154, 242, 74, 0.05)),
-    rgba(7, 16, 24, 0.88);
-  box-shadow:
-    inset 0 0 0 1px rgba(34, 211, 238, 0.12),
-    0 12px 34px rgba(0, 0, 0, 0.22);
+  border-color: #118ab2;
+  background: linear-gradient(135deg, rgba(17, 138, 178, 0.11), rgba(98, 214, 200, 0.1));
+  box-shadow: inset 0 0 0 1px rgba(17, 138, 178, 0.08);
+}
+
+.modeCard:focus-visible,
+.skipBtn:focus-visible,
+.submitBtn:focus-visible {
+  outline: 3px solid rgba(17, 138, 178, 0.42);
+  outline-offset: 3px;
 }
 
 .modeText strong,
@@ -300,7 +339,8 @@
 }
 
 .modeText strong {
-  margin-bottom: 5px;
+  margin-bottom: 4px;
+  color: #464b71;
   font-size: 15px;
 }
 
@@ -309,53 +349,62 @@
 }
 
 .checkbox {
-  width: 24px;
-  height: 24px;
   display: grid;
+  width: 25px;
+  height: 25px;
   place-items: center;
-  border: 1px solid rgba(129, 211, 230, 0.24);
-  color: #061018;
+  border: 1px solid rgba(70, 75, 113, 0.22);
+  border-radius: 9px;
+  color: #fff;
 }
 
 .modeCard.selected .checkbox {
-  border-color: var(--getra-action);
-  background: var(--getra-action);
+  border-color: #118ab2;
+  background: #118ab2;
 }
 
 .error {
   margin: 16px 0 0;
   padding: 11px 12px;
-  border-left: 3px solid var(--getra-danger);
-  background: rgba(255, 101, 119, 0.08);
-  color: #ffbac3;
+  border: 1px solid rgba(196, 69, 92, 0.25);
+  border-left: 3px solid #c5465c;
+  border-radius: 10px;
+  background: #fff6f7;
+  color: #a32c42;
   font-size: 12px;
+  line-height: 1.5;
 }
 
 .footer {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 14px;
-  align-items: center;
-  margin-top: 26px;
-  padding-top: 22px;
-  border-top: 1px solid rgba(129, 211, 230, 0.14);
+  margin-top: 27px;
+  padding-top: 21px;
+  border-top: 1px solid rgba(70, 75, 113, 0.12);
 }
 
 .skipBtn,
 .submitBtn {
-  min-height: 42px;
+  min-height: 45px;
   border: 1px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 12px;
   font-weight: 900;
   cursor: pointer;
 }
 
 .skipBtn {
+  padding: 0 8px;
   background: transparent;
-  color: #a7bdd0;
+  color: #66708d;
+  text-decoration: none;
 }
 
 .skipBtn:hover:not(:disabled) {
-  color: var(--getra-ink);
+  color: #118ab2;
 }
 
 .submitBtn {
@@ -363,15 +412,14 @@
   align-items: center;
   justify-content: center;
   gap: 9px;
-  padding: 0 16px;
-  border-color: rgba(34, 211, 238, 0.64);
-  background: var(--getra-primary);
-  color: #061018;
-  box-shadow: 0 12px 30px rgba(34, 211, 238, 0.18);
+  padding: 0 18px;
+  background: #118ab2;
+  color: #fff;
+  box-shadow: 0 11px 24px rgba(17, 138, 178, 0.24);
 }
 
 .submitBtn:hover:not(:disabled) {
-  background: var(--getra-primary-hover);
+  background: #0d7495;
 }
 
 .skipBtn:disabled,
@@ -380,37 +428,61 @@
   cursor: wait;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 940px) {
   .page {
-    padding: 18px;
+    place-items: start center;
   }
 
   .shell {
-    min-height: 0;
     grid-template-columns: 1fr;
   }
 
   .brandPanel {
-    min-height: 360px;
     border-right: 0;
-    border-bottom: 1px solid rgba(129, 211, 230, 0.16);
+    border-bottom: 1px solid rgba(70, 75, 113, 0.1);
+  }
+
+  .heroCopy {
+    margin-top: 34px;
+  }
+
+  .mapArtwork {
+    min-height: 220px;
   }
 }
 
 @media (max-width: 620px) {
   .page {
     padding: 0;
-    place-items: stretch;
   }
 
   .shell {
-    width: 100%;
     border: 0;
+    border-radius: 0;
   }
 
   .brandPanel,
   .formPanel {
-    padding: 22px;
+    padding: 24px 20px;
+  }
+
+  .heroCopy h1 {
+    font-size: 34px;
+  }
+
+  .mapArtwork {
+    min-height: 178px;
+    margin: 23px 0 18px;
+    border-radius: 18px;
+  }
+
+  .signalGrid {
+    gap: 6px;
+  }
+
+  .signalGrid div {
+    min-height: 66px;
+    padding: 9px;
   }
 
   .generalCard,

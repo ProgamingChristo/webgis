@@ -49,7 +49,7 @@ export function RequestCard({ request }: RequestCardProps) {
       <p>{request.description}</p>
       <dl className={styles.requestFacts}>
         <div>
-          <dt>Budget maksimal</dt>
+          <dt>Anggaran maksimal</dt>
           <dd>{formatIdr(request.maxBudget)}</dd>
         </div>
         <div>

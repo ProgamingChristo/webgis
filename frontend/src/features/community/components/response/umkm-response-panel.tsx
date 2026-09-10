@@ -94,7 +94,7 @@ export function UmkmResponsePanel({
       {canRespond ? (
         <form className={styles.responseForm} onSubmit={submit}>
           <label>
-            <span>Merchant</span>
+            <span>Usaha</span>
             <select
               value={selectedMerchantId}
               onChange={(event) => setMerchantId(event.target.value)}
@@ -144,7 +144,7 @@ export function UmkmResponsePanel({
         </form>
       ) : (
         <p className={styles.formHint}>
-          Respons sebagai UMKM memerlukan merchant yang terhubung ke akun ini.
+          Untuk merespons sebagai UMKM, hubungkan usaha ke akun ini terlebih dahulu.
         </p>
       )}
     </section>

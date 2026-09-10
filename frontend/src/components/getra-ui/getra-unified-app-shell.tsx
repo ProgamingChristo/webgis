@@ -10,19 +10,19 @@ type AppShellTone = "general" | "community" | "umkm" | "admin" | "profile";
 type GetraAppShellProps = { children: ReactNode; eyebrow?: string; title?: string; description?: string; tone?: AppShellTone; actions?: ReactNode; showContextNavigation?: boolean };
 
 const UMKM_NAV = [
-  { href: "/umkm", label: "Workspace", icon: Store, exact: true },
+  { href: "/umkm", label: "Ruang Kelola", icon: Store, exact: true },
   { href: "/umkm#usaha-saya", label: "Usaha Saya", icon: Store, exact: false },
   { href: "/umkm/advertising", label: "Promosi", icon: Megaphone, exact: true },
-  { href: "/umkm/advertising/analytics", label: "Analytics", icon: BarChart3, exact: true },
+  { href: "/umkm/advertising/analytics", label: "Kinerja Promosi", icon: BarChart3, exact: true },
 ];
 const ADMIN_NAV = [
-  { href: "/admin/umkm", label: "Review UMKM", icon: Store },
-  { href: "/admin/mission-data", label: "Mission Data", icon: RefreshCw },
-  { href: "/admin/import", label: "Import Data", icon: Database },
+  { href: "/admin/umkm", label: "Pemeriksaan UMKM", icon: Store },
+  { href: "/admin/mission-data", label: "Data lapangan", icon: RefreshCw },
+  { href: "/admin/import", label: "Impor Data", icon: Database },
   { href: "/admin/community/contributions", label: "Moderasi Kontribusi", icon: ShieldCheck },
 ];
 
-export function GetraAppShell({ actions, children, description, eyebrow = "GETRA Application", title, tone = "general", showContextNavigation = true }: GetraAppShellProps) {
+export function GetraAppShell({ actions, children, description, eyebrow = "GETRA", title, tone = "general", showContextNavigation = true }: GetraAppShellProps) {
   const pathname = usePathname();
   const contextualNav = tone === "umkm" ? UMKM_NAV : tone === "admin" ? ADMIN_NAV : [];
   return (

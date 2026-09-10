@@ -31,15 +31,15 @@ export function PhotoPreview({ file, onRemove }: PhotoPreviewProps) {
   }, [previewUrl]);
 
   return (
-    <section className={styles.photoPreview} aria-label="Preview foto">
+    <section className={styles.photoPreview} aria-label="Pratinjau foto">
       {previewUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img alt="Preview foto Community" src={previewUrl} />
+        <img alt="Pratinjau foto komunitas" src={previewUrl} />
       ) : (
         <div className={styles.photoFallback}>Foto dipilih</div>
       )}
       <div className={styles.photoPreviewFooter}>
-        <span>{file.name || "Foto Community"}</span>
+        <span>{file.name || "Foto komunitas"}</span>
         <button
           aria-label="Hapus foto"
           className={styles.secondaryButton}

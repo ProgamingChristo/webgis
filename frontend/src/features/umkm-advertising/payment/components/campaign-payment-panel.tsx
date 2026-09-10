@@ -99,14 +99,14 @@ export function CampaignPaymentPanel({
         try {
           await loadMidtransSnap();
           if (window.snap) {
-            setNoticeMessage("Membuka popup resmi Midtrans Snap Sandbox...");
+            setNoticeMessage("Membuka halaman pembayaran...");
             window.snap.pay(checkout.snap_token, {
               onSuccess: async () => {
-                setNoticeMessage("Pembayaran selesai. Memverifikasi status server-side...");
+                setNoticeMessage("Pembayaran selesai. Sedang memeriksa status terbaru...");
                 await handleRefresh();
               },
               onPending: async () => {
-                setNoticeMessage("Menunggu penyelesaian transaksi di Midtrans Sandbox...");
+                setNoticeMessage("Menunggu penyelesaian pembayaran...");
                 await handleRefresh();
               },
               onError: async (result: any) => {
@@ -144,7 +144,7 @@ export function CampaignPaymentPanel({
     try {
       const refreshed = await PaymentService.refreshPaymentStatus(campaignId);
       setPaymentInfo(refreshed);
-      setNoticeMessage("✅ Transaksi Midtrans Sandbox Berhasil! Status campaign kini AKTIF.");
+      setNoticeMessage("Pembayaran uji berhasil. Promosi kini aktif.");
       if (onPaymentUpdated) onPaymentUpdated();
     } catch (err: any) {
       console.error("[handleSimulateSettlement error]", err);
@@ -174,7 +174,7 @@ export function CampaignPaymentPanel({
         <div className="flex min-w-0 items-start gap-2">
           <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-purple-400" />
           <h4 className="min-w-0 break-words text-sm font-bold leading-5 text-slate-100">
-            Pembayaran Campaign: {campaignName}
+            Pembayaran promosi: {campaignName}
           </h4>
         </div>
         <SandboxPaymentBadge />
@@ -364,8 +364,8 @@ export function CampaignPaymentPanel({
                       [QRIS SANDBOX]
                     </div>
                   </div>
-                  <p className="text-xs text-slate-300 font-medium">Scan QR Code via GoPay / BCA / Livin (Sandbox)</p>
-                  <p className="text-[11px] text-slate-500">NMID: ID1020000000000 | Midtrans Merchant</p>
+                  <p className="text-xs text-slate-300 font-medium">Pindai kode QR dengan aplikasi pembayaran (mode uji)</p>
+                  <p className="text-[11px] text-slate-500">Pembayaran ini hanya untuk simulasi.</p>
                 </div>
               )}
 

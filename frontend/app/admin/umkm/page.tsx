@@ -80,7 +80,7 @@ export default function AdminUmkmPage() {
       setSubmissions(nextSubmissions);
       setError(null);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Review UMKM tidak dapat dimuat.");
+      setError(cause instanceof Error ? cause.message : "Pemeriksaan UMKM belum dapat dimuat. Coba lagi.");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -99,14 +99,14 @@ export default function AdminUmkmPage() {
       merchantName: claim.merchant_name,
       typeLabel: "Klaim kepemilikan usaha",
       status: claim.status,
-      context: `Existing merchant / ${claim.merchant_category} / ${claim.merchant_address || "Lokasi tersimpan"}`,
+      context: `Usaha terdaftar / ${claim.merchant_category} / ${claim.merchant_address || "Lokasi tersimpan"}`,
       owner: claim.submitted_by_name,
       createdAt: claim.created_at,
       detailHref: null,
       riskLabel: claim.has_ownership_conflict
-        ? "Ownership Conflict"
+        ? "Konflik kepemilikan"
         : claim.status === "PENDING"
-          ? "Perlu Review"
+          ? "Perlu pemeriksaan"
           : "Rendah",
       riskTone: claim.has_ownership_conflict
         ? "CONFLICT"
@@ -114,9 +114,9 @@ export default function AdminUmkmPage() {
           ? "REVIEW"
           : "LOW",
       validationLabel: claim.has_ownership_conflict
-        ? "Merchant sudah memiliki ownership terverifikasi."
-        : "Klaim ownership menunggu verifikasi admin.",
-      sourceLabel: claim.merchant_publish_status || "Existing merchant",
+        ? "Usaha sudah memiliki pemilik terverifikasi."
+        : "Klaim kepemilikan menunggu pemeriksaan admin.",
+      sourceLabel: claim.merchant_publish_status || "Usaha terdaftar",
       evidenceLabel: [
         claim.evidence.relationship,
         claim.evidence.contact_name,
@@ -136,11 +136,11 @@ export default function AdminUmkmPage() {
       owner: submission.submitted_by,
       createdAt: submission.created_at,
       detailHref: `/umkm/submissions/${submission.id}`,
-      riskLabel: submission.status === "PENDING_REVIEW" ? "Rendah" : "Perlu Review",
+      riskLabel: submission.status === "PENDING_REVIEW" ? "Rendah" : "Perlu pemeriksaan",
       riskTone: submission.status === "PENDING_REVIEW" ? "LOW" : "REVIEW",
       validationLabel:
         submission.status === "PENDING_REVIEW"
-          ? "Pemeriksaan dasar siap untuk review."
+          ? "Pemeriksaan dasar siap dilanjutkan."
           : "Status pengajuan perlu dicek sebelum keputusan.",
       sourceLabel: "GETRA user",
       evidenceLabel: submission.image_url ? "Foto utama pengajuan tersedia." : "Foto utama belum tersedia.",
@@ -165,10 +165,10 @@ export default function AdminUmkmPage() {
       <main className="grid min-h-screen place-items-center bg-[#050a10] p-6 text-slate-100">
         <section className="w-full max-w-md rounded-3xl border border-cyan-400/15 bg-slate-950/80 p-8 text-center shadow-2xl shadow-cyan-950/20">
           <ShieldCheck className="mx-auto mb-5 text-cyan-300" size={34} />
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">Admin only</p>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">Khusus admin</p>
           <h1 className="mt-3 text-2xl font-semibold">Akses admin dibutuhkan</h1>
           <p className="mt-3 text-sm leading-6 text-slate-400">
-            Halaman review UMKM hanya tersedia untuk akun dengan account_role ADMIN.
+            Halaman pemeriksaan UMKM hanya tersedia untuk akun admin.
           </p>
         </section>
       </main>
@@ -216,7 +216,7 @@ export default function AdminUmkmPage() {
     <GetraAppShell
       actions={
         <button
-          aria-label="Muat ulang review UMKM"
+          aria-label="Muat ulang pemeriksaan UMKM"
           className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 bg-slate-900 text-slate-200 transition hover:border-cyan-400/50 hover:text-cyan-200 disabled:opacity-50"
           disabled={refreshing}
           onClick={() => void loadQueue(true)}
@@ -226,16 +226,16 @@ export default function AdminUmkmPage() {
         </button>
       }
       eyebrow="Admin UMKM"
-      title="Merchant Review"
-      description="Kelola pendaftaran usaha baru dan klaim ownership existing tanpa mencampur admin flow dengan UMKM Workspace."
+      title="Pemeriksaan UMKM"
+      description="Kelola pendaftaran usaha baru dan klaim kepemilikan dari satu antrean pemeriksaan."
       tone="admin"
     >
       <section className="grid gap-5">
         <div className="grid gap-3 md:grid-cols-4">
-          <MetricCard icon={ClipboardCheck} label="Pending" value={pendingCount} />
-          <MetricCard icon={CheckCircle2} label="Low Risk" value={lowRiskCount} />
-          <MetricCard icon={AlertTriangle} label="Needs Review" value={needsReviewCount} />
-          <MetricCard icon={BadgeCheck} label="Ownership Conflict" value={ownershipConflictCount} />
+          <MetricCard icon={ClipboardCheck} label="Menunggu" value={pendingCount} />
+          <MetricCard icon={CheckCircle2} label="Risiko rendah" value={lowRiskCount} />
+          <MetricCard icon={AlertTriangle} label="Perlu pemeriksaan" value={needsReviewCount} />
+          <MetricCard icon={BadgeCheck} label="Konflik kepemilikan" value={ownershipConflictCount} />
         </div>
 
         {error ? (
@@ -248,8 +248,8 @@ export default function AdminUmkmPage() {
         <section className="rounded-3xl border border-slate-800 bg-slate-950/60 p-4 sm:p-5">
           <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-base font-bold text-white">Queue Review UMKM</h2>
-              <p className="text-sm text-slate-400">Prioritaskan konflik ownership, duplikasi, dan kasus yang butuh pemeriksaan manual.</p>
+              <h2 className="text-base font-bold text-white">Antrean pemeriksaan UMKM</h2>
+              <p className="text-sm text-slate-400">Prioritaskan konflik kepemilikan, duplikasi, dan kasus yang perlu diperiksa manual.</p>
             </div>
             <p className="text-xs text-slate-500">
               {rejectedCount} rejected tetap ditampilkan sebagai audit trail ringkas.
@@ -259,12 +259,12 @@ export default function AdminUmkmPage() {
           {loading ? (
             <div className="flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 text-sm text-slate-300">
               <LoaderCircle className="animate-spin" size={16} />
-              Memuat queue review...
+              Memuat antrean pemeriksaan...
             </div>
           ) : items.length === 0 ? (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8 text-center">
               <CheckCircle2 className="mx-auto text-emerald-300" size={28} />
-              <p className="mt-3 text-sm font-semibold text-white">Tidak ada review UMKM aktif.</p>
+              <p className="mt-3 text-sm font-semibold text-white">Tidak ada pemeriksaan UMKM aktif.</p>
               <p className="mt-1 text-xs text-slate-400">Klaim dan pendaftaran baru akan muncul di sini.</p>
             </div>
           ) : (
@@ -321,18 +321,18 @@ function ReviewCard({
       <div className="mt-4 space-y-2 text-sm text-slate-300">
         <p>
           {item.kind === "CLAIM"
-            ? "Klaim kepemilikan merchant yang sudah tersedia di GETRA."
+            ? "Klaim kepemilikan usaha yang sudah tersedia di GETRA."
             : "Pendaftaran usaha baru ke katalog GETRA."}
         </p>
         <p className="break-words text-xs leading-5 text-slate-500">{item.context}</p>
         <p className="break-words text-xs leading-5 text-slate-500">Diajukan oleh {item.owner} pada {formatDate(item.createdAt)}.</p>
         <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-xs leading-5 text-slate-300">
-          <strong className="block text-[10px] uppercase tracking-[0.12em] text-slate-500">Bukti review privat</strong>
+          <strong className="block text-[10px] uppercase tracking-[0.12em] text-slate-500">Bukti pemeriksaan privat</strong>
           <span className="break-words">{item.evidenceLabel}</span>
         </div>
         <div className="grid gap-2 pt-2 text-xs sm:grid-cols-3">
-          <ReviewFact label="Source" value={item.sourceLabel} />
-          <ReviewFact label="Risk" value={item.riskLabel} tone={item.riskTone} />
+          <ReviewFact label="Sumber" value={item.sourceLabel} />
+          <ReviewFact label="Risiko" value={item.riskLabel} tone={item.riskTone} />
           <ReviewFact label="Validation" value={item.validationLabel} />
         </div>
       </div>
@@ -442,7 +442,7 @@ function getStatusLabel(status: ReviewItem["status"]) {
       return "Draft";
     case "PENDING":
     case "PENDING_REVIEW":
-      return "Menunggu Review";
+      return "Menunggu pemeriksaan";
     case "APPROVED":
       return "Terverifikasi";
     case "REJECTED":

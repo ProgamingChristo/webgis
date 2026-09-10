@@ -9,7 +9,7 @@ const AUTH_OPERATION_TIMEOUT_MS = 10_000;
 
 export class AuthSessionError extends Error {
   constructor() {
-    super("Session tidak tersedia.");
+    super("Sesi Anda tidak tersedia. Silakan masuk kembali.");
     this.name = "AuthSessionError";
   }
 }
@@ -22,7 +22,7 @@ async function withAuthTimeout<T>(operation: PromiseLike<T>): Promise<T> {
       Promise.resolve(operation),
       new Promise<never>((_resolve, reject) => {
         timeout = setTimeout(
-          () => reject(new Error("Operasi autentikasi melewati batas waktu.")),
+          () => reject(new Error("Proses masuk membutuhkan waktu terlalu lama. Coba lagi.")),
           AUTH_OPERATION_TIMEOUT_MS,
         );
       }),
@@ -59,7 +59,7 @@ export async function persistAuthSession(
 
   if (error) {
     throw new Error(
-      "Gagal menyimpan sesi login.",
+      "Sesi masuk belum dapat disimpan. Coba lagi.",
     );
   }
 }
@@ -135,7 +135,7 @@ Promise<void> {
 
   if (error) {
     throw new Error(
-      "Gagal menghapus sesi lokal.",
+      "Sesi pada perangkat belum dapat diakhiri. Coba lagi.",
     );
   }
 }

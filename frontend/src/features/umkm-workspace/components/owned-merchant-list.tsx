@@ -30,8 +30,8 @@ export function OwnedMerchantList({
     try {
       await onArchiveMerchant(merchant);
       setConfirmationId(null);
-    } catch (error) {
-      setArchiveError(error instanceof Error ? error.message : "Gagal menghapus usaha.");
+    } catch {
+      setArchiveError("Usaha belum dapat diarsipkan. Coba lagi.");
     } finally {
       setArchivingId(null);
     }
@@ -83,7 +83,7 @@ export function OwnedMerchantList({
                   {merchant.address || "Lokasi terdaftar pada sistem GETRA"}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-400">
-                  <span>Campaign: <strong className="text-slate-200">{merchant.campaigns_count ?? 0}</strong></span>
+                  <span>Promosi: <strong className="text-slate-200">{merchant.campaigns_count ?? 0}</strong></span>
                   <span>Status: <span className="font-medium text-emerald-400">{merchantPublishLabel ? merchantPublishLabel(merchant.publish_status) : merchant.publish_status}</span></span>
                 </div>
               </div>
@@ -142,7 +142,7 @@ export function OwnedMerchantList({
                     Hapus {merchant.name} dari GETRA?
                   </p>
                   <p className="mt-0.5 break-words text-xs leading-5 text-slate-400">
-                    Usaha tidak akan tampil lagi di peta dan pencarian. Riwayat pengajuan tetap tersimpan. Campaign aktif harus diselesaikan atau dibatalkan lebih dulu.
+                    Usaha tidak akan tampil lagi di peta dan pencarian. Riwayat pengajuan tetap tersimpan. Promosi aktif harus diselesaikan atau dibatalkan lebih dulu.
                   </p>
                   {archiveError ? (
                     <p aria-live="polite" className="mt-2 break-words text-xs font-medium leading-5 text-rose-300" role="alert">

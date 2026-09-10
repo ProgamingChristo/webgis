@@ -194,7 +194,7 @@ export function TargetingMap({
         {merchantLocation && (
           <div className="flex items-center space-x-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block" />
-            <span className="text-gray-600">Lokasi Outlet Merchant</span>
+            <span className="text-gray-600">Lokasi usaha</span>
           </div>
         )}
         <div className="flex items-center space-x-2">

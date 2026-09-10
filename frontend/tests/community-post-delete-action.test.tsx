@@ -9,12 +9,12 @@ describe("Community post delete action", () => {
     expect(html).toContain("title=\"Hapus postingan\"");
     expect(html).toContain(">Hapus</span>");
     expect(html).toContain("Hapus postingan?");
-    expect(html).toContain("Postingan ini akan dihapus dari Community.");
+    expect(html).toContain("Postingan ini akan dihapus dari komunitas.");
   });
 
   it("names the author and moderation context for an admin delete", () => {
     const html = renderToStaticMarkup(<PostDeleteAction authorName="Rani" moderation onDelete={vi.fn()} />);
     expect(html).toContain("Hapus postingan sebagai admin?");
-    expect(html).toContain("Postingan milik Rani akan dihapus dari Community.");
+    expect(html).toContain("Postingan milik Rani akan dihapus dari komunitas.");
   });
 });

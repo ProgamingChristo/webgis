@@ -29,7 +29,7 @@ export function AiPanel({
   selectedEntityId,
   studyAreaId,
 }: AiPanelProps) {
-  const { state, messages, error, provider, askQuestion, clearChat } = useAi();
+  const { state, messages, provider, askQuestion, clearChat } = useAi();
   const [question, setQuestion] = useState("");
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -66,7 +66,7 @@ export function AiPanel({
 
   const suggestions = [
     "Rekomendasikan rute ke tujuan ini",
-    "Apa insight area terdekat?",
+    "Apa yang menarik di area terdekat?",
     "Titik mana yang paling mudah dijangkau?",
   ];
 
@@ -91,20 +91,20 @@ export function AiPanel({
           </span>
           <div className="min-w-0">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
-              Spatial assistant
+              Asisten lokasi
             </p>
             <h3 className="mt-1 text-xl font-black tracking-[-0.03em] text-white">
-              Asisten GETRA AI
+              Asisten GETRA
             </h3>
             <p className="mt-1 text-xs leading-5 text-slate-400">
-              Tanya rute, area, akses, dan konteks titik berdasarkan data peta aktif.
+              Tanya tentang tempat, area, akses, dan rute.
             </p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {provider && state === "SUCCESS" && (
             <span className="whitespace-nowrap rounded-full border border-cyan-300/20 bg-cyan-300/[0.07] px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-cyan-100">
-              {provider === "sub2api" ? "AI terhubung" : "Mode fallback data"}
+              {provider === "sub2api" ? "Asisten siap" : "Jawaban data GETRA"}
             </span>
           )}
           <span className="rounded-full border border-lime-300/25 bg-lime-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-lime-200">
@@ -118,7 +118,7 @@ export function AiPanel({
               title="Bersihkan percakapan"
             >
               <Eraser size={12} />
-              Clear
+              Bersihkan
             </button>
           )}
         </div>
@@ -131,7 +131,7 @@ export function AiPanel({
         </span>
         <span className="inline-flex min-h-9 items-center gap-2 rounded-2xl border border-white/8 bg-slate-950/45 px-3 text-[11px] font-bold text-slate-300">
           <Route size={14} className="text-lime-200" />
-          {hasRouteContext ? "Konteks rute aktif" : "Rute belum aktif"}
+          {hasRouteContext ? "Informasi rute tersedia" : "Rute belum aktif"}
         </span>
       </div>
 
@@ -147,7 +147,7 @@ export function AiPanel({
               </span>
               <div>
                 <p className="text-sm font-semibold leading-6 text-slate-100">
-                  Mau cari insight apa?
+                  Apa yang ingin Anda cari?
                 </p>
                 <p className="mt-1 text-sm leading-6 text-slate-400">
                   Contoh: “apakah tujuan ini mudah dijangkau dari lokasi saya?”
@@ -194,7 +194,7 @@ export function AiPanel({
         {state === "LOADING" && (
           <div className="flex items-center gap-3 rounded-2xl border border-cyan-300/16 bg-cyan-300/[0.055] p-3 text-sm font-bold text-cyan-100">
             <LoaderCircle className="animate-spin" size={17} />
-            Menghubungkan ke GETRA Data & AI...
+            Sedang mencari informasi...
           </div>
         )}
 
@@ -203,9 +203,11 @@ export function AiPanel({
             <AlertTriangle className="mt-0.5 shrink-0" size={17} />
             <div>
               <strong className="block text-rose-100">
-                GETRA AI belum bisa menjawab.
+                Asisten belum bisa menjawab.
               </strong>
-              <span className="mt-1 block leading-6 text-rose-200/85">{error}</span>
+              <span className="mt-1 block leading-6 text-rose-200/85">
+                Asisten belum dapat digunakan. Coba lagi sebentar lagi.
+              </span>
             </div>
           </div>
         )}
@@ -232,11 +234,7 @@ export function AiPanel({
 
       <p className="mt-3 flex items-center gap-2 text-[10px] font-medium text-slate-500">
         <Sparkles size={12} className="text-cyan-200" />
-        {provider === "sub2api"
-          ? "Jawaban menggunakan fakta GIS terverifikasi dan interpretasi AI."
-          : provider === "deterministic"
-            ? "Jawaban dibuat langsung dari fakta GIS terverifikasi tanpa interpretasi AI."
-            : "Jawaban dibatasi oleh fakta GIS dan data GETRA yang tersedia."}
+        Jawaban dibuat berdasarkan data GETRA yang tersedia.
       </p>
     </section>
   );

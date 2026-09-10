@@ -6,9 +6,9 @@ import { AuthProvider } from "@/src/components/providers/AuthProvider";
 import { StakeholderProvider } from "@/src/components/providers/StakeholderProvider";
 
 export const metadata: Metadata = {
-  title: "GETRA — Geo-Enabled Transit & Retail Analytics",
+  title: "GETRA — Peta Transit dan Usaha",
   description:
-    "WebGIS spatial intelligence untuk transportasi massal, akses pedestrian, UMKM, dan kawasan transit.",
+    "Peta untuk menjelajahi transportasi, akses berjalan kaki, UMKM, dan kawasan transit.",
   icons: {
     icon: "/favicon.svg",
   },
