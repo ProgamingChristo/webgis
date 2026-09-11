@@ -1488,12 +1488,14 @@ function GeneralGetraDashboard() {
 
     return {
       origin,
-      radiusMeters: 3000,
+      radiusMeters: nearbyRadiusMeters || 3000,
       category: brand !== "Semua" ? brand : undefined,
       query: query || undefined,
       openNow: openOnly,
+      // Phase 15: Forward walking constraint so backend applies network eligibility to Fair Discovery
+      maxWalkingMinutes: maxWalkingMinutes ?? undefined,
     };
-  }, [userLocation, datasetOrigin, brand, query, openOnly]);
+  }, [userLocation, datasetOrigin, brand, query, openOnly, maxWalkingMinutes, nearbyRadiusMeters]);
 
   const {
     result: fairDiscoveryResult,
@@ -3848,14 +3850,20 @@ function GeneralGetraDashboard() {
                 error={fairDiscoveryError}
                 selectedId={selectedId}
                 onSelectMerchant={(m) => {
-                  const match = baseMerchants.find((bm) => bm.id === m.id || bm.name.toLowerCase() === m.name.toLowerCase());
+                  // Phase 15: Use discovery result coordinates directly — decoupled from viewport baseMerchants.
+                  // Try to match in baseMerchants for map focus; fall back to no-op (map focus is presentation only).
+                  const match = baseMerchants.find((bm) => bm.id === m.id);
                   if (match) handleSelect(match);
+                  // Do NOT gate route CTA on baseMerchants presence — routing always works via Phase 14 unified destination.
                 }}
                 onSelectSponsored={(p) => {
-                  const match = baseMerchants.find((bm) => bm.id === p.merchant_id || bm.name.toLowerCase() === p.merchant_name.toLowerCase());
+                  // Phase 15: Decoupled from viewport — match by canonical merchant_id only.
+                  const match = baseMerchants.find((bm) => bm.id === p.merchant_id);
                   if (match) handleSelect(match);
                 }}
                 onRequestRoute={(item) => {
+                  // Phase 15: Fair Discovery → Phase 14 unified destination routing.
+                  // Extracts canonical coordinates from discovery result regardless of viewport state.
                   const coords = (item as any).geometry?.coordinates || [(item as any).longitude, (item as any).latitude];
                   if (coords && coords.length >= 2) {
                     const itemId = (item as any).id || (item as any).merchant_id;
