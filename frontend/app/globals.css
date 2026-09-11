@@ -127,6 +127,11 @@ html {
   box-shadow: 0 0 0 1px #118ab2;
 }
 
+.getra-onboarding-map__legend-dot--umkm {
+  background: #367e77;
+  box-shadow: 0 0 0 1px #367e77;
+}
+
 .getra-onboarding-map__legend-line {
   width: 17px;
   height: 4px;
@@ -138,12 +143,25 @@ html {
   .getra-onboarding-map__caption {
     top: 12px;
     left: 12px;
+    max-width: calc(100% - 24px);
   }
 
   .getra-onboarding-map__legend {
     right: 12px;
     bottom: 12px;
+    font-size: 9px;
+    padding: 7px 9px;
+    gap: 7px;
   }
+}
+
+/* Crisp browser autofill reset across themes */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #464b71 !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .getra-reveal {

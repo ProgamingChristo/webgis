@@ -16,6 +16,7 @@ import {
   persistAuthSession,
   type BrowserAuthSession,
 } from "@/src/lib/auth-client";
+import Image from "next/image";
 import { GetraLogo } from "@/src/components/getra-ui";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
 import { getUserFacingApiError } from "@/src/lib/user-facing-api-error";
@@ -243,6 +244,23 @@ export default function SignupPage() {
             </span>
           </div>
         </div>
+
+        <figure
+          className={styles.mapPreview}
+          aria-label="Ilustrasi peta GETRA dengan berbagai mode akses kota"
+        >
+          <Image
+            src="/images/landing/getra-hero-smart-map.jpg"
+            alt="Peta GETRA WebGIS"
+            fill
+            sizes="(max-width: 960px) 100vw, 580px"
+            className={styles.mapPreviewImage}
+          />
+          <figcaption>
+            <span>Ekosistem Peta Terpadu</span>
+            <strong>Pilihan mode aktif setelah pendaftaran</strong>
+          </figcaption>
+        </figure>
 
         <div className={styles.heroFooter}>
           Hak akses akun dikelola secara aman oleh GETRA.

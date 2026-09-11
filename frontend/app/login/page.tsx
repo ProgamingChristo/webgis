@@ -16,10 +16,10 @@ import {
   persistAuthSession,
   type BrowserAuthSession,
 } from "@/src/lib/auth-client";
+import Image from "next/image";
 import { GetraLogo } from "@/src/components/getra-ui";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
 import { getUserFacingApiError } from "@/src/lib/user-facing-api-error";
-import { LandingMapArtwork } from "@/src/features/landing/components/landing-map-artwork";
 
 import styles from "../auth.module.css";
 
@@ -235,7 +235,13 @@ export default function LoginPage() {
           className={styles.mapPreview}
           aria-label="Ilustrasi peta GETRA berisi transit, rute pejalan kaki, dan usaha lokal"
         >
-          <LandingMapArtwork className={styles.mapPreviewArtwork} />
+          <Image
+            src="/images/landing/getra-hero-smart-map.jpg"
+            alt="Peta GETRA WebGIS"
+            fill
+            sizes="(max-width: 960px) 100vw, 580px"
+            className={styles.mapPreviewImage}
+          />
           <figcaption>
             <span>Peta sebagai titik awal</span>
             <strong>Transit, rute, dan usaha lokal</strong>
