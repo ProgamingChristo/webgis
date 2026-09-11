@@ -28,7 +28,7 @@ export function OriginalResultsSection({
       <div className="flex items-center justify-between">
         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
           <Store className="w-3.5 h-3.5 text-blue-400" />
-          Hasil Penelusuran Organik ({merchants.length})
+          Hasil Utama ({merchants.length})
         </h4>
         <span className="text-[10px] text-slate-500 font-medium">Berdasarkan Kedekatan Jarak</span>
       </div>

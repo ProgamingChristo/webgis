@@ -27,7 +27,7 @@ export function SponsoredSection({
       <div className="flex items-center justify-between">
         <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          Promosi Bersponsor ({sponsored.length})
+          Promosi ({sponsored.length})
         </h4>
         <span className="text-[10px] text-amber-500 font-semibold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-800 flex items-center gap-1">
           <Info className="w-2.5 h-2.5" />
