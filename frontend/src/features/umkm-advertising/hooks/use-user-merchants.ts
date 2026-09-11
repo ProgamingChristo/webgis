@@ -5,6 +5,7 @@ export function useUserMerchants() {
   const [ownedMerchants, setOwnedMerchants] = useState<OwnedMerchantSummary[]>([]);
   const [recommendedMerchants, setRecommendedMerchants] = useState<OwnedMerchantSummary[]>([]);
   const [ineligibleMerchants, setIneligibleMerchants] = useState<OwnedMerchantSummary[]>([]);
+  const [allBusinesses, setAllBusinesses] = useState<OwnedMerchantSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,6 +16,12 @@ export function useUserMerchants() {
       setOwnedMerchants(res.ownedMerchants || []);
       setRecommendedMerchants(res.recommendedMerchants || []);
       setIneligibleMerchants(res.ineligibleMerchants || []);
+      setAllBusinesses(
+        res.allBusinesses || [
+          ...(res.ownedMerchants || []),
+          ...(res.ineligibleMerchants || []),
+        ]
+      );
       setError(null);
     } catch {
       setError("Daftar usaha belum dapat dimuat. Coba lagi.");
@@ -35,8 +42,10 @@ export function useUserMerchants() {
     ownedMerchants,
     recommendedMerchants,
     ineligibleMerchants,
+    allBusinesses,
     loading,
     error,
     refetch: fetchMerchants,
   };
 }
+

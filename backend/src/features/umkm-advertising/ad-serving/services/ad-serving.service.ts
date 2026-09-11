@@ -99,7 +99,7 @@ export class AdServingService {
         continue;
       }
 
-      const isMerchantEligible = await this.eligibilityService.verifyEligibility(merchant.id);
+      const isMerchantEligible = await this.eligibilityService.isMerchantEligibleForServing(merchant.id);
       if (!isMerchantEligible) {
         continue;
       }
