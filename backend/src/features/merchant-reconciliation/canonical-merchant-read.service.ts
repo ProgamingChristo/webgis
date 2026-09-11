@@ -56,6 +56,8 @@ export interface CanonicalMerchantViewportQuery {
   keyword?: string | null;
   category?: string | null;
   regionIds?: string[];
+  radiusMeters?: number | null;
+  origin?: { longitude: number; latitude: number } | null;
 }
 
 export class CanonicalMerchantReadService {
@@ -63,17 +65,20 @@ export class CanonicalMerchantReadService {
 
   async list(query: CanonicalMerchantViewportQuery): Promise<CanonicalMerchantPage> {
     const { data: pageRows, error: pageError } = await this.supabase.rpc(
-      "search_canonical_merchants_v1",
+      "search_canonical_merchants_v2",
       {
         p_west: query.west ?? null,
         p_south: query.south ?? null,
         p_east: query.east ?? null,
         p_north: query.north ?? null,
-        p_limit: query.limit,
-        p_offset: query.offset,
         p_region_ids: query.regionIds?.length ? query.regionIds : null,
         p_keyword: query.keyword ?? null,
         p_category: query.category ?? null,
+        p_limit: query.limit,
+        p_offset: query.offset,
+        p_origin_lng: query.origin?.longitude ?? null,
+        p_origin_lat: query.origin?.latitude ?? null,
+        p_radius_meters: query.radiusMeters ?? null,
       },
     );
     if (pageError) throw pageError;
@@ -200,7 +205,7 @@ export function mapCanonicalMerchantRow(
     longitude: point[0],
     latitude: point[1],
     walkingMinutes: null,
-    distanceMeters: null,
+    distanceMeters: searchRow?.distance_meters != null ? Math.round(Number(searchRow.distance_meters)) : null,
     accessibilityScore: merchant.data_quality_score ?? 80,
     priceLabel: toPriceLabel(merchant.price_level),
     openNow: openingStatus === "OPEN",

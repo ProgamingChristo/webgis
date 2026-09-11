@@ -56,6 +56,8 @@ import {
 import { GlobalSearchControls } from "@/src/features/global-search/components/global-search-controls";
 import { RegionScopeSummary } from "@/src/features/administrative-boundaries/components/region-scope-summary";
 import { useAdministrativeBoundaries } from "@/src/features/administrative-boundaries/hooks/use-administrative-boundaries";
+import { useCommuterLocation } from "@/src/features/location/use-commuter-location";
+import { sharedCommuterLocationAuthority } from "@/src/features/location/commuter-location-authority";
 import { groupMerchantsByRegion } from "@/src/features/administrative-boundaries/utils/administrative-boundary.utils";
 import { useContextualLayers } from "@/src/features/mission-context-layers/hooks/use-contextual-layers";
 import type { ContextualLayerKey } from "@/src/features/mission-context-layers/types/contextual-layer.types";
@@ -1155,27 +1157,37 @@ function GeneralGetraDashboard() {
   const [manualRouteStart, setManualRouteStart] = useState<{ latitude: number; longitude: number } | null>(null);
   const [manualRouteDestination, setManualRouteDestination] = useState<Coordinate | null>(null);
 
-  const [
-    locating,
-    setLocating,
-  ] =
-    useState(false);
+  const commuterLocation = useCommuterLocation();
 
-  const [
-    locationError,
-    setLocationError,
-  ] =
-    useState<string | null>(
-      null,
-    );
+  const userLocation = useMemo<UserLocation | null>(() => {
+    const pos = commuterLocation.fix;
+    if (!pos) return null;
+    return {
+      latitude: pos.latitude,
+      longitude: pos.longitude,
+      accuracyMeters: pos.accuracyMeters,
+      capturedAt: pos.capturedAt,
+    };
+  }, [commuterLocation.fix]);
 
-  const [
-    userLocation,
-    setUserLocation,
-  ] =
-    useState<UserLocation | null>(
-      null,
-    );
+  const locating = commuterLocation.state === "REQUESTING";
+  const [manualLocationError, setManualLocationError] = useState<string | null>(null);
+
+  const locationError = useMemo(() => {
+    if (manualLocationError) return manualLocationError;
+    if (commuterLocation.state === "DENIED") {
+      return "Izin lokasi ditolak. Aktifkan permission location di browser untuk memakai GPS.";
+    }
+    if (commuterLocation.state === "UNAVAILABLE") {
+      return "Lokasi perangkat belum tersedia. Coba nyalakan GPS/Wi-Fi location lalu ulangi.";
+    }
+    if (commuterLocation.state === "STALE") {
+      return "Sinyal GPS kedaluwarsa. Menunggu pembaruan lokasi terbaru...";
+    }
+    return null;
+  }, [commuterLocation.state, manualLocationError]);
+
+  const [nearbyRadiusMeters, setNearbyRadiusMeters] = useState<number | null>(null);
 
   const [
     selectedId,
@@ -1881,12 +1893,14 @@ function GeneralGetraDashboard() {
       regionIds,
       activate,
       focus,
+      radiusOverride,
     }: {
       bbox: MapViewportBounds;
       queryText: string;
       regionIds: string[];
       activate: boolean;
       focus: boolean;
+      radiusOverride?: number | null;
     }) => {
       canonicalRequestRef.current?.abort();
       serviceAreaRequestRef.current?.abort();
@@ -1907,6 +1921,25 @@ function GeneralGetraDashboard() {
           : regionIds.length === 1
             ? "REGION" as const
             : "CURRENT_VIEWPORT" as const;
+        const effectiveRadius = radiusOverride !== undefined ? radiusOverride : nearbyRadiusMeters;
+        const originCoord = (effectiveRadius || maxWalkingMinutes) && userLocation
+          ? {
+              longitude: userLocation.longitude,
+              latitude: userLocation.latitude,
+              source: "USER_LOCATION" as const,
+            }
+          : routeOrigin
+            ? {
+                longitude: routeOrigin.coordinate.longitude,
+                latitude: routeOrigin.coordinate.latitude,
+                source: routeOriginValue === ROUTE_ORIGIN_USER
+                  ? "USER_LOCATION" as const
+                  : explicitRouteOrigin
+                    ? "EXPLICIT_ORIGIN" as const
+                    : "SELECTED_POINT" as const,
+              }
+            : undefined;
+
         const layer: CanonicalMerchantLayer =
           await mapidLayerService.getCanonicalMerchants(
             searchableBbox,
@@ -1919,17 +1952,8 @@ function GeneralGetraDashboard() {
               maxBudget: Number(maxBudget) >= 1_000 ? Number(maxBudget) : undefined,
               openNow: openOnly || undefined,
               maxWalkingMinutes: maxWalkingMinutes ?? undefined,
-              origin: routeOrigin
-                ? {
-                    longitude: routeOrigin.coordinate.longitude,
-                    latitude: routeOrigin.coordinate.latitude,
-                    source: routeOriginValue === ROUTE_ORIGIN_USER
-                      ? "USER_LOCATION"
-                      : explicitRouteOrigin
-                        ? "EXPLICIT_ORIGIN"
-                        : "SELECTED_POINT",
-                  }
-                : undefined,
+              radiusMeters: effectiveRadius ?? undefined,
+              origin: originCoord,
             },
           );
 
@@ -1991,10 +2015,12 @@ function GeneralGetraDashboard() {
     }, [
       maxBudget,
       maxWalkingMinutes,
+      nearbyRadiusMeters,
       openOnly,
       routeOrigin,
       explicitRouteOrigin,
       routeOriginValue,
+      userLocation,
     ]);
 
   const executePropertySearch = useCallback(async ({
@@ -2213,11 +2239,52 @@ function GeneralGetraDashboard() {
       queryText: query,
       regionIds: selectedRegionIds,
       activate: Boolean(
-        query.trim() || selectedRegionIds.length || maxBudget || openOnly || maxWalkingMinutes,
+        query.trim() || selectedRegionIds.length || maxBudget || openOnly || maxWalkingMinutes || nearbyRadiusMeters,
       ),
       focus: true,
     });
-  }, [clearRoute, datasetBounds, executeCanonicalSearch, maxBudget, maxWalkingMinutes, openOnly, query, selectedRegionIds]);
+  }, [clearRoute, datasetBounds, executeCanonicalSearch, maxBudget, maxWalkingMinutes, nearbyRadiusMeters, openOnly, query, selectedRegionIds]);
+
+  const handleRadiusChange = useCallback((radius: number | null) => {
+    setNearbyRadiusMeters(radius);
+    if (radius) {
+      if (!commuterLocation.fix) {
+        commuterLocation.startTracking();
+      }
+      setDatasetId("all-areas");
+      setViewMode("dataset");
+      void executeCanonicalSearch({
+        bbox: currentViewportRef.current ?? datasetBounds,
+        queryText: query,
+        regionIds: selectedRegionIds,
+        activate: true,
+        focus: true,
+        radiusOverride: radius,
+      });
+    } else {
+      void executeCanonicalSearch({
+        bbox: currentViewportRef.current ?? datasetBounds,
+        queryText: query,
+        regionIds: selectedRegionIds,
+        activate: Boolean(query.trim() || selectedRegionIds.length || maxBudget || openOnly || maxWalkingMinutes),
+        focus: false,
+        radiusOverride: null,
+      });
+    }
+  }, [commuterLocation, datasetBounds, executeCanonicalSearch, maxBudget, maxWalkingMinutes, openOnly, query, selectedRegionIds]);
+
+  useEffect(() => {
+    if (!nearbyRadiusMeters || !userLocation) return;
+    if (!commuterLocation.hasMovedSignificantly(userLocation)) return;
+    commuterLocation.recordQueryCoordinate(userLocation);
+    void executeCanonicalSearch({
+      bbox: currentViewportRef.current ?? datasetBounds,
+      queryText: query,
+      regionIds: selectedRegionIds,
+      activate: true,
+      focus: false,
+    });
+  }, [userLocation, nearbyRadiusMeters, executeCanonicalSearch, datasetBounds, query, selectedRegionIds, commuterLocation]);
 
   const toggleSearchRegion = useCallback((regionId: string) => {
     const next = selectedRegionIds.includes(regionId)
@@ -2230,10 +2297,10 @@ function GeneralGetraDashboard() {
       bbox: currentViewportRef.current ?? datasetBounds,
       queryText: query,
       regionIds: next,
-      activate: Boolean(query.trim() || next.length || maxBudget || openOnly || maxWalkingMinutes),
+      activate: Boolean(query.trim() || next.length || maxBudget || openOnly || maxWalkingMinutes || nearbyRadiusMeters),
       focus: true,
     });
-  }, [datasetBounds, executeCanonicalSearch, maxBudget, maxWalkingMinutes, openOnly, query, selectedRegionIds]);
+  }, [datasetBounds, executeCanonicalSearch, maxBudget, maxWalkingMinutes, nearbyRadiusMeters, openOnly, query, selectedRegionIds]);
 
   const clearGlobalSearch = useCallback(() => {
     setQuery("");
@@ -2245,6 +2312,7 @@ function GeneralGetraDashboard() {
     setSearchActive(false);
     setMaxBudget("");
     setMaxWalkingMinutes(null);
+    setNearbyRadiusMeters(null);
     setOpenOnly(false);
     setServiceArea(null);
     const bbox = currentViewportRef.current;
@@ -2254,6 +2322,7 @@ function GeneralGetraDashboard() {
       regionIds: [],
       activate: false,
       focus: false,
+      radiusOverride: null,
     });
   }, [executeCanonicalSearch]);
 
@@ -2585,83 +2654,29 @@ function GeneralGetraDashboard() {
   const handleLocateUser =
     useCallback(() => {
       if (journeyOpen) { journey.controller.focus(); return; }
-      setLocationError(
-        null,
-      );
+      commuterLocation.startTracking();
+      setRouteOriginValue(ROUTE_ORIGIN_USER);
+      setExplicitRouteOrigin(null);
+      setOriginSearch("");
+      clearRoute();
+    }, [clearRoute, commuterLocation, journeyOpen, journey.controller]);
 
-      if (
-        !("geolocation" in navigator)
-      ) {
-        setLocationError(
-          "Perangkat atau browser belum mendukung GPS/location.",
-        );
-        return;
+  useEffect(() => {
+    let lastFixAt: number | null = null;
+    return sharedCommuterLocationAuthority.subscribe(() => {
+      const fix = sharedCommuterLocationAuthority.getSnapshot().fix;
+      if (fix && fix.timestamp !== lastFixAt) {
+        lastFixAt = fix.timestamp;
+        setSearchFocusBounds({
+          west: fix.longitude - 0.015,
+          east: fix.longitude + 0.015,
+          south: fix.latitude - 0.015,
+          north: fix.latitude + 0.015,
+        });
+        setSearchFocusKey((prev) => prev + 1);
       }
-
-      setLocating(
-        true,
-      );
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            latitude:
-              position.coords.latitude,
-            longitude:
-              position.coords.longitude,
-            accuracyMeters:
-              Math.round(
-                position.coords.accuracy,
-              ),
-            capturedAt:
-              new Date().toISOString(),
-          });
-
-          setRouteOriginValue(
-            ROUTE_ORIGIN_USER,
-          );
-          setExplicitRouteOrigin(null);
-          setOriginSearch(
-            "",
-          );
-          clearRoute();
-
-          setLocating(
-            false,
-          );
-
-          setSearchFocusBounds({
-            west: position.coords.longitude - 0.015,
-            east: position.coords.longitude + 0.015,
-            south: position.coords.latitude - 0.015,
-            north: position.coords.latitude + 0.015,
-          });
-          setSearchFocusKey((prev) => prev + 1);
-        },
-        (error) => {
-          const message =
-            error.code ===
-            error.PERMISSION_DENIED
-              ? "Izin lokasi ditolak. Aktifkan permission location di browser untuk memakai GPS."
-              : error.code ===
-                  error.POSITION_UNAVAILABLE
-                ? "Lokasi perangkat belum tersedia. Coba nyalakan GPS/Wi-Fi location lalu ulangi."
-                : "Pengambilan lokasi terlalu lama. Coba ulangi dari perangkat.";
-
-          setLocationError(
-            message,
-          );
-          setLocating(
-            false,
-          );
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 12000,
-          maximumAge: 30000,
-        },
-      );
-    }, [clearRoute, journeyOpen, journey.controller]);
+    });
+  }, []);
 
   const handleUseUserLocationAsOrigin =
     useCallback(() => {
@@ -2698,7 +2713,7 @@ function GeneralGetraDashboard() {
     }, [clearRoute]);
 
   const handleUseManualOrigin = useCallback(() => {
-    setLocationError(null);
+    setManualLocationError(null);
     setMapPickMode("ROUTE_START");
     document.querySelector(".map-panel")?.scrollIntoView({ block: "nearest" });
   }, []);
@@ -2714,7 +2729,7 @@ function GeneralGetraDashboard() {
     setRouteOriginValue(ROUTE_ORIGIN_MANUAL);
     setExplicitRouteOrigin(null);
     setOriginSearch("");
-    setLocationError(null);
+    setManualLocationError(null);
     setMapPickMode("NONE");
   }, []);
 
@@ -3438,6 +3453,11 @@ function GeneralGetraDashboard() {
               maxBudget={maxBudget}
               openNow={openOnly}
               maxWalkingMinutes={maxWalkingMinutes}
+              radiusMeters={nearbyRadiusMeters}
+              onRadiusChange={handleRadiusChange}
+              locationStatus={commuterLocation.state}
+              accuracyMeters={commuterLocation.fix?.accuracyMeters}
+              onRequestLocation={handleLocateUser}
               onQueryChange={setQuery}
               onSubmit={submitGlobalSearch}
               onClear={clearGlobalSearch}

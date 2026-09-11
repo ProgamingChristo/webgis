@@ -43,7 +43,7 @@ describe("canonical merchant attribute resolution", () => {
 
     await service.list({ keyword: "donut", limit: 8, offset: 0 });
 
-    expect(rpc).toHaveBeenCalledWith("search_canonical_merchants_v1", expect.objectContaining({
+    expect(rpc).toHaveBeenCalledWith("search_canonical_merchants_v2", expect.objectContaining({
       p_keyword: "donut",
       p_west: null,
       p_south: null,

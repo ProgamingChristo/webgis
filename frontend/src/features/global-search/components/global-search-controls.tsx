@@ -17,6 +17,13 @@ interface GlobalSearchControlsProps {
   maxBudget: string;
   openNow: boolean;
   maxWalkingMinutes: number | null;
+  radiusMeters?: number | null;
+  onRadiusChange?: (value: number | null) => void;
+  locationStatus?: string;
+  onRequestLocation?: () => void;
+  accuracyMeters?: number | null;
+  category?: string;
+  onCategoryChange?: (value: string) => void;
   onQueryChange: (value: string) => void;
   onSubmit: () => void;
   onClear: () => void;
@@ -98,6 +105,75 @@ export function GlobalSearchControls(props: GlobalSearchControlsProps) {
             <span>{region.name}</span>
           </label>
         ))}
+      </fieldset>
+
+      <fieldset className="global-search__nearby" style={{ margin: "8px 0", padding: "8px 10px", border: "1px solid #e2e8f0", borderRadius: "8px" }}>
+        <legend style={{ fontSize: "12px", fontWeight: 600, color: "#1e293b" }}>Sekitar Saya (Radius UMKM)</legend>
+        <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", margin: "6px 0" }}>
+          {([250, 500, 1000, 2000] as const).map((r) => {
+            const label = r >= 1000 ? `${r / 1000} km` : `${r} m`;
+            const isSelected = props.radiusMeters === r;
+            return (
+              <button
+                key={r}
+                type="button"
+                className={`nearby-radius-chip ${isSelected ? "nearby-radius-chip--active" : ""}`}
+                style={{
+                  padding: "4px 10px",
+                  fontSize: "12px",
+                  borderRadius: "16px",
+                  border: isSelected ? "1px solid #0284c7" : "1px solid #cbd5e1",
+                  background: isSelected ? "#0284c7" : "#fff",
+                  color: isSelected ? "#fff" : "#334155",
+                  fontWeight: isSelected ? 600 : 400,
+                  cursor: "pointer",
+                }}
+                onClick={() => props.onRadiusChange?.(isSelected ? null : r)}
+              >
+                {label}
+              </button>
+            );
+          })}
+          {props.radiusMeters ? (
+            <button
+              type="button"
+              style={{
+                padding: "2px 6px",
+                fontSize: "11px",
+                border: "none",
+                background: "transparent",
+                color: "#64748b",
+                cursor: "pointer",
+                textDecoration: "underline",
+              }}
+              onClick={() => props.onRadiusChange?.(null)}
+            >
+              Reset
+            </button>
+          ) : null}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "11px", color: "#64748b", marginTop: "4px" }}>
+          <span>
+            GPS: <strong style={{ color: props.locationStatus === "ACTIVE" ? "#16a34a" : props.locationStatus === "DEGRADED" ? "#d97706" : props.locationStatus === "STALE" ? "#dc2626" : "#64748b" }}>{props.locationStatus ?? "IDLE"}</strong>
+            {props.accuracyMeters !== null && props.accuracyMeters !== undefined ? ` (±${props.accuracyMeters}m)` : ""}
+          </span>
+          {props.onRequestLocation ? (
+            <button
+              type="button"
+              onClick={props.onRequestLocation}
+              style={{
+                fontSize: "11px",
+                padding: "2px 8px",
+                borderRadius: "4px",
+                border: "1px solid #cbd5e1",
+                background: "#f8fafc",
+                cursor: "pointer",
+              }}
+            >
+              Update GPS
+            </button>
+          ) : null}
+        </div>
       </fieldset>
 
       <fieldset className="global-search__commuter-filters">

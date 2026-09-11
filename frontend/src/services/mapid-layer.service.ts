@@ -73,6 +73,7 @@ export interface GlobalSearchIntent {
     budget: { max_idr: number } | null;
     opening: { open_now: true; timezone: "Asia/Jakarta" } | null;
     walking: { max_minutes: number } | null;
+    radius?: { radius_meters: number } | null;
   };
   origin: {
     longitude: number;
@@ -95,6 +96,7 @@ export interface CanonicalMerchantSearchOptions {
   maxBudget?: number;
   openNow?: boolean;
   maxWalkingMinutes?: number;
+  radiusMeters?: number;
   origin?: {
     longitude: number;
     latitude: number;
@@ -129,6 +131,7 @@ export const mapidLayerService = {
     if (options.maxBudget) params.set("max_budget", String(options.maxBudget));
     if (options.openNow) params.set("open_now", "true");
     if (options.maxWalkingMinutes) params.set("max_walking_minutes", String(options.maxWalkingMinutes));
+    if (options.radiusMeters) params.set("radius_meters", String(options.radiusMeters));
     if (options.origin) {
       params.set("origin_longitude", String(options.origin.longitude));
       params.set("origin_latitude", String(options.origin.latitude));

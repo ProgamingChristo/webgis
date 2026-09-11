@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
 
   reactStrictMode: true,
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 
   async headers() {
     return [

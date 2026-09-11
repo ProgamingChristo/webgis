@@ -34,6 +34,12 @@ export class GlobalSearchService {
         "Pilih titik awal untuk menggunakan batas waktu berjalan.",
       );
     }
+    if (intent.constraints.radius && !intent.origin) {
+      throw new ApplicationError(
+        "VALIDATION_ERROR",
+        "Pilih titik awal untuk menggunakan filter radius.",
+      );
+    }
     const hasHardConstraints = Boolean(
       intent.constraints.budget || intent.constraints.opening || intent.constraints.walking,
     );
@@ -49,6 +55,10 @@ export class GlobalSearchService {
       keyword: intent.keyword,
       category: intent.category,
       regionIds: intent.scope.region_ids,
+      radiusMeters: intent.constraints.radius?.radius_meters ?? null,
+      origin: intent.origin
+        ? { longitude: intent.origin.longitude, latitude: intent.origin.latitude }
+        : null,
     });
 
     const metadata: CommuterSearchMetadata = {
@@ -122,7 +132,9 @@ export class GlobalSearchService {
         merchant.networkRouteStatus = "ROUTABLE";
         merchant.networkDistanceMeters = route.distance_meters ?? undefined;
         merchant.networkDurationSeconds = route.duration_seconds;
-        merchant.distanceMeters = Math.round(route.distance_meters ?? 0);
+        if (merchant.distanceMeters === null || merchant.distanceMeters === undefined) {
+          merchant.distanceMeters = Math.round(route.distance_meters ?? 0);
+        }
         merchant.walkingMinutes = Math.max(1, Math.ceil(route.duration_seconds / 60));
         return true;
       });
@@ -203,13 +215,33 @@ export function resolveGlobalSearchIntent(
       if (
         query.west === undefined || query.south === undefined ||
         query.east === undefined || query.north === undefined
-      ) throw new ApplicationError("VALIDATION_ERROR");
-      bounds = {
-        west: query.west,
-        south: query.south,
-        east: query.east,
-        north: query.north,
-      };
+      ) {
+        if (
+          (query.radius_meters !== undefined || query.max_walking_minutes !== undefined) &&
+          query.origin_longitude !== undefined &&
+          query.origin_latitude !== undefined
+        ) {
+          const effectiveRadiusMeters = query.radius_meters ?? (query.max_walking_minutes! * 85 * 1.5);
+          const latDelta = (effectiveRadiusMeters / 111320) * 1.1;
+          const cosLat = Math.cos((query.origin_latitude * Math.PI) / 180);
+          const lngDelta = (effectiveRadiusMeters / (111320 * (cosLat || 1))) * 1.1;
+          bounds = {
+            west: Math.max(-180, query.origin_longitude - lngDelta),
+            south: Math.max(-90, query.origin_latitude - latDelta),
+            east: Math.min(180, query.origin_longitude + lngDelta),
+            north: Math.min(90, query.origin_latitude + latDelta),
+          };
+        } else {
+          throw new ApplicationError("VALIDATION_ERROR");
+        }
+      } else {
+        bounds = {
+          west: query.west,
+          south: query.south,
+          east: query.east,
+          north: query.north,
+        };
+      }
       regionIds = [];
     } else {
       const selectedRegions = regions.filter((region) => regionIds.includes(region.id));
@@ -238,6 +270,9 @@ export function resolveGlobalSearchIntent(
         walking: query.max_walking_minutes
           ? { max_minutes: query.max_walking_minutes }
           : parsedCommuter.constraints.walking,
+        radius: query.radius_meters
+          ? { radius_meters: query.radius_meters }
+          : null,
       },
       origin: query.origin_longitude !== undefined && query.origin_latitude !== undefined
         ? {

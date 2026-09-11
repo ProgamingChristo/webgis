@@ -4,6 +4,7 @@ export interface CommuterConstraints {
   budget: { max_idr: number } | null;
   opening: { open_now: true; timezone: "Asia/Jakarta" } | null;
   walking: { max_minutes: number } | null;
+  radius?: { radius_meters: number } | null;
 }
 
 export interface CommuterOrigin {
