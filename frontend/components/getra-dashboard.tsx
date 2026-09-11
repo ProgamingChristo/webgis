@@ -106,6 +106,18 @@ type LocatedMerchant =
     userDistanceMeters?: number;
   };
 
+export interface UnifiedRouteDestination {
+  id?: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  brand?: string;
+  category?: string;
+  district?: string | null;
+  city?: string | null;
+  sourceType: "MERCHANT" | "POINT";
+}
+
 type DatasetId =
   | "all-areas"
   | "admin-import"
@@ -1220,6 +1232,7 @@ function GeneralGetraDashboard() {
     );
 
   const [routeDestinationMerchant, setRouteDestinationMerchant] = useState<Merchant | null>(null);
+  const [unifiedRouteDestination, setUnifiedRouteDestination] = useState<UnifiedRouteDestination | null>(null);
 
   const [
     originSearch,
@@ -1735,8 +1748,19 @@ function GeneralGetraDashboard() {
     () => deduplicateMerchants<LocatedMerchant>([
       ...merchants,
       ...(routeDestinationMerchant ? [routeDestinationMerchant] : []),
+      ...(unifiedRouteDestination && unifiedRouteDestination.sourceType === "MERCHANT" && unifiedRouteDestination.id ? [{
+        id: unifiedRouteDestination.id,
+        name: unifiedRouteDestination.name,
+        brand: unifiedRouteDestination.brand ?? unifiedRouteDestination.name,
+        category: unifiedRouteDestination.category ?? "UMKM",
+        latitude: unifiedRouteDestination.latitude,
+        longitude: unifiedRouteDestination.longitude,
+        district: unifiedRouteDestination.district ?? null,
+        city: unifiedRouteDestination.city ?? null,
+        address: "",
+      } as LocatedMerchant] : []),
     ]),
-    [merchants, routeDestinationMerchant],
+    [merchants, routeDestinationMerchant, unifiedRouteDestination],
   );
 
   const selectedMerchant =
@@ -1774,14 +1798,41 @@ function GeneralGetraDashboard() {
     ? canonicalDestinationResults
     : [];
 
-  const routeDestination = useMemo(() => (
-    manualRouteDestination ? {
-      ...manualRouteDestination, id: undefined, name: "Titik tujuan di peta", district: null, city: null,
-    } : routeDestinationMerchant ?? mapMerchants.find(
-      (merchant) =>
-        merchant.id ===
-        routeDestinationId,
-    ) ?? null), [manualRouteDestination, routeDestinationMerchant, mapMerchants, routeDestinationId]);
+  const routeDestination = useMemo(() => {
+    if (unifiedRouteDestination) {
+      return unifiedRouteDestination;
+    }
+    if (manualRouteDestination) {
+      return {
+        ...manualRouteDestination,
+        id: undefined,
+        name: "Titik tujuan di peta",
+        district: null,
+        city: null,
+        sourceType: "POINT" as const,
+      };
+    }
+    if (routeDestinationMerchant) {
+      return {
+        ...routeDestinationMerchant,
+        sourceType: "MERCHANT" as const,
+      };
+    }
+    if (routeDestinationId) {
+      const match = mapMerchants.find(
+        (merchant) =>
+          merchant.id ===
+          routeDestinationId,
+      );
+      if (match) {
+        return {
+          ...match,
+          sourceType: "MERCHANT" as const,
+        };
+      }
+    }
+    return null;
+  }, [unifiedRouteDestination, manualRouteDestination, routeDestinationMerchant, mapMerchants, routeDestinationId]);
 
   const routeOrigin = useMemo(() => (
     routeOriginValue === ROUTE_ORIGIN_MANUAL && manualRouteStart
@@ -1789,7 +1840,7 @@ function GeneralGetraDashboard() {
           label: "Titik pilihan di peta",
           coordinate: manualRouteStart,
         }
-      : routeOriginValue === ROUTE_ORIGIN_USER && userLocation
+      : (routeOriginValue === ROUTE_ORIGIN_USER || (routeOriginValue === ROUTE_ORIGIN_NONE && commuterLocation.state === "ACTIVE")) && userLocation
         ? {
             label: "Lokasi saya",
             coordinate: {
@@ -1801,6 +1852,7 @@ function GeneralGetraDashboard() {
           ? { label: explicitRouteOrigin.label, coordinate: explicitRouteOrigin.coordinate }
           : null
   ), [
+    commuterLocation.state,
     explicitRouteOrigin,
     manualRouteStart,
     routeOriginValue,
@@ -1866,6 +1918,7 @@ function GeneralGetraDashboard() {
     );
 
   const clearRouteDestination = useCallback(() => {
+    setUnifiedRouteDestination(null);
     setManualRouteDestination(null);
     setRouteDestinationId(null);
     setRouteDestinationMerchant(null);
@@ -2274,17 +2327,17 @@ function GeneralGetraDashboard() {
   }, [commuterLocation, datasetBounds, executeCanonicalSearch, maxBudget, maxWalkingMinutes, openOnly, query, selectedRegionIds]);
 
   useEffect(() => {
-    if (!nearbyRadiusMeters || !userLocation) return;
+    if ((!nearbyRadiusMeters && !maxWalkingMinutes) || !userLocation) return;
     if (!commuterLocation.hasMovedSignificantly(userLocation)) return;
     commuterLocation.recordQueryCoordinate(userLocation);
     void executeCanonicalSearch({
       bbox: currentViewportRef.current ?? datasetBounds,
       queryText: query,
       regionIds: selectedRegionIds,
-      activate: true,
+      activate: Boolean(query.trim() || selectedRegionIds.length || maxBudget || openOnly || maxWalkingMinutes || nearbyRadiusMeters),
       focus: false,
     });
-  }, [userLocation, nearbyRadiusMeters, executeCanonicalSearch, datasetBounds, query, selectedRegionIds, commuterLocation]);
+  }, [userLocation, nearbyRadiusMeters, maxWalkingMinutes, executeCanonicalSearch, datasetBounds, query, selectedRegionIds, commuterLocation, maxBudget, openOnly]);
 
   const toggleSearchRegion = useCallback((regionId: string) => {
     const next = selectedRegionIds.includes(regionId)
@@ -2577,18 +2630,70 @@ function GeneralGetraDashboard() {
       routeOrigin,
     ]);
 
+  const handleRouteToMerchant = useCallback((target: {
+    id?: string;
+    name?: string;
+    merchant_name?: string;
+    latitude?: number;
+    longitude?: number;
+    geometry?: { coordinates?: number[] };
+    brand?: string;
+    category?: string;
+    district?: string | null;
+    city?: string | null;
+  }) => {
+    const lat = target.latitude ?? target.geometry?.coordinates?.[1];
+    const lon = target.longitude ?? target.geometry?.coordinates?.[0];
+    if (lat === undefined || lon === undefined || !Number.isFinite(lat) || !Number.isFinite(lon)) {
+      return;
+    }
+    const destName = target.name || target.merchant_name || "Tujuan UMKM";
+    const unified: UnifiedRouteDestination = {
+      id: target.id,
+      name: destName,
+      latitude: lat,
+      longitude: lon,
+      brand: target.brand,
+      category: target.category,
+      district: target.district ?? null,
+      city: target.city ?? null,
+      sourceType: target.id ? "MERCHANT" : "POINT",
+    };
+    setUnifiedRouteDestination(unified);
+    if (target.id) {
+      setRouteDestinationId(target.id);
+      setSelectedId(target.id);
+    }
+    setManualRouteDestination(null);
+    setDestinationSearch(destName);
+    setDestinationSearchActive(false);
+
+    const fix = commuterLocation.fix;
+    const hasGps = Boolean(fix && Number.isFinite(fix.latitude) && Number.isFinite(fix.longitude));
+
+    if (hasGps) {
+      setRouteOriginValue(ROUTE_ORIGIN_USER);
+      setExplicitRouteOrigin(null);
+      setManualRouteStart(null);
+      setEditingEndpoints(false);
+      setRouteSheetOpen(true);
+      requestRoute();
+    } else {
+      if (commuterLocation.state === "IDLE") {
+        commuterLocation.startTracking();
+      }
+      setRouteSheetOpen(true);
+      setEditingEndpoints(true);
+    }
+  }, [commuterLocation, requestRoute]);
+
   const handleSmartAlternative = useCallback(() => {
     if (merchants.length < 2 || !routeOrigin) return;
     const currentIndex = merchants.findIndex((merchant) => merchant.id === routeDestination?.id);
     const alternative = merchants[(currentIndex + 1 + merchants.length) % merchants.length];
     if (!alternative || alternative.id === routeDestination?.id) return;
-    setSelectedId(alternative.id);
-    setManualRouteDestination(null);
-    setRouteDestinationId(alternative.id);
-    setRouteDestinationMerchant(alternative);
-    setDestinationSearch(alternative.name);
-    setDestinationSearchActive(false);
-  }, [merchants, routeDestination?.id, routeOrigin]);
+    handleRouteToMerchant(alternative);
+  }, [handleRouteToMerchant, merchants, routeDestination?.id, routeOrigin]);
 
   const handleRouteChoice =
     useCallback(
@@ -2626,30 +2731,15 @@ function GeneralGetraDashboard() {
           merchant.name,
         );
       } else {
-        setManualRouteDestination(null);
-        setRouteDestinationId(
-          merchant.id,
-        );
-        setRouteDestinationMerchant(merchant);
-        setSelectedId(
-          merchant.id,
-        );
-        setDestinationSearch(
-          merchant.name,
-        );
-        setDestinationSearchActive(false);
+        handleRouteToMerchant(merchant);
         suppressNextViewportRef.current = true;
         setSearchFocusBounds(merchantFocusBounds(merchant));
         setSearchFocusKey((key) => key + 1);
       }
 
       setMapPickMode("NONE");
-      setPendingRouteChoice(
-        null,
-      );
-    }, [
-      pendingRouteChoice,
-    ]);
+      setPendingRouteChoice(null);
+    }, [handleRouteToMerchant, pendingRouteChoice]);
 
   const handleLocateUser =
     useCallback(() => {
@@ -2735,6 +2825,14 @@ function GeneralGetraDashboard() {
 
   const selectDestination = useCallback((coordinate: Coordinate) => {
     setManualRouteDestination({ ...coordinate });
+    setUnifiedRouteDestination({
+      name: "Titik tujuan di peta",
+      latitude: coordinate.latitude,
+      longitude: coordinate.longitude,
+      district: null,
+      city: null,
+      sourceType: "POINT",
+    });
     setRouteDestinationId(null);
     setRouteDestinationMerchant(null);
     setDestinationSearch("");
@@ -2754,6 +2852,7 @@ function GeneralGetraDashboard() {
     setMapPickMode("NONE");
     setManualRouteStart(null);
     setManualRouteDestination(null);
+    setUnifiedRouteDestination(null);
     setRouteOriginValue(ROUTE_ORIGIN_NONE);
     setExplicitRouteOrigin(null);
     setRouteDestinationId(null);
@@ -3760,14 +3859,17 @@ function GeneralGetraDashboard() {
                   const coords = (item as any).geometry?.coordinates || [(item as any).longitude, (item as any).latitude];
                   if (coords && coords.length >= 2) {
                     const itemId = (item as any).id || (item as any).merchant_id;
-                    const match = mapMerchants.find((merchant) => merchant.id === itemId);
-                    setRouteDestinationId(itemId);
-                    setManualRouteDestination(null);
-                    setRouteDestinationMerchant(match ?? null);
-                    if (match) {
-                      setDestinationSearch(match.name);
-                      setDestinationSearchActive(false);
-                    }
+                    const name = (item as any).name || (item as any).merchant_name || "Tujuan UMKM";
+                    handleRouteToMerchant({
+                      id: itemId,
+                      name,
+                      latitude: coords[1],
+                      longitude: coords[0],
+                      brand: (item as any).brand ?? name,
+                      category: (item as any).category ?? "UMKM",
+                      district: (item as any).district ?? null,
+                      city: (item as any).city ?? null,
+                    });
                   }
                 }}
               />
@@ -4068,17 +4170,12 @@ function GeneralGetraDashboard() {
               <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
                 <button
                   type="button"
-                  onClick={() => {
-                    setManualRouteDestination(null);
-                    setRouteDestinationId(selectedMerchant.id);
-                    setRouteDestinationMerchant(selectedMerchant);
-                    setDestinationSearch(selectedMerchant.name);
-                    setDestinationSearchActive(false);
-                  }}
+                  data-testid="merchant-route-cta"
+                  onClick={() => handleRouteToMerchant(selectedMerchant)}
                   style={{
                     width: "100%",
                     padding: "0.75rem",
-                    backgroundColor: routeDestination?.id === selectedMerchant.id ? "#334155" : "#0284c7",
+                    backgroundColor: routeDestination?.id === selectedMerchant.id && route ? "#047857" : "#0284c7",
                     color: "white",
                     border: "none",
                     borderRadius: "6px",
@@ -4089,9 +4186,11 @@ function GeneralGetraDashboard() {
                     justifyContent: "center",
                     gap: "0.5rem"
                   }}
-                  disabled={routeDestination?.id === selectedMerchant.id}
                 >
-                  <Route size={16} /> {routeDestination?.id === selectedMerchant.id ? "Sudah menjadi tujuan" : routeOrigin ? "Lihat pilihan rute" : "Jadikan tujuan rute"}
+                  <Route size={16} />
+                  {routeDestination?.id === selectedMerchant.id && route
+                    ? "Lihat pilihan rute"
+                    : "Rute ke sini"}
                 </button>
               </div>
 
@@ -4102,11 +4201,7 @@ function GeneralGetraDashboard() {
                     poster={profilePoster}
                     onRequestRoute={() => {
                       if (selectedMerchant) {
-                        setManualRouteDestination(null);
-                        setRouteDestinationId(selectedMerchant.id);
-                        setRouteDestinationMerchant(selectedMerchant);
-                        setDestinationSearch(selectedMerchant.name);
-                        setDestinationSearchActive(false);
+                        handleRouteToMerchant(selectedMerchant);
                       }
                     }}
                   />
