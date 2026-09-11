@@ -85,7 +85,7 @@ export class UmkmWorkspaceService {
     }));
 
     // 3. Fetch Recent Submissions (DRAFT, PENDING_REVIEW, REJECTED, APPROVED)
-    const submissions = await this.readWorkflowRows("merchant_submissions", "id, name, category, status, address, location, created_at, updated_at", "submitted_by", userId, "updated_at");
+    const submissions = await this.readWorkflowRows("merchant_submissions", "id, name, category, status, address, location, created_at, updated_at, review_note", "submitted_by", userId, "updated_at");
     const submissionsList: SubmissionBrief[] = (retainOpenAndRecent(submissions, ["DRAFT", "PENDING_REVIEW"]) as any[]).map((s) => {
       let parsedLocation: { type: "Point"; coordinates: [number, number] } | null = null;
       if (s.location) {
@@ -104,6 +104,7 @@ export class UmkmWorkspaceService {
         location: parsedLocation,
         created_at: s.created_at,
         updated_at: s.updated_at,
+        review_note: s.review_note ?? null,
       };
     });
     const claimsList: MerchantClaimBrief[] = (recentClaims || []).map((claim: any) => {

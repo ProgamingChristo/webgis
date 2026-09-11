@@ -335,6 +335,27 @@ function ReviewCard({
           <ReviewFact label="Risiko" value={item.riskLabel} tone={item.riskTone} />
           <ReviewFact label="Validation" value={item.validationLabel} />
         </div>
+        {item.kind === "CLAIM" ? (
+          <div className="grid gap-2 pt-1 text-xs sm:grid-cols-2">
+            <ReviewFact label="Canonical ID" value={item.raw.merchant_id} />
+            <ReviewFact
+              label="Status Pemilik Saat Ini"
+              tone={item.raw.has_ownership_conflict ? "CONFLICT" : "LOW"}
+              value={item.raw.has_ownership_conflict ? "Sudah memiliki pemilik aktif (Konflik)" : "Belum ada pemilik (Tersedia diklaim)"}
+            />
+          </div>
+        ) : (
+          <div className="grid gap-2 pt-1 text-xs sm:grid-cols-2">
+            <ReviewFact
+              label="Titik Koordinat (GIS)"
+              value={item.raw.location?.coordinates ? `${item.raw.location.coordinates[1].toFixed(6)}, ${item.raw.location.coordinates[0].toFixed(6)}` : "Lokasi tersimpan"}
+            />
+            <ReviewFact
+              label="Deskripsi Usaha"
+              value={item.raw.description || "Tidak ada deskripsi tambahan"}
+            />
+          </div>
+        )}
       </div>
 
       <footer className="mt-5 flex flex-col gap-3 border-t border-slate-800 pt-4 sm:flex-row sm:items-center sm:justify-between">

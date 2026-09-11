@@ -18,6 +18,7 @@ export interface SubmissionBrief {
   location?: { type: "Point"; coordinates: [number, number] } | null;
   created_at: string;
   updated_at: string;
+  review_note?: string | null;
 }
 
 export interface MerchantClaimBrief {

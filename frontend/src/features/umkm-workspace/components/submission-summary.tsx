@@ -59,7 +59,7 @@ export function SubmissionSummary({ submissions, claims = [] }: SubmissionSummar
       status: submission.status,
       context: `${submission.category} / ${submission.address || "Lokasi tersimpan"}`,
       location: submission.location,
-      note: null,
+      note: submission.review_note ?? null,
       createdAt: submission.created_at,
       updatedAt: submission.updated_at,
       href: submission.status === "DRAFT" ? `/umkm/merchants/new?edit=${encodeURIComponent(submission.id)}` : `/umkm/submissions/${submission.id}`,
@@ -113,7 +113,7 @@ function SubmissionCard({ item }: { item: SummaryItem }) {
         </p>
         <p className="break-words text-xs leading-5 text-slate-500">{item.context}</p>
 
-        {item.location?.coordinates ? (
+        {item.location?.coordinates && item.status !== "APPROVED" ? (
           <div
             data-testid="owner-pending-map-preview"
             className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-xs text-slate-400"
@@ -208,13 +208,20 @@ function getStatusPresentation(status: SummaryItem["status"], kind: SummaryItem[
     case "APPROVED":
       return {
         icon: CheckCircle,
-        label: "Terverifikasi",
+        label: "Usaha terverifikasi",
         tone: "border-emerald-500/30 bg-emerald-950/40 text-emerald-200",
       };
     case "REJECTED":
+      if (kind === "CLAIM") {
+        return {
+          icon: XCircle,
+          label: "Claim tidak disetujui",
+          tone: "border-rose-500/30 bg-rose-950/40 text-rose-200",
+        };
+      }
       return {
         icon: XCircle,
-        label: "Ditolak",
+        label: "Pendaftaran tidak disetujui",
         tone: "border-rose-500/30 bg-rose-950/40 text-rose-200",
       };
     case "CANCELLED":
@@ -255,7 +262,10 @@ function getStateDescription(status: SummaryItem["status"], kind: SummaryItem["k
     case "APPROVED":
       return "Usaha telah berhasil diverifikasi.";
     case "REJECTED":
-      return "Pengajuan tidak dapat disetujui.";
+      if (kind === "CLAIM") {
+        return "Permintaan klaim kepemilikan tidak disetujui admin.";
+      }
+      return "Pendaftaran usaha tidak dapat disetujui.";
     case "CANCELLED":
       return "Pengajuan sudah dibatalkan.";
   }

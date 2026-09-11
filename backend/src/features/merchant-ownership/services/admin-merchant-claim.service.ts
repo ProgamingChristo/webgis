@@ -38,8 +38,8 @@ export class AdminMerchantClaimService {
       throw new ApplicationError("DATABASE_ERROR", "Gagal menyetujui klaim merchant.");
     }
     const updated = await this.findClaim(claimId);
-    if (updated.reviewed_by !== adminId) {
-      throw new ApplicationError("DATABASE_ERROR", "Identitas reviewer klaim tidak konsisten.");
+    if (updated.status !== "APPROVED") {
+      throw new ApplicationError("DATABASE_ERROR", "Klaim tidak berhasil disetujui.");
     }
     return (await this.mapClaims([updated]))[0]!;
   }
