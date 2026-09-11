@@ -632,6 +632,77 @@ describe("Phase 16C — Admin Verification, Verified Ownership, Canonical Public
         code: "FORBIDDEN",
         message: "Hanya administrator yang dapat melakukan review pengajuan.",
       });
+
+      await expect(
+        submissionService.adminListPending(regularUserId)
+      ).rejects.toMatchObject({
+        code: "FORBIDDEN",
+        message: "Hanya administrator yang dapat melakukan review pengajuan.",
+      });
+    });
+
+    it("allows administrator to list pending submissions with PostGIS GeoJSON location containing CRS", async () => {
+      const mockRows = [
+        {
+          id: submissionId,
+          submitted_by: "user-sub-123",
+          name: "Kopi Transit Juanda",
+          category: "Makanan & Minuman",
+          description: "Kopi nikmat dekat stasiun",
+          address: "Jl. Juanda No. 1",
+          location: {
+            type: "Point",
+            crs: { type: "name", properties: { name: "EPSG:4326" } },
+            coordinates: [106.829, -6.166],
+          },
+          opening_hours: {},
+          public_media: { menu_urls: [], product_urls: [] },
+          business_info: { payment_methods: [] },
+          image_url: null,
+          status: "PENDING_REVIEW",
+          canonical_merchant_id: null,
+          reviewed_by: null,
+          reviewed_at: null,
+          review_note: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ];
+
+      const mockSupabase: any = {
+        from: vi.fn((table: string) => {
+          if (table === "profiles") {
+            return {
+              select: vi.fn().mockReturnThis(),
+              eq: vi.fn().mockReturnThis(),
+              single: vi.fn().mockResolvedValue({
+                data: { id: adminUserId, account_role: "ADMIN" },
+                error: null,
+              }),
+            };
+          }
+          if (table === "merchant_submissions") {
+            return {
+              select: vi.fn().mockReturnThis(),
+              eq: vi.fn().mockReturnThis(),
+              order: vi.fn().mockReturnThis(),
+              range: vi.fn().mockResolvedValue({ data: mockRows, error: null }),
+            };
+          }
+          throw new Error(`Unexpected table: ${table}`);
+        }),
+      };
+
+      const submissionService = new MerchantSubmissionService(mockSupabase);
+      const result = await submissionService.adminListPending(adminUserId);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(submissionId);
+      expect(result[0].name).toBe("Kopi Transit Juanda");
+      expect(result[0].location).toEqual({
+        type: "Point",
+        coordinates: [106.829, -6.166],
+      });
     });
   });
 

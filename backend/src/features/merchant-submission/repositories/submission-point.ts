@@ -16,6 +16,21 @@ export function parseSubmissionPoint(value: unknown): { type: "Point"; coordinat
         : decodePointBinary(serialized);
     }
   }
+  if (point && typeof point === "object" && (point as Record<string, unknown>).type === "Point") {
+    const candidate = point as Record<string, unknown>;
+    if (candidate.crs && typeof candidate.crs === "object") {
+      const crsProps = (candidate.crs as Record<string, unknown>).properties as Record<string, unknown> | undefined;
+      const crsName = typeof crsProps?.name === "string" ? crsProps.name : "";
+      if (crsName && !/(?:4326|CRS84)/i.test(crsName)) {
+        throw new ApplicationError("DATABASE_ERROR", "Lokasi pengajuan belum dapat dibaca. Muat ulang atau hubungi admin untuk memeriksa lokasi usaha.");
+      }
+    }
+    point = {
+      type: "Point",
+      coordinates: candidate.coordinates,
+    };
+  }
+
   const parsed = pointGeometrySchema.safeParse(point);
   if (!parsed.success) {
     throw new ApplicationError("DATABASE_ERROR", "Lokasi pengajuan belum dapat dibaca. Muat ulang atau hubungi admin untuk memeriksa lokasi usaha.");
