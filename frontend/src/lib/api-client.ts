@@ -53,8 +53,9 @@ async function request<T>(
     !json.success
   ) {
     const code = json.success ? undefined : json.error?.code;
+    const msg = json.success ? undefined : json.error?.message;
     throw new ApiError(
-      getUserFacingApiError({ code, status: response.status }),
+      msg || getUserFacingApiError({ code, status: response.status }),
       response.status,
       code,
     );

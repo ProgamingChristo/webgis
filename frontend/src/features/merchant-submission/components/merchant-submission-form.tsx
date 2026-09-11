@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -57,7 +57,16 @@ function initialOperatingHours(value: MerchantSubmissionRecord["opening_hours"] 
 
 export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormProps) {
   const router = useRouter();
-  const [mode, setMode] = useState<OnboardingMode>(initialData ? "REGISTER" : "CHOICE");
+  const searchParams = useSearchParams();
+  const claimMerchantIdParam = searchParams.get("claimMerchantId");
+  const claimNameParam = searchParams.get("name");
+  const modeParam = searchParams.get("mode");
+
+  const [mode, setMode] = useState<OnboardingMode>(() => {
+    if (initialData) return "REGISTER";
+    if (claimMerchantIdParam && modeParam === "claim") return "CLAIM";
+    return "CHOICE";
+  });
   const [registrationStep, setRegistrationStep] = useState(0);
   const stepHeadingRef = useRef<HTMLHeadingElement | null>(null);
 
@@ -86,10 +95,24 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
   const [formResetVersion, setFormResetVersion] = useState(0);
 
-  const [claimQuery, setClaimQuery] = useState(initialData?.name || "");
+  const [claimQuery, setClaimQuery] = useState(claimNameParam || initialData?.name || "");
   const [claimResults, setClaimResults] = useState<ClaimableMerchant[]>([]);
-  const [claimSearched, setClaimSearched] = useState(false);
-  const [selectedClaimMerchant, setSelectedClaimMerchant] = useState<ClaimableMerchant | null>(null);
+  const [claimSearched, setClaimSearched] = useState(Boolean(claimMerchantIdParam));
+  const [selectedClaimMerchant, setSelectedClaimMerchant] = useState<ClaimableMerchant | null>(() => {
+    if (claimMerchantIdParam && modeParam === "claim") {
+      return {
+        id: claimMerchantIdParam,
+        name: claimNameParam || "Usaha Terpilih",
+        category: "UMKM",
+        address: "",
+        longitude: 0,
+        latitude: 0,
+        source: "CANONICAL",
+        status: "verified" as const,
+      };
+    }
+    return null;
+  });
   const [claimContactName, setClaimContactName] = useState("");
   const [claimContactPhone, setClaimContactPhone] = useState("");
   const [claimRelationship, setClaimRelationship] = useState<"OWNER" | "MANAGER" | "AUTHORIZED_REPRESENTATIVE">("OWNER");
@@ -275,7 +298,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
       router.push("/umkm");
     } catch (err: any) {
       console.error("[MerchantSubmissionForm] Claim merchant error:", err);
-      setError("Klaim usaha belum dapat dikirim. Coba lagi.");
+      setError(err?.message || "Klaim usaha belum dapat dikirim. Coba lagi.");
     } finally {
       setClaimingId(null);
     }

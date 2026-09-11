@@ -3,7 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MerchantSubmissionRecord } from "@/src/features/merchant-submission/types/merchant-submission.types";
 
 const mocks = vi.hoisted(() => ({ push: vi.fn() }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: mocks.push }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mocks.push }),
+  useSearchParams: () => new URLSearchParams(),
+}));
 vi.mock("@/src/features/merchant-submission/components/merchant-submission-map-picker", () => ({
   MerchantMapPicker: () => <div>Map picker</div>,
 }));

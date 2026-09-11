@@ -9,6 +9,7 @@ import {
   CheckCircle,
   Clock,
   FileText,
+  MapPin,
   Store,
   XCircle,
 } from "lucide-react";
@@ -27,6 +28,7 @@ type SummaryItem = {
   typeLabel: string;
   status: SubmissionBrief["status"] | MerchantClaimBrief["status"];
   context: string;
+  location?: { type: "Point"; coordinates: [number, number] } | null;
   note: string | null;
   createdAt: string;
   updatedAt: string | null;
@@ -56,6 +58,7 @@ export function SubmissionSummary({ submissions, claims = [] }: SubmissionSummar
       typeLabel: "Pendaftaran usaha baru",
       status: submission.status,
       context: `${submission.category} / ${submission.address || "Lokasi tersimpan"}`,
+      location: submission.location,
       note: null,
       createdAt: submission.created_at,
       updatedAt: submission.updated_at,
@@ -84,7 +87,7 @@ export function SubmissionSummary({ submissions, claims = [] }: SubmissionSummar
 }
 
 function SubmissionCard({ item }: { item: SummaryItem }) {
-  const status = getStatusPresentation(item.status);
+  const status = getStatusPresentation(item.status, item.kind);
   const actionLabel = getActionLabel(item.status);
 
   return (
@@ -109,6 +112,30 @@ function SubmissionCard({ item }: { item: SummaryItem }) {
             : "Pendaftaran usaha baru ke katalog GETRA."}
         </p>
         <p className="break-words text-xs leading-5 text-slate-500">{item.context}</p>
+
+        {item.location?.coordinates ? (
+          <div
+            data-testid="owner-pending-map-preview"
+            className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-xs text-slate-400"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 font-medium text-emerald-400">
+                <MapPin size={13} />
+                Pratinjau Lokasi (Hanya Pemilik)
+              </span>
+              <span className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] text-slate-300">
+                Belum Publik
+              </span>
+            </div>
+            <p className="mt-1 font-mono text-[11px] text-slate-300">
+              Koordinat: {item.location.coordinates[1].toFixed(6)}, {item.location.coordinates[0].toFixed(6)}
+            </p>
+            <p className="mt-0.5 text-[11px] text-slate-500">
+              Marker ini hanya terlihat di ruang kelola Anda dan tidak muncul di peta umum sebelum disetujui.
+            </p>
+          </div>
+        ) : null}
+
         {item.note ? (
           <p className="rounded-xl border border-rose-500/20 bg-rose-950/20 px-3 py-2 text-xs leading-5 text-rose-200">
             {item.note}
@@ -118,7 +145,7 @@ function SubmissionCard({ item }: { item: SummaryItem }) {
 
       <footer className="mt-4 flex flex-col gap-3 border-t border-slate-800 pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 break-words text-xs leading-5 text-slate-400">
-          <p>{getStateDescription(item.status)}</p>
+          <p>{getStateDescription(item.status, item.kind)}</p>
           <p className="text-slate-500">
             {item.status === "DRAFT" ? "Draf dibuat" : "Pengajuan dibuat"} {formatDate(item.createdAt)}
             {item.updatedAt ? ` / Diperbarui ${formatDate(item.updatedAt)}` : ""}
@@ -156,7 +183,7 @@ function StatusBadge({
   );
 }
 
-function getStatusPresentation(status: SummaryItem["status"]) {
+function getStatusPresentation(status: SummaryItem["status"], kind: SummaryItem["kind"]) {
   switch (status) {
     case "DRAFT":
       return {
@@ -166,9 +193,16 @@ function getStatusPresentation(status: SummaryItem["status"]) {
       };
     case "PENDING":
     case "PENDING_REVIEW":
+      if (kind === "CLAIM") {
+        return {
+          icon: Clock,
+          label: "Claim sedang diperiksa",
+          tone: "border-amber-500/30 bg-amber-950/40 text-amber-200",
+        };
+      }
       return {
         icon: Clock,
-        label: "Menunggu pemeriksaan",
+        label: "Menunggu verifikasi",
         tone: "border-amber-500/30 bg-amber-950/40 text-amber-200",
       };
     case "APPROVED":
@@ -196,6 +230,9 @@ function getActionLabel(status: SummaryItem["status"]) {
   switch (status) {
     case "DRAFT":
       return "Lanjutkan Pendaftaran";
+    case "PENDING":
+    case "PENDING_REVIEW":
+      return "Lihat Status";
     case "REJECTED":
       return "Lihat Alasan";
     case "APPROVED":
@@ -205,13 +242,16 @@ function getActionLabel(status: SummaryItem["status"]) {
   }
 }
 
-function getStateDescription(status: SummaryItem["status"]) {
+function getStateDescription(status: SummaryItem["status"], kind: SummaryItem["kind"]) {
   switch (status) {
     case "DRAFT":
       return "Pengajuan belum dikirim.";
     case "PENDING":
     case "PENDING_REVIEW":
-      return "Pantau detail pengajuan untuk hasil pemeriksaan admin.";
+      if (kind === "CLAIM") {
+        return "Permintaan kepemilikan Anda sedang ditinjau GETRA.";
+      }
+      return "Usaha Anda sudah diajukan dan sedang ditinjau GETRA.";
     case "APPROVED":
       return "Usaha telah berhasil diverifikasi.";
     case "REJECTED":

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  BadgeCheck,
   BarChart3,
   Bot,
   Building2,
@@ -104,6 +105,7 @@ import type {
 type LocatedMerchant =
   Merchant & {
     userDistanceMeters?: number;
+    owner_id?: string | null;
   };
 
 export interface UnifiedRouteDestination {
@@ -4200,6 +4202,47 @@ function GeneralGetraDashboard() {
                     ? "Lihat pilihan rute"
                     : "Rute ke sini"}
                 </button>
+
+                {selectedMerchant.owner_id ? (
+                  <div
+                    data-testid="merchant-verified-badge"
+                    style={{
+                      marginTop: "0.5rem",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.375rem",
+                      fontSize: "0.75rem",
+                      color: "#94a3b8"
+                    }}
+                  >
+                    <ShieldCheck size={14} color="#34d399" />
+                    <span>Usaha ini sudah memiliki pengelola terverifikasi.</span>
+                  </div>
+                ) : (
+                  <Link
+                    href={`/umkm/merchants/new?claimMerchantId=${encodeURIComponent(selectedMerchant.id)}&name=${encodeURIComponent(selectedMerchant.name)}&mode=claim`}
+                    data-testid="merchant-claim-cta"
+                    style={{
+                      marginTop: "0.5rem",
+                      width: "100%",
+                      padding: "0.6rem",
+                      backgroundColor: "transparent",
+                      color: "#34d399",
+                      border: "1px solid rgba(52, 211, 153, 0.4)",
+                      borderRadius: "6px",
+                      fontSize: "0.75rem",
+                      fontWeight: "600",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.375rem",
+                      textDecoration: "none"
+                    }}
+                  >
+                    <BadgeCheck size={14} />
+                    Klaim Usaha Ini
+                  </Link>
+                )}
               </div>
 
               {/* Profile Poster Promotional Placement (Additive Phase 9) */}

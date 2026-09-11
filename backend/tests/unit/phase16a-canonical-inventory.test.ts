@@ -604,13 +604,14 @@ describe("Phase 16A — UMKM Product Policy & Public Visibility Contracts", () =
       expect(result!.sources).toContain("PREMIUM");
       expect(result!.sources).toContain("MENU_GO");
       // Provenance attributes preserve individual evidence sources without destruction
-      expect(result!.provenance.attributes.geometry).toBe("PREMIUM");
-      expect(result!.provenance.attributes.menu).toBe("MENU_GO");
-      expect(result!.provenance.attributes.observed_price).toBe("MENU_GO");
-      expect(result!.provenance.attributes.phone).toBe("PREMIUM");
-      expect(result!.provenance.attributes.photo).toBe("MENU_GO");
+      const prov = result!.provenance as any;
+      expect(prov.attributes.geometry).toBe("PREMIUM");
+      expect(prov.attributes.menu).toBe("MENU_GO");
+      expect(prov.attributes.observed_price).toBe("MENU_GO");
+      expect(prov.attributes.phone).toBe("PREMIUM");
+      expect(prov.attributes.photo).toBe("MENU_GO");
       // Both source records tracked in provenance
-      expect(result!.provenance.source_record_ids).toHaveLength(2);
+      expect(prov.source_record_ids).toHaveLength(2);
     });
   });
 

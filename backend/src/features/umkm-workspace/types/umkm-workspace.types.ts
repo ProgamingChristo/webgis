@@ -15,6 +15,7 @@ export interface SubmissionBrief {
   category: string;
   status: "DRAFT" | "PENDING_REVIEW" | "APPROVED" | "REJECTED" | "CANCELLED";
   address: string | null;
+  location?: { type: "Point"; coordinates: [number, number] } | null;
   created_at: string;
   updated_at: string;
 }

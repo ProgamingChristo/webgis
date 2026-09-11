@@ -82,6 +82,19 @@ export async function POST(
       );
     }
 
+    if (merchant.owner_id && merchant.owner_id !== userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "MERCHANT_ALREADY_VERIFIED",
+            message: "Usaha ini sudah memiliki pengelola terverifikasi.",
+          },
+        },
+        { status: 409 }
+      );
+    }
+
     if (merchant.owner_id === userId) {
       return createSuccessResponse(reqId, {
         merchantId,

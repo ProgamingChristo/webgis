@@ -44,4 +44,60 @@ export class MerchantOwnershipService {
       claimStatus,
     };
   }
+
+  async claimMerchant(
+    userId: string,
+    merchantId: string,
+    evidence: any,
+    note?: string
+  ): Promise<{
+    merchantId: string;
+    isOwned: boolean;
+    claimStatus: "PENDING" | "APPROVED";
+    claimId?: string;
+  }> {
+    const { data: merchant, error: merchantError } = await this.supabase
+      .from("merchants")
+      .select("id, owner_id")
+      .eq("id", merchantId)
+      .single();
+
+    if (merchantError || !merchant) {
+      const error: any = new Error("Merchant not found");
+      error.status = 404;
+      throw error;
+    }
+
+    if (merchant.owner_id && merchant.owner_id !== userId) {
+      const error: any = new Error("Usaha ini sudah memiliki pengelola terverifikasi.");
+      error.code = "MERCHANT_ALREADY_VERIFIED";
+      error.status = 409;
+      throw error;
+    }
+
+    if (merchant.owner_id === userId) {
+      return {
+        merchantId,
+        isOwned: true,
+        claimStatus: "APPROVED",
+      };
+    }
+
+    const { data: claimId, error: claimError } = await this.supabase.rpc("submit_merchant_claim", {
+      p_merchant_id: merchantId,
+      p_evidence: evidence,
+      p_note: note,
+    });
+
+    if (claimError) {
+      throw claimError;
+    }
+
+    return {
+      merchantId,
+      isOwned: false,
+      claimStatus: "PENDING",
+      claimId: claimId as string,
+    };
+  }
 }
