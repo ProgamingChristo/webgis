@@ -1,3 +1,4 @@
+import { AiProviderError } from "@/src/lib/errors";
 import { z, type ZodType } from "zod";
 import type { AiProviderAdapter } from "@/lib/ai/provider-contract";
 
@@ -20,6 +21,7 @@ type StructuredResponseOptions<T> = {
   schemaName: string;
   instructions: string;
   input: string;
+  maxTokens?: number;
 };
 
 function toStrictJsonSchema(schema: ZodType) {
@@ -48,10 +50,11 @@ async function requestOpenAIStructured<T>({
   schemaName,
   instructions,
   input,
+  maxTokens = 512,
 }: StructuredResponseOptions<T>): Promise<T> {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("OPENAI_API_KEY is not configured");
-  if (Date.now() < unavailableUntil) throw new Error("OpenAI provider is cooling down");
+  if (!apiKey) throw new AiProviderError({ category: "configuration", provider: "openai" });
+  if (Date.now() < unavailableUntil) throw new AiProviderError({ category: "unavailable", provider: "openai" });
 
   const jsonSchema = toStrictJsonSchema(schema);
   const response = await fetch(OPENAI_RESPONSES_URL, {
@@ -66,6 +69,7 @@ async function requestOpenAIStructured<T>({
       instructions,
       input,
       store: false,
+      max_output_tokens: maxTokens,
       text: {
         format: {
           type: "json_schema",
@@ -75,13 +79,15 @@ async function requestOpenAIStructured<T>({
         },
       },
     }),
+  }).catch((error: unknown) => {
+    throw new AiProviderError({ category: error instanceof Error && error.name === "TimeoutError" ? "timeout" : "unavailable", provider: "openai" });
   });
 
   if (!response.ok) {
     if ([401, 403, 429].includes(response.status) || response.status >= 500) {
       unavailableUntil = Date.now() + PROVIDER_COOLDOWN_MS;
     }
-    throw new Error(`OpenAI Responses API returned ${response.status}`);
+    throw new AiProviderError({ category: "upstream", provider: "openai", upstreamStatus: response.status });
   }
 
   const payload = responseSchema.parse(await response.json());
@@ -90,7 +96,7 @@ async function requestOpenAIStructured<T>({
     .flatMap((item) => item.content ?? [])
     .find((item) => item.type === "output_text")?.text;
 
-  if (!outputText) throw new Error("OpenAI response did not contain output text");
+  if (!outputText) throw new AiProviderError({ category: "invalid_response", provider: "openai" });
   return schema.parse(JSON.parse(outputText));
 }
 

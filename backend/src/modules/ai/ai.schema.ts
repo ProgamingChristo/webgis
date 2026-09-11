@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SearchCriteriaSchema } from "./search-action";
 
 export const AiIntentEnum = z.enum([
   "ASSISTANT_IDENTITY",
@@ -7,6 +8,7 @@ export const AiIntentEnum = z.enum([
   "NEAREST_TRANSIT",
   "WALKING_ROUTE",
   "UMKM_POI",
+  "MERCHANT_SEARCH",
   "UNKNOWN",
 ]);
 export type AiIntent = z.infer<typeof AiIntentEnum>;
@@ -15,6 +17,8 @@ export const AiAskRequestSchema = z.object({
   question: z.string().min(2).max(1000),
   active_experience: z.enum(["GENERAL", "UMKM", "INVESTOR", "GOVERNMENT"]).default("GENERAL"),
   context: z.object({
+    enable_search: z.boolean().optional(),
+    search_context: SearchCriteriaSchema.optional(),
     study_area_id: z.string().optional(),
     selected_entity_id: z.string().optional(),
     origin: z.object({
@@ -105,7 +109,8 @@ export const AiAskResponseSchema = z.object({
   limitations: z.array(z.string()),
   evidence: z.array(AiProvenanceSchema),
   map_action: AiMapActionSchema.optional(),
-  provider: z.enum(["sub2api", "deterministic"]),
+  search_action: z.object({ type: z.literal("APPLY_SEARCH_CRITERIA"), criteria: SearchCriteriaSchema }).optional(),
+  provider: z.enum(["sub2api", "openai", "deterministic"]),
 });
 export type AiAskResponse = z.infer<typeof AiAskResponseSchema>;
 

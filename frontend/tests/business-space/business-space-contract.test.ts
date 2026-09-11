@@ -11,6 +11,7 @@ const sharedMap = readFileSync(resolve(root, "components/getra-map.tsx"), "utf8"
 const nextConfig = readFileSync(resolve(root, "next.config.ts"), "utf8");
 const detail = readFileSync(resolve(root, "src/features/business-space/components/property-candidate-detail.tsx"), "utf8");
 const comparison = readFileSync(resolve(root, "src/features/business-space/components/property-comparison.tsx"), "utf8");
+const placeDetail = readFileSync(resolve(root, "src/features/global-search/components/place-detail-drawer.tsx"), "utf8");
 
 describe("Business Space frontend contract", () => {
   it("calls GETRA-owned APIs only", () => {
@@ -39,13 +40,10 @@ describe("Business Space frontend contract", () => {
     expect(map).toContain("maplibre-gl");
   });
 
-  it("exposes Business Space as a primary map mode with direct Properti Go search filters", () => {
-    expect(dashboard).toContain("primaryMode");
-    expect(dashboard).toContain("Ruang Usaha");
-    expect(dashboard).toContain("Cari properti atau area...");
-    expect(dashboard).toContain("transaction_type");
-    expect(dashboard).toContain("property_category");
-    expect(dashboard).toContain("propertyCandidates");
+  it("keeps Properti Go map support outside the General commuter controls", () => {
+    expect(dashboard).not.toContain(">Ruang Usaha<");
+    expect(workspace).toContain("transaction_type");
+    expect(workspace).toContain("property_category");
     expect(sharedMap).toContain("property-marker");
     expect(sharedMap).toContain("Sumber: Properti Go");
   });
@@ -60,11 +58,10 @@ describe("Business Space frontend contract", () => {
   });
 
   it("exposes Menu Go media as safe canonical merchant enrichment", () => {
-    expect(dashboard).toContain("MerchantMediaGallery");
-    expect(dashboard).toContain("Foto tempat");
-    expect(dashboard).toContain("Foto menu");
-    expect(dashboard).toContain("Harga observasi");
-    expect(dashboard).toContain("Sumber data:");
+    expect(placeDetail).toContain("Foto &amp; Menu");
+    expect(placeDetail).toContain("menuPhotos");
+    expect(placeDetail).toContain("merchantPrice");
+    expect(placeDetail).not.toContain("Menu utama");
     expect(nextConfig).toContain("remotePatterns");
     expect(nextConfig).toContain("mapidstorage.cdn.mapid.io");
     expect(dashboard).not.toMatch(/raw_payload|checksum|SUPABASE_SERVICE_ROLE_KEY|x-api-key/i);

@@ -10,7 +10,6 @@ import {
   Coffee,
   Database,
   Layers3,
-  LocateFixed,
   MapPinned,
   Phone,
   Footprints,
@@ -32,12 +31,13 @@ import { StakeholderModeSwitcher } from "@/src/components/stakeholder/stakeholde
 import { StakeholderContextShell } from "@/src/components/stakeholder/stakeholder-context-shell";
 import { GetraGlobalHeader } from "@/src/components/getra-ui";
 import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
+import type { AiSearchAction, SearchCriteria } from "@/types/search-recommendation";
 import { AiPanel } from "@/components/ai/ai-panel";
 import { CommunityNotificationsMenu } from "@/src/features/community/components/notifications/community-notifications-menu";
 
 import { GetraMap } from "@/components/getra-map";
+import { discoveryMerchant } from "@/src/features/fair-discovery/discovery-merchant";
 import { useFairDiscovery, FairDiscoveryResults } from "@/src/features/fair-discovery";
-import { useProfilePoster, ProfilePoster } from "@/src/features/umkm-advertising";
 import { useRouting } from "@/src/hooks/use-routing";
 import { useCanonicalData } from "@/src/hooks/useCanonicalData";
 import { useActiveJourney } from "@/src/hooks/use-active-journey";
@@ -53,6 +53,11 @@ import {
   type MapViewportBounds,
   type SearchRegion,
 } from "@/src/services/mapid-layer.service";
+import { CommuterSidebar, type SidebarMode } from "@/src/features/global-search/components/commuter-sidebar";
+import { MerchantResultRow } from "@/src/features/global-search/components/merchant-result-row";
+import { PlaceDetailDrawer } from "@/src/features/global-search/components/place-detail-drawer";
+import { useSponsoredPinCandidates } from "@/src/features/umkm-advertising";
+import "@/src/features/global-search/commuter-sidebar.css";
 import { GlobalSearchControls } from "@/src/features/global-search/components/global-search-controls";
 import { RegionScopeSummary } from "@/src/features/administrative-boundaries/components/region-scope-summary";
 import { useAdministrativeBoundaries } from "@/src/features/administrative-boundaries/hooks/use-administrative-boundaries";
@@ -427,62 +432,6 @@ function normalizePropertySearchKeyword(query: string) {
     .replace(/\s+/g, " ")
     .trim();
   return normalized;
-}
-
-function MerchantResultRow({
-  merchant,
-  index,
-  selected,
-  onSelect,
-}: {
-  merchant: LocatedMerchant;
-  index: number;
-  selected: boolean;
-  onSelect: (merchant: LocatedMerchant) => void;
-}) {
-  const area = [merchant.district, merchant.city ?? merchant.regions?.[0]]
-    .filter((value, areaIndex, values) => value && values.indexOf(value) === areaIndex)
-    .join(", ");
-
-  return (
-    <button
-      className={selected ? "result-row result-row--selected" : "result-row"}
-      onClick={() => onSelect(merchant)}
-      type="button"
-    >
-      <span className="result-rank">{index + 1}</span>
-      <span className="result-main">
-        <strong>{merchant.name}</strong>
-        <span>{[merchant.brand, area].filter(Boolean).join(" - ")}</span>
-        <span className="result-meta">
-          {merchant.userDistanceMeters !== undefined ? (
-            <>
-              <LocateFixed size={13} />
-              Jarak langsung {formatDistance(merchant.userDistanceMeters)}
-              {merchant.networkDurationSeconds ? (
-                <><span>-</span>{Math.ceil(merchant.networkDurationSeconds / 60)} menit berjalan kaki</>
-              ) : null}
-            </>
-          ) : (
-            <>
-              <MapPinned size={13} />
-              {merchant.latitude.toFixed(6)}, {merchant.longitude.toFixed(6)}
-            </>
-          )}
-        </span>
-      </span>
-      <span className="score-box">
-        <strong>
-          {merchant.openingStatus === "OPEN" || (merchant.openStatusKnown && merchant.openNow)
-            ? "BUKA"
-            : merchant.openingStatus === "CLOSED" || (merchant.openStatusKnown && !merchant.openNow)
-              ? "TUTUP"
-              : "N/A"}
-        </strong>
-        <span>status</span>
-      </span>
-    </button>
-  );
 }
 
 function PropertyResultRow({
@@ -1070,7 +1019,6 @@ function GeneralGetraDashboard() {
       [],
     );
 
-  const [canonicalViewportLoaded, setCanonicalViewportLoaded] = useState(false);
 
   const [
     mapidLayerName,
@@ -1094,6 +1042,10 @@ function GeneralGetraDashboard() {
       null,
     );
 
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>("search");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [searchIntent, setSearchIntent] = useState<GlobalSearchIntent | null>(null);
   const [searchRegions, setSearchRegions] = useState<SearchRegion[]>([]);
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>([]);
@@ -1236,11 +1188,12 @@ function GeneralGetraDashboard() {
         ...(adminImportedLayer?.merchants ??
           []),
         ...mapidMerchants,
-        ...COFFEE_SHOPS,
+        ...(datasetId === "coffee-jakarta-barat" ? COFFEE_SHOPS : []),
       ]),
       [
         adminImportedLayer,
         mapidMerchants,
+        datasetId,
       ],
     );
 
@@ -1282,11 +1235,7 @@ function GeneralGetraDashboard() {
       () =>
         datasetId ===
           "all-areas"
-          ? searchActive
-            ? mapidMerchants
-            : canonicalViewportLoaded
-              ? mapidMerchants
-              : allMerchants
+          ? mapidMerchants
           : isAdminImportDataset(
               datasetId,
             )
@@ -1300,44 +1249,16 @@ function GeneralGetraDashboard() {
               : COFFEE_SHOPS,
       [
         activeAdminImportedLayer,
-        allMerchants,
-        canonicalViewportLoaded,
         datasetId,
         fallbackAdminImportedMerchants,
         mapidMerchants,
-        searchActive,
       ],
     );
-
-  const datasetTitle =
-    datasetId ===
-      "all-areas"
-      ? "Semua data lokasi GETRA"
-      : isAdminImportDataset(
-          datasetId,
-        )
-        ? activeAdminImportedLayer
-            ?.layer_name ??
-          adminImportedLayer
-            ?.layer_name ??
-          "Data impor"
-        : datasetId ===
-          "mapid-food-jakarta-pusat"
-        ? "Makanan-minuman Jakarta Pusat"
-        : "Coffee shop Jakarta Barat";
 
   const datasetSourceName =
     datasetId ===
       "all-areas"
-      ? [
-          adminImportedLayer
-            ? adminImportedLayer.layer_name
-            : null,
-          mapidLayerName,
-          COFFEE_SHOP_SOURCE_NAME,
-        ]
-          .filter(Boolean)
-          .join(" + ")
+      ? mapidLayerName
       : isAdminImportDataset(
           datasetId,
         )
@@ -1424,6 +1345,7 @@ function GeneralGetraDashboard() {
     );
 
   const [primaryMode, setPrimaryMode] = useState<"merchant" | "business-space" | "accessibility">("merchant");
+  const [discoveryRadius, setDiscoveryRadius] = useState(3000);
   const [viewMode, setViewMode] = useState<"fair-discovery" | "dataset" | "analytics">("dataset");
   const [analyticsMode, setAnalyticsMode] = useState<AnalyticsMode>("DEMAND");
   const [analyticsCategory, setAnalyticsCategory] = useState<AnalyticsCategorySlug>("coffee");
@@ -1463,12 +1385,12 @@ function GeneralGetraDashboard() {
 
     return {
       origin,
-      radiusMeters: 3000,
+      radiusMeters: discoveryRadius,
       category: brand !== "Semua" ? brand : undefined,
       query: query || undefined,
       openNow: openOnly,
     };
-  }, [userLocation, datasetOrigin, brand, query, openOnly]);
+  }, [userLocation, datasetOrigin, brand, query, openOnly, discoveryRadius]);
 
   const {
     result: fairDiscoveryResult,
@@ -1476,7 +1398,7 @@ function GeneralGetraDashboard() {
     error: fairDiscoveryError,
   } = useFairDiscovery({
     query: discoveryQuery,
-    enabled: viewMode === "fair-discovery" && !searchActive,
+    enabled: viewMode === "fair-discovery" && Boolean(userLocation),
   });
 
   const datasetBounds =
@@ -1652,7 +1574,7 @@ function GeneralGetraDashboard() {
 
           if (
             openOnly &&
-            (!merchant.openStatusKnown || !merchant.openNow)
+            (merchant.openingStatus !== "OPEN" && (!merchant.openStatusKnown || !merchant.openNow))
           ) {
             return false;
           }
@@ -1680,38 +1602,7 @@ function GeneralGetraDashboard() {
             )
           : filtered;
 
-      return withDistance.sort(
-        (
-          a,
-          b,
-        ) => {
-          if (
-            userLocation &&
-            a.userDistanceMeters !==
-              undefined &&
-            b.userDistanceMeters !==
-              undefined &&
-            a.userDistanceMeters !==
-              b.userDistanceMeters
-          ) {
-            return (
-              a.userDistanceMeters -
-              b.userDistanceMeters
-            );
-          }
-
-          return (
-            a.name.localeCompare(
-              b.name,
-              "id",
-            ) ||
-            a.longitude -
-              b.longitude ||
-            a.latitude -
-              b.latitude
-          );
-        },
-      );
+      return withDistance;
     }, [
       brand,
       baseMerchants,
@@ -1720,11 +1611,16 @@ function GeneralGetraDashboard() {
     ]);
 
   const mapMerchants = useMemo<LocatedMerchant[]>(
-    () => deduplicateMerchants<LocatedMerchant>([
-      ...merchants,
+    () => sidebarMode === "route" && routeDestinationMerchant
+      ? [routeDestinationMerchant]
+      : deduplicateMerchants<LocatedMerchant>([
+      ...(viewMode === "fair-discovery" ? [
+        ...(fairDiscoveryResult?.original ?? []), ...(fairDiscoveryResult?.hidden_gems ?? []),
+        ...(fairDiscoveryResult?.sponsored.filter((item) => item.merchant_id === selectedId) ?? []),
+      ].map(discoveryMerchant) : merchants),
       ...(routeDestinationMerchant ? [routeDestinationMerchant] : []),
     ]),
-    [merchants, routeDestinationMerchant],
+    [merchants, routeDestinationMerchant, sidebarMode, viewMode, fairDiscoveryResult, selectedId],
   );
 
   const selectedMerchant =
@@ -1734,16 +1630,65 @@ function GeneralGetraDashboard() {
         selectedId,
     ) ?? null;
 
+  const sponsoredContext = useMemo(() => {
+    if (searchIntent?.reference) return {
+      longitude: searchIntent.reference.longitude,
+      latitude: searchIntent.reference.latitude,
+    };
+    if (userLocation) return { longitude: userLocation.longitude, latitude: userLocation.latitude };
+    if (!searchIntent?.scope.bounds) return null;
+    const bounds = searchIntent.scope.bounds;
+    return {
+      longitude: (bounds.west + bounds.east) / 2,
+      latitude: (bounds.south + bounds.north) / 2,
+    };
+  }, [searchIntent, userLocation]);
+  const { candidates: sponsoredCandidates } = useSponsoredPinCandidates({
+    context: sponsoredContext,
+    limit: 5,
+    enabled: searchActive && primaryMode === "merchant" && viewMode === "dataset",
+  });
+  const eligibleSponsoredPlacements = useMemo(
+    () => sponsoredCandidates.filter((candidate) => merchants.some((merchant) => merchant.id === candidate.merchant_id)),
+    [merchants, sponsoredCandidates],
+  );
+  const eligibleSponsoredMerchants = useMemo(
+    () => eligibleSponsoredPlacements.map((placement) => merchants.find((merchant) => merchant.id === placement.merchant_id))
+      .filter((merchant): merchant is LocatedMerchant => Boolean(merchant)),
+    [eligibleSponsoredPlacements, merchants],
+  );
+
+  useEffect(() => {
+    if (viewMode !== "fair-discovery" || !selectedId) return;
+    const row = document.querySelector(`.commuter-sidebar [data-merchant-id="${CSS.escape(selectedId)}"]`);
+    row?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [selectedId, viewMode]);
+
   const regionResultGroups = useMemo(
     () => selectedRegionIds.length > 0
       ? groupMerchantsByRegion(merchants, selectedRegionIds, searchRegions)
       : [],
     [merchants, searchRegions, selectedRegionIds],
   );
-
-  const { poster: profilePoster } = useProfilePoster({
-    merchantId: selectedMerchant?.id ?? null,
-  });
+  const resultPresentation = useMemo(() => {
+    if (searchIntent?.recommendation) return { title: "Rekomendasi sesuai kebutuhanmu", count: `${merchants.length} tempat paling sesuai` };
+    if (searchIntent?.reference?.type === "USER_LOCATION") return {
+      title: "Tempat di sekitar Anda",
+      count: `${merchants.length} tempat dalam radius ${searchIntent.radius_meters ?? 500} m`,
+    };
+    if (searchIntent?.reference) return {
+      title: `Tempat dekat ${searchIntent.reference.label}`,
+      count: `${merchants.length} tempat dalam radius ${searchIntent.radius_meters ?? 500} m`,
+    };
+    if (selectedRegionIds.length === 1) {
+      const region = searchRegions.find((item) => item.id === selectedRegionIds[0]);
+      if (region) return { title: `Tempat di ${region.name}`, count: `${merchants.length} tempat ditemukan` };
+    }
+    return {
+      title: "Hasil pencarian",
+      count: `${merchants.length} tempat${searchTotal !== null && searchTotal > merchants.length ? ` dari ${searchTotal} hasil` : " ditemukan"}`,
+    };
+  }, [merchants.length, searchIntent, searchRegions, searchTotal, selectedRegionIds]);
 
   const originSearchResults =
     useMemo(
@@ -1796,7 +1741,11 @@ function GeneralGetraDashboard() {
   ]);
 
   const { context: authContext } = useAuth();
-  const canonical = useCanonicalData(authContext?.user.id ?? null);
+  // General starts context-free. Transit/study-area data is fetched only after
+  // a user activates search or route context.
+  const canonical = useCanonicalData(
+    searchActive || Boolean(routeDestination) ? authContext?.user.id ?? null : null,
+  );
   const [activeMode, setActiveMode] = useState<RoutingMode>("walking");
   const [routePreference, setRoutePreference] = useState<RoutePreference>("FASTEST");
   const [routeSheetOpen, setRouteSheetOpen] = useState(false);
@@ -1811,12 +1760,22 @@ function GeneralGetraDashboard() {
     mode: activeMode,
     preference: routePreference,
   });
-  const { requestRoute, clearRoute } = preview;
+  const { clearRoute } = preview;
   const route = journeyOpen ? journey.route : preview.route;
   const routingState = journeyOpen ? route ? "ROUTABLE" : journey.state === "ERROR" ? "ERROR" : "LOADING" : preview.state;
   const routingError = journeyOpen ? journey.error : preview.error;
   const authRequired = journeyOpen ? journey.authRequired : preview.authRequired;
   const journeyPosition = journey.position;
+  useEffect(() => {
+    if (!journeyPosition) return;
+    const timer = window.setTimeout(() => setUserLocation({
+        latitude: journeyPosition.latitude,
+        longitude: journeyPosition.longitude,
+        accuracyMeters: Math.round(journeyPosition.accuracyMeters),
+        capturedAt: journeyPosition.capturedAt,
+      }), 0);
+    return () => window.clearTimeout(timer);
+  }, [journeyPosition]);
   useEffect(() => {
     if (!authContext) journey.controller.sessionLost();
   }, [authContext, journey.controller]);
@@ -1846,9 +1805,8 @@ function GeneralGetraDashboard() {
       (
         merchant: Merchant,
       ) => {
-        setSelectedId(
-          merchant.id,
-        );
+        suppressNextViewportRef.current = true;
+        setSelectedId(merchant.id);
       },
       [],
     );
@@ -1874,6 +1832,12 @@ function GeneralGetraDashboard() {
       setSelectedAccessibilityEvidenceDetail(null);
     }, []);
 
+  const searchRevisionRef = useRef(0);
+  const recommendationRef = useRef(false);
+  const searchCriteriaRef = useRef<SearchCriteria | null>(null);
+  const skipFilterSearchRef = useRef(false);
+  const pendingNearbySearchRef = useRef(false);
+
   const executeCanonicalSearch =
     useCallback(async ({
       bbox,
@@ -1881,7 +1845,9 @@ function GeneralGetraDashboard() {
       regionIds,
       activate,
       focus,
+      filters,
     }: {
+      filters?: { budget: string; open: boolean; walking: number | null };
       bbox: MapViewportBounds;
       queryText: string;
       regionIds: string[];
@@ -1890,6 +1856,16 @@ function GeneralGetraDashboard() {
     }) => {
       canonicalRequestRef.current?.abort();
       serviceAreaRequestRef.current?.abort();
+      if (!activate) {
+        setMapidMerchants([]);
+        setMapidError(null);
+        setMapidLoading(false);
+        setSearchIntent(null);
+        setSearchTotal(null);
+        activeSearchRef.current = false;
+        setSearchActive(false);
+        return undefined;
+      }
       const controller = new AbortController();
       canonicalRequestRef.current = controller;
 
@@ -1916,31 +1892,35 @@ function GeneralGetraDashboard() {
               query: queryText,
               scope,
               regionIds,
-              maxBudget: Number(maxBudget) >= 1_000 ? Number(maxBudget) : undefined,
-              openNow: openOnly || undefined,
-              maxWalkingMinutes: maxWalkingMinutes ?? undefined,
-              origin: routeOrigin
-                ? {
-                    longitude: routeOrigin.coordinate.longitude,
-                    latitude: routeOrigin.coordinate.latitude,
-                    source: routeOriginValue === ROUTE_ORIGIN_USER
-                      ? "USER_LOCATION"
-                      : explicitRouteOrigin
-                        ? "EXPLICIT_ORIGIN"
-                        : "SELECTED_POINT",
-                  }
-                : undefined,
+              referenceText: searchCriteriaRef.current?.reference_text ?? undefined,
+              radiusMeters: searchCriteriaRef.current?.radius_meters ?? undefined,
+              sort: searchCriteriaRef.current?.sort,
+              recommendation: recommendationRef.current,
+              maxBudget: Number(filters?.budget ?? maxBudget) >= 1_000 ? Number(filters?.budget ?? maxBudget) : undefined,
+              openNow: (filters?.open ?? openOnly) || undefined,
+              maxWalkingMinutes: (filters ? filters.walking : maxWalkingMinutes) ?? undefined,
+              origin: userLocation ? {
+                longitude: userLocation.longitude,
+                latitude: userLocation.latitude,
+                source: "USER_LOCATION",
+              } : undefined,
             },
           );
 
+        if (controller.signal.aborted) return;
         setMapidMerchants(
           layer.merchants,
         );
-        setCanonicalViewportLoaded(true);
         setMapidLayerName(
           layer.layer_name,
         );
         setSearchIntent(layer.intent);
+        if (activate && queryText.trim()) setQuery(layer.intent.keyword ?? "");
+        skipFilterSearchRef.current = maxBudget !== (layer.intent.constraints.budget ? String(layer.intent.constraints.budget.max_idr) : "")
+          || openOnly !== Boolean(layer.intent.constraints.opening) || maxWalkingMinutes !== (layer.intent.constraints.walking?.max_minutes ?? null);
+        setMaxBudget(layer.intent.constraints.budget ? String(layer.intent.constraints.budget.max_idr) : "");
+        setOpenOnly(Boolean(layer.intent.constraints.opening));
+        setMaxWalkingMinutes(layer.intent.constraints.walking?.max_minutes ?? null);
         setSearchRegions(layer.available_regions);
         setSelectedRegionIds(layer.intent.scope.region_ids);
         setSearchTotal(layer.total_available);
@@ -1974,13 +1954,15 @@ function GeneralGetraDashboard() {
         activeSearchRef.current = activate;
         setSearchActive(activate);
         setMapMovedSinceSearch(false);
-        if (focus && layer.intent.scope.type !== "CURRENT_VIEWPORT") {
+        if (focus && (layer.intent.scope.type !== "CURRENT_VIEWPORT" || layer.intent.reference)) {
           suppressNextViewportRef.current = true;
           setSearchFocusBounds(layer.intent.scope.bounds);
           setSearchFocusKey((key) => key + 1);
         }
+        return layer;
       } catch {
         if (controller.signal.aborted) return;
+        setMapidMerchants([]);
         setMapidError("Tempat di area peta belum dapat dimuat. Coba lagi.");
       } finally {
         if (canonicalRequestRef.current === controller) {
@@ -1992,10 +1974,24 @@ function GeneralGetraDashboard() {
       maxBudget,
       maxWalkingMinutes,
       openOnly,
-      routeOrigin,
-      explicitRouteOrigin,
-      routeOriginValue,
+      userLocation,
     ]);
+
+  const applyAiSearch = useCallback(async (action: AiSearchAction, recommendation = true) => {
+    recommendationRef.current = recommendation;
+    const criteria = action.criteria;
+    searchCriteriaRef.current = criteria;
+    setPrimaryMode("merchant"); setDatasetId("all-areas"); setViewMode("dataset");
+    setSidebarMode("search"); setSidebarCollapsed(false); setBrand("Semua"); setQuery(criteria.query);
+    const layer = await executeCanonicalSearch({ bbox: currentViewportRef.current ?? datasetBounds,
+      queryText: criteria.query, regionIds: criteria.reference_text || criteria.near_user ? [] : selectedRegionIds,
+      activate: true, focus: true,
+      filters: { budget: criteria.max_budget ? String(criteria.max_budget) : "", open: criteria.open_now, walking: criteria.max_walking_minutes } });
+    if (!layer) return "Tempat belum dapat dimuat. Coba lagi atau periksa nama acuan lokasi.";
+    const count = layer.merchants.length;
+    return count ? `Saya sudah menampilkan ${count} tempat di sidebar dan menandainya di peta.${layer.intent.candidate_limited ? " Hasil terbatas pada kandidat yang tersedia; persempit area untuk hasil lebih lengkap." : ""} Penilaian rasa belum dapat dipastikan tanpa ulasan.`
+      : "Belum ada tempat yang ditemukan dengan kebutuhan ini. Coba perluas radius atau ubah anggaran.";
+  }, [executeCanonicalSearch, datasetBounds, selectedRegionIds]);
 
   const executePropertySearch = useCallback(async ({
     bbox,
@@ -2172,15 +2168,9 @@ function GeneralGetraDashboard() {
       setMapMovedSinceSearch(true);
       return;
     }
-    void executeCanonicalSearch({
-      bbox,
-      queryText: "",
-      regionIds: [],
-      activate: false,
-      focus: false,
-    });
+    // A viewport move is not a search. Keep the initial map free of merchant
+    // queries until the user supplies a meaningful context.
   }, [
-    executeCanonicalSearch,
     executeAccessibilitySearch,
     executePropertySearch,
     primaryMode,
@@ -2200,24 +2190,32 @@ function GeneralGetraDashboard() {
   }, []);
 
   const submitGlobalSearch = useCallback(() => {
-    clearRoute();
-    setRouteDestinationId(null);
-    setRouteDestinationMerchant(null);
-    setSelectedId(null);
-    setDestinationSearch("");
-    setDestinationSearchActive(false);
+    searchRevisionRef.current++;
+    searchCriteriaRef.current = null;
+    recommendationRef.current = false;
     setDatasetId("all-areas");
     setViewMode("dataset");
+    const activate = Boolean(query.trim() || selectedRegionIds.length || maxBudget || openOnly || maxWalkingMinutes);
     void executeCanonicalSearch({
       bbox: currentViewportRef.current ?? datasetBounds,
       queryText: query,
       regionIds: selectedRegionIds,
-      activate: Boolean(
-        query.trim() || selectedRegionIds.length || maxBudget || openOnly || maxWalkingMinutes,
-      ),
+      activate,
       focus: true,
     });
-  }, [clearRoute, datasetBounds, executeCanonicalSearch, maxBudget, maxWalkingMinutes, openOnly, query, selectedRegionIds]);
+  }, [datasetBounds, executeCanonicalSearch, maxBudget, maxWalkingMinutes, openOnly, query, selectedRegionIds]);
+
+  useEffect(() => {
+    if (datasetId !== "all-areas" || primaryMode !== "merchant" || viewMode !== "dataset") return;
+    if (skipFilterSearchRef.current) { skipFilterSearchRef.current = false; return; }
+    const timer = window.setTimeout(() => {
+      void executeCanonicalSearch({ bbox: currentViewportRef.current ?? datasetBounds,
+        queryText: query, regionIds: selectedRegionIds, activate: Boolean(query.trim() || selectedRegionIds.length || maxBudget || openOnly || maxWalkingMinutes), focus: false });
+    }, 350);
+    return () => window.clearTimeout(timer);
+    // Submit text explicitly; changes to constraints apply after a short debounce.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [maxBudget, openOnly, maxWalkingMinutes]);
 
   const toggleSearchRegion = useCallback((regionId: string) => {
     const next = selectedRegionIds.includes(regionId)
@@ -2236,7 +2234,11 @@ function GeneralGetraDashboard() {
   }, [datasetBounds, executeCanonicalSearch, maxBudget, maxWalkingMinutes, openOnly, query, selectedRegionIds]);
 
   const clearGlobalSearch = useCallback(() => {
+    searchRevisionRef.current++;
+    searchCriteriaRef.current = null;
+    recommendationRef.current = false;
     setQuery("");
+    setBrand("Semua");
     setSelectedRegionIds([]);
     setSearchIntent(null);
     setSearchTotal(null);
@@ -2247,15 +2249,11 @@ function GeneralGetraDashboard() {
     setMaxWalkingMinutes(null);
     setOpenOnly(false);
     setServiceArea(null);
-    const bbox = currentViewportRef.current;
-    if (bbox) void executeCanonicalSearch({
-      bbox,
-      queryText: "",
-      regionIds: [],
-      activate: false,
-      focus: false,
-    });
-  }, [executeCanonicalSearch]);
+    canonicalRequestRef.current?.abort();
+    setMapidMerchants([]);
+    setMapidError(null);
+    setMapidLoading(false);
+  }, []);
 
   const searchCurrentArea = useCallback(() => {
     const bbox = currentViewportRef.current;
@@ -2292,35 +2290,6 @@ function GeneralGetraDashboard() {
       });
     }
   }, [executeCanonicalSearch, maxBudget, maxWalkingMinutes, openOnly, query, selectedRegionIds]);
-
-  const activateBusinessSpaceMode = useCallback(() => {
-    setPrimaryMode("business-space");
-    setViewMode("dataset");
-    setSelectedId(null);
-    setSelectedAccessibilityEvidenceId(null);
-    setSelectedAccessibilityEvidenceDetail(null);
-    setAccessibilityEvidence([]);
-    setAccessibilityNeed(null);
-    setRouteDestinationId(null);
-    setRouteDestinationMerchant(null);
-    clearRoute();
-    void executePropertySearch({
-      bbox: currentViewportRef.current ?? datasetBounds,
-      queryText: propertyQuery,
-      regionId: propertyRegionId,
-      propertyCategoryValue: propertyCategory,
-      transactionType: propertyTransactionType,
-      focus: true,
-    });
-  }, [
-    clearRoute,
-    datasetBounds,
-    executePropertySearch,
-    propertyCategory,
-    propertyQuery,
-    propertyRegionId,
-    propertyTransactionType,
-  ]);
 
   const activateAccessibilityMode = useCallback(() => {
     setPrimaryMode("accessibility");
@@ -2493,33 +2462,7 @@ function GeneralGetraDashboard() {
       ],
     );
 
-  const handleBuildRoute =
-    useCallback(() => {
-      if (!routeDestination || !routeOrigin) {
-        return;
-      }
-
-      setEditingEndpoints(false);
-      setRouteSheetOpen(true);
-      requestRoute();
-    }, [
-      requestRoute,
-      routeDestination,
-      routeOrigin,
-    ]);
-
-  const handleSmartAlternative = useCallback(() => {
-    if (merchants.length < 2 || !routeOrigin) return;
-    const currentIndex = merchants.findIndex((merchant) => merchant.id === routeDestination?.id);
-    const alternative = merchants[(currentIndex + 1 + merchants.length) % merchants.length];
-    if (!alternative || alternative.id === routeDestination?.id) return;
-    setSelectedId(alternative.id);
-    setManualRouteDestination(null);
-    setRouteDestinationId(alternative.id);
-    setRouteDestinationMerchant(alternative);
-    setDestinationSearch(alternative.name);
-    setDestinationSearchActive(false);
-  }, [merchants, routeDestination?.id, routeOrigin]);
+  const handleOpenMerchantDetail = useCallback(() => { setDetailOpen(true); setAiOpen(false); }, []);
 
   const handleRouteChoice =
     useCallback(
@@ -2541,6 +2484,7 @@ function GeneralGetraDashboard() {
         return;
       }
 
+      setSidebarMode("route");
       const { target, merchant } =
         pendingRouteChoice;
 
@@ -2583,7 +2527,7 @@ function GeneralGetraDashboard() {
     ]);
 
   const handleLocateUser =
-    useCallback(() => {
+    useCallback((activateNearbySearch = false) => {
       if (journeyOpen) { journey.controller.focus(); return; }
       setLocationError(
         null,
@@ -2604,6 +2548,7 @@ function GeneralGetraDashboard() {
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          pendingNearbySearchRef.current = activateNearbySearch;
           setUserLocation({
             latitude:
               position.coords.latitude,
@@ -2662,6 +2607,42 @@ function GeneralGetraDashboard() {
         },
       );
     }, [clearRoute, journeyOpen, journey.controller]);
+  useEffect(() => {
+    if (!userLocation || !pendingNearbySearchRef.current) return;
+    pendingNearbySearchRef.current = false;
+    void applyAiSearch({
+      type: "APPLY_SEARCH_CRITERIA",
+      criteria: {
+        query,
+        max_budget: maxBudget ? Number(maxBudget) : null,
+        open_now: openOnly,
+        max_walking_minutes: maxWalkingMinutes,
+        reference_text: null,
+        near_user: true,
+        radius_meters: searchCriteriaRef.current?.radius_meters ?? 500,
+        sort: "NEAREST",
+      },
+    }, false);
+  }, [applyAiSearch, maxBudget, maxWalkingMinutes, openOnly, query, userLocation]);
+
+  const routeToMerchant = useCallback((merchant: Merchant) => {
+    setManualRouteDestination(null);
+    setRouteDestinationId(merchant.id);
+    setRouteDestinationMerchant(merchant);
+    setDestinationSearch(merchant.name);
+    setDestinationSearchActive(false);
+    setSidebarMode("route");
+    setSidebarCollapsed(false);
+    setDetailOpen(false);
+    setAiOpen(false);
+    setSelectedId(null);
+    if (userLocation) {
+      setRouteOriginValue(ROUTE_ORIGIN_USER);
+      setExplicitRouteOrigin(null);
+    } else {
+      handleLocateUser(false);
+    }
+  }, [handleLocateUser, userLocation]);
 
   const handleUseUserLocationAsOrigin =
     useCallback(() => {
@@ -2749,187 +2730,17 @@ function GeneralGetraDashboard() {
   }, [clearRoute, journey.controller]);
 
   return (
-    <main className="workspace workspace--figma">
+    <main className="workspace workspace--figma commuter-workspace">
       <GetraGlobalHeader
         contextActions={<StakeholderModeSwitcher />}
         utilities={<CommunityNotificationsMenu />}
       />
 
-      <StakeholderContextShell>
-        <section className={`workspace-grid ${journeyOpen ? routingStyles.activeWorkspace : ""}`} data-routing-active={Boolean(route && route.distance_meters !== null && !journeyOpen)}>
-          <aside className="left-panel panel" tabIndex={0} aria-label="Kontrol pencarian dan rute">
-          <div className="panel-heading">
-            <div>
-              <span className="eyebrow">
-                {datasetId ===
-                "all-areas"
-                  ? "Pencarian GETRA"
-                  : isAdminImportDataset(
-                      datasetId,
-                    )
-                    ? "Pencarian data impor"
-                    : datasetId ===
-                      "mapid-food-jakarta-pusat"
-                    ? "Pencarian MAPID"
-                    : "Pencarian data peta"}
-              </span>
-              <h1>
-                {datasetTitle}
-              </h1>
-            </div>
-            <Search size={20} />
-          </div>
-
-          <div className="origin-box">
-            <MapPinned size={17} />
-            <div>
-              <span>
-                Lokasi pengguna
-              </span>
-              <strong>
-                {userLocation
-                  ? `${userLocation.latitude.toFixed(6)}, ${userLocation.longitude.toFixed(6)}`
-                  : datasetOrigin.name}
-              </strong>
-              {userLocation ? (
-                <small>
-                  Akurasi GPS sekitar {userLocation.accuracyMeters} m
-                </small>
-              ) : null}
-            </div>
-          </div>
-
-          <button
-            className="locate-button"
-            type="button"
-            onClick={handleLocateUser}
-            disabled={locating}
-          >
-            <LocateFixed size={16} />
-            {locating
-              ? "Mengambil lokasi..."
-              : userLocation
-                ? "Perbarui lokasi saya"
-                : "Gunakan lokasi saya"}
-          </button>
-
-          {locationError ? (
-            <p className="location-error">
-              {locationError}
-            </p>
-          ) : null}
-
-          <section className="dataset-switcher">
-            <div>
-              <span className="eyebrow">
-                Data peta
-              </span>
-              <strong>
-                Filter cakupan data
-              </strong>
-            </div>
-            <div className="dataset-switcher__buttons">
-              <button
-                type="button"
-                className={
-                  datasetId ===
-                  "all-areas"
-                    ? "dataset-button dataset-button--active"
-                    : "dataset-button"
-                }
-                onClick={() =>
-                  handleDatasetChange(
-                    "all-areas",
-                  )
-                }
-              >
-                Semua data
-              </button>
-              {adminImportedLayers.map(
-                (layer) => {
-                  const importDatasetId =
-                    toAdminImportDatasetId(
-                      layer.layer_id,
-                    );
-
-                  return (
-                    <button
-                      key={layer.layer_id}
-                      type="button"
-                      className={
-                        datasetId ===
-                        importDatasetId
-                          ? "dataset-button dataset-button--active"
-                          : "dataset-button"
-                      }
-                      onClick={() =>
-                        handleDatasetChange(
-                          importDatasetId,
-                        )
-                      }
-                      title={`${layer.layer_name} (${layer.total_features} titik)`}
-                    >
-                      {layer.layer_name}
-                    </button>
-                  );
-                },
-              )}
-              <button
-                type="button"
-                className={
-                  datasetId ===
-                  "coffee-jakarta-barat"
-                    ? "dataset-button dataset-button--active"
-                    : "dataset-button"
-                }
-                onClick={() =>
-                  handleDatasetChange(
-                    "coffee-jakarta-barat",
-                  )
-                }
-              >
-                Jakarta Barat
-              </button>
-              <button
-                type="button"
-                className={
-                  datasetId ===
-                  "mapid-food-jakarta-pusat"
-                    ? "dataset-button dataset-button--active"
-                    : "dataset-button"
-                }
-                onClick={() =>
-                  handleDatasetChange(
-                    "mapid-food-jakarta-pusat",
-                  )
-                }
-              >
-                Jakarta Pusat
-              </button>
-            </div>
-            <small>
-              {datasetSourceName}
-            </small>
-            {mapidLoading &&
-            (datasetId ===
-              "all-areas" ||
-              datasetId ===
-                "mapid-food-jakarta-pusat") ? (
-              <p className="dataset-message">
-                Memuat data MAPID...
-              </p>
-            ) : null}
-            {mapidError &&
-            (datasetId ===
-              "all-areas" ||
-              datasetId ===
-                "mapid-food-jakarta-pusat") ? (
-              <p className="dataset-message dataset-message--error">
-                {mapidError}
-              </p>
-            ) : null}
-          </section>
-
+      <StakeholderContextShell hideUmkmNotice hideGeneralNotice>
+        <section className={`workspace-grid ${journeyOpen ? routingStyles.activeWorkspace : ""}`} data-sidebar-collapsed={sidebarCollapsed} data-detail-open={detailOpen} data-routing-active={Boolean(route && route.distance_meters !== null && !journeyOpen)}>
+          <CommuterSidebar mode={sidebarMode} onModeChange={setSidebarMode}
+            onCollapse={() => setSidebarCollapsed(true)} destination={routeDestination?.name}
+            route={<>
           <section className={`route-planner ${routingStyles.planner}`} aria-label="Perencana rute" data-routing-state={routingState}>
             <div className="route-planner__header">
               <div>
@@ -3058,7 +2869,9 @@ function GeneralGetraDashboard() {
                       </div>
                     </div>
                   ) : null}
-                  <CoordinateEntry label="Asal" coordinate={routeOrigin?.coordinate ?? null} onSelect={selectOrigin} />
+                  <details className="route-advanced"><summary>Opsi koordinat asal</summary>
+                    <CoordinateEntry label="Asal" coordinate={routeOrigin?.coordinate ?? null} onSelect={selectOrigin} />
+                  </details>
                   <div className="route-search-box">
                     <Search size={15} />
                     <input
@@ -3118,6 +2931,7 @@ function GeneralGetraDashboard() {
                   <span>
                     Tujuan
                   </span>
+                  {!routeDestination ? <>
                   <div className="route-search-box route-search-box--destination">
                     <Search size={15} />
                     <input
@@ -3129,12 +2943,6 @@ function GeneralGetraDashboard() {
                         const value = event.target.value;
                         setDestinationSearch(value);
                         setDestinationSearchActive(true);
-                        if (routeDestination && value.trim() !== routeDestination.name) {
-                          setManualRouteDestination(null);
-                          setRouteDestinationId(null);
-                          setRouteDestinationMerchant(null);
-                          clearRoute();
-                        }
                       }}
                     />
                   </div>
@@ -3148,12 +2956,7 @@ function GeneralGetraDashboard() {
                       destinationSearchResults.map(
                         (merchant) => (
                           <button
-                            className={
-                              routeDestination?.id ===
-                              merchant.id
-                                ? "route-search-result route-search-result--active"
-                                : "route-search-result"
-                            }
+                            className="route-search-result"
                             key={`destination-search-${merchant.id}`}
                             type="button"
                             onClick={() =>
@@ -3185,14 +2988,16 @@ function GeneralGetraDashboard() {
                       </p>
                     ) : null}
                   </div>
-                </div>
-
                 <button type="button" className="route-chip-button" aria-pressed={mapPickMode === "ROUTE_DESTINATION"}
                   aria-label="Pilih tujuan di peta" onClick={() => {
                     setMapPickMode("ROUTE_DESTINATION");
                     document.querySelector(".map-panel")?.scrollIntoView({ block: "nearest" });
                   }}><Target size={14} aria-hidden="true" /> Pilih tujuan di peta</button>
-                <CoordinateEntry label="Tujuan" coordinate={routeDestination} onSelect={selectDestination} />
+                  <details className="route-advanced"><summary>Opsi koordinat tujuan</summary>
+                    <CoordinateEntry label="Tujuan" coordinate={routeDestination} onSelect={selectDestination} />
+                  </details>
+                  </> : null}
+                </div>
 
                 {routeDestination ? (
                   <div className="route-selection-card" data-testid="routing-destination">
@@ -3205,12 +3010,7 @@ function GeneralGetraDashboard() {
                       {routeDestination.district ?? routeDestination.city ?? `${routeDestination.latitude.toFixed(5)}, ${routeDestination.longitude.toFixed(5)}`}
                     </p>
                     <div className="route-selection-card__actions">
-                      <button type="button" onClick={() => {
-                        setDestinationSearchActive(true);
-                        const input = document.querySelector('.route-search-box--destination input') as HTMLInputElement;
-                        input?.focus();
-                      }} className="route-selection-card__action">Ganti tujuan</button>
-                      <button type="button" onClick={clearRouteDestination} className="route-selection-card__action route-selection-card__action--danger">Batal / Hapus tujuan</button>
+                      <button type="button" onClick={clearRouteDestination} className="route-selection-card__action">Ganti tujuan</button>
                     </div>
                   </div>
                 ) : (
@@ -3222,36 +3022,12 @@ function GeneralGetraDashboard() {
 
                 <div className="route-actions" style={{ marginTop: "1rem" }}>
                   <button
-                    className="route-primary-button"
-                    type="button"
-                    disabled={
-                      !routeDestination ||
-                      !routeOrigin ||
-                      routingState ===
-                        "LOADING"
-                    }
-                    onClick={handleBuildRoute}
-                  >
-                    {routingState ===
-                    "LOADING"
-                      ? "Menghitung rute..."
-                      : "Hitung Rute"}
-                  </button>
-                  <button
                     className="route-secondary-button"
                     type="button"
                     onClick={resetRouting}
                     disabled={!routeOrigin && !routeDestination && routingState === "IDLE"}
                   >
                     <RotateCcw size={14} aria-hidden="true" /> Reset
-                  </button>
-                  <button
-                    className="route-secondary-button"
-                    type="button"
-                    onClick={handleSmartAlternative}
-                    disabled={merchants.length < 2 || routingState === "LOADING"}
-                  >
-                    Tujuan UMKM berikutnya
                   </button>
                 </div>
 
@@ -3398,35 +3174,48 @@ function GeneralGetraDashboard() {
             </div>
           ) : null}
 
-          <div className="primary-map-mode" aria-label="Mode peta utama">
-            <button
-              type="button"
-              className={primaryMode === "merchant" ? "primary-map-mode__button primary-map-mode__button--active" : "primary-map-mode__button"}
-              aria-pressed={primaryMode === "merchant"}
-              onClick={activateMerchantMode}
-            >
-              Tempat
-            </button>
-            <button
-              type="button"
-              className={primaryMode === "business-space" ? "primary-map-mode__button primary-map-mode__button--active" : "primary-map-mode__button"}
-              aria-pressed={primaryMode === "business-space"}
-              onClick={activateBusinessSpaceMode}
-            >
-              Ruang Usaha
-            </button>
-            <button
-              type="button"
-              className={primaryMode === "accessibility" ? "primary-map-mode__button primary-map-mode__button--active" : "primary-map-mode__button"}
-              aria-pressed={primaryMode === "accessibility"}
-              onClick={activateAccessibilityMode}
-            >
-              Accessibility
-            </button>
-          </div>
-
+            </>}>
           {primaryMode === "merchant" ? (
             <GlobalSearchControls
+              canonicalRadius={searchIntent?.radius_meters}
+              onCanonicalRadiusChange={(radius) => {
+                const criteria: SearchCriteria = { query: query || searchIntent?.keyword || "", max_budget: maxBudget ? Number(maxBudget) : null, open_now: openOnly, max_walking_minutes: maxWalkingMinutes,
+                  reference_text: searchCriteriaRef.current?.reference_text ?? null, near_user: !searchCriteriaRef.current?.reference_text,
+                  radius_meters: radius, sort: searchIntent?.sort ?? "RELEVANCE" };
+                void applyAiSearch({ type: "APPLY_SEARCH_CRITERIA", criteria }, Boolean(searchIntent?.recommendation));
+              }}
+              discoveryRadius={viewMode === "fair-discovery" ? discoveryRadius : undefined}
+              onDiscoveryRadiusChange={setDiscoveryRadius}
+              location={journeyOpen ? journeyPosition : userLocation}
+              locating={locating} locationError={locationError} onLocate={() => handleLocateUser(true)}
+              advanced={<>
+          {primaryMode === "merchant" ? <div className="filter-grid filter-grid--single">
+            <label>
+              <span>
+                Brand
+              </span>
+              <select
+                value={brand}
+                onChange={(event) =>
+                  setBrand(
+                    event.target
+                      .value,
+                  )
+                }
+              >
+                {brandOptions.map((option) => (
+                  <option
+                    key={option}
+                    value={option}
+                  >
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div> : null}
+
+              </>}
               query={query}
               regions={searchRegions}
               selectedRegionIds={selectedRegionIds}
@@ -3438,14 +3227,20 @@ function GeneralGetraDashboard() {
               maxBudget={maxBudget}
               openNow={openOnly}
               maxWalkingMinutes={maxWalkingMinutes}
-              onQueryChange={setQuery}
+              onClearQuery={() => {
+                setQuery("");
+                void executeCanonicalSearch({ bbox: currentViewportRef.current ?? datasetBounds,
+                  queryText: "", regionIds: selectedRegionIds,
+                  activate: Boolean(selectedRegionIds.length || maxBudget || openOnly || maxWalkingMinutes), focus: false });
+              }}
+              onQueryChange={(value) => { searchRevisionRef.current++; canonicalRequestRef.current?.abort(); setQuery(value); }}
               onSubmit={submitGlobalSearch}
               onClear={clearGlobalSearch}
               onToggleRegion={toggleSearchRegion}
               onSearchThisArea={searchCurrentArea}
-              onMaxBudgetChange={setMaxBudget}
-              onOpenNowChange={setOpenOnly}
-              onMaxWalkingMinutesChange={setMaxWalkingMinutes}
+              onMaxBudgetChange={(value) => { canonicalRequestRef.current?.abort(); setMaxBudget(value); }}
+              onOpenNowChange={(value) => { canonicalRequestRef.current?.abort(); setOpenOnly(value); }}
+              onMaxWalkingMinutesChange={(value) => { canonicalRequestRef.current?.abort(); setMaxWalkingMinutes(value); }}
             />
           ) : primaryMode === "business-space" ? (
             <section className="property-search-panel" aria-label="Pencarian Properti Go">
@@ -3602,70 +3397,7 @@ function GeneralGetraDashboard() {
             />
           ) : null}
 
-          {primaryMode === "merchant" ? <div className="filter-grid filter-grid--single">
-            <label>
-              <span>
-                Brand
-              </span>
-              <select
-                value={brand}
-                onChange={(event) =>
-                  setBrand(
-                    event.target
-                      .value,
-                  )
-                }
-              >
-                {brandOptions.map((option) => (
-                  <option
-                    key={option}
-                    value={option}
-                  >
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div> : null}
-
           <div className="section-divider" />
-
-          {/* View Mode Switcher */}
-          {primaryMode === "merchant" ? <div className="workspace-view-switcher" aria-label="Mode tampilan hasil usaha">
-            <button
-              type="button"
-              onClick={() => setViewMode("fair-discovery")}
-              className={`workspace-view-switcher__button workspace-view-switcher__button--fair ${
-                viewMode === "fair-discovery"
-                  ? "workspace-view-switcher__button--active"
-                  : ""
-              }`}
-            >
-              ✨ Penelusuran Adil
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("dataset")}
-              className={`workspace-view-switcher__button workspace-view-switcher__button--dataset ${
-                viewMode === "dataset"
-                  ? "workspace-view-switcher__button--active"
-                  : ""
-              }`}
-            >
-              📁 Daftar Data
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("analytics")}
-              className={`workspace-view-switcher__button workspace-view-switcher__button--analytics ${
-                viewMode === "analytics"
-                  ? "workspace-view-switcher__button--active"
-                  : ""
-              }`}
-            >
-              <BarChart3 size={13} aria-hidden="true" /> Analisis
-            </button>
-          </div> : null}
 
           {primaryMode === "business-space" ? (
             <>
@@ -3723,33 +3455,15 @@ function GeneralGetraDashboard() {
             </>
           ) : viewMode === "fair-discovery" ? (
             <div className="mb-4">
+              <p className="commuter-mode-note">{userLocation ? "Penelusuran Adil memakai radius dari lokasi saya. Anggaran dan pilihan wilayah hanya berlaku pada pencarian biasa." : "Aktifkan lokasi saya untuk menggunakan Penelusuran Adil."}</p>
               <FairDiscoveryResults
                 result={fairDiscoveryResult}
                 isLoading={fairDiscoveryLoading}
                 error={fairDiscoveryError}
                 selectedId={selectedId}
-                onSelectMerchant={(m) => {
-                  const match = baseMerchants.find((bm) => bm.id === m.id || bm.name.toLowerCase() === m.name.toLowerCase());
-                  if (match) handleSelect(match);
-                }}
-                onSelectSponsored={(p) => {
-                  const match = baseMerchants.find((bm) => bm.id === p.merchant_id || bm.name.toLowerCase() === p.merchant_name.toLowerCase());
-                  if (match) handleSelect(match);
-                }}
-                onRequestRoute={(item) => {
-                  const coords = (item as any).geometry?.coordinates || [(item as any).longitude, (item as any).latitude];
-                  if (coords && coords.length >= 2) {
-                    const itemId = (item as any).id || (item as any).merchant_id;
-                    const match = mapMerchants.find((merchant) => merchant.id === itemId);
-                    setRouteDestinationId(itemId);
-                    setManualRouteDestination(null);
-                    setRouteDestinationMerchant(match ?? null);
-                    if (match) {
-                      setDestinationSearch(match.name);
-                      setDestinationSearchActive(false);
-                    }
-                  }
-                }}
+                onSelectMerchant={(merchant) => handleSelect(discoveryMerchant(merchant))}
+                onSelectSponsored={(placement) => handleSelect(discoveryMerchant(placement))}
+                onRequestRoute={(merchant) => routeToMerchant(discoveryMerchant(merchant))}
               />
             </div>
           ) : viewMode === "analytics" ? (
@@ -3764,28 +3478,24 @@ function GeneralGetraDashboard() {
               onDaysChange={setAnalyticsDays}
               onSelectRegion={setSelectedAnalyticsRegionId}
             />
+          ) : !searchActive && !mapidLoading && !mapidError ? (
+            <div className="commuter-idle" role="status">
+              <strong>Belum ada pencarian aktif.</strong>
+              <p>Cari tempat, pilih wilayah, gunakan lokasi Anda, atau Tanya GETRA untuk memulai.</p>
+            </div>
           ) : (
             <>
               <div className="results-header">
                 <div>
-                  <span className="eyebrow">
-                    {datasetId === "all-areas"
-                      ? "Hasil semua data"
-                      : isAdminImportDataset(datasetId)
-                        ? `Hasil ${
-                            activeAdminImportedLayer
-                              ?.layer_name ??
-                            adminImportedLayer
-                              ?.layer_name ??
-                            "import"
-                          }`
-                        : datasetId === "mapid-food-jakarta-pusat"
-                        ? "Hasil MAPID"
-                        : "Hasil data peta"}
-                  </span>
-                  <strong>
-                    {merchants.length} dari {baseMerchants.length} titik
-                  </strong>
+                  <span className="eyebrow">{resultPresentation.title}</span>
+                  <strong>{mapidLoading ? "Mencari tempat…" : resultPresentation.count}</strong>
+                  <small>{searchIntent?.candidate_limited ? "Kandidat terbatas. Persempit area pencarian." : "Berdasarkan data tempat yang tersedia"}</small>
+                  <label className="commuter-sort">Urutkan <select aria-label="Urutan hasil" value={searchIntent?.sort ?? "RELEVANCE"} onChange={(event) => {
+                    const criteria: SearchCriteria = { query: query || searchIntent?.keyword || "", max_budget: maxBudget ? Number(maxBudget) : null, open_now: openOnly, max_walking_minutes: maxWalkingMinutes,
+                      reference_text: searchCriteriaRef.current?.reference_text ?? null, near_user: searchCriteriaRef.current?.near_user ?? false,
+                      radius_meters: searchCriteriaRef.current?.radius_meters ?? null, sort: event.target.value as SearchCriteria["sort"] };
+                    void applyAiSearch({ type: "APPLY_SEARCH_CRITERIA", criteria }, Boolean(searchIntent?.recommendation));
+                  }}><option value="RELEVANCE">{searchIntent?.recommendation ? "Paling sesuai" : "Relevansi"}</option><option value="NEAREST" disabled={!userLocation && !searchIntent?.reference}>Terdekat</option><option value="PRICE_ASC">Harga terendah</option></select></label>
                 </div>
                 <div className="results-header__actions">
                   {selectedId ? (
@@ -3809,8 +3519,20 @@ function GeneralGetraDashboard() {
                 </div>
               </div>
 
-              <div className="result-list">
-                {merchants.length === 0 ? (
+              {eligibleSponsoredMerchants.length > 0 ? <section className="commuter-sponsored" aria-label="Promosi yang sesuai pencarian">
+                <div className="commuter-sponsored__heading"><strong>Promosi</strong><small>Memenuhi filter pencarian</small></div>
+                {eligibleSponsoredMerchants.map((merchant) => <MerchantResultRow
+                  key={`sponsored-${merchant.id}`}
+                  merchant={merchant}
+                  budget={searchIntent?.constraints.budget?.max_idr}
+                  sponsored
+                  selected={merchant.id === selectedMerchant?.id}
+                  onSelect={handleSelect}
+                />)}
+              </section> : null}
+
+              <div className="result-list" aria-busy={mapidLoading}>
+                {mapidLoading ? <div className="commuter-loading" role="status"><span /><span /><span /><small>Memuat tempat…</small></div> : mapidError ? <p className="empty-state">Tempat belum dapat dimuat. Coba lagi.</p> : merchants.length === 0 ? (
                   <div className="empty-state" role="status">
                     {searchIntent?.keyword
                       ? `"${searchIntent.keyword}" tidak ditemukan di ${searchIntent.location_text ?? "area ini"}.`
@@ -3827,7 +3549,7 @@ function GeneralGetraDashboard() {
                         <MerchantResultRow
                           key={merchant.id}
                           merchant={merchant}
-                          index={merchants.findIndex((item) => item.id === merchant.id)}
+                          budget={searchIntent?.constraints.budget?.max_idr}
                           selected={merchant.id === selectedMerchant?.id}
                           onSelect={handleSelect}
                         />
@@ -3835,11 +3557,11 @@ function GeneralGetraDashboard() {
                     </section>
                   ))
                 ) : (
-                  merchants.map((merchant, index) => (
+                  merchants.map((merchant) => (
                     <MerchantResultRow
                       key={merchant.id}
                       merchant={merchant}
-                      index={index}
+                      budget={searchIntent?.constraints.budget?.max_idr}
                       selected={merchant.id === selectedMerchant?.id}
                       onSelect={handleSelect}
                     />
@@ -3848,6 +3570,175 @@ function GeneralGetraDashboard() {
               </div>
             </>
           )}
+
+          <details className="commuter-tools"><summary>Eksplorasi & data peta</summary>
+            {activeExperience === "UMKM" ? <Link href="/umkm/advertising">Kelola Promosi</Link> : null}
+          <section className="dataset-switcher">
+            <div>
+              <span className="eyebrow">
+                Data peta
+              </span>
+              <strong>
+                Filter cakupan data
+              </strong>
+            </div>
+            <div className="dataset-switcher__buttons">
+              <button
+                type="button"
+                className={
+                  datasetId ===
+                  "all-areas"
+                    ? "dataset-button dataset-button--active"
+                    : "dataset-button"
+                }
+                onClick={() =>
+                  handleDatasetChange(
+                    "all-areas",
+                  )
+                }
+              >
+                Area peta
+              </button>
+              {adminImportedLayers.map(
+                (layer) => {
+                  const importDatasetId =
+                    toAdminImportDatasetId(
+                      layer.layer_id,
+                    );
+
+                  return (
+                    <button
+                      key={layer.layer_id}
+                      type="button"
+                      className={
+                        datasetId ===
+                        importDatasetId
+                          ? "dataset-button dataset-button--active"
+                          : "dataset-button"
+                      }
+                      onClick={() =>
+                        handleDatasetChange(
+                          importDatasetId,
+                        )
+                      }
+                      title={`${layer.layer_name} (${layer.total_features} titik)`}
+                    >
+                      {layer.layer_name}
+                    </button>
+                  );
+                },
+              )}
+              <button
+                type="button"
+                className={
+                  datasetId ===
+                  "coffee-jakarta-barat"
+                    ? "dataset-button dataset-button--active"
+                    : "dataset-button"
+                }
+                onClick={() =>
+                  handleDatasetChange(
+                    "coffee-jakarta-barat",
+                  )
+                }
+              >
+                Jakarta Barat
+              </button>
+              <button
+                type="button"
+                className={
+                  datasetId ===
+                  "mapid-food-jakarta-pusat"
+                    ? "dataset-button dataset-button--active"
+                    : "dataset-button"
+                }
+                onClick={() =>
+                  handleDatasetChange(
+                    "mapid-food-jakarta-pusat",
+                  )
+                }
+              >
+                Jakarta Pusat
+              </button>
+            </div>
+            <small>
+              {datasetSourceName}
+            </small>
+            {mapidLoading &&
+            (datasetId ===
+              "all-areas" ||
+              datasetId ===
+                "mapid-food-jakarta-pusat") ? (
+              <p className="dataset-message">
+                Memuat data MAPID...
+              </p>
+            ) : null}
+            {mapidError &&
+            (datasetId ===
+              "all-areas" ||
+              datasetId ===
+                "mapid-food-jakarta-pusat") ? (
+              <p className="dataset-message dataset-message--error">
+                {mapidError}
+              </p>
+            ) : null}
+          </section>
+
+          <div className="primary-map-mode" aria-label="Mode peta utama">
+            <button
+              type="button"
+              className={primaryMode === "merchant" ? "primary-map-mode__button primary-map-mode__button--active" : "primary-map-mode__button"}
+              aria-pressed={primaryMode === "merchant"}
+              onClick={activateMerchantMode}
+            >
+              Tempat
+            </button>
+            <button
+              type="button"
+              className={primaryMode === "accessibility" ? "primary-map-mode__button primary-map-mode__button--active" : "primary-map-mode__button"}
+              aria-pressed={primaryMode === "accessibility"}
+              onClick={activateAccessibilityMode}
+            >
+              Accessibility
+            </button>
+          </div>
+
+          {/* View Mode Switcher */}
+          {primaryMode === "merchant" ? <div className="workspace-view-switcher" aria-label="Mode tampilan hasil usaha">
+            <button
+              type="button"
+              onClick={() => setViewMode("fair-discovery")}
+              className={`workspace-view-switcher__button workspace-view-switcher__button--fair ${
+                viewMode === "fair-discovery"
+                  ? "workspace-view-switcher__button--active"
+                  : ""
+              }`}
+            >
+              ✨ Penelusuran Adil
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("dataset")}
+              className={`workspace-view-switcher__button workspace-view-switcher__button--dataset ${
+                viewMode === "dataset"
+                  ? "workspace-view-switcher__button--active"
+                  : ""
+              }`}
+            >
+              📁 Daftar Data
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("analytics")}
+              className={`workspace-view-switcher__button workspace-view-switcher__button--analytics ${
+                viewMode === "analytics"
+                  ? "workspace-view-switcher__button--active"
+                  : ""
+              }`}
+            >
+              <BarChart3 size={13} aria-hidden="true" /> Analisis
+            </button>
+          </div> : null}
 
           <div className="ai-teaser">
             <Bot size={17} />
@@ -3877,21 +3768,28 @@ function GeneralGetraDashboard() {
             </div>
           </div>
 
-          <div className="mt-4">
-            <AiPanel
-              activeExperience={activeExperience}
-              currentOrigin={routeOrigin?.coordinate}
-              currentDestination={selectedMerchant ? { latitude: selectedMerchant.latitude, longitude: selectedMerchant.longitude } : undefined}
-              selectedEntityId={selectedMerchant?.id}
-            />
-          </div>
-        </aside>
+          </details>
+        </CommuterSidebar>
 
         <section
           className={`map-panel ${route && !journeyOpen ? routingStyles.planningMap : ""}`}
           aria-label="Peta GETRA"
           style={{ position: "relative" }}
         >
+          <div className="commuter-map-actions">
+             {sidebarCollapsed ? <button type="button" onClick={() => setSidebarCollapsed(false)}><Search size={16} />Cari / Rute</button> : null}
+             <button className="commuter-ai-launcher" type="button" aria-expanded={aiOpen} aria-controls="commuter-assistant" onClick={() => { setAiOpen(!aiOpen); setDetailOpen(false); if (!aiOpen && window.innerWidth <= 760) setSidebarCollapsed(true); }}><Bot size={16} />Tanya GETRA</button>
+           </div>
+          <div id="commuter-assistant" className="commuter-assistant" hidden={!aiOpen} onKeyDown={(event) => { if (event.key === "Escape") setAiOpen(false); }}>
+            <AiPanel activeExperience={activeExperience} currentOrigin={userLocation ?? undefined}
+              currentDestination={selectedMerchant ?? undefined} selectedEntityId={selectedMerchant?.id}
+              onMinimize={() => setAiOpen(false)} onClose={() => setAiOpen(false)}
+              getSearchRevision={() => searchRevisionRef.current}
+              searchContext={query.trim() ? { query, max_budget: maxBudget ? Number(maxBudget) : null, open_now: openOnly, max_walking_minutes: maxWalkingMinutes,
+                reference_text: searchIntent?.reference?.type === "TRANSIT" ? searchIntent.reference.label : null,
+                near_user: searchIntent?.reference?.type === "USER_LOCATION", radius_meters: searchIntent?.radius_meters ?? null, sort: searchIntent?.sort ?? "RELEVANCE" } : undefined}
+              onSearchAction={applyAiSearch} />
+          </div>
           {mapPickMode !== "NONE" && (
             <div className={routingStyles.pickBanner} role="status">
               <strong>{mapPickMode === "ROUTE_START" ? "Memilih asal (A)" : "Memilih tujuan (B)"}</strong>
@@ -3934,6 +3832,8 @@ function GeneralGetraDashboard() {
             journeyFocusKey={journey.focusKey}
             onJourneyCameraOverride={journey.controller.suspendFollow}
             onSelect={handleSelect}
+            onRequestMerchantRoute={routeToMerchant}
+            onMerchantDetail={handleOpenMerchantDetail}
             onSelectProperty={loadSelectedPropertyDetail}
             onSelectAccessibilityEvidence={loadSelectedAccessibilityEvidenceDetail}
             onClearSelection={handleClearSelection}
@@ -3957,9 +3857,10 @@ function GeneralGetraDashboard() {
               visibleImportBoundaries
             }
             administrativeBoundaries={visibleAdministrativeBoundaries}
-            sponsoredPlacements={fairDiscoveryResult?.sponsored}
-            onSelectSponsored={() => {
-              // Set selection or route point if needed
+            sponsoredPlacements={viewMode === "fair-discovery" ? fairDiscoveryResult?.sponsored : eligibleSponsoredPlacements}
+            onSelectSponsored={(placement) => {
+              const merchant = merchants.find((item) => item.id === placement.merchant_id);
+              handleSelect(merchant ?? discoveryMerchant(placement));
             }}
             analyticsCollection={analyticsCollection}
             analyticsMode={analyticsMode}
@@ -3969,7 +3870,9 @@ function GeneralGetraDashboard() {
           />
         </section>
 
-        <aside className="right-panel panel" tabIndex={0} aria-label="Detail lokasi terpilih">
+        <aside className="right-panel panel" hidden={!detailOpen} tabIndex={0} aria-label="Detail lokasi terpilih">
+          <button className="commuter-detail-close" type="button" onClick={() => setDetailOpen(false)}>Tutup detail <X size={16} /></button>
+          {primaryMode !== "merchant" ? <>
           <div className="panel-heading">
             <div>
               <span className="eyebrow">
@@ -4008,8 +3911,11 @@ function GeneralGetraDashboard() {
                 <p className="canonical-state">Belum ada area atau transportasi yang tersedia.</p>
               ) : null}
           </section>
+          </> : null}
 
-          {primaryMode === "business-space" ? (
+          {primaryMode === "merchant" && selectedMerchant ? (
+            <PlaceDetailDrawer merchant={selectedMerchant} onRoute={routeToMerchant} />
+          ) : primaryMode === "business-space" ? (
             <PropertyObservationDetail
               detail={selectedPropertyDetail}
               fallback={propertyCandidates.find((candidate) => candidate.id === selectedPropertyId) ?? null}
@@ -4074,24 +3980,6 @@ function GeneralGetraDashboard() {
                   <Route size={16} /> {routeDestination?.id === selectedMerchant.id ? "Sudah menjadi tujuan" : routeOrigin ? "Lihat pilihan rute" : "Jadikan tujuan rute"}
                 </button>
               </div>
-
-              {/* Profile Poster Promotional Placement (Additive Phase 9) */}
-              {profilePoster && (
-                <div className="mb-3">
-                  <ProfilePoster
-                    poster={profilePoster}
-                    onRequestRoute={() => {
-                      if (selectedMerchant) {
-                        setManualRouteDestination(null);
-                        setRouteDestinationId(selectedMerchant.id);
-                        setRouteDestinationMerchant(selectedMerchant);
-                        setDestinationSearch(selectedMerchant.name);
-                        setDestinationSearchActive(false);
-                      }
-                    }}
-                  />
-                </div>
-              )}
 
               <MerchantMediaGallery merchant={selectedMerchant} />
 

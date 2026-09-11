@@ -9,23 +9,25 @@ import { GovernmentContext } from "./government-context";
 
 interface StakeholderContextShellProps {
   children: React.ReactNode;
+  hideUmkmNotice?: boolean;
+  hideGeneralNotice?: boolean;
 }
 
 /**
  * A layout shell that delegates rendering to the specific active Experience module.
  */
-export function StakeholderContextShell({ children }: StakeholderContextShellProps) {
+export function StakeholderContextShell({ children, hideUmkmNotice = false, hideGeneralNotice = false }: StakeholderContextShellProps) {
   const { activeExperience } = useStakeholder();
 
   switch (activeExperience) {
     case "UMKM":
-      return <UMKMContext>{children}</UMKMContext>;
+      return <UMKMContext hideNotice={hideUmkmNotice}>{children}</UMKMContext>;
     case "INVESTOR":
       return <InvestorContext>{children}</InvestorContext>;
     case "GOVERNMENT":
       return <GovernmentContext>{children}</GovernmentContext>;
     case "GENERAL":
     default:
-      return <GeneralContext>{children}</GeneralContext>;
+      return <GeneralContext hideNotice={hideGeneralNotice}>{children}</GeneralContext>;
   }
 }

@@ -8,6 +8,7 @@ describe("GlobalSearchControls", () => {
   it("renders accessible search, region, status, and search-this-area controls", () => {
     const html = renderToStaticMarkup(
       <GlobalSearchControls
+        location={null} locating={false} locationError={null} onLocate={vi.fn()}
         query="bakso"
         regions={[{
           id: "jakarta-selatan",
@@ -51,7 +52,7 @@ describe("GlobalSearchControls", () => {
       />,
     );
     expect(html).toContain('id="global-search-query"');
-    expect(html).toContain("Cakupan wilayah");
+    expect(html).toContain("Cakupan pencarian");
     expect(html).toContain("Jakarta Selatan");
     expect(html).toContain("Cari di area ini");
     expect(html).toContain('aria-live="polite"');

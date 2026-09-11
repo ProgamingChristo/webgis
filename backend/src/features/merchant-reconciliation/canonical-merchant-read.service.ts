@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { parseObservedPrice } from "@/src/features/commuter/commuter-intent";
-import { evaluateOpeningHours, type OpeningStatus } from "@/src/features/commuter/opening-hours";
+import { evaluateOpeningHours, openingHoursLabel, type OpeningStatus } from "@/src/features/commuter/opening-hours";
 
 export interface CanonicalMerchantMapItem {
   id: string;
@@ -22,6 +22,10 @@ export interface CanonicalMerchantMapItem {
   address?: string;
   phone?: string;
   photo?: string;
+  openingHoursLabel?: string;
+  referenceDistance?: { meters: number; label: string; kind: "STRAIGHT_LINE" };
+  searchRelevance?: number;
+  recommendation?: import("../global-search/recommendation-engine").RecommendationBreakdown;
   menuPhotos?: string[];
   menu?: string;
   observedPrice?: string;
@@ -56,15 +60,26 @@ export interface CanonicalMerchantViewportQuery {
   keyword?: string | null;
   category?: string | null;
   regionIds?: string[];
+  radiusMeters?: number;
+  origin?: { longitude: number; latitude: number };
 }
 
 export class CanonicalMerchantReadService {
   constructor(private readonly supabase: SupabaseClient<any>) {}
 
   async list(query: CanonicalMerchantViewportQuery): Promise<CanonicalMerchantPage> {
+    const nearby = query.radiusMeters !== undefined && query.origin !== undefined;
     const { data: pageRows, error: pageError } = await this.supabase.rpc(
-      "search_canonical_merchants_v1",
-      {
+      nearby ? "search_canonical_merchants_nearby_v1" : "search_canonical_merchants_v1",
+      nearby ? {
+        p_longitude: query.origin!.longitude,
+        p_latitude: query.origin!.latitude,
+        p_radius_meters: query.radiusMeters,
+        p_keyword: query.keyword ?? null,
+        p_category: query.category ?? null,
+        p_limit: query.limit,
+        p_offset: query.offset,
+      } : {
         p_west: query.west ?? null,
         p_south: query.south ?? null,
         p_east: query.east ?? null,
@@ -185,7 +200,10 @@ export function mapCanonicalMerchantRow(
       : null,
     menuLinks.length > 0 ? "MENU_GO" as const : null,
   ].filter((source): source is "PREMIUM" | "MENU_GO" => source !== null);
-  const photo = optionalString(observed.foto_tempat);
+  const approvedOwnerMedia = merchant.verification_status === "VERIFIED" && metadata.approved_by && metadata.approved_at
+    ? asObject(metadata.public_media) : {};
+  const ownerPhoto = safePublicImage(approvedOwnerMedia.storefront_url);
+  const photo = ownerPhoto ?? safePublicImage(observed.foto_tempat);
   const menuPhotos = [observed.foto_menu_1, observed.foto_menu_2]
     .map(optionalString)
     .filter((value): value is string => value !== undefined);
@@ -193,7 +211,7 @@ export function mapCanonicalMerchantRow(
   return {
     id: merchant.id,
     name: merchant.name,
-    category: optionalString(metadata.category) ??
+    category: optionalString(metadata.category_label) ?? optionalString(metadata.category) ??
       optionalString(observed.jenis_tempat) ??
       merchant.description ?? "Makanan dan Minuman",
     brand: optionalString(metadata.brand) ?? "Makanan dan Minuman",
@@ -206,6 +224,8 @@ export function mapCanonicalMerchantRow(
     openNow: openingStatus === "OPEN",
     openStatusKnown: openingStatus !== "UNKNOWN",
     openingStatus,
+    openingHoursLabel: openingHoursLabel(merchant.opening_hours),
+    searchRelevance: Number(searchRow?.relevance_score ?? 0),
     source: sources.join(" + "),
     sources,
     status: merchant.verification_status === "VERIFIED" ? "verified" : "surveyed",
@@ -230,7 +250,7 @@ export function mapCanonicalMerchantRow(
         name: sources.includes("PREMIUM") ? "PREMIUM" : "MENU_GO",
         observed_price: observed.harga_rata_rata ? "MENU_GO" : null,
         phone: metadata.phone ? "PREMIUM" : null,
-        photo: observed.foto_tempat ? "MENU_GO" : null,
+        photo: ownerPhoto ? "APPROVED_OWNER_SUBMISSION" : photo ? "MENU_GO" : null,
       },
       source_record_ids: links.map((link) => ({
         source: link.source_table === "mapid_premium_merchants" ? "PREMIUM" : "MENU_GO",
@@ -276,4 +296,9 @@ function toPriceLabel(value: string | null) {
   if (value?.toLowerCase() === "hemat") return "Hemat" as const;
   if (value?.toLowerCase() === "premium") return "Premium" as const;
   return "Sedang" as const;
+}
+
+function safePublicImage(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  try { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password ? url.href : undefined; } catch { return undefined; }
 }

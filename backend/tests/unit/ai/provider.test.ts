@@ -2,9 +2,13 @@ import { z } from "zod";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  openaiConfigured: vi.fn(),
+  openaiGenerate: vi.fn(),
   sub2apiConfigured: vi.fn(),
   sub2apiGenerate: vi.fn(),
 }));
+
+vi.mock("@/lib/ai/openai", () => ({ openAIProvider: { id: "openai", isConfigured: mocks.openaiConfigured, generateStructured: mocks.openaiGenerate } }));
 
 vi.mock("@/lib/ai/sub2api", () => ({
   sub2ApiProvider: {
@@ -31,6 +35,7 @@ describe("AI provider selection", () => {
     vi.clearAllMocks();
     delete process.env.AI_PROVIDER;
     mocks.sub2apiConfigured.mockReturnValue(false);
+    mocks.openaiConfigured.mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -85,6 +90,22 @@ describe("AI provider selection", () => {
 
     await expect(generateStructured(request)).rejects.toBe(providerError);
     expect(mocks.sub2apiGenerate).toHaveBeenCalledTimes(1);
+  });
+
+  it("selects OpenAI explicitly and preserves its provider identity", async () => {
+    process.env.AI_PROVIDER = "openai";
+    mocks.openaiConfigured.mockReturnValue(true);
+    mocks.openaiGenerate.mockResolvedValue({ ok: true });
+    await expect(generateStructured(request)).resolves.toEqual({ data: { ok: true }, source: "openai" });
+    expect(getConfiguredProvider()).toBe("openai");
+    expect(mocks.sub2apiGenerate).not.toHaveBeenCalled();
+  });
+
+  it("reports missing OpenAI configuration without calling another provider", async () => {
+    process.env.AI_PROVIDER = "openai";
+    await expect(generateStructured(request)).rejects.toMatchObject({ provider: "openai", code: "AI_PROVIDER_CONFIGURATION" });
+    expect(mocks.sub2apiGenerate).not.toHaveBeenCalled();
+    expect(mocks.openaiGenerate).not.toHaveBeenCalled();
   });
 
   it("rejects unsupported legacy paid-provider modes", async () => {

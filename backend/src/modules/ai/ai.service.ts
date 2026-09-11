@@ -1,3 +1,4 @@
+import { extractSearchAction, SearchCriteriaSchema } from "./search-action";
 import { generateStructured } from "@/lib/ai/provider";
 import {
   type AiAskRequest,
@@ -17,6 +18,24 @@ export class AiService {
 
   async handleAskRequest(req: AiAskRequest): Promise<AiAskResponse> {
     const { question, active_experience, context, history } = req;
+
+    if (context?.enable_search) {
+      const extracted = await extractSearchAction(req);
+      if (extracted && extracted.data.action !== "CHAT") {
+        const parsed = SearchCriteriaSchema.safeParse(extracted.data.criteria);
+        const criteria = parsed.success ? parsed.data : null;
+        const needsOrigin = criteria && !criteria.reference_text && (criteria.near_user || criteria.max_walking_minutes || criteria.sort === "NEAREST");
+        const canSearch = extracted.data.action === "SEARCH" && criteria && (!needsOrigin || context.origin);
+        return {
+          answer: canSearch ? "Saya akan mencari tempat sesuai kebutuhan ini. Penilaian rasa belum dapat dipastikan tanpa ulasan."
+            : needsOrigin && !context.origin ? "Aktifkan lokasi saya sebelum mencari tempat terdekat."
+            : extracted.data.clarification || "Sebutkan jenis tempat dan lokasi yang ingin dicari.",
+          intent: "MERCHANT_SEARCH", limitations: [], evidence: [],
+          provider: extracted.source === "openai" ? "openai" : "sub2api",
+          ...(canSearch ? { search_action: { type: "APPLY_SEARCH_CRITERIA" as const, criteria } } : {}),
+        };
+      }
+    }
 
     // 1. Determine Intent
     const intent = await this.determineIntent(question, history);
@@ -244,7 +263,7 @@ export class AiService {
   ): Promise<{
     answer: string;
     limitations_mentioned: string[];
-    provider: "sub2api" | "deterministic";
+    provider: "sub2api" | "openai" | "deterministic";
   }> {
     let inputContext = "";
     if (history && history.length > 0) {
@@ -290,7 +309,7 @@ ${JSON.stringify(facts, null, 2)}
     }
     return {
       ...response.data,
-      provider: response.source === "sub2api" ? "sub2api" : "deterministic",
+      provider: response.source === "openai" ? "openai" : response.source === "sub2api" ? "sub2api" : "deterministic",
     };
   }
 }

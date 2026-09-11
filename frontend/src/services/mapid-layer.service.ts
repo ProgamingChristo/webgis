@@ -59,6 +59,11 @@ export interface SearchRegion {
 }
 
 export interface GlobalSearchIntent {
+  reference?: { id?: string; label: string; longitude: number; latitude: number; type: "USER_LOCATION" | "TRANSIT" | "SELECTED_POINT" } | null;
+  radius_meters?: number;
+  sort?: "RELEVANCE" | "NEAREST" | "PRICE_ASC";
+  recommendation?: boolean;
+  candidate_limited?: boolean;
   domain: "MERCHANT";
   original_query: string;
   keyword: string | null;
@@ -84,6 +89,10 @@ export interface GlobalSearchIntent {
 }
 
 export interface CanonicalMerchantSearchOptions {
+  referenceText?: string;
+  radiusMeters?: number;
+  sort?: "RELEVANCE" | "NEAREST" | "PRICE_ASC";
+  recommendation?: boolean;
   limit?: number;
   offset?: number;
   signal?: AbortSignal;
@@ -123,6 +132,10 @@ export const mapidLayerService = {
       q: options.query?.trim() ?? "",
       scope: options.scope ?? "CURRENT_VIEWPORT",
     });
+    if (options.referenceText) params.set("reference_text", options.referenceText);
+    if (options.radiusMeters) params.set("radius_meters", String(options.radiusMeters));
+    if (options.sort) params.set("sort", options.sort);
+    if (options.recommendation) params.set("recommendation", "true");
     if (options.category?.trim()) params.set("category", options.category.trim());
     if (options.regionIds?.length) params.set("region_ids", options.regionIds.join(","));
     if (options.locationText?.trim()) params.set("location_text", options.locationText.trim());

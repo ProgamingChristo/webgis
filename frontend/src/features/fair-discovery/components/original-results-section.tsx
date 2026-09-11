@@ -40,6 +40,9 @@ export function OriginalResultsSection({
           return (
             <article
               key={m.id}
+              data-merchant-id={m.id}
+              tabIndex={0}
+              onKeyDown={(event) => { if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); onSelectMerchant?.(m); } }}
               onClick={() => onSelectMerchant?.(m)}
               className={`group relative rounded-xl border p-3.5 transition-all cursor-pointer ${
                 isSelected

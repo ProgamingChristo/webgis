@@ -17,9 +17,10 @@ describe("commuter browser safety", () => {
     expect(routingHook).not.toContain("calculateDistanceMeters");
   });
 
-  it("keeps explicit relaxation and smart-alternative controls", () => {
+  it("keeps explicit filter relaxation and removes the deprecated smart-alternative action", () => {
     expect(dashboard).toContain("tidak mengubah filter Anda secara otomatis");
-    expect(dashboard).toContain("Tujuan UMKM berikutnya");
+    expect(dashboard).not.toContain("Tujuan UMKM berikutnya");
+    expect(routingHook).toContain("if (!ready || key === clearedKey) return");
     expect(dashboard).toContain("serviceAreaGeometry");
   });
 

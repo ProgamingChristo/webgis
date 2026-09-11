@@ -1,3 +1,4 @@
+import type { AiSearchAction, SearchCriteria } from "@/types/search-recommendation";
 import { authenticatedFetch } from "@/src/lib/auth-client";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
 
@@ -10,6 +11,8 @@ export interface AiAskRequest {
   question: string;
   active_experience?: "GENERAL" | "UMKM" | "INVESTOR" | "GOVERNMENT";
   context?: {
+    enable_search?: boolean;
+    search_context?: SearchCriteria;
     study_area_id?: string;
     selected_entity_id?: string;
     origin?: {
@@ -25,11 +28,12 @@ export interface AiAskRequest {
 }
 
 export interface AiAskResponse {
+  search_action?: AiSearchAction;
   answer: string;
   intent: string;
   limitations: string[];
   evidence: { source: string; dataset: string; description?: string }[];
-  provider: "sub2api" | "deterministic";
+  provider: "sub2api" | "openai" | "deterministic";
 }
 
 export type MerchantDescriptionMode =
@@ -79,7 +83,7 @@ export class AiService {
       throw new Error("Jawaban belum dapat disiapkan. Coba lagi.");
     }
 
-    if (!["sub2api", "deterministic"].includes(json.data.provider)) {
+    if (!["sub2api", "openai", "deterministic"].includes(json.data.provider)) {
       throw new Error("Jawaban belum dapat disiapkan. Coba lagi.");
     }
 
