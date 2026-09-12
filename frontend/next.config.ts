@@ -1,6 +1,23 @@
 import type { NextConfig } from "next";
+import { networkInterfaces } from "node:os";
+
+const localDevOrigins = [
+  ...new Set(
+    Object.values(networkInterfaces()).flatMap((addresses) =>
+      (addresses ?? [])
+        .filter(
+          (address) => address.family === "IPv4" && !address.internal,
+        )
+        .map((address) => address.address),
+    ),
+  ),
+];
 
 const nextConfig: NextConfig = {
+  // Izinkan browser mengakses dev assets lewat alamat LAN laptop yang aktif.
+  // Alamat dapat berubah saat berpindah Wi-Fi atau hotspot.
+  allowedDevOrigins: localDevOrigins,
+
   // Dibutuhkan untuk Docker image Christo
   output: "standalone",
 

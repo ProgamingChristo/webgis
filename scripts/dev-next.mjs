@@ -1,6 +1,8 @@
 import { createServer } from "node:net";
 import { spawn } from "node:child_process";
+import fs from "node:fs";
 import http from "node:http";
+import path from "node:path";
 
 const [, , appName, preferredPortArg] = process.argv;
 
@@ -33,6 +35,50 @@ async function findAvailablePort(startPort) {
   throw new Error(`No available port found from ${startPort} to ${startPort + 99}`);
 }
 
+function readExistingDevServerInfo() {
+  const lockPath = path.join(process.cwd(), ".next", "dev", "lock");
+
+  try {
+    const content = fs.readFileSync(lockPath, "utf8");
+    const parsed = JSON.parse(content);
+
+    if (
+      typeof parsed?.pid === "number" &&
+      typeof parsed?.port === "number" &&
+      typeof parsed?.appUrl === "string"
+    ) {
+      return parsed;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+function isProcessAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function responseBodyMatchesApp(body) {
+  if (appName === "backend") {
+    try {
+      const parsed = JSON.parse(body);
+
+      return parsed?.data?.service === "getra-api";
+    } catch {
+      return false;
+    }
+  }
+
+  return body.includes("GETRA") || body.includes("getra");
+}
+
 async function isExistingAppReachable(port) {
   const path = appName === "backend" ? "/api/health" : "/";
 
@@ -45,8 +91,17 @@ async function isExistingAppReachable(port) {
         timeout: 5000,
       },
       (response) => {
-        response.resume();
-        resolve((response.statusCode ?? 500) < 500);
+        let body = "";
+
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          body += chunk;
+        });
+        response.on("end", () => {
+          resolve(
+            (response.statusCode ?? 500) < 500 && responseBodyMatchesApp(body),
+          );
+        });
       },
     );
 
@@ -56,6 +111,19 @@ async function isExistingAppReachable(port) {
       resolve(false);
     });
   });
+}
+
+const existingDevServer = readExistingDevServerInfo();
+
+if (
+  existingDevServer &&
+  isProcessAlive(existingDevServer.pid) &&
+  (await isExistingAppReachable(existingDevServer.port))
+) {
+  console.log(
+    `[GETRA] ${appName} dev server is already running at ${existingDevServer.appUrl}`,
+  );
+  process.exit(0);
 }
 
 if (!(await canListen(preferredPort)) && (await isExistingAppReachable(preferredPort))) {

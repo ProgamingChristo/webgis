@@ -1,4 +1,7 @@
 import { spawn } from "node:child_process";
+import nextEnv from "@next/env";
+
+nextEnv.loadEnvConfig(process.cwd());
 
 const npmCommand =
   process.platform === "win32"
