@@ -1116,7 +1116,11 @@
 }
 
 .deleteDialog {
+  position: fixed;
+  inset: 0;
   width: min(420px, calc(100vw - 32px));
+  max-height: min(360px, calc(100vh - 32px));
+  margin: auto;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
   padding: 24px;
