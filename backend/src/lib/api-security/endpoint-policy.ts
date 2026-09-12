@@ -854,6 +854,16 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
   },
   {
     method: "POST",
+    path: "/api/routing/progress",
+    classification: "AUTHENTICATED",
+    role: "AUTHENTICATED",
+    rateLimit: "spatial",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_CONTENT_HEADERS,
+    purpose: "Project an ephemeral GPS fix onto an active network route",
+  },
+  {
+    method: "POST",
     path: "/api/transport/nearest",
     classification: "AUTHENTICATED",
     role: "AUTHENTICATED",

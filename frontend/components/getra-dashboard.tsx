@@ -785,6 +785,19 @@ function deduplicateMerchants<T extends Merchant>(merchants: T[]): T[] {
   return [...new Map(merchants.map((merchant) => [merchant.id, merchant])).values()];
 }
 
+const ACTIVE_NAVIGATION_LAYER_VISIBILITY = {
+  merchant: false,
+  property: false,
+  transaction: false,
+  activities: false,
+  boundary: true,
+} as const;
+
+const ACTIVE_NAVIGATION_WITH_UMKM_LAYER_VISIBILITY = {
+  ...ACTIVE_NAVIGATION_LAYER_VISIBILITY,
+  merchant: true,
+} as const;
+
 export function merchantFocusBounds(merchant: Pick<Merchant, "latitude" | "longitude">) {
   const padding = 0.006;
   return {
@@ -1758,6 +1771,44 @@ function GeneralGetraDashboard() {
   const [editingEndpoints, setEditingEndpoints] = useState(false);
   const journey = useActiveJourney(routeDestination, activeMode, routePreference);
   const journeyOpen = journey.state !== "PREVIEW" && journey.state !== "STOPPED";
+  const [journeyNearbyMerchants, setJourneyNearbyMerchants] = useState<Merchant[]>([]);
+  const [journeyNearbyLoading, setJourneyNearbyLoading] = useState(false);
+  const journeyNearbyRequestRef = useRef<AbortController | null>(null);
+  const journeyNearbyRequestedAtRef = useRef(0);
+  useEffect(() => {
+    if (!journey.engaged || !journey.nearbyUmkmVisible || !journey.position) return;
+    const now = Date.now();
+    if (now - journeyNearbyRequestedAtRef.current < 30_000) return;
+    journeyNearbyRequestedAtRef.current = now;
+    journeyNearbyRequestRef.current?.abort();
+    const controller = new AbortController();
+    journeyNearbyRequestRef.current = controller;
+    setJourneyNearbyLoading(true);
+    void mapidLayerService.getCanonicalMerchants(datasetBounds, {
+      limit: 20,
+      radiusMeters: 750,
+      sort: "NEAREST",
+      origin: {
+        longitude: journey.position.longitude,
+        latitude: journey.position.latitude,
+        source: "USER_LOCATION",
+      },
+      signal: controller.signal,
+    }).then((layer) => {
+      if (!controller.signal.aborted) setJourneyNearbyMerchants(layer.merchants);
+    }).catch(() => {
+      if (!controller.signal.aborted) setJourneyNearbyMerchants([]);
+    }).finally(() => {
+      if (journeyNearbyRequestRef.current === controller) {
+        journeyNearbyRequestRef.current = null;
+        setJourneyNearbyLoading(false);
+      }
+    });
+  }, [datasetBounds, journey.engaged, journey.nearbyUmkmVisible, journey.position, journey.updatedAt]);
+  useEffect(() => {
+    const requestRef = journeyNearbyRequestRef;
+    return () => requestRef.current?.abort();
+  }, []);
   const preview = useRouting({
     origin: routeOrigin?.coordinate ?? null,
     destination: routeDestination,
@@ -4217,6 +4268,8 @@ function GeneralGetraDashboard() {
             destinationName={routeDestination?.name}
             mode={activeMode}
             onModeChange={setActiveMode}
+            nearbyUmkmCount={journeyNearbyMerchants.length}
+            nearbyUmkmLoading={journeyNearbyLoading}
           /> : null}
           {route && route.distance_meters !== null && !journeyOpen ? (
             <div className={routingStyles.mobileSheetOnly}>
@@ -4230,20 +4283,29 @@ function GeneralGetraDashboard() {
             </div>
           ) : null}
           <GetraMap
-            transportNodes={canonical.data.transportNodes}
+            transportNodes={journey.engaged ? [] : canonical.data.transportNodes}
             datasetKey={datasetId}
             focusBounds={searchFocusBounds}
             focusKey={searchFocusKey}
-            merchants={primaryMode === "merchant" ? mapMerchants : []}
-            selectedId={primaryMode === "merchant" ? selectedId : null}
-            propertyCandidates={primaryMode === "business-space" ? propertyCandidates : []}
-            selectedPropertyId={primaryMode === "business-space" ? selectedPropertyId : null}
-            accessibilityEvidence={primaryMode === "accessibility" ? accessibilityEvidence : []}
-            selectedAccessibilityEvidenceId={primaryMode === "accessibility" ? selectedAccessibilityEvidenceId : null}
+            merchants={journey.engaged
+              ? journey.nearbyUmkmVisible
+                ? journeyNearbyMerchants.filter((merchant) => merchant.id !== routeDestination?.id)
+                : []
+              : primaryMode === "merchant" ? mapMerchants : []}
+            selectedId={journey.engaged ? null : primaryMode === "merchant" ? selectedId : null}
+            propertyCandidates={journey.engaged ? [] : primaryMode === "business-space" ? propertyCandidates : []}
+            selectedPropertyId={journey.engaged ? null : primaryMode === "business-space" ? selectedPropertyId : null}
+            accessibilityEvidence={journey.engaged ? [] : primaryMode === "accessibility" ? accessibilityEvidence : []}
+            selectedAccessibilityEvidenceId={journey.engaged ? null : primaryMode === "accessibility" ? selectedAccessibilityEvidenceId : null}
             userLocation={journeyOpen ? journeyPosition : userLocation}
             journeyActive={journey.engaged}
             journeyFollowing={journey.following}
             journeyFocusKey={journey.focusKey}
+            journeyHeadingDegrees={journey.position?.headingDegrees ?? null}
+            journeySpeedMps={journey.position?.speedMps ?? null}
+            navigationLayerState={journey.engaged
+              ? journey.nearbyUmkmVisible ? "ACTIVE_NAVIGATION_WITH_UMKM" : "ACTIVE_NAVIGATION"
+              : "EXPLORATION"}
             onJourneyCameraOverride={journey.controller.suspendFollow}
             onSelect={handleSelect}
             onRequestMerchantRoute={routeToMerchant}
@@ -4253,7 +4315,11 @@ function GeneralGetraDashboard() {
             onClearSelection={handleClearSelection}
             onViewportChange={handleViewportChange}
             contextualLayerData={contextualLayerData}
-            contextualLayerVisibility={contextualLayerVisibility}
+            contextualLayerVisibility={journey.engaged
+              ? journey.nearbyUmkmVisible
+                ? ACTIVE_NAVIGATION_WITH_UMKM_LAYER_VISIBILITY
+                : ACTIVE_NAVIGATION_LAYER_VISIBILITY
+              : contextualLayerVisibility}
             onContextualLayerChange={handleContextualLayerChange}
             datasetBounds={datasetBounds}
             datasetOrigin={datasetOrigin}
@@ -4266,17 +4332,17 @@ function GeneralGetraDashboard() {
               const candidate = route?.route_candidates?.find((item) => item.route_id === routeId);
               if (candidate && !journeyOpen) preview.selectCandidate(candidate);
             }}
-            serviceAreaGeometry={serviceArea?.geometry ?? null}
+            serviceAreaGeometry={journey.engaged ? null : serviceArea?.geometry ?? null}
             importBoundaries={
               visibleImportBoundaries
             }
             administrativeBoundaries={visibleAdministrativeBoundaries}
-            sponsoredPlacements={viewMode === "fair-discovery" ? fairDiscoveryResult?.sponsored : eligibleSponsoredPlacements}
+            sponsoredPlacements={journey.engaged ? [] : viewMode === "fair-discovery" ? fairDiscoveryResult?.sponsored : eligibleSponsoredPlacements}
             onSelectSponsored={(placement) => {
               const merchant = merchants.find((item) => item.id === placement.merchant_id);
               handleSelect(merchant ?? discoveryMerchant(placement));
             }}
-            analyticsCollection={analyticsCollection}
+            analyticsCollection={journey.engaged ? null : analyticsCollection}
             analyticsMode={analyticsMode}
             onSelectAnalyticsRegion={setSelectedAnalyticsRegionId}
             mapPickMode={mapPickMode}

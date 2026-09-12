@@ -1,7 +1,7 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { JourneyController } from "@/src/features/routing/journey-controller";
 import { JOURNEY_POLICY as policy } from "@/src/features/routing/journey-policy";
-import { RoutingClientError, type RoutingMode, type RoutingResult } from "@/src/services/routing.service";
+import { RoutingClientError, type RouteProgressResult, type RoutingMode, type RoutingResult } from "@/src/services/routing.service";
 
 const p1 = { latitude: -6.2151, longitude: 106.6842 };
 const p2 = { latitude: -6.2161, longitude: 106.6852 };
@@ -18,6 +18,19 @@ const payload = (mode: RoutingMode = "walking", distance = 600): RoutingResult =
   maneuvers: [], warnings: [], limitation_flags: [], engine: "test-fixture", source: "test-fixture",
   route_source: "test-fixture", analysis_method: "navigation_route", has_toll: false, has_highway: false, has_ferry: false,
 });
+const progressPayload = (overrides: Partial<RouteProgressResult> = {}): RouteProgressResult => ({
+  analysis_method: "route_linear_reference",
+  distance_from_route_meters: 4,
+  matched_position: p2,
+  next_maneuver: null,
+  on_route: true,
+  progress_fraction: 0.25,
+  remaining_distance_meters: 450,
+  remaining_duration_seconds: 338,
+  remaining_geometry: { type: "LineString", coordinates: [[p2.longitude, p2.latitude], [destination.longitude, destination.latitude]] },
+  tolerance_meters: 18,
+  ...overrides,
+});
 function deferred<T>() { let resolve!: (v: T) => void; const promise = new Promise<T>((r) => { resolve = r; }); return { promise, resolve }; }
 let success: PositionCallback;
 let failure: PositionErrorCallback;
@@ -25,6 +38,7 @@ let controller: JourneyController;
 const clearWatch = vi.fn();
 const watchPosition = vi.fn((ok: PositionCallback, fail?: PositionErrorCallback | null, options?: PositionOptions) => { void options; success = ok; failure = fail!; return 7; });
 const route = vi.fn();
+const progress = vi.fn();
 const authenticated = vi.fn();
 const geo = vi.fn();
 function fix(point = p1, accuracy = 5, timestamp = Date.now()) {
@@ -35,9 +49,10 @@ const flush = async () => { await Promise.resolve(); await Promise.resolve(); aw
 beforeEach(() => {
   vi.useFakeTimers(); vi.setSystemTime(new Date("2026-09-05T08:00:00Z"));
   route.mockReset().mockImplementation(async (_request, mode) => payload(mode));
+  progress.mockReset().mockResolvedValue(progressPayload());
   authenticated.mockReset().mockResolvedValue(true);
   geo.mockReset().mockReturnValue({ watchPosition, clearWatch });
-  controller = new JourneyController({ route, authenticated, geolocation: geo });
+  controller = new JourneyController({ route, progress, authenticated, geolocation: geo });
   controller.configure({ destination, mode: "walking" });
 });
 afterEach(() => { controller.dispose(); vi.useRealTimers(); });
@@ -91,16 +106,18 @@ describe("active journey lifecycle (controlled provider fixtures, not live accep
     await vi.advanceTimersByTimeAsync(1000); fix(p2); fix(p1, 5, Date.now() - 500);
     expect(controller.getSnapshot().position).toMatchObject(p2);
   });
-  it("coalesces movement with both time and displacement gates", async () => {
+  it("coalesces movement and updates route progress without a full reroute", async () => {
     await controller.start(); fix(); await flush();
     for (let i = 0; i < 50; i++) fix(p1);
     await vi.advanceTimersByTimeAsync(1000); fix(p2);
     expect(controller.getSnapshot().route?.distance_meters).toBe(600);
     expect(controller.getSnapshot().state).toBe("ACTIVE");
     expect(route).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(14_000);
-    expect(route).toHaveBeenCalledTimes(2);
-    expect(route.mock.calls[1][0]).toEqual(journeyRequest(p2));
+    await vi.advanceTimersByTimeAsync(policy.progressMinimumIntervalMs.walking);
+    expect(route).toHaveBeenCalledTimes(1);
+    expect(progress).toHaveBeenCalledTimes(1);
+    expect(progress.mock.calls[0][0]).toMatchObject({ current_position: p2, mode: "walking" });
+    expect(controller.getSnapshot().route?.distance_meters).toBe(450);
     expect(controller.getSnapshot().state).toBe("ACTIVE");
   });
   it("does not reroute for stationary GPS updates even after interval", async () => {
@@ -108,12 +125,12 @@ describe("active journey lifecycle (controlled provider fixtures, not live accep
     await vi.advanceTimersByTimeAsync(15_000); fix(); await flush();
     expect(route).toHaveBeenCalledTimes(1);
   });
-  it("supersedes late P1 response with P2 and aborts old transport", async () => {
+  it("supersedes a late initial route response with the latest GPS origin", async () => {
     const old = deferred<RoutingResult>(); route.mockImplementationOnce(() => old.promise);
     await controller.start(); fix(); const signal = route.mock.calls[0][2];
     await vi.advanceTimersByTimeAsync(1000); fix(p2);
     expect(signal.aborted).toBe(true);
-    await vi.advanceTimersByTimeAsync(14_000);
+    await flush();
     old.resolve(payload("walking", 999)); await flush();
     expect(controller.getSnapshot().route?.distance_meters).toBe(600);
     expect(controller.getSnapshot().position).toMatchObject(p2);
@@ -128,9 +145,10 @@ describe("active journey lifecycle (controlled provider fixtures, not live accep
   });
   it("reroutes destination change immediately without changing GPS origin", async () => {
     await controller.start(); fix(); await flush();
+    const previousRoute = controller.getSnapshot().route;
     const b = { latitude: -6.219, longitude: 106.689 };
     controller.configure({ destination: b, mode: "walking" });
-    expect(controller.getSnapshot().route).toBeNull(); await flush();
+    expect(controller.getSnapshot().route).toBe(previousRoute); await flush();
     expect(route.mock.calls.at(-1)?.[0]).toEqual(journeyRequest(p1, b));
   });
   // it ("rate bounds repeated automated refresh", async () => {
@@ -183,7 +201,7 @@ describe("active journey lifecycle (controlled provider fixtures, not live accep
     await controller.start(); fix(); await flush();
     route.mockResolvedValue({ ...payload(), route_status: status, geometry: null, distance_meters: null, duration_seconds: null });
     await vi.advanceTimersByTimeAsync(1000); controller.refresh(); await flush();
-    expect(controller.getSnapshot()).toMatchObject({ state: "ERROR", route: null });
+    expect(controller.getSnapshot()).toMatchObject({ state: "ACTIVE", route: { distance_meters: 600 }, routeStale: true });
   });
   it("rejects malformed route geometry independently", async () => {
     route.mockResolvedValue({ ...payload(), geometry: null }); await controller.start(); fix(); await flush();
@@ -195,15 +213,18 @@ describe("active journey lifecycle (controlled provider fixtures, not live accep
       state: "ACTIVE", gpsState: "GPS_UNAVAILABLE", routeStale: false,
       route: { distance_meters: 600 }, position: p1,
     });
-    fix(p2); await vi.advanceTimersByTimeAsync(policy.minimumIntervalMs);
-    expect(route).toHaveBeenCalledTimes(2);
+    fix(p2); await vi.advanceTimersByTimeAsync(policy.progressMinimumIntervalMs.walking);
+    expect(route).toHaveBeenCalledTimes(1);
+    expect(progress).toHaveBeenCalledTimes(1);
     expect(controller.getSnapshot()).toMatchObject({ state: "ACTIVE", gpsState: "GPS_GOOD", routeStale: false });
   });
   it("bounds repeated GPS loss/recovery without queuing each event", async () => {
     await controller.start(); fix(); await flush();
     for (let i = 0; i < 20; i++) { error(2); fix(); }
     expect(route).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(policy.minimumIntervalMs); expect(route).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(policy.progressMinimumIntervalMs.walking);
+    expect(route).toHaveBeenCalledTimes(1);
+    expect(progress).toHaveBeenCalledTimes(1);
   });
   it("marks GPS stale without discarding the last backend route", async () => {
     await controller.start(); fix(); await flush(); await vi.advanceTimersByTimeAsync(21_000);
@@ -245,14 +266,55 @@ describe("active journey lifecycle (controlled provider fixtures, not live accep
     await controller.start(); fix(p1, 15); await flush();
     fix(p2, 90, Date.now() + 1); fix(p2, 90, Date.now() + 2);
     expect(controller.getSnapshot().gpsState).toBe("GPS_DEGRADED");
-    await vi.advanceTimersByTimeAsync(policy.minimumIntervalMs);
+    await vi.advanceTimersByTimeAsync(policy.progressMinimumIntervalMs.walking);
     fix(p2, 12); await flush();
     expect(controller.getSnapshot()).toMatchObject({ state: "ACTIVE", engaged: true, gpsState: "GPS_GOOD" });
-    expect(route).toHaveBeenCalledTimes(2);
+    expect(route).toHaveBeenCalledTimes(1);
+    expect(progress).toHaveBeenCalledTimes(1);
   });
   it("suspends follow for manual camera control and allows explicit recenter", async () => {
     await controller.start(); fix(); await flush(); controller.suspendFollow(); fix(p2);
     expect(controller.getSnapshot().following).toBe(false); controller.focus(); expect(controller.getSnapshot().following).toBe(true);
+  });
+  it("keeps nearby UMKM hidden by default and toggles it only while engaged", async () => {
+    await controller.start(); fix(); await flush();
+    expect(controller.getSnapshot().nearbyUmkmVisible).toBe(false);
+    controller.toggleNearbyUmkm();
+    expect(controller.getSnapshot().nearbyUmkmVisible).toBe(true);
+    controller.stop();
+    expect(controller.getSnapshot().nearbyUmkmVisible).toBe(false);
+    controller.toggleNearbyUmkm();
+    expect(controller.getSnapshot().nearbyUmkmVisible).toBe(false);
+  });
+  it("requires three reliable off-route progress results before rerouting", async () => {
+    progress.mockResolvedValue(progressPayload({ on_route: false, distance_from_route_meters: 120 }));
+    await controller.start(); fix(); await flush();
+    const reroute = deferred<RoutingResult>();
+    route.mockImplementationOnce(() => reroute.promise);
+    const points = [
+      { latitude: -6.2161, longitude: 106.6852 },
+      { latitude: -6.2171, longitude: 106.6862 },
+      { latitude: -6.2181, longitude: 106.6872 },
+    ];
+    for (const point of points) {
+      await vi.advanceTimersByTimeAsync(policy.progressMinimumIntervalMs.walking);
+      fix(point);
+      await flush();
+    }
+    expect(progress).toHaveBeenCalledTimes(3);
+    expect(route).toHaveBeenCalledTimes(2);
+    expect(controller.getSnapshot()).toMatchObject({ state: "REROUTING", routeMatch: "OFF_ROUTE" });
+    reroute.resolve(payload("walking", 700));
+    await flush();
+    expect(controller.getSnapshot()).toMatchObject({ state: "ACTIVE", routeMatch: "ON_ROUTE", route: { distance_meters: 700 } });
+  });
+  it("retains the last route when progress calculation is temporarily unavailable", async () => {
+    progress.mockRejectedValue(new RoutingClientError("UNAVAILABLE"));
+    await controller.start(); fix(); await flush();
+    await vi.advanceTimersByTimeAsync(policy.progressMinimumIntervalMs.walking);
+    fix(p2); await flush();
+    expect(controller.getSnapshot()).toMatchObject({ state: "ACTIVE", route: { distance_meters: 600 } });
+    expect(controller.getSnapshot().error).toContain("Rute terakhir");
   });
   it("arrives only with fresh accurate GPS plus short real-provider-contract route", async () => {
     route.mockResolvedValue(payload("walking", 20)); await controller.start();

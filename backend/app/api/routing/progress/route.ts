@@ -1,0 +1,3 @@
+export const runtime = "nodejs";
+
+export { OPTIONS, POST } from "./handlers";

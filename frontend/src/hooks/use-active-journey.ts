@@ -4,7 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { JourneyController } from "@/src/features/routing/journey-controller";
 import { getAccessToken } from "@/src/lib/auth-client";
 import { getBrowserSupabaseClient } from "@/src/lib/supabase/browser";
-import { routingService, type RoutePreference, type RoutingMode } from "@/src/services/routing.service";
+import { routeProgressService, routingService, type RoutePreference, type RoutingMode } from "@/src/services/routing.service";
 import type { Coordinate } from "@/src/types/spatial";
 
 export function useActiveJourney(destination: Coordinate | null, mode: RoutingMode, preference: RoutePreference = "FASTEST") {
@@ -12,6 +12,7 @@ export function useActiveJourney(destination: Coordinate | null, mode: RoutingMo
     geolocation: () => typeof navigator !== "undefined" ? navigator.geolocation ?? null : null,
     authenticated: async () => Boolean(await getAccessToken()),
     route: routingService.getRoute,
+    progress: routeProgressService.getProgress,
   }));
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   const lat = destination?.latitude;
