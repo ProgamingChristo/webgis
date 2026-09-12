@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { BadgeCheck } from "lucide-react";
 import { useUmkmIntelligence } from "@/src/features/umkm-intelligence/hooks/use-umkm-intelligence";
 import type { OwnedMerchantBrief, UmkmWorkspaceSummary } from "../types/umkm-workspace.types";
 import { resolveSelectedMerchant } from "../model/umkm-workspace-state";
@@ -48,7 +49,14 @@ export function UmkmActiveWorkspace({ summary, state }: { summary: UmkmWorkspace
   if (!merchant) return null;
   return <div className="space-y-6" data-workspace-state={state} data-selected-merchant-id={merchant.id}>
     <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-      <div><h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">Kelola dan Kembangkan Usaha Anda</h1><p className="mt-2 text-sm text-slate-400">Lihat kondisi usaha dan tentukan langkah berikutnya.</p></div>
+      <div>
+        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
+          <BadgeCheck size={14} className="text-emerald-600" aria-hidden="true" />
+          Usaha Terverifikasi
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Kelola dan Kembangkan Usaha Anda</h1>
+        <p className="mt-2 text-sm text-slate-400">Lihat kondisi usaha dan tentukan langkah berikutnya.</p>
+      </div>
       <MerchantSelector merchants={summary.owned_merchants} selectedMerchantId={merchant.id} onSelect={selectMerchant} />
     </header>
     <UmkmWorkspaceNavigation section={section} onChange={navigate} />

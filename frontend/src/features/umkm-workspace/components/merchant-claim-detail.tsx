@@ -53,29 +53,29 @@ export function MerchantClaimDetailView({ claim }: { claim: MerchantClaimBrief }
   const Icon = pending ? Clock : approved ? CheckCircle : XCircle;
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8 text-slate-100 sm:px-6 sm:py-12">
-      <Link className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white" href="/umkm">
+    <div className="mx-auto w-full max-w-3xl px-4 py-6 text-slate-900 sm:px-6 sm:py-8">
+      <Link className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800" href="/umkm">
         <ArrowLeft size={14} /> Kembali ke Ruang Kelola UMKM
       </Link>
 
-      <article className="mt-5 rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-2xl shadow-slate-950/30 sm:p-7">
+      <article className="mt-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 gap-3">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-slate-700 bg-slate-900 text-cyan-200">
-              <BadgeCheck size={20} />
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-sky-100 bg-sky-50 text-sky-600">
+              <BadgeCheck size={24} />
             </span>
             <div className="min-w-0">
-              <h1 className="break-words text-xl font-bold text-white">{claim.merchant_name}</h1>
-              <p className="mt-1 text-sm text-slate-400">Klaim kepemilikan usaha</p>
+              <h1 className="break-words text-xl font-bold text-slate-900">{claim.merchant_name}</h1>
+              <p className="mt-1 text-xs text-slate-500">Klaim Kepemilikan Usaha</p>
             </div>
           </div>
-          <span className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${pending ? "border-amber-500/30 bg-amber-950/40 text-amber-200" : approved ? "border-emerald-500/30 bg-emerald-950/40 text-emerald-200" : "border-rose-500/30 bg-rose-950/40 text-rose-200"}`}>
-            <Icon className="mr-1.5" size={13} />
-            {pending ? "Menunggu pemeriksaan" : approved ? "Disetujui" : "Ditolak"}
+          <span className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-semibold ${pending ? "border-amber-200 bg-amber-50 text-amber-800" : approved ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-800"}`}>
+            <Icon className="mr-1.5" size={14} />
+            {pending ? "Klaim Sedang Diperiksa" : approved ? "Klaim Disetujui" : "Klaim Ditolak"}
           </span>
         </header>
 
-        <div className="mt-6 grid gap-4 border-y border-slate-800 py-5 sm:grid-cols-2">
+        <div className="mt-6 grid gap-4 border-y border-slate-100 py-5 sm:grid-cols-2">
           <DetailFact label="Kategori" value={claim.category} />
           <DetailFact label="Lokasi" value={claim.address || "Lokasi tersimpan"} />
           <DetailFact label="Diajukan" value={formatDate(claim.created_at)} />
@@ -83,25 +83,25 @@ export function MerchantClaimDetailView({ claim }: { claim: MerchantClaimBrief }
         </div>
 
         <section className="mt-5">
-          <h2 className="text-sm font-semibold text-white">Status pengajuan</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-400">
-            {pending ? "Pengajuan sedang diperiksa oleh admin GETRA. Pantau halaman ini untuk melihat hasil pemeriksaan." : approved ? "Klaim kepemilikan telah disetujui. Buka Usaha Saya untuk memeriksa kondisi usaha dan langkah berikutnya." : "Pengajuan tidak dapat disetujui. Periksa catatan admin sebelum mengajukan kembali."}
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Status Pemeriksaan</h2>
+          <p className="mt-2 text-xs leading-relaxed text-slate-600">
+            {pending ? "Klaim kepemilikan Anda sedang diperiksa oleh admin GETRA. Tempat usaha tetap dapat ditemukan secara publik di peta, namun fitur kelola baru akan diaktifkan setelah verifikasi disetujui." : approved ? "Klaim kepemilikan telah disetujui. Anda kini dapat mengelola profil, melihat insight area, dan mengaktifkan promosi." : "Pengajuan klaim tidak dapat disetujui. Silakan periksa catatan alasan di bawah sebelum mengajukan kembali."}
           </p>
           {claim.note ? (
-            <div className="mt-4 flex gap-3 rounded-2xl border border-rose-500/25 bg-rose-950/25 p-4 text-sm leading-6 text-rose-100">
-              <AlertTriangle className="mt-0.5 shrink-0" size={17} />
-              <div><strong className="block text-xs uppercase tracking-wider text-rose-200">Alasan admin</strong>{claim.note}</div>
+            <div className="mt-4 flex gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs leading-relaxed text-rose-900">
+              <AlertTriangle className="mt-0.5 shrink-0 text-rose-600" size={16} />
+              <div><strong className="block text-xs uppercase tracking-wider text-rose-700">Catatan Admin</strong>{claim.note}</div>
             </div>
           ) : null}
         </section>
-        {approved ? <Link className="mt-5 inline-flex w-full justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500 sm:w-auto" href={`/umkm?merchantId=${encodeURIComponent(claim.merchant_id)}`}>Kelola Usaha</Link> : null}
+        {approved ? <Link className="mt-6 inline-flex w-full justify-center rounded-xl bg-sky-600 px-5 py-3 text-xs font-semibold text-white shadow-sm hover:bg-sky-500 sm:w-auto" href={`/umkm?merchantId=${encodeURIComponent(claim.merchant_id)}`}>Kelola Usaha</Link> : null}
       </article>
     </div>
   );
 }
 
 function DetailFact({ label, value }: { label: string; value: string }) {
-  return <div><p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{label}</p><p className="mt-1 break-words text-sm text-slate-200">{value}</p></div>;
+  return <div><p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{label}</p><p className="mt-1 break-words text-xs font-medium text-slate-800">{value}</p></div>;
 }
 
 function ClaimState({ error = false, message }: { error?: boolean; message: string }) {
