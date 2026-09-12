@@ -28,7 +28,7 @@ export function CommunityShell({
 }: CommunityShellProps) {
   return (
     <GetraAppShell
-      description="Ruang kolaborasi berbasis lokasi untuk temuan warga, permintaan komuter, sinyal demand, dan peta budaya komunitas."
+      description="Berbagi temuan, kondisi sekitar, dan informasi berbasis lokasi bersama komunitas."
       eyebrow="GETRA"
       title="Komunitas GETRA"
       tone="community"

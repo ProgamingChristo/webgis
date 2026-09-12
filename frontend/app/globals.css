@@ -441,8 +441,68 @@ select:focus-visible {
 }
 
 .getra-app-shell--community {
-  --getra-primary-soft: rgba(34, 211, 238, 0.12);
+  --getra-canvas: #f8fafc;
+  --getra-canvas-grid: rgba(148, 163, 184, 0.08);
+  --getra-surface: #ffffff;
+  --getra-surface-raised: #ffffff;
+  --getra-surface-dark: #f8fafc;
+  --getra-ink: #0f172a;
+  --getra-ink-soft: #64748b;
+  --getra-ink-inverse: #ffffff;
+  --getra-line: #e2e8f0;
+  --getra-line-strong: #cbd5e1;
+  --getra-primary: #0284c7;
+  --getra-primary-hover: #0369a1;
+  --getra-primary-soft: #f0f9ff;
+  --getra-action: #0284c7;
+  --getra-warning: #d97706;
+  --getra-danger: #ef4444;
+  --getra-app-glass: #ffffff;
+  --getra-app-glass-strong: #ffffff;
+  --getra-app-radius: 16px;
+  --getra-app-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  color-scheme: light;
+  background: #f8fafc;
+  color: #0f172a;
 }
+
+.getra-app-shell--community .getra-app-main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.getra-app-shell--community .getra-app-page-header {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  padding: 20px 24px;
+  backdrop-filter: none;
+}
+
+.getra-app-shell--community .getra-app-page-header span {
+  color: #0284c7;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.getra-app-shell--community .getra-app-page-header h1 {
+  color: #0f172a;
+  font-size: clamp(22px, 3.2vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 6px 0 0;
+}
+
+.getra-app-shell--community .getra-app-page-header p {
+  color: #475569;
+  font-size: 13.5px;
+  line-height: 1.55;
+  margin: 8px 0 0;
+}
+
 
 .getra-app-shell--umkm {
   --getra-primary: #9af24a;
