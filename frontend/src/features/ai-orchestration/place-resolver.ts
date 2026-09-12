@@ -4,6 +4,12 @@ import { getraApiGet } from "@/src/lib/api/client";
 import type { Coordinate } from "@/src/types/spatial";
 import { mapidLayerService } from "@/src/services/mapid-layer.service";
 import type { Merchant } from "@/types/getra";
+import {
+  classifyEntityQuery,
+  entityRetrievalTerms,
+  normalizeEntityText,
+  resolveEntityCandidates,
+} from "@/types/entity-resolution";
 
 export interface ResolvedPlace {
   id: string;
@@ -17,44 +23,31 @@ export type PlaceResolution =
   | { status: "AMBIGUOUS"; candidates: string[] }
   | { status: "NOT_FOUND" };
 
-const MERCHANT_FALLBACK_STOP_WORDS = new Set([
-  "tempat",
-  "lokasi",
-  "tujuan",
-  "alamat",
-  "ke",
-  "menuju",
-  "di",
-  "yang",
-]);
-
 export async function resolveGetraPlace(
   query: string,
   transportNodes: TransportNodeDto[],
 ): Promise<PlaceResolution> {
-  const cleanedQuery = cleanPlaceQuery(query);
-  const normalized = normalizePlaceText(cleanedQuery);
+  const normalized = normalizePlaceText(query);
   if (normalized.length < 2) return { status: "NOT_FOUND" };
 
-  const transportMatches = transportNodes
-    .filter((node) => node.geometry?.type === "Point")
-    .map((node) => ({ node, score: placeMatchScore(normalized, normalizePlaceText(node.name)) }))
-    .filter((candidate) => candidate.score >= 0.6)
-    .sort((left, right) => right.score - left.score || left.node.name.localeCompare(right.node.name, "id"));
-  const topTransport = transportMatches[0];
-  if (topTransport) {
-    const competing = transportMatches.filter((candidate) =>
-      candidate.score >= topTransport.score - 0.03,
-    );
-    if (competing.length > 1) {
-      return { status: "AMBIGUOUS", candidates: competing.slice(0, 3).map((item) => item.node.name) };
-    }
-    const [longitude, latitude] = topTransport.node.geometry!.coordinates;
+  const queryKind = classifyEntityQuery(query);
+  if (queryKind === "DISCOVERY") return { status: "NOT_FOUND" };
+  const localTransport = resolveEntityCandidates(
+    query,
+    transportNodes.filter((node) => node.geometry?.type === "Point"),
+    (node) => node.name,
+  );
+  if (localTransport.status === "AMBIGUOUS") {
+    return { status: "AMBIGUOUS", candidates: localTransport.candidates.map((item) => item.label) };
+  }
+  if (localTransport.status === "RESOLVED" && (queryKind === "PLACE" || localTransport.candidate.score >= 0.96)) {
+    const node = localTransport.candidate.value;
+    const [longitude, latitude] = node.geometry!.coordinates;
     return {
       status: "RESOLVED",
       place: {
-        id: topTransport.node.id,
-        label: topTransport.node.name,
+        id: node.id,
+        label: node.name,
         coordinate: { latitude, longitude },
       },
     };
@@ -62,131 +55,86 @@ export async function resolveGetraPlace(
 
   const remoteTransport = await getraApiGet<PaginatedEnvelope<TransportNodeDto>>(
     "/api/v1/transport/nodes",
-    { query: { q: cleanedQuery, limit: 5, page: 1 } },
+    { query: { q: query, limit: 5, page: 1 } },
   );
-  const remoteTransportMatches = remoteTransport.items
-    .filter((node) => node.geometry?.type === "Point")
-    .map((node) => ({ node, score: placeMatchScore(normalized, normalizePlaceText(node.name)) }))
-    .filter((candidate) => candidate.score >= 0.6)
-    .sort((left, right) => right.score - left.score || left.node.name.localeCompare(right.node.name, "id"));
-  const remoteTop = remoteTransportMatches[0];
-  if (remoteTop) {
-    const competing = remoteTransportMatches.filter((candidate) => candidate.score >= remoteTop.score - 0.03);
-    if (competing.length > 1) {
-      return { status: "AMBIGUOUS", candidates: competing.slice(0, 3).map((item) => item.node.name) };
-    }
-    const [longitude, latitude] = remoteTop.node.geometry!.coordinates;
+  const remoteResolution = resolveEntityCandidates(
+    query,
+    remoteTransport.items.filter((node) => node.geometry?.type === "Point"),
+    (node) => node.name,
+  );
+  if (remoteResolution.status === "AMBIGUOUS") {
+    return { status: "AMBIGUOUS", candidates: remoteResolution.candidates.map((item) => item.label) };
+  }
+  if (remoteResolution.status === "RESOLVED" && (queryKind === "PLACE" || remoteResolution.candidate.score >= 0.96)) {
+    const node = remoteResolution.candidate.value;
+    const [longitude, latitude] = node.geometry!.coordinates;
     return {
       status: "RESOLVED",
       place: {
-        id: remoteTop.node.id,
-        label: remoteTop.node.name,
+        id: node.id,
+        label: node.name,
         coordinate: { latitude, longitude },
       },
     };
   }
 
-  const candidates = await searchMerchantCandidates(cleanedQuery, normalized);
-  const scoredMerchants = candidates
-    .map((merchant) => ({
-      merchant,
-      score: placeMatchScore(normalized, normalizePlaceText(merchant.name)),
-    }))
-    .filter((candidate) => candidate.score >= 0.5)
-    .sort((left, right) =>
-      right.score - left.score || left.merchant.name.localeCompare(right.merchant.name, "id"),
-    );
-
-  if (scoredMerchants.length > 0) {
-    const top = scoredMerchants[0];
-    const similarlyNamed = scoredMerchants.filter((candidate) =>
-      candidate.score >= top.score - 0.03,
-    );
-    if (similarlyNamed.length > 1 && top.score < 0.98) {
-      return {
-        status: "AMBIGUOUS",
-        candidates: similarlyNamed.slice(0, 3).map((candidate) => candidate.merchant.name),
-      };
+  const layers = [await mapidLayerService.searchCanonicalMerchants(query, { limit: 12 })];
+  if (layers[0].merchants.length === 0) {
+    for (const term of entityRetrievalTerms(query).slice(0, 2)) {
+      layers.push(await mapidLayerService.searchCanonicalMerchants(term, { limit: 12 }));
     }
+  }
+  const candidates = [...new Map(layers.flatMap((layer) => layer.merchants).map((merchant) => [merchant.id, merchant])).values()];
+  const merchantResolution = resolveEntityCandidates(query, candidates, (merchant) => merchant.name);
+  if (merchantResolution.status === "AMBIGUOUS") {
+    return { status: "AMBIGUOUS", candidates: merchantResolution.candidates.map((item) => item.label) };
+  }
+  if (merchantResolution.status === "RESOLVED") {
+    const top = merchantResolution.candidate.value;
     return {
       status: "RESOLVED",
       place: {
-        id: top.merchant.id,
-        label: top.merchant.name,
-        coordinate: { latitude: top.merchant.latitude, longitude: top.merchant.longitude },
-        merchant: top.merchant,
+        id: top.id,
+        label: top.name,
+        coordinate: { latitude: top.latitude, longitude: top.longitude },
+        merchant: top,
       },
     };
   }
 
-  const geocoded = await getraApiGet<{
-    data: { candidates: Array<{ id: string; label: string; latitude: number; longitude: number }> };
-  }>("/api/places/resolve", { query: { q: cleanedQuery } });
-  const placeCandidates = geocoded.data.candidates;
-  if (placeCandidates.length === 0) return { status: "NOT_FOUND" };
-  if (placeCandidates.length > 1) {
-    return { status: "AMBIGUOUS", candidates: placeCandidates.slice(0, 3).map((place) => place.label) };
+  if (localTransport.status === "RESOLVED" || remoteResolution.status === "RESOLVED") {
+    const node = localTransport.status === "RESOLVED"
+      ? localTransport.candidate.value
+      : remoteResolution.status === "RESOLVED"
+        ? remoteResolution.candidate.value
+        : null;
+    if (!node) return { status: "NOT_FOUND" };
+    const [longitude, latitude] = node.geometry!.coordinates;
+    return { status: "RESOLVED", place: { id: node.id, label: node.name, coordinate: { latitude, longitude } } };
   }
-  const place = placeCandidates[0];
-  return {
-    status: "RESOLVED",
-    place: {
-      id: place.id,
-      label: place.label,
-      coordinate: { latitude: place.latitude, longitude: place.longitude },
-    },
-  };
-}
 
-async function searchMerchantCandidates(
-  query: string,
-  normalizedQuery: string,
-): Promise<Merchant[]> {
-  const primary = await mapidLayerService.searchCanonicalMerchants(query, { limit: 6 });
-  if (primary.merchants.length > 0) return primary.merchants;
-
-  const fallbackQueries = [...new Set(
-    normalizedQuery
-      .split(" ")
-      .filter((token) => token.length >= 3 && !MERCHANT_FALLBACK_STOP_WORDS.has(token))
-      .reverse(),
-  )].slice(0, 2);
-
-  const byId = new Map<string, Merchant>();
-  for (const fallbackQuery of fallbackQueries) {
-    try {
-      const layer = await mapidLayerService.searchCanonicalMerchants(fallbackQuery, { limit: 8 });
-      for (const merchant of layer.merchants) byId.set(merchant.id, merchant);
-    } catch {
-      // A failed fallback token must not hide a later geocoding fallback.
+  if (candidates.length === 0 || merchantResolution.status === "NOT_FOUND") {
+    const geocoded = await getraApiGet<{
+      data: { candidates: Array<{ id: string; label: string; latitude: number; longitude: number }> };
+    }>("/api/places/resolve", { query: { q: query } });
+    const placeCandidates = geocoded.data.candidates;
+    if (placeCandidates.length === 0) return { status: "NOT_FOUND" };
+    if (placeCandidates.length > 1) {
+      return { status: "AMBIGUOUS", candidates: placeCandidates.slice(0, 3).map((place) => place.label) };
     }
+    const place = placeCandidates[0];
+    return {
+      status: "RESOLVED",
+      place: {
+        id: place.id,
+        label: place.label,
+        coordinate: { latitude: place.latitude, longitude: place.longitude },
+      },
+    };
   }
-  return [...byId.values()];
-}
-
-export function cleanPlaceQuery(value: string): string {
-  let cleaned = value.trim().replace(/\s+/g, " ");
-  cleaned = cleaned.replace(/^(?:ke|menuju)\s+/iu, "");
-  cleaned = cleaned.replace(/^(?:tempat|lokasi|tujuan|alamat)\s+(?:bernama\s+)?/iu, "");
-  cleaned = cleaned.replace(/\s+(?:ya|dong|tolong)$/iu, "");
-  return cleaned.trim();
+  return { status: "NOT_FOUND" };
 }
 
 export function normalizePlaceText(value: string): string {
-  return value
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase("id-ID")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim()
-    .replace(/\s+/g, " ");
-}
-
-function placeMatchScore(query: string, candidate: string): number {
-  if (query === candidate) return 1;
-  if (candidate.startsWith(query) || candidate.includes(query)) return 0.9;
-  const queryTokens = new Set(query.split(" "));
-  const candidateTokens = new Set(candidate.split(" "));
-  const shared = [...queryTokens].filter((token) => candidateTokens.has(token)).length;
-  return shared / Math.max(queryTokens.size, candidateTokens.size, 1);
+  return normalizeEntityText(value);
 }

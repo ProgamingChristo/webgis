@@ -1,17 +1,19 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ApplicationError } from "@/src/lib/errors";
 import type { CommuterOrigin } from "@/src/features/commuter/commuter.types";
+import { entityRetrievalTerms, resolveEntityCandidates } from "@/types/entity-resolution";
 
 export interface SearchReference { id?: string; label: string; longitude: number; latitude: number; type: "USER_LOCATION" | "TRANSIT" | "SELECTED_POINT" }
 
 export async function resolveSearchReference(supabase: SupabaseClient, name: string | undefined, origin: CommuterOrigin | null): Promise<SearchReference | null> {
   if (!name) return origin ? { ...origin, type: origin.source === "USER_LOCATION" ? "USER_LOCATION" : "SELECTED_POINT", label: origin.source === "USER_LOCATION" ? "lokasi saya" : "titik pilihan" } : null;
-  // Exact, case-insensitive canonical name. Ambiguous names require clarification, never guessed coordinates.
+  const retrievalTerm = entityRetrievalTerms(name)[0] ?? name.trim();
   const { data, error } = await supabase.from("transport_nodes").select("id,name,geometry")
-    .ilike("name", name.replace(/[\\%_]/g, "\\$&")).limit(2);
+    .ilike("name", `%${retrievalTerm.replace(/[\\%_]/g, "\\$&")}%`).limit(20);
   if (error) throw error;
-  if (data?.length !== 1) throw new ApplicationError("VALIDATION_ERROR", "Nama stasiun atau halte belum dapat dipastikan. Gunakan nama lengkap.");
-  const node = data[0];
+  const resolution = resolveEntityCandidates(name, data ?? [], (node) => node.name);
+  if (resolution.status !== "RESOLVED") throw new ApplicationError("VALIDATION_ERROR", "Nama stasiun atau halte belum dapat dipastikan. Gunakan nama lengkap.");
+  const node = resolution.candidate.value;
   const coordinates = node.geometry?.coordinates;
   if (!Array.isArray(coordinates) || !Number.isFinite(coordinates[0]) || !Number.isFinite(coordinates[1])) throw new ApplicationError("VALIDATION_ERROR");
   return { id: node.id, label: node.name, type: "TRANSIT", longitude: coordinates[0], latitude: coordinates[1] };

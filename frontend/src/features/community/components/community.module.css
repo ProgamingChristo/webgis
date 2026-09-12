@@ -2132,3 +2132,33 @@
     justify-content: flex-start;
   }
 }
+
+/* Community feed: calm, map-companion presentation with the existing actions intact. */
+.visuallyHidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.feedTabs { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid #e2e8f0; background: #fff; }
+.feedTabs button { min-height: 48px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #94a3b8; font-size: 13px; font-weight: 700; cursor: pointer; }
+.feedTabs button[aria-selected="true"] { border-bottom-color: #0891b2; color: #0f3b66; }
+.feedNotice { margin: 0; border-bottom: 1px solid #e2e8f0; padding: 10px 18px; background: #f8fafc; color: #64748b; font-size: 12px; }
+
+:global(.getra-app-shell--community) .navigation { margin: 0 0 12px; border: 0; border-bottom: 1px solid #e2e8f0; border-radius: 0; padding: 0 0 8px; background: transparent; }
+:global(.getra-app-shell--community) .navItem { min-height: 34px; border-color: #e2e8f0; border-radius: 999px; background: #fff; color: #64748b; }
+:global(.getra-app-shell--community) .navItemActive { border-color: #7dd3fc; background: #ecfeff; color: #0369a1; }
+:global(.getra-app-shell--community) .content { margin: 0; border: 1px solid #e2e8f0; border-radius: 14px; background: #fff; color: #0f172a; overflow: visible; }
+:global(.getra-app-shell--community) .composer,
+:global(.getra-app-shell--community) .postCard { border-bottom-color: #e2e8f0; padding: 16px 18px; background: #fff; }
+:global(.getra-app-shell--community) .composer textarea { min-height: 54px; border-color: #e2e8f0; border-radius: 12px; background: #f8fafc; color: #0f172a; }
+:global(.getra-app-shell--community) .composer textarea:focus { border-color: #38bdf8; background: #fff; outline: 3px solid rgba(56, 189, 248, .12); }
+:global(.getra-app-shell--community) .postContent { color: #334155; }
+:global(.getra-app-shell--community) .secondaryButton,
+:global(.getra-app-shell--community) .reactionButton,
+:global(.getra-app-shell--community) .reactionButtonActive { border-color: #e2e8f0; background: #fff; color: #475569; border-radius: 999px; }
+:global(.getra-app-shell--community) .primaryButton { border-radius: 999px; background: #0891b2; color: #fff; }
+:global(.getra-app-shell--community) .postLocation { border-color: #bae6fd; border-radius: 999px; background: #f0f9ff; color: #0369a1; }
+:global(.getra-app-shell--community) .notificationButton { border-color: #dbeafe; border-radius: 999px; background: #fff; color: #0f3b66; box-shadow: 0 2px 8px rgba(15, 23, 42, .08); }
+:global(.getra-app-shell--community) .notificationPanel { border-color: #e2e8f0; background: #fff; color: #0f172a; box-shadow: 0 16px 40px rgba(15, 23, 42, .14); }
+:global(.getra-app-shell--community) .notificationItem { border-color: #e2e8f0; background: #fff; color: #334155; }
+:global(.getra-app-shell--community) .notificationItemUnread { background: #f0f9ff; }
+.notificationMenu[data-variant="light"] .notificationButton { border-color: #dbeafe; border-radius: 999px; background: #fff; color: #0f3b66; box-shadow: 0 2px 8px rgba(15, 23, 42, .08); }
+.notificationMenu[data-variant="light"] .notificationPanel { border-color: #e2e8f0; background: #fff; color: #0f172a; box-shadow: 0 16px 40px rgba(15, 23, 42, .14); }
+.notificationMenu[data-variant="light"] .notificationItem { border-color: #e2e8f0; background: #fff; color: #334155; }
+.notificationMenu[data-variant="light"] .notificationItemUnread { background: #f0f9ff; }

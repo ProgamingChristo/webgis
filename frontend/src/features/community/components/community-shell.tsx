@@ -5,13 +5,9 @@ import {
   CommunityNavigation,
   type CommunityView,
 } from "./community-navigation";
-import type { CommunityShellState } from "../types/community.types";
 import styles from "./community.module.css";
-
-const defaultShellState: CommunityShellState = {
-  contributionCount: 0,
-  statusLabel: "Development scaffold",
-};
+import { CommunityNotificationsMenu } from "./notifications/community-notifications-menu";
+import type { CommunityShellState } from "../types/community.types";
 
 type CommunityShellProps = {
   children?: ReactNode;
@@ -24,26 +20,14 @@ export function CommunityShell({
   activeView = "home",
   children,
   onChangeView,
-  state = defaultShellState,
 }: CommunityShellProps) {
   return (
     <GetraAppShell
       description="Berbagi temuan, kondisi sekitar, dan informasi berbasis lokasi bersama komunitas."
       eyebrow="GETRA"
-      title="Komunitas GETRA"
+      title="Komunitas"
       tone="community"
-      actions={
-        <dl className={styles.status} aria-label="Status komunitas">
-          <div>
-            <dt>Kontribusi</dt>
-            <dd>{state.contributionCount}</dd>
-          </div>
-          <div>
-            <dt>Status</dt>
-            <dd>{state.statusLabel}</dd>
-          </div>
-        </dl>
-      }
+      utilities={<CommunityNotificationsMenu variant="light" />}
     >
 
       <CommunityNavigation

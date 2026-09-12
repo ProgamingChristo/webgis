@@ -9,17 +9,19 @@ import {
 
 interface UMKMContextProps {
   children: React.ReactNode;
+  hideNotice?: boolean;
 }
 
 export function UMKMContext({
   children,
+  hideNotice = false,
 }: UMKMContextProps) {
   return (
     <div
       className="experience-context experience-context--umkm"
       data-testid="umkm-context"
     >
-      <div className="stakeholder-notice stakeholder-notice--umkm">
+      {!hideNotice ? <div className="stakeholder-notice stakeholder-notice--umkm">
         <Store size={16} />
         <span>
           <strong>Pengalaman UMKM:</strong> lihat kebutuhan area, kelola usaha,
@@ -32,7 +34,7 @@ export function UMKMContext({
           <Megaphone size={13} />
           Kelola Promosi
         </Link>
-      </div>
+      </div> : null}
       {children}
     </div>
   );

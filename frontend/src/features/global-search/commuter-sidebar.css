@@ -203,6 +203,10 @@
 .commuter-place-popup .commuter-popup-actions button { min-height: 38px; font-size: 12px; font-weight: 600; }
 .commuter-place-popup .commuter-popup-actions button:last-child { background: var(--commuter-blue); color: #fff; border-color: var(--commuter-blue); }
 .commuter-workspace .map-marker--selected { background: var(--commuter-blue); border-color: #fff; box-shadow: 0 0 0 5px #0891b233; }
+.commuter-workspace .map-marker-anchor { width: 36px; height: 36px; }
+.commuter-workspace .map-marker { width: 26px; height: 26px; border-color: #fff; background: var(--commuter-blue); box-shadow: 0 3px 10px #10235735, 0 0 0 3px #0891b21f; }
+.commuter-workspace .map-marker::after { width: 7px; height: 7px; background: #fff; }
+.commuter-workspace .map-marker--selected { width: 32px; height: 32px; box-shadow: 0 4px 14px #10235740, 0 0 0 5px #0891b233; }
 .right-panel:has(.place-detail) { padding: 0; overflow: auto; background: #fff; }
 .right-panel:has(.place-detail) .commuter-detail-close { position: sticky; z-index: 3; top: 8px; float: right; width: auto; margin: 8px; padding: 7px 10px; gap: 8px; border: 1px solid var(--commuter-line); border-radius: 18px; background: #fff; box-shadow: 0 3px 12px #10235718; }
 .place-detail__hero { position: relative; min-height: 210px; background: #edf3f8; overflow: hidden; }
@@ -240,4 +244,169 @@
   .commuter-place-popup__body { padding: 10px; }
   .commuter-place-popup__body p { margin: 4px 0; }
   .commuter-map-actions .commuter-ai-launcher { bottom: 18px; top: auto; right: 18px; left: auto; }
+}
+
+/* Final map-first commuter layout. */
+.workspace--figma.commuter-workspace .workspace-grid,
+.workspace--figma.commuter-workspace .workspace-grid[data-routing-active="true"] {
+  display: grid;
+  grid-template-columns: minmax(240px, 270px) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0;
+  height: calc(100dvh - 82px);
+  min-height: 560px;
+  padding: 0;
+}
+.workspace--figma.commuter-workspace .workspace-grid[data-detail-open="true"] {
+  grid-template-columns: minmax(240px, 270px) minmax(0, 1fr) minmax(260px, 290px);
+}
+.workspace--figma.commuter-workspace .panel,
+.workspace--figma.commuter-workspace .map-panel {
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.workspace--figma.commuter-workspace .left-panel { border-right: 1px solid var(--commuter-line); }
+.workspace--figma.commuter-workspace .right-panel {
+  position: static;
+  width: auto;
+  max-height: none;
+  border-left: 1px solid var(--commuter-line);
+  padding: 0;
+  box-shadow: none;
+}
+.workspace--figma.commuter-workspace .map-panel { background: #eef3f5; }
+
+.commuter-sidebar__header { position: relative; gap: 7px; padding: 7px 10px; }
+.commuter-brand { display: none; }
+.commuter-sidebar__header > .commuter-icon { position: absolute; z-index: 1; top: 10px; right: 12px; min-width: 28px; min-height: 28px; border: 0; background: transparent; }
+.commuter-tabs { width: calc(100% - 36px); border-radius: 7px; }
+.commuter-tabs button { min-height: 32px; border-radius: 6px; font-size: 11px; }
+.commuter-tabs button svg { width: 15px; }
+.commuter-sidebar__body { padding: 10px; }
+.commuter-search { position: relative; gap: 9px; }
+.commuter-area-bar { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--commuter-muted); font-size: 10px; }
+.commuter-area-bar > span { min-width: 0; display: inline-flex; align-items: center; gap: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.commuter-area-bar strong { color: var(--commuter-ink); overflow: hidden; text-overflow: ellipsis; }
+.commuter-area-bar button,
+.commuter-location-action button { display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; border: 0; background: transparent; color: #05769a; font: inherit; font-size: 10px; cursor: pointer; }
+.commuter-search__form { gap: 0; }
+.commuter-search__input { min-height: 38px; border-radius: 7px; background: #fff; }
+.commuter-search__input:focus-within { border-color: var(--commuter-blue); box-shadow: 0 0 0 2px #0891b21a; }
+.commuter-search__input input { padding-block: 9px; font-size: 11px; }
+.commuter-filter-bar { display: flex; align-items: center; justify-content: space-between; gap: 7px; }
+.commuter-filter-trigger,
+.commuter-radius-state { min-height: 28px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--commuter-line); border-radius: 7px; background: #fff; color: var(--commuter-ink); padding: 4px 9px; font: inherit; font-size: 10px; cursor: pointer; }
+.commuter-radius-state { margin-left: auto; border-radius: 999px; background: #e6f7fb; color: #087f9d; }
+.commuter-chips { gap: 4px; }
+.commuter-chip { min-height: 25px; padding: 4px 7px; border-radius: 999px; font-size: 9px; }
+.commuter-chip--active { background: #e6f7fb; color: #087f9d; border-color: #9fddeb; }
+
+.commuter-filter-panel,
+.commuter-region-panel { display: grid; gap: 10px; border: 1px solid #ccd9e8; border-radius: 11px; background: #fff; padding: 11px; box-shadow: 0 12px 28px #10235720; }
+.commuter-filter-panel > header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 7px; border-bottom: 1px solid var(--commuter-line); }
+.commuter-filter-panel > header strong { font-size: 12px; }
+.commuter-filter-panel > header button { display: grid; place-items: center; width: 25px; height: 25px; border: 0; background: transparent; color: var(--commuter-muted); cursor: pointer; }
+.commuter-filter-panel fieldset,
+.commuter-region-panel fieldset { display: grid; gap: 7px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.commuter-filter-panel legend,
+.commuter-region-panel legend { margin-bottom: 6px; color: var(--commuter-muted); font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.commuter-radius-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.commuter-radius-options button { min-height: 29px; border: 1px solid var(--commuter-line); border-right: 0; background: #fff; color: var(--commuter-muted); font: inherit; font-size: 9px; cursor: pointer; }
+.commuter-radius-options button:first-child { border-radius: 7px 0 0 7px; }
+.commuter-radius-options button:last-child { border-right: 1px solid var(--commuter-line); border-radius: 0 7px 7px 0; }
+.commuter-radius-options button[aria-pressed="true"] { background: var(--commuter-blue); color: #fff; border-color: var(--commuter-blue); }
+.commuter-filter-panel fieldset > label,
+.commuter-filter-select { display: grid; gap: 4px; color: var(--commuter-muted); font-size: 9px; }
+.commuter-filter-panel input[type="number"],
+.commuter-filter-panel select { width: 100%; min-height: 32px; border: 1px solid var(--commuter-line); border-radius: 7px; background: #fff; color: var(--commuter-ink); padding: 6px 8px; font: inherit; font-size: 10px; }
+.commuter-check { display: flex; align-items: center; gap: 7px; color: var(--commuter-ink); font-size: 10px; }
+.commuter-check input { accent-color: var(--commuter-blue); }
+.commuter-filter-panel footer { display: grid; grid-template-columns: .7fr 1.3fr; gap: 7px; padding-top: 4px; }
+.commuter-filter-panel footer button { min-height: 32px; border: 1px solid var(--commuter-line); border-radius: 7px; background: #fff; color: var(--commuter-muted); font: inherit; font-size: 10px; cursor: pointer; }
+.commuter-filter-panel footer .commuter-apply,
+.commuter-region-panel > .commuter-apply { background: var(--commuter-blue); border-color: var(--commuter-blue); color: #fff; }
+.commuter-region-panel .commuter-region { display: flex; align-items: center; gap: 7px; font-size: 10px; }
+.commuter-region-panel > .commuter-apply,
+.commuter-search-area { min-height: 32px; border-radius: 7px; font-size: 10px; }
+.commuter-search-area { border: 1px solid #9fddeb; background: #e6f7fb; color: #087f9d; cursor: pointer; }
+
+.commuter-sidebar .results-header { margin-top: 11px; }
+.commuter-sidebar .result-list { gap: 0; }
+.commuter-merchant { padding-block: 7px; }
+.commuter-merchant__photo { width: 58px; height: 62px; }
+.commuter-merchant__body > strong { font-size: 12px; }
+.commuter-merchant__body > span { font-size: 9px; }
+.commuter-route-summary { margin-top: 10px; padding: 9px; }
+.commuter-sidebar .route-planner { gap: 7px; margin-bottom: 10px; padding: 9px; border-radius: 9px; box-shadow: none; }
+.commuter-sidebar .route-planner__header strong { font-size: 12px; }
+.commuter-sidebar .route-endpoints-summary { margin: 5px 0; padding: 8px; border-radius: 8px; }
+.commuter-sidebar .route-endpoints-summary__list { font-size: 10px; }
+.commuter-sidebar .route-endpoints-summary__btn { font-size: 9px; }
+
+.right-panel:has(.place-detail) .commuter-detail-close { top: 7px; margin: 7px; min-height: 28px; padding: 5px 8px; border-radius: 7px; box-shadow: none; }
+.place-detail__content { gap: 14px; padding: 16px 14px; }
+.place-detail__title { padding-top: 26px; }
+.place-detail__title h2 { font-size: 18px; }
+.place-detail__title p { font-size: 10px; }
+.place-detail__address { display: flex; align-items: flex-start; gap: 4px; margin-top: 5px; color: var(--commuter-muted); font-size: 9px; line-height: 1.45; }
+.place-detail__address svg { flex: 0 0 auto; margin-top: 1px; color: var(--commuter-blue); }
+.place-detail__metrics { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); margin: 0; border: 1px solid var(--commuter-line); border-radius: 8px; background: #f8fafc; }
+.place-detail__metrics > div { display: grid; gap: 3px; padding: 10px 6px; text-align: center; border-right: 1px solid var(--commuter-line); }
+.place-detail__metrics > div:last-child { border-right: 0; }
+.place-detail__metrics dd { margin: 0; color: #087f9d; font-size: 12px; font-weight: 800; }
+.place-detail__metrics dt { color: var(--commuter-muted); font-size: 8px; text-transform: uppercase; }
+.place-detail__actions { display: grid; }
+.place-detail__route { min-height: 38px; border-radius: 7px; font-size: 11px; }
+.place-detail__ownership,
+.place-detail__claim { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; margin-top: 7px; border: 1px solid #bae6fd; border-radius: 7px; color: #0369a1; font-size: 11px; font-weight: 700; text-decoration: none; }
+.place-detail__ownership { border-color: #bbf7d0; background: #f0fdf4; color: #15803d; }
+.place-detail__section { display: grid; gap: 8px; padding-top: 13px; border-top: 1px solid var(--commuter-line); }
+.place-detail__section h3,
+.place-detail__gallery h3 { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--commuter-ink); font-size: 11px; }
+.place-detail__section h3 svg,
+.place-detail__gallery h3 svg { color: var(--commuter-blue); }
+.place-detail__section ul { display: grid; gap: 6px; margin: 0; padding-left: 16px; color: var(--commuter-muted); font-size: 9px; line-height: 1.45; }
+.place-detail__section p { margin: 0; color: var(--commuter-muted); font-size: 9px; line-height: 1.5; }
+.place-detail__rows { display: grid; gap: 7px; margin: 0; }
+.place-detail__rows > div { display: flex; justify-content: space-between; gap: 8px; font-size: 9px; }
+.place-detail__rows dt { color: var(--commuter-muted); }
+.place-detail__rows dd { margin: 0; color: var(--commuter-ink); text-align: right; }
+.place-detail__phone { color: #087f9d; font-size: 10px; }
+.place-detail__gallery { display: grid; gap: 8px; padding-top: 13px; border-top: 1px solid var(--commuter-line); }
+.place-detail__gallery > div { grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.place-detail__gallery figure { min-height: 64px; border-radius: 6px; }
+
+.map-basemap-state { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 20px; background: #eef3f5; color: var(--commuter-ink); }
+.map-basemap-state > div { display: grid; justify-items: center; gap: 8px; max-width: 280px; border: 1px solid var(--commuter-line); border-radius: 10px; background: #fff; padding: 18px; text-align: center; box-shadow: 0 8px 24px #10235714; }
+.map-basemap-state svg { color: var(--commuter-blue); }
+.map-basemap-state strong { font-size: 12px; }
+.map-basemap-state span { color: var(--commuter-muted); font-size: 10px; line-height: 1.5; }
+.map-basemap-state button { min-height: 32px; border: 0; border-radius: 7px; background: var(--commuter-blue); color: #fff; padding: 0 12px; font: inherit; font-size: 10px; cursor: pointer; }
+.commuter-workspace .map-status { top: 10px; }
+
+.commuter-workspace .commuter-assistant { right: 12px; bottom: 58px; width: min(340px, calc(100% - 24px)); max-height: min(540px, calc(100% - 76px)); border-radius: 12px; }
+.commuter-assistant > .tanya-getra { padding: 14px; }
+.tanya-getra { gap: 10px; }
+.tanya-getra__header h3 { font-size: 14px; }
+.tanya-getra__messages { max-height: 260px; }
+.tanya-getra__message > p { padding: 9px 10px; font-size: 11px; line-height: 1.5; }
+.tanya-getra__welcome { padding: 12px 4px; font-size: 11px; }
+.commuter-map-actions .commuter-ai-launcher { right: 16px; bottom: 14px; min-height: 36px; padding: 7px 10px; border-radius: 9px; }
+
+@media (max-width: 1180px) and (min-width: 761px) {
+  .workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="false"] { grid-template-columns: minmax(240px, 270px) minmax(0, 1fr); }
+  .workspace--figma.commuter-workspace .workspace-grid[data-detail-open="true"] { grid-template-columns: minmax(240px, 260px) minmax(0, 1fr); }
+  .workspace--figma.commuter-workspace .right-panel { position: absolute; z-index: 7; right: 10px; top: 10px; bottom: 10px; width: 280px; height: auto; border: 1px solid var(--commuter-line); border-radius: 10px; box-shadow: 0 12px 30px #10235720; }
+}
+
+@media (max-width: 760px) {
+  .workspace--figma.commuter-workspace .workspace-grid,
+  .workspace--figma.commuter-workspace .workspace-grid[data-routing-active="true"],
+  .workspace--figma.commuter-workspace .workspace-grid[data-detail-open="true"] { display: block; height: calc(100dvh - 82px); min-height: 520px; padding: 0; }
+  .workspace--figma.commuter-workspace .left-panel { left: 7px; right: 7px; bottom: 7px; width: auto; height: min(56dvh, 520px); border: 1px solid var(--commuter-line); border-radius: 12px; }
+  .workspace--figma.commuter-workspace .right-panel { position: absolute; z-index: 8; inset: 7px; width: auto; height: auto; border: 1px solid var(--commuter-line); border-radius: 12px; box-shadow: 0 12px 30px #10235724; }
+  .workspace--figma.commuter-workspace .map-panel { min-height: 100%; }
 }

@@ -6,6 +6,7 @@ const projectRoot = fileURLToPath(new URL(".", import.meta.url));
 export default defineConfig({
   resolve: {
     alias: {
+      "@/types": fileURLToPath(new URL("../types", import.meta.url)),
       "@": projectRoot,
       "server-only": fileURLToPath(new URL("./tests/empty.ts", import.meta.url)),
     },

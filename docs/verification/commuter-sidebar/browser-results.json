@@ -1,0 +1,386 @@
+{
+  "fixtureOnly": true,
+  "idleRows": 0,
+  "idleMessage": true,
+  "resetTriggeredRequest": false,
+  "popupPhoto": true,
+  "detailClean": true,
+  "recommendationHeading": true,
+  "historyPreserved": true,
+  "followupRequest": {
+    "path": "/api/merchants/canonical",
+    "query": {
+      "west": "106.67097702050711",
+      "south": "-6.242140880884946",
+      "east": "106.84538497949075",
+      "north": "-6.101511787790045",
+      "limit": "100",
+      "offset": "0",
+      "q": "soto",
+      "scope": "CURRENT_VIEWPORT",
+      "reference_text": "Stasiun Uji",
+      "radius_meters": "500",
+      "sort": "NEAREST",
+      "recommendation": "true",
+      "max_budget": "20000",
+      "origin_longitude": "106.75",
+      "origin_latitude": "-6.17",
+      "origin_source": "USER_LOCATION"
+    }
+  },
+  "discoverySelection": true,
+  "radiusRequest": {
+    "path": "/api/discovery",
+    "query": {
+      "longitude": "106.75",
+      "latitude": "-6.17",
+      "radius_meters": "500",
+      "query": "soto"
+    }
+  },
+  "routeRequest": {
+    "path": "/api/routing",
+    "query": {}
+  },
+  "budgetRequest": {
+    "path": "/api/merchants/canonical",
+    "query": {
+      "west": "106.67097702050711",
+      "south": "-6.242140880884946",
+      "east": "106.84538497949075",
+      "north": "-6.101511787790045",
+      "limit": "100",
+      "offset": "0",
+      "q": "bakso",
+      "scope": "CURRENT_VIEWPORT",
+      "max_budget": "15000",
+      "origin_longitude": "106.75",
+      "origin_latitude": "-6.17",
+      "origin_source": "USER_LOCATION"
+    }
+  },
+  "emptyRows": 0,
+  "errorVisible": true,
+  "aiRequest": {
+    "path": "/api/merchants/canonical",
+    "query": {
+      "west": "106.67097702050711",
+      "south": "-6.242140880884946",
+      "east": "106.84538497949075",
+      "north": "-6.101511787790045",
+      "limit": "100",
+      "offset": "0",
+      "q": "soto",
+      "scope": "CURRENT_VIEWPORT",
+      "reference_text": "Stasiun Uji",
+      "radius_meters": "500",
+      "sort": "NEAREST",
+      "recommendation": "true",
+      "max_budget": "15000",
+      "origin_longitude": "106.75",
+      "origin_latitude": "-6.17",
+      "origin_source": "USER_LOCATION"
+    }
+  },
+  "layouts": [
+    {
+      "viewport": 1440,
+      "sidebarWidth": 380,
+      "sidebarHeight": 826,
+      "mapWidth": 1018,
+      "mapHeight": 826,
+      "overflow": false
+    },
+    {
+      "viewport": 1280,
+      "sidebarWidth": 345.59375,
+      "sidebarHeight": 626,
+      "mapWidth": 892.40625,
+      "mapHeight": 626,
+      "overflow": false
+    },
+    {
+      "viewport": 820,
+      "sidebarWidth": 310,
+      "sidebarHeight": 1006,
+      "mapWidth": 800,
+      "mapHeight": 1014,
+      "overflow": false
+    },
+    {
+      "viewport": 390,
+      "sidebarWidth": 374,
+      "sidebarHeight": 454.078125,
+      "mapWidth": 374,
+      "mapHeight": 672,
+      "overflow": false
+    }
+  ],
+  "selected": "true",
+  "routeTab": "true",
+  "destination": "Tempat Uji 1",
+  "preservedDestination": "Tempat Uji 1",
+  "errors": [],
+  "canonicalRequests": [
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "bakso",
+        "scope": "CURRENT_VIEWPORT"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "bakso",
+        "scope": "CURRENT_VIEWPORT"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "bakso",
+        "scope": "CURRENT_VIEWPORT",
+        "radius_meters": "500",
+        "sort": "NEAREST",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "bakso",
+        "scope": "CURRENT_VIEWPORT",
+        "radius_meters": "500",
+        "sort": "NEAREST",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "bakso",
+        "scope": "CURRENT_VIEWPORT",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "bakso",
+        "scope": "CURRENT_VIEWPORT",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "bakso",
+        "scope": "CURRENT_VIEWPORT",
+        "max_budget": "15000",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "bakso",
+        "scope": "CURRENT_VIEWPORT",
+        "max_budget": "15000",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "bakso",
+        "scope": "CURRENT_VIEWPORT",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "bakso",
+        "scope": "CURRENT_VIEWPORT",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "bakso",
+        "scope": "CURRENT_VIEWPORT",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "soto",
+        "scope": "CURRENT_VIEWPORT",
+        "reference_text": "Stasiun Uji",
+        "radius_meters": "500",
+        "sort": "NEAREST",
+        "recommendation": "true",
+        "max_budget": "15000",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "soto",
+        "scope": "CURRENT_VIEWPORT",
+        "reference_text": "Stasiun Uji",
+        "radius_meters": "500",
+        "sort": "NEAREST",
+        "recommendation": "true",
+        "max_budget": "15000",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "soto",
+        "scope": "CURRENT_VIEWPORT",
+        "reference_text": "Stasiun Uji",
+        "radius_meters": "500",
+        "sort": "NEAREST",
+        "recommendation": "true",
+        "max_budget": "20000",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "query": {
+        "west": "106.67097702050711",
+        "south": "-6.242140880884946",
+        "east": "106.84538497949075",
+        "north": "-6.101511787790045",
+        "limit": "100",
+        "offset": "0",
+        "q": "soto",
+        "scope": "CURRENT_VIEWPORT",
+        "reference_text": "Stasiun Uji",
+        "radius_meters": "500",
+        "sort": "NEAREST",
+        "recommendation": "true",
+        "max_budget": "20000",
+        "origin_longitude": "106.75",
+        "origin_latitude": "-6.17",
+        "origin_source": "USER_LOCATION"
+      }
+    }
+  ]
+}

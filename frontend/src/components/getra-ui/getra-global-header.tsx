@@ -14,8 +14,8 @@ import { GetraLogo } from "./getra-logo";
 
 const GLOBAL_NAV = [
   { href: "/app", label: "Peta", icon: MapPinned, experience: "GENERAL" as const },
-  { href: "/community", label: "Komunitas", icon: UsersRound, experience: "GENERAL" as const },
   { href: "/umkm", label: "UMKM", icon: Store, experience: "UMKM" as const },
+  { href: "/community", label: "Komunitas", icon: UsersRound, experience: "GENERAL" as const },
 ];
 
 export function GetraGlobalHeader({ contextActions, utilities }: { contextActions?: ReactNode; utilities?: ReactNode }) {

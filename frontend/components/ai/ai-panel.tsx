@@ -109,6 +109,7 @@ interface AiPanelProps {
    * Expected actions:
    * - APPLY_SEARCH_CRITERIA
    * - CALCULATE_ROUTE
+   * - PREPARE_ROUTE
    * - CHANGE_ROUTE_MODE
    * - FOCUS_PLACE
    */
@@ -717,7 +718,7 @@ export function AiPanel({
           </h3>
 
           <p>
-            Asisten AI untuk eksplorasi kota
+            Asisten Mobilitas Cerdas
           </p>
         </div>
 
@@ -909,7 +910,7 @@ export function AiPanel({
               event.target.value,
             );
           }}
-          placeholder="Tanyakan tempat, area, atau rute..."
+          placeholder="Tanyakan rute atau tempat..."
           disabled={
             state ===
             "LOADING"

@@ -503,7 +503,6 @@ select:focus-visible {
   margin: 8px 0 0;
 }
 
-
 .getra-app-shell--umkm {
   --getra-primary: #9af24a;
   --getra-primary-hover: #c7ff92;
@@ -4163,6 +4162,62 @@ select:focus-visible {
   }
 }
 
+/* Compact map workspace header. Main navigation stays primary; product mode sits below it. */
+.workspace--figma > .getra-global-header {
+  top: 0;
+  min-height: 48px;
+  margin: 0;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  gap: 8px;
+  border-width: 0 0 1px;
+  border-radius: 0;
+  padding: 4px 14px;
+  background: #fff;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.workspace--figma .getra-global-header__brand img { height: 34px; }
+.workspace--figma .getra-global-nav__item,
+.workspace--figma .getra-utility-menu__trigger,
+.workspace--figma .getra-global-header__menu { min-height: 34px; border-radius: 8px; padding-inline: 9px; }
+.workspace--figma .getra-global-header__actions { gap: 6px; }
+.workspace--figma .getra-utility-menu__panel { width: min(248px, calc(100vw - 20px)); border-radius: 12px; padding: 6px; }
+.workspace--figma .getra-utility-menu__panel a,
+.workspace--figma .getra-utility-menu__logout { min-height: 38px; }
+.workspace--figma .account-menu__trigger { min-height: 38px; max-width: 210px; border-radius: 9px; padding: 3px 8px 3px 4px; }
+.workspace--figma .account-menu__avatar { width: 30px; height: 30px; }
+.workspace--figma .account-menu__identity strong { font-size: 11px; }
+.workspace--figma .account-menu__identity small { margin-top: 1px; font-size: 9px; }
+.workspace--figma .account-menu__identity em { margin-top: 0; font-size: 8px; }
+.account-menu__chevron { flex: 0 0 auto; color: #64748b; }
+
+.workspace-context-toolbar {
+  position: relative;
+  z-index: 39;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 3px 10px;
+  background: #f8fafc;
+}
+.workspace-context-toolbar .stakeholder-switch { padding: 2px; border-color: #dbe5ef; border-radius: 8px; background: #fff; }
+.workspace-context-toolbar .stakeholder-button { min-height: 26px; padding-inline: 10px; border-color: #e2e8f0; font-size: 10px; }
+.workspace-context-toolbar .stakeholder-button--active { background: #e6f7fb; color: #087f9d; font-weight: 800; }
+
+@media (max-width: 760px) {
+  .workspace--figma > .getra-global-header { top: 0; margin: 0; border-radius: 0; padding-inline: 8px; }
+  .workspace--figma .getra-global-nav { display: none; }
+  .workspace--figma .getra-global-header { grid-template-columns: minmax(92px, 1fr) auto; }
+  .workspace--figma .getra-global-header__actions { grid-column: 2; }
+  .workspace--figma .account-menu__identity,
+  .workspace--figma .account-menu__chevron,
+  .workspace--figma .getra-utility-menu { display: none; }
+  .workspace-context-toolbar { overflow-x: auto; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -5687,4 +5742,42 @@ select:focus-visible {
   .workspace--figma .map-panel {
     min-height: min(62vh, 540px);
   }
+}
+
+/* Final compact header overrides stay after the legacy workspace theme. */
+.workspace--figma > .getra-global-header {
+  top: 0;
+  min-height: 48px;
+  margin: 0;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  gap: 8px;
+  border-width: 0 0 1px;
+  border-radius: 0;
+  padding: 4px 14px;
+  background: #fff;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.workspace--figma .getra-global-header__brand img { height: 34px; }
+.workspace--figma .getra-global-nav__item,
+.workspace--figma .getra-utility-menu__trigger,
+.workspace--figma .getra-global-header__menu { min-height: 34px; border-radius: 8px; padding-inline: 9px; }
+.workspace--figma .getra-global-header__actions { gap: 6px; }
+.workspace--figma .getra-utility-menu__panel { width: min(248px, calc(100vw - 20px)); border-radius: 12px; padding: 6px; }
+.workspace--figma .getra-utility-menu__panel a,
+.workspace--figma .getra-utility-menu__logout { min-height: 38px; }
+.workspace--figma .account-menu__trigger { min-height: 38px; max-width: 210px; border-radius: 9px; padding: 3px 8px 3px 4px; }
+.workspace--figma .account-menu__avatar { width: 30px; height: 30px; }
+.workspace--figma .account-menu__identity strong { font-size: 11px; }
+.workspace--figma .account-menu__identity small { margin-top: 1px; font-size: 9px; }
+.workspace--figma .account-menu__identity em { margin-top: 0; font-size: 8px; }
+
+@media (max-width: 760px) {
+  .workspace--figma > .getra-global-header { top: 0; margin: 0; border-radius: 0; padding-inline: 8px; }
+  .workspace--figma .getra-global-nav { display: none; }
+  .workspace--figma .getra-global-header { grid-template-columns: minmax(92px, 1fr) auto; }
+  .workspace--figma .getra-global-header__actions { grid-column: 2; }
+  .workspace--figma .account-menu__identity,
+  .workspace--figma .account-menu__chevron,
+  .workspace--figma .getra-utility-menu { display: none; }
 }

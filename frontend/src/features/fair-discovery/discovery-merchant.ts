@@ -1,4 +1,4 @@
-import type { Merchant } from "@/types/getra";
+﻿import type { Merchant } from "@/types/getra";
 import type { OriginalMerchantDTO } from "./types/fair-discovery.types";
 import type { SponsoredPinDTO } from "@/src/features/umkm-advertising";
 

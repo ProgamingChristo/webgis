@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 const mocks = vi.hoisted(() => ({
   openaiConfigured: vi.fn(),
@@ -8,7 +15,13 @@ const mocks = vi.hoisted(() => ({
   sub2apiGenerate: vi.fn(),
 }));
 
-vi.mock("@/lib/ai/openai", () => ({ openAIProvider: { id: "openai", isConfigured: mocks.openaiConfigured, generateStructured: mocks.openaiGenerate } }));
+vi.mock("@/lib/ai/openai", () => ({
+  openAIProvider: {
+    id: "openai",
+    isConfigured: mocks.openaiConfigured,
+    generateStructured: mocks.openaiGenerate,
+  },
+}));
 
 vi.mock("@/lib/ai/sub2api", () => ({
   sub2ApiProvider: {
@@ -18,11 +31,19 @@ vi.mock("@/lib/ai/sub2api", () => ({
   },
 }));
 
-import { generateStructured, getConfiguredProvider } from "@/lib/ai/provider";
+import {
+  generateStructured,
+  getConfiguredProvider,
+} from "@/lib/ai/provider";
+
 import { AiProviderError } from "@/src/lib/errors";
 
 const originalProvider = process.env.AI_PROVIDER;
-const schema = z.object({ ok: z.boolean() });
+
+const schema = z.object({
+  ok: z.boolean(),
+});
+
 const request = {
   input: "test",
   instructions: "return json",
@@ -33,86 +54,293 @@ const request = {
 describe("AI provider selection", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
     delete process.env.AI_PROVIDER;
+
     mocks.sub2apiConfigured.mockReturnValue(false);
     mocks.openaiConfigured.mockReturnValue(false);
   });
 
   afterEach(() => {
-    if (originalProvider === undefined) delete process.env.AI_PROVIDER;
-    else process.env.AI_PROVIDER = originalProvider;
+    if (originalProvider === undefined) {
+      delete process.env.AI_PROVIDER;
+    } else {
+      process.env.AI_PROVIDER = originalProvider;
+    }
   });
 
-  it("uses deterministic mode without probing paid providers when AI_PROVIDER is unset", async () => {
-    mocks.sub2apiConfigured.mockReturnValue(true);
+  it(
+    "uses deterministic mode without probing paid providers when AI_PROVIDER is unset",
+    async () => {
+      mocks.sub2apiConfigured.mockReturnValue(true);
+      mocks.openaiConfigured.mockReturnValue(true);
 
-    await expect(generateStructured(request)).resolves.toBeNull();
-    expect(getConfiguredProvider()).toBe("fallback");
-    expect(mocks.sub2apiGenerate).not.toHaveBeenCalled();
-  });
+      await expect(
+        generateStructured(request),
+      ).resolves.toBeNull();
 
-  it("uses Sub2API exclusively when AI_PROVIDER=sub2api", async () => {
-    process.env.AI_PROVIDER = "sub2api";
-    mocks.sub2apiConfigured.mockReturnValue(true);
-    mocks.sub2apiGenerate.mockResolvedValue({ ok: true });
+      expect(
+        getConfiguredProvider(),
+      ).toBe("fallback");
 
-    await expect(generateStructured(request)).resolves.toEqual({
-      data: { ok: true },
-      source: "sub2api",
-    });
-    expect(getConfiguredProvider()).toBe("sub2api");
-    expect(mocks.sub2apiGenerate).toHaveBeenCalledTimes(1);
-  });
+      expect(
+        mocks.sub2apiGenerate,
+      ).not.toHaveBeenCalled();
 
-  it("throws a typed configuration error when explicit Sub2API has no key", async () => {
-    process.env.AI_PROVIDER = "sub2api";
-    mocks.sub2apiConfigured.mockReturnValue(false);
+      expect(
+        mocks.openaiGenerate,
+      ).not.toHaveBeenCalled();
 
-    const result = generateStructured(request);
-    await expect(result).rejects.toBeInstanceOf(AiProviderError);
-    await expect(result).rejects.toMatchObject({
-      category: "configuration",
-      code: "AI_PROVIDER_CONFIGURATION",
-      provider: "sub2api",
-    });
-    expect(mocks.sub2apiGenerate).not.toHaveBeenCalled();
-  });
+      expect(
+        mocks.sub2apiConfigured,
+      ).not.toHaveBeenCalled();
 
-  it("propagates explicit Sub2API failures without deterministic fallback", async () => {
-    process.env.AI_PROVIDER = "sub2api";
-    mocks.sub2apiConfigured.mockReturnValue(true);
-    const providerError = new AiProviderError({
-      category: "unavailable",
-      provider: "sub2api",
-      upstreamStatus: 503,
-    });
-    mocks.sub2apiGenerate.mockRejectedValue(providerError);
+      expect(
+        mocks.openaiConfigured,
+      ).not.toHaveBeenCalled();
+    },
+  );
 
-    await expect(generateStructured(request)).rejects.toBe(providerError);
-    expect(mocks.sub2apiGenerate).toHaveBeenCalledTimes(1);
-  });
+  it(
+    "uses Sub2API exclusively when AI_PROVIDER=sub2api",
+    async () => {
+      process.env.AI_PROVIDER =
+        "sub2api";
 
-  it("selects OpenAI explicitly and preserves its provider identity", async () => {
-    process.env.AI_PROVIDER = "openai";
-    mocks.openaiConfigured.mockReturnValue(true);
-    mocks.openaiGenerate.mockResolvedValue({ ok: true });
-    await expect(generateStructured(request)).resolves.toEqual({ data: { ok: true }, source: "openai" });
-    expect(getConfiguredProvider()).toBe("openai");
-    expect(mocks.sub2apiGenerate).not.toHaveBeenCalled();
-  });
+      mocks.sub2apiConfigured.mockReturnValue(
+        true,
+      );
 
-  it("reports missing OpenAI configuration without calling another provider", async () => {
-    process.env.AI_PROVIDER = "openai";
-    await expect(generateStructured(request)).rejects.toMatchObject({ provider: "openai", code: "AI_PROVIDER_CONFIGURATION" });
-    expect(mocks.sub2apiGenerate).not.toHaveBeenCalled();
-    expect(mocks.openaiGenerate).not.toHaveBeenCalled();
-  });
+      mocks.sub2apiGenerate.mockResolvedValue({
+        ok: true,
+      });
 
-  it("rejects unsupported legacy paid-provider modes", async () => {
-    process.env.AI_PROVIDER = "claude";
-    await expect(generateStructured(request)).rejects.toMatchObject({
-      code: "AI_PROVIDER_CONFIGURATION",
-    });
-    expect(mocks.sub2apiGenerate).not.toHaveBeenCalled();
-  });
+      await expect(
+        generateStructured(request),
+      ).resolves.toEqual({
+        data: {
+          ok: true,
+        },
+        source: "sub2api",
+      });
+
+      expect(
+        getConfiguredProvider(),
+      ).toBe("sub2api");
+
+      expect(
+        mocks.sub2apiGenerate,
+      ).toHaveBeenCalledTimes(1);
+
+      expect(
+        mocks.openaiGenerate,
+      ).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    "uses the official OpenAI Responses adapter when AI_PROVIDER=openai",
+    async () => {
+      process.env.AI_PROVIDER =
+        "openai";
+
+      mocks.openaiConfigured.mockReturnValue(
+        true,
+      );
+
+      mocks.openaiGenerate.mockResolvedValue({
+        ok: true,
+      });
+
+      await expect(
+        generateStructured(request),
+      ).resolves.toEqual({
+        data: {
+          ok: true,
+        },
+        source: "openai",
+      });
+
+      expect(
+        getConfiguredProvider(),
+      ).toBe("openai");
+
+      expect(
+        mocks.openaiGenerate,
+      ).toHaveBeenCalledTimes(1);
+
+      expect(
+        mocks.sub2apiGenerate,
+      ).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    "throws a typed configuration error when explicit Sub2API has no key",
+    async () => {
+      process.env.AI_PROVIDER =
+        "sub2api";
+
+      mocks.sub2apiConfigured.mockReturnValue(
+        false,
+      );
+
+      const result =
+        generateStructured(request);
+
+      await expect(
+        result,
+      ).rejects.toBeInstanceOf(
+        AiProviderError,
+      );
+
+      await expect(
+        result,
+      ).rejects.toMatchObject({
+        category:
+          "configuration",
+        code:
+          "AI_PROVIDER_CONFIGURATION",
+        provider:
+          "sub2api",
+      });
+
+      expect(
+        mocks.sub2apiGenerate,
+      ).not.toHaveBeenCalled();
+
+      expect(
+        mocks.openaiGenerate,
+      ).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    "propagates explicit Sub2API failures without deterministic fallback",
+    async () => {
+      process.env.AI_PROVIDER =
+        "sub2api";
+
+      mocks.sub2apiConfigured.mockReturnValue(
+        true,
+      );
+
+      const providerError =
+        new AiProviderError({
+          category:
+            "unavailable",
+          provider:
+            "sub2api",
+          upstreamStatus:
+            503,
+        });
+
+      mocks.sub2apiGenerate.mockRejectedValue(
+        providerError,
+      );
+
+      await expect(
+        generateStructured(request),
+      ).rejects.toBe(
+        providerError,
+      );
+
+      expect(
+        mocks.sub2apiGenerate,
+      ).toHaveBeenCalledTimes(1);
+
+      expect(
+        mocks.openaiGenerate,
+      ).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    "selects OpenAI explicitly and preserves its provider identity",
+    async () => {
+      process.env.AI_PROVIDER =
+        "openai";
+
+      mocks.openaiConfigured.mockReturnValue(
+        true,
+      );
+
+      mocks.openaiGenerate.mockResolvedValue({
+        ok: true,
+      });
+
+      await expect(
+        generateStructured(request),
+      ).resolves.toEqual({
+        data: {
+          ok: true,
+        },
+        source: "openai",
+      });
+
+      expect(
+        getConfiguredProvider(),
+      ).toBe("openai");
+
+      expect(
+        mocks.openaiGenerate,
+      ).toHaveBeenCalledTimes(1);
+
+      expect(
+        mocks.sub2apiGenerate,
+      ).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    "reports missing OpenAI configuration without calling another provider",
+    async () => {
+      process.env.AI_PROVIDER =
+        "openai";
+
+      mocks.openaiConfigured.mockReturnValue(
+        false,
+      );
+
+      await expect(
+        generateStructured(request),
+      ).rejects.toMatchObject({
+        provider:
+          "openai",
+        code:
+          "AI_PROVIDER_CONFIGURATION",
+      });
+
+      expect(
+        mocks.sub2apiGenerate,
+      ).not.toHaveBeenCalled();
+
+      expect(
+        mocks.openaiGenerate,
+      ).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    "rejects unsupported legacy paid-provider modes",
+    async () => {
+      process.env.AI_PROVIDER =
+        "claude";
+
+      await expect(
+        generateStructured(request),
+      ).rejects.toMatchObject({
+        code:
+          "AI_PROVIDER_CONFIGURATION",
+      });
+
+      expect(
+        mocks.sub2apiGenerate,
+      ).not.toHaveBeenCalled();
+
+      expect(
+        mocks.openaiGenerate,
+      ).not.toHaveBeenCalled();
+    },
+  );
 });

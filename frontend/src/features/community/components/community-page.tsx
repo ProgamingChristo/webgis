@@ -15,6 +15,7 @@ import type { CommunityView } from "./community-navigation";
 import { useCommunityFeed } from "../hooks/use-community-feed";
 import { useCommuterRequests } from "../hooks/use-commuter-requests";
 import { useDemandSignals } from "../hooks/use-demand-signals";
+import { useCommunityFriends } from "../hooks/use-community-friends";
 import styles from "./community.module.css";
 
 export function CommunityPage() {
@@ -34,10 +35,14 @@ export function CommunityPage() {
     () => (activeView === "findings" ? { type: "FINDING" as const } : {}),
     [activeView],
   );
+  const [feedMode, setFeedMode] = useState<"FOR_YOU" | "NEARBY" | "FOLLOWING">("FOR_YOU");
   const feed = useCommunityFeed(feedFilters);
+  const friends = useCommunityFriends("FRIENDS", feedMode === "FOLLOWING");
   const requests = useCommuterRequests();
   const signals = useDemandSignals();
   const [requestTab, setRequestTab] = useState<"latest" | "signals">("latest");
+  const [nearbyOrigin, setNearbyOrigin] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [nearbyMessage, setNearbyMessage] = useState<string | null>(null);
   const displayName =
     context?.profile?.display_name?.trim() ||
     "Pengguna GETRA";
@@ -47,6 +52,44 @@ export function CommunityPage() {
         ? signals.meta.total
         : requests.meta.total
       : feed.meta.total;
+  const visibleFeed = useMemo(() => {
+    if (feedMode === "FOLLOWING") {
+      const friendIds = new Set(friends.items.map((friend) => friend.userId));
+      return feed.items.filter((post) => friendIds.has(post.authorId));
+    }
+    if (feedMode === "NEARBY" && nearbyOrigin) {
+      const distance = (latitude: number, longitude: number) => {
+        const radians = Math.PI / 180;
+        const latitudeDelta = (latitude - nearbyOrigin.latitude) * radians;
+        const longitudeDelta = (longitude - nearbyOrigin.longitude) * radians;
+        const value = Math.sin(latitudeDelta / 2) ** 2
+          + Math.cos(nearbyOrigin.latitude * radians) * Math.cos(latitude * radians) * Math.sin(longitudeDelta / 2) ** 2;
+        return 6371008.8 * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(Math.max(0, 1 - value)));
+      };
+      return feed.items.filter((post) => post.location).sort((left, right) =>
+        distance(left.location!.latitude, left.location!.longitude) - distance(right.location!.latitude, right.location!.longitude),
+      );
+    }
+    return feed.items;
+  }, [feed.items, feedMode, friends.items, nearbyOrigin]);
+  const visibleMeta = feedMode === "FOR_YOU"
+    ? feed.meta
+    : { page: 1, limit: Math.max(visibleFeed.length, 1), total: visibleFeed.length, total_pages: 1 };
+
+  function selectFeedMode(mode: "FOR_YOU" | "NEARBY" | "FOLLOWING") {
+    setFeedMode(mode);
+    setNearbyMessage(null);
+    if (mode !== "NEARBY" || nearbyOrigin) return;
+    if (!("geolocation" in navigator)) {
+      setNearbyMessage("Lokasi perangkat tidak tersedia. Aktifkan lokasi untuk melihat post terdekat.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => setNearbyOrigin({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
+      () => setNearbyMessage("Lokasi belum diizinkan. Post terdekat belum dapat diurutkan."),
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60_000 },
+    );
+  }
 
   function changeView(view: CommunityView) {
     if (view === "contributions") {
@@ -154,14 +197,26 @@ export function CommunityPage() {
             onSubmit={feed.publishPost}
             submitting={feed.submitting}
           />
+          <div className={styles.feedTabs} role="tablist" aria-label="Urutan feed komunitas">
+            {([
+              ["FOR_YOU", "Untuk Kamu"],
+              ["NEARBY", "Terdekat"],
+              ["FOLLOWING", "Mengikuti"],
+            ] as const).map(([mode, label]) => (
+              <button aria-selected={feedMode === mode} key={mode} onClick={() => selectFeedMode(mode)} role="tab" type="button">
+                {label}
+              </button>
+            ))}
+          </div>
+          {nearbyMessage ? <p className={styles.feedNotice} role="status">{nearbyMessage}</p> : null}
           <CommunityFeed
             error={feed.error}
-            items={feed.items}
-            loading={feed.loading}
-            loadingMore={feed.loadingMore}
-            meta={feed.meta}
+            items={visibleFeed}
+            loading={feed.loading || (feedMode === "FOLLOWING" && friends.loading)}
+            loadingMore={feedMode === "FOR_YOU" && feed.loadingMore}
+            meta={visibleMeta}
             pendingReactionByPostId={feed.pendingReactionByPostId}
-            onLoadMore={feed.loadMore}
+            onLoadMore={feedMode === "FOR_YOU" ? feed.loadMore : async () => undefined}
             onRetry={feed.reload}
             onToggleReaction={feed.toggleReaction}
             canDelete={(post) => context?.profile?.account_role === "ADMIN" || post.authorId === context?.user.id}

@@ -88,12 +88,12 @@ describe("Community feature UI", () => {
       ),
     );
 
-    expect(html).toContain("Komunitas GETRA");
+    expect(html).toContain(">Komunitas</h1>");
+    expect(html).toContain("Cerita dan info dari sekitar Jakarta.");
     expect(html).toContain("Beranda");
     expect(html).toContain("Temuan Komuter");
-    expect(html).toContain("Apa yang kamu temukan?");
-    expect(html).toContain("Tulis informasi lokal");
-    expect(html).toContain("Emoji");
+    expect(html).toContain("Bagikan sesuatu di sekitar kamu...");
+    expect(html).toContain("Opsi");
     expect(html).toContain("Tambahkan Lokasi");
     expect(html).toContain("Kamera");
     expect(html).toContain("Galeri");

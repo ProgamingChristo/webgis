@@ -49,6 +49,7 @@ export function PostComposer({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [content, setContent] = useState("");
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] =
     useState<CommunityLocationInput | null>(null);
@@ -92,6 +93,7 @@ export function PostComposer({
       setCategory("");
       setLocationVisibility("APPROXIMATE");
       setLocationPickerOpen(false);
+      setExpanded(false);
     }
   }
 
@@ -177,18 +179,8 @@ export function PostComposer({
         displayName={authorName}
       />
       <div className={styles.composerBody}>
-        <div className={styles.composerHeader}>
-          <div>
-            <span className={styles.eyebrow}>Beranda komunitas</span>
-            <h2 id="community-composer">Apa yang kamu temukan?</h2>
-          </div>
-          <span>{authorName}</span>
-        </div>
-
-        <label className={styles.textareaLabel} htmlFor="community-post">
-          Tulis informasi lokal
-        </label>
-        <div className={styles.composerModeRow}>
+        <h2 className={styles.visuallyHidden} id="community-composer">Bagikan sesuatu di sekitar kamu</h2>
+        {expanded ? <div className={styles.composerModeRow}>
           <div className={styles.segmentedControl} role="group" aria-label="Tipe post">
             <button
               className={
@@ -230,7 +222,7 @@ export function PostComposer({
               ))}
             </select>
           ) : null}
-        </div>
+        </div> : null}
         <textarea
           id="community-post"
           maxLength={COMMUNITY_POST_MAX_LENGTH}
@@ -241,9 +233,10 @@ export function PostComposer({
               setLocationPickerOpen(false);
             }
           }}
-          placeholder="Apa yang kamu temukan di sekitar kamu?"
+          onFocus={() => setExpanded(true)}
+          placeholder="Bagikan sesuatu di sekitar kamu..."
           ref={textareaRef}
-          rows={4}
+          rows={expanded ? 4 : 2}
           value={content}
         />
 
@@ -286,7 +279,7 @@ export function PostComposer({
 
         <div className={styles.composerActions}>
           <div className={styles.composerToolGroup}>
-            <div className={styles.emojiArea}>
+            {expanded ? <div className={styles.emojiArea}>
               <button
                 aria-expanded={emojiOpen}
                 aria-label="Tambahkan emoji"
@@ -302,7 +295,7 @@ export function PostComposer({
                   onSelect={insertEmoji}
                 />
               ) : null}
-            </div>
+            </div> : null}
             <button
               aria-label="Tambahkan lokasi"
               className={styles.secondaryButton}
@@ -316,8 +309,11 @@ export function PostComposer({
               disabled={submitting}
               onSelect={selectPhoto}
             />
+            <button className={styles.secondaryButton} onClick={() => setExpanded((current) => !current)} type="button">
+              {expanded ? "Lebih ringkas" : "Opsi"}
+            </button>
           </div>
-          <span
+          {expanded || content.length ? <span
             className={
               content.length > COMMUNITY_POST_MAX_LENGTH
                 ? styles.counterDanger
@@ -325,7 +321,7 @@ export function PostComposer({
             }
           >
             {content.length}/{COMMUNITY_POST_MAX_LENGTH}
-          </span>
+          </span> : null}
           <button
             className={styles.primaryButton}
             disabled={!canSubmit}

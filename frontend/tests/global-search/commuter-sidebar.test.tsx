@@ -50,8 +50,10 @@ describe("commuter merchant evidence", () => {
   it("renders a consumer place detail without internal data tiles or invented menu text", () => {
     const html = renderToStaticMarkup(<PlaceDetailDrawer merchant={{ ...merchant, address: "Jl. Contoh 1", photo: "https://images.example.test/place.jpg" }} onRoute={vi.fn()} />);
     expect(html).toContain("Jl. Contoh 1");
-    expect(html).toContain("Jam buka belum tersedia");
     expect(html).toContain("Rute ke sini");
+    expect(html).toContain("Belum ada catatan komunitas untuk tempat ini");
+    expect(html).not.toContain("Jam buka belum tersedia");
+    expect(html).not.toContain("Harga belum tersedia");
     expect(html).not.toContain("Data GETRA");
     expect(html).not.toContain("Koordinat");
     expect(html).not.toContain("Menu utama");

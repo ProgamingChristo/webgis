@@ -14,7 +14,7 @@ export type Merchant = {
   accessibilityScore?: number;
   priceLabel?: "Hemat" | "Sedang" | "Premium";
   openNow: boolean;
-  source?: string;
+  source: string;
   owner_id?: string | null;
   status?: DataStatus;
   updatedAt?: string;

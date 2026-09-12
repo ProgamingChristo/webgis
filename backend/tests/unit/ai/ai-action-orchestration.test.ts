@@ -32,20 +32,22 @@ describe("Tanya GETRA application actions", () => {
     })).toEqual({ type: "CHANGE_ROUTE_MODE", mode: "motorcycle" });
   });
 
-  it("extracts named origin and destination so the GETRA place resolver can execute the route", () => {
-    expect(determineApplicationAction(
-      "berikan saya rute dari Stasiun Gambir ke tempat Bakso Gachor",
-    )).toEqual({
-      type: "CALCULATE_ROUTE",
-      mode: "walking",
+  it("leaves merchant criteria to the validated search extractor", () => {
+    expect(determineApplicationAction("cari basko dekat sini")).toEqual({ type: "ANSWER_ONLY" });
+  });
+
+  it("prepares endpoints without silently choosing a route mode", () => {
+    expect(determineApplicationAction("berikan rute dari Stasiun Gambir ke Kopi Tuku Cipete")).toEqual({
+      type: "PREPARE_ROUTE",
       origin: { type: "PLACE_QUERY", query: "Stasiun Gambir" },
-      destination: { type: "PLACE_QUERY", query: "tempat Bakso Gachor" },
+      destination: { type: "PLACE_QUERY", query: "Kopi Tuku Cipete" },
     });
   });
 
-  it("leaves merchant discovery to the structured search extractor", () => {
-    expect(determineApplicationAction("cari basko dekat sini")).toEqual({
-      type: "ANSWER_ONLY",
+  it("prepares a multi-mode request for explicit user choice", () => {
+    expect(determineApplicationAction("rute jalan kaki atau motor dari Stasiun Gambir ke Kopi Tuku Cipete")).toMatchObject({
+      type: "PREPARE_ROUTE",
+      requested_modes: ["walking", "motorcycle"],
     });
   });
 
