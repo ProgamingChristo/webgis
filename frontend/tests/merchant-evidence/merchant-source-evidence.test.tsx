@@ -20,7 +20,7 @@ function merchant(overrides: Partial<Merchant>): Merchant {
     accessibilityScore: 80,
     priceLabel: "Hemat",
     openNow: false,
-    source: "TEST",
+    source: "",
     status: "surveyed",
     updatedAt: "2026-09-12T00:00:00.000Z",
     limitation: "Data uji tampilan.",
