@@ -14,6 +14,12 @@ export interface CommuterOrigin {
 }
 
 export interface StructuredCommuterIntent {
+  query_resolution?: {
+    normalized: string;
+    canonical: string;
+    correction: string | null;
+    confidence: "EXACT" | "ALIAS" | "HIGH_FUZZY" | "NONE";
+  };
   reference?: import("../global-search/search-reference").SearchReference | null;
   radius_meters?: number;
   sort?: "RELEVANCE" | "NEAREST" | "PRICE_ASC";

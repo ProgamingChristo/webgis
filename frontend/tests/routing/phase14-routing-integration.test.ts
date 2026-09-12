@@ -2,7 +2,16 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CommuterLocationAuthority } from "@/src/features/location/commuter-location-authority";
-import type { UnifiedRouteDestination } from "@/components/getra-dashboard";
+
+type UnifiedRouteDestination = {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  district?: string;
+  city?: string;
+  sourceType: "MERCHANT";
+};
 
 const dashboardContent = readFileSync(
   resolve(process.cwd(), "components/getra-dashboard.tsx"),
@@ -26,20 +35,17 @@ const commuterServiceContent = readFileSync(
 
 describe("Phase 14: Unified Routing & Destination Decoupling", () => {
   it("decouples destination authority from current map viewport array", () => {
-    // 1. Dashboard must declare UnifiedRouteDestination
-    expect(dashboardContent).toContain("interface UnifiedRouteDestination");
-    expect(dashboardContent).toContain("unifiedRouteDestination");
-
-    // 2. routeDestination must use unifiedRouteDestination directly without viewport dependency
-    expect(dashboardContent).toMatch(/if\s*\(unifiedRouteDestination\)\s*\{\s*return unifiedRouteDestination;\s*\}/);
+    // Destination authority keeps the selected merchant independently of viewport results.
+    expect(dashboardContent).toContain("routeDestinationMerchant");
+    expect(dashboardContent).toContain("manualRouteDestination");
 
     // 3. handleRouteToMerchant must handle merchants regardless of viewport presence
-    expect(dashboardContent).toContain("handleRouteToMerchant");
-    expect(dashboardContent).toContain("<PlaceDetailDrawer merchant={selectedMerchant} onRoute={handleRouteToMerchant}");
+    expect(dashboardContent).toContain("routeToMerchant");
+    expect(dashboardContent).toMatch(/<PlaceDetailDrawer\s+merchant=\{selectedMerchant\}\s+onRoute=\{routeToMerchant\}/);
     expect(detailContent).toContain('data-testid="merchant-route-cta"');
 
     // 4. Fair Discovery onRequestRoute must use handleRouteToMerchant directly
-    expect(dashboardContent).toContain("onRequestRoute={(item) => handleRouteToMerchant(discoveryMerchant(item))}");
+    expect(dashboardContent).toContain("onRequestRoute={(merchant) => routeToMerchant(discoveryMerchant(merchant))}");
   });
 
   it("handles destination from Fair Discovery when merchant is outside map viewport", () => {
@@ -75,8 +81,8 @@ describe("Phase 14: Unified Routing & Destination Decoupling", () => {
     expect(detailContent).toContain("Rute ke sini");
     expect(detailContent).toContain("onClick={() => onRoute(merchant)}");
 
-    // When GPS fix exists, handleRouteToMerchant activates ROUTE_ORIGIN_USER and requests route
-    expect(dashboardContent).toMatch(/if\s*\(hasGps\)\s*\{[\s\S]*?setRouteOriginValue\(ROUTE_ORIGIN_USER\)[\s\S]*?requestRoute\(\);/);
+    // A known location becomes route origin; otherwise the location flow starts.
+    expect(dashboardContent).toMatch(/if\s*\(userLocation\)\s*\{[\s\S]*?setRouteOriginValue\(ROUTE_ORIGIN_USER\)[\s\S]*?handleLocateUser\(false\)/);
   });
 
   it("preserves manual origin alternative when GPS is unavailable or denied", () => {
@@ -95,8 +101,8 @@ describe("Phase 14: Unified Routing & Destination Decoupling", () => {
   });
 
   it("verifies network service area authority and separates proximity scope", () => {
-    // Proximity scope = nearbyRadiusMeters (ST_DWithin)
-    expect(dashboardContent).toContain("nearbyRadiusMeters");
+    // Proximity radius stays separate from network service-area geometry.
+    expect(dashboardContent).toContain("radius_meters");
 
     // Service area = network edges from commuterService.serviceArea
     expect(commuterServiceContent).toContain("/api/spatial/service-area");

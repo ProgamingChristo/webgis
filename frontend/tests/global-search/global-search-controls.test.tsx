@@ -60,7 +60,7 @@ describe("GlobalSearchControls", () => {
     expect(html).toContain('aria-live="polite"');
   });
 
-  it("renders Sekitar Saya nearby radius chips (250m, 500m, 1km, 2km) and GPS status", () => {
+  it("renders active-location radius controls (500m, 1km, 2km, 5km)", () => {
     const html = renderToStaticMarkup(
       <GlobalSearchControls
         query="kopi"
@@ -74,9 +74,10 @@ describe("GlobalSearchControls", () => {
         maxBudget=""
         openNow={false}
         maxWalkingMinutes={null}
-        radiusMeters={500}
-        locationStatus="ACTIVE"
-        accuracyMeters={18}
+        location={{ latitude: -6.2, longitude: 106.8, accuracyMeters: 18, capturedAt: "2026-09-12T00:00:00.000Z" }}
+        locating={false}
+        locationError={null}
+        canonicalRadius={500}
         onQueryChange={vi.fn()}
         onSubmit={vi.fn()}
         onClear={vi.fn()}
@@ -85,17 +86,15 @@ describe("GlobalSearchControls", () => {
         onMaxBudgetChange={vi.fn()}
         onOpenNowChange={vi.fn()}
         onMaxWalkingMinutesChange={vi.fn()}
-        onRadiusChange={vi.fn()}
-        onRequestLocation={vi.fn()}
+        onCanonicalRadiusChange={vi.fn()}
+        onLocate={vi.fn()}
       />,
     );
-    expect(html).toContain("Sekitar Saya (Radius UMKM)");
-    expect(html).toContain("250 m");
+    expect(html).toContain("Lokasi saya");
     expect(html).toContain("500 m");
     expect(html).toContain("1 km");
     expect(html).toContain("2 km");
-    expect(html).toContain("ACTIVE");
-    expect(html).toContain("±18m");
-    expect(html).toContain("nearby-radius-chip--active");
+    expect(html).toContain("5 km");
+    expect(html).toContain('aria-pressed="true"');
   });
 });

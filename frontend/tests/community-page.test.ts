@@ -89,7 +89,7 @@ describe("Community feature UI", () => {
     );
 
     expect(html).toContain(">Komunitas</h1>");
-    expect(html).toContain("Cerita dan info dari sekitar Jakarta.");
+    expect(html).toContain("Berbagi temuan, kondisi sekitar, dan informasi berbasis lokasi bersama komunitas.");
     expect(html).toContain("Beranda");
     expect(html).toContain("Temuan Komuter");
     expect(html).toContain("Bagikan sesuatu di sekitar kamu...");
