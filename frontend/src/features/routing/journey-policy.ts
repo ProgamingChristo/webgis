@@ -3,7 +3,8 @@ import type { Coordinate } from "@/src/types/spatial";
 import type { RoutingMode } from "@/src/services/routing.service";
 
 export const JOURNEY_POLICY = {
-  minimumIntervalMs: 15_000,
+  routeMinimumIntervalMs: 15_000,
+  progressMinimumIntervalMs: { walking: 4_000, motorcycle: 3_000, car: 3_000 } satisfies Record<RoutingMode, number>,
   manualIntervalMs: 1_000,
   maximumFixAgeMs: 20_000,
   maximumAccuracyMeters: 50,
@@ -14,8 +15,10 @@ export const JOURNEY_POLICY = {
   arrivalAccuracyMeters: 20,
   arrivalProximityMeters: 25,
   arrivalRouteMeters: 50,
+  arrivalProgressFraction: 0.98,
   arrivalOriginDriftMeters: 10,
-  movementMeters: { walking: 25, motorcycle: 50, car: 75 } satisfies Record<RoutingMode, number>,
+  progressMovementMeters: { walking: 8, motorcycle: 15, car: 25 } satisfies Record<RoutingMode, number>,
+  offRouteConsecutiveSamples: 3,
   geolocation: { enableHighAccuracy: true, timeout: 12_000, maximumAge: 0 } satisfies PositionOptions,
 };
 

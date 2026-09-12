@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { routingService, parseRoutingResult, selectRoutingCandidate, type RoutingMode } from "@/src/services/routing.service";
+import { routeProgressService, routingService, parseRoutingResult, selectRoutingCandidate, type RoutingMode } from "@/src/services/routing.service";
 import { isRouteGeometry } from "@/src/features/routing/route-geometry";
 
 const session = vi.hoisted(() => vi.fn());
@@ -25,6 +25,35 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 describe("authenticated routing client", () => {
+  it("requests backend route progress without accepting client-computed remaining metrics", async () => {
+    const progress = {
+      analysis_method: "route_linear_reference",
+      distance_from_route_meters: 3,
+      matched_position: origin,
+      next_maneuver: null,
+      on_route: true,
+      progress_fraction: 0.2,
+      remaining_distance_meters: 1_000,
+      remaining_duration_seconds: 650,
+      remaining_geometry: geometry,
+      tolerance_meters: 18,
+    };
+    fetchMock.mockResolvedValue(respond({ success: true, data: progress }));
+    await expect(routeProgressService.getProgress({
+      accuracy_meters: 8,
+      current_position: origin,
+      mode: "walking",
+      route: {
+        distance_meters: 1_250,
+        duration_seconds: 820,
+        geometry: { type: "LineString", coordinates: geometry.coordinates as [number, number][] },
+        maneuvers: [],
+      },
+    })).resolves.toMatchObject({ progress_fraction: 0.2, remaining_distance_meters: 1_000 });
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe("https://api.example.test/api/routing/progress");
+    expect(JSON.parse(options.body)).not.toHaveProperty("remaining_distance_meters");
+  });
   it.each(["walking", "motorcycle", "car"] as const)("sends current coordinates, %s and the existing user session", async (mode) => {
     fetchMock.mockResolvedValue(respond({ success: true, data: result(mode) }));
     expect((await routingService.getRoute({ origin, destination }, mode)).mode).toBe(mode);

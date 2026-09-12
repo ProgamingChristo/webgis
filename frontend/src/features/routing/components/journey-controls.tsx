@@ -1,6 +1,6 @@
 "use client";
 
-import { Bike, Car, Flag, Footprints, LocateFixed, Navigation, RefreshCw, Square } from "lucide-react";
+import { Bike, Car, Flag, Footprints, LocateFixed, Navigation, RefreshCw, ShoppingBag, Square } from "lucide-react";
 import Link from "next/link";
 import type { RoutingMode } from "@/src/services/routing.service";
 import type { JourneyController, JourneyGpsState, JourneySnapshot, JourneyState } from "../journey-controller";
@@ -12,7 +12,7 @@ const stateLabels: Record<JourneyState, string> = {
   REQUESTING_LOCATION: "Mencari GPS yang lebih akurat...",
   STARTING: "Menyiapkan rute dari GPS...",
   ACTIVE: "Perjalanan aktif",
-  REROUTING: "Memperbarui rute...",
+  REROUTING: "Mencari rute baru...",
   ARRIVED: "Anda telah tiba di tujuan.",
   ERROR: "Navigasi menunggu",
 };
@@ -26,13 +26,15 @@ const gpsLabels: Record<JourneyGpsState, string> = {
 };
 const distance = (meters: number) => meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(1)} km`;
 
-export function JourneyControls({ journey, canStart, onStart, destinationName = "Tujuan", mode = "walking", onModeChange }: {
+export function JourneyControls({ journey, canStart, onStart, destinationName = "Tujuan", mode = "walking", onModeChange, nearbyUmkmCount = 0, nearbyUmkmLoading = false }: {
   journey: JourneySnapshot & { controller: JourneyController };
   canStart: boolean;
   onStart: () => void;
   destinationName?: string;
   mode?: RoutingMode;
   onModeChange?(mode: RoutingMode): void;
+  nearbyUmkmCount?: number;
+  nearbyUmkmLoading?: boolean;
 }) {
   const open = journey.state !== "PREVIEW" && journey.state !== "STOPPED";
   if (!open) return <div className={styles.journey} data-journey-state={journey.state} data-journey-following={journey.following}>
@@ -42,6 +44,7 @@ export function JourneyControls({ journey, canStart, onStart, destinationName = 
   </div>;
 
   const maneuver = journey.route?.maneuvers[0];
+  const remainingRoute = journey.route;
   const gpsAccuracy = journey.gpsAccuracyMeters === null ? null : Math.round(journey.gpsAccuracyMeters);
   const gpsLabel = gpsLabels[journey.gpsState] + (gpsAccuracy === null ? "" : " \u00b1" + gpsAccuracy + " m");
   const usableAcceptedFix = Boolean(journey.position &&
@@ -58,7 +61,8 @@ export function JourneyControls({ journey, canStart, onStart, destinationName = 
 
   return <div className={styles.journeyMapUi} role="region" aria-label="Navigasi aktif"
     data-journey-state={journey.state} data-journey-following={journey.following}
-    data-gps-state={journey.gpsState} data-route-stale={journey.routeStale}>
+    data-gps-state={journey.gpsState} data-route-stale={journey.routeStale}
+    data-route-match={journey.routeMatch} data-nearby-umkm={journey.nearbyUmkmVisible}>
     <section className={styles.nextManeuver} aria-label="Petunjuk berikutnya">
       <Navigation size={28} aria-hidden="true" />
       <div>
@@ -76,9 +80,9 @@ export function JourneyControls({ journey, canStart, onStart, destinationName = 
         <span className={styles.journeyPhase}>{stateLabels[journey.state]}</span>
       </div>
       <div className={styles.journeySummary}>
-        {journey.route?.distance_meters && journey.route.duration_seconds ? <div className={styles.remainingMetrics}>
-          <span><strong>{Math.max(1, Math.ceil(journey.route.duration_seconds / 60))} menit</strong><small>tersisa</small></span>
-          <span><strong>{distance(journey.route.distance_meters)}</strong><small>jarak</small></span>
+        {remainingRoute && remainingRoute.distance_meters !== null && remainingRoute.duration_seconds !== null ? <div className={styles.remainingMetrics}>
+          <span><strong>{remainingRoute.duration_seconds === 0 ? "Tiba" : `${Math.max(1, Math.ceil(remainingRoute.duration_seconds / 60))} menit`}</strong><small>sisa waktu</small></span>
+          <span><strong>{distance(remainingRoute.distance_meters)}</strong><small>sisa jarak</small></span>
         </div> : <span className={styles.waitingMetric}>Menunggu rute dari lokasi GPS</span>}
         <strong className={styles.journeyDestination}><Flag size={15} aria-hidden="true" />{destinationName}</strong>
       </div>
@@ -105,6 +109,14 @@ export function JourneyControls({ journey, canStart, onStart, destinationName = 
           <button type="button" title={canRefresh ? "Perbarui rute" : "Menunggu GPS yang lebih akurat"}
             aria-label="Perbarui rute" onClick={journey.controller.refresh} disabled={!canRefresh}>
             <RefreshCw size={20} aria-hidden="true" />Perbarui
+          </button>
+          <button type="button" className={styles.nearbyUmkmToggle}
+            aria-pressed={journey.nearbyUmkmVisible} onClick={journey.controller.toggleNearbyUmkm}
+            title="Tampilkan merchant terpublikasi di sekitar posisi perjalanan">
+            <ShoppingBag size={18} aria-hidden="true" />
+            {nearbyUmkmLoading ? "Memuat UMKM..." : journey.nearbyUmkmVisible
+              ? `UMKM sekitar${nearbyUmkmCount ? ` (${nearbyUmkmCount})` : ""}`
+              : "Tampilkan UMKM sekitar"}
           </button>
         </> : null}
         <button type="button" onClick={journey.controller.stop} className={styles.journeyStop}>

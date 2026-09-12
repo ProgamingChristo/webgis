@@ -3073,6 +3073,15 @@ select:focus-visible {
     0 0 0 8px rgba(34, 211, 238, 0.12);
 }
 
+.map-marker-anchor.map-marker--navigation-nearby {
+  opacity: 0.72;
+  transform: scale(0.82);
+}
+
+.map-marker-anchor.map-marker--navigation-nearby .map-marker {
+  filter: saturate(0.72);
+}
+
 .property-marker-anchor {
   z-index: 16 !important;
   width: 34px;

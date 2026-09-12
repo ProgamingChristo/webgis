@@ -89,6 +89,31 @@ export interface RoutingCandidate {
   distinct_category_count: number | null;
 }
 
+export interface RouteProgressRequest {
+  accuracy_meters: number;
+  current_position: Coordinate;
+  mode: RoutingMode;
+  route: {
+    distance_meters: number;
+    duration_seconds: number;
+    geometry: LineStringGeometry;
+    maneuvers: RoutingManeuver[];
+  };
+}
+
+export interface RouteProgressResult {
+  analysis_method: "route_linear_reference";
+  distance_from_route_meters: number;
+  matched_position: Coordinate;
+  next_maneuver: RoutingManeuver | null;
+  on_route: boolean;
+  progress_fraction: number;
+  remaining_distance_meters: number;
+  remaining_duration_seconds: number;
+  remaining_geometry: LineStringGeometry;
+  tolerance_meters: number;
+}
+
 export interface NearestTransportRequest {
   origin: Coordinate;
   radius_meters?: number;
@@ -160,6 +185,19 @@ const responseSchema = z.object({
   selected_route_id: z.string().nullable().optional(),
   umkm_preference_available: z.boolean().optional(),
   umkm_enrichment_status: z.enum(["AVAILABLE", "UNAVAILABLE", "NOT_REQUESTED"]).optional(),
+});
+
+const progressResponseSchema = z.object({
+  analysis_method: z.literal("route_linear_reference"),
+  distance_from_route_meters: z.number().finite().nonnegative(),
+  matched_position: coordinateSchema,
+  next_maneuver: maneuverSchema.nullable(),
+  on_route: z.boolean(),
+  progress_fraction: z.number().finite().min(0).max(1),
+  remaining_distance_meters: z.number().finite().nonnegative(),
+  remaining_duration_seconds: z.number().finite().nonnegative(),
+  remaining_geometry: z.unknown(),
+  tolerance_meters: z.number().finite().positive(),
 });
 
 export function parseRoutingResult(value: unknown, mode: RoutingMode): RoutingResult {
@@ -266,4 +304,24 @@ export const routingService = {
       request
     );
   }
+};
+
+export const routeProgressService = {
+  async getProgress(request: RouteProgressRequest, signal?: AbortSignal): Promise<RouteProgressResult> {
+    try {
+      const value = await apiClient.post<unknown>("/api/routing/progress", request, { signal });
+      const parsed = progressResponseSchema.safeParse(value);
+      if (!parsed.success || !isRouteGeometry(parsed.data.remaining_geometry)) {
+        throw new RoutingClientError("INVALID_RESPONSE");
+      }
+      return parsed.data as RouteProgressResult;
+    } catch (error) {
+      if (error instanceof RoutingClientError) throw error;
+      if (error instanceof AuthSessionError || (error instanceof ApiError && error.status === 401)) {
+        throw new RoutingClientError("AUTH");
+      }
+      if (error instanceof ApiError && error.status === 400) throw new RoutingClientError("VALIDATION");
+      throw new RoutingClientError("UNAVAILABLE");
+    }
+  },
 };

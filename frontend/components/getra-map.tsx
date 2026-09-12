@@ -89,6 +89,9 @@ type GetraMapProps = {
   journeyActive?: boolean;
   journeyFollowing?: boolean;
   journeyFocusKey?: number;
+  journeyHeadingDegrees?: number | null;
+  journeySpeedMps?: number | null;
+  navigationLayerState?: "EXPLORATION" | "ACTIVE_NAVIGATION" | "ACTIVE_NAVIGATION_WITH_UMKM";
   onJourneyCameraOverride?: () => void;
   onSelect: (merchant: Merchant) => void;
   onRequestMerchantRoute?: (merchant: Merchant) => void;
@@ -609,6 +612,9 @@ export function GetraMap({
   journeyActive = false,
   journeyFollowing = false,
   journeyFocusKey = 0,
+  journeyHeadingDegrees = null,
+  journeySpeedMps = null,
+  navigationLayerState = "EXPLORATION",
   onJourneyCameraOverride,
   onSelect,
   onRequestMerchantRoute,
@@ -700,6 +706,10 @@ export function GetraMap({
       setCameraOwner("SYSTEM");
     });
   }, []);
+
+  const markUserCameraControlFromEvent = useCallback((event: { originalEvent?: unknown }) => {
+    if (event.originalEvent) markUserCameraControl();
+  }, [markUserCameraControl]);
 
   const merchantMarkersRef =
     useRef<Map<string, Marker>>(
@@ -976,11 +986,11 @@ export function GetraMap({
     };
     requestAnimationFrame(scheduleBasemapMeasure);
 
-    map.on("dragstart", markUserCameraControl);
-    map.on("rotatestart", markUserCameraControl);
-    map.on("pitchstart", markUserCameraControl);
-    map.on("wheel", markUserCameraControl);
-    map.on("touchstart", markUserCameraControl);
+    map.on("dragstart", markUserCameraControlFromEvent);
+    map.on("rotatestart", markUserCameraControlFromEvent);
+    map.on("pitchstart", markUserCameraControlFromEvent);
+    map.on("wheel", markUserCameraControlFromEvent);
+    map.on("touchstart", markUserCameraControlFromEvent);
 
     map.on("zoomstart", (e) => {
       if (e.originalEvent) {
@@ -1149,7 +1159,7 @@ export function GetraMap({
 
       mapRef.current = null;
     };
-  }, [markUserCameraControl]);
+  }, [markUserCameraControl, markUserCameraControlFromEvent]);
 
   /*
    * Basemap switcher
@@ -1543,6 +1553,10 @@ export function GetraMap({
           merchant,
         );
 
+      if (navigationLayerState === "ACTIVE_NAVIGATION_WITH_UMKM") {
+        markerElements.element.classList.add("map-marker--navigation-nearby");
+      }
+
       markerElements.button.onclick = () => {
         onSelect(
           merchant,
@@ -1587,6 +1601,7 @@ export function GetraMap({
     styleRevision,
     contextualLayerVisibility.merchant,
     hasVisibleContextualLayer,
+    navigationLayerState,
   ]);
 
   /*
@@ -1854,23 +1869,36 @@ export function GetraMap({
     const bottomInset = journeyActive && navigationPanel
       ? containerRect.bottom - navigationPanel.getBoundingClientRect().top + 20
       : safeArea.bottom;
-    if (!journeyActive || journeyFollowing) map.easeTo({
-      center: [
-        userLocation.longitude,
-        userLocation.latitude,
-      ],
-      zoom: Math.max(
-        map.getZoom(),
-        14,
-      ),
-      duration: 650,
-      ...(journeyActive ? { padding: { top: 112, bottom: Math.min(bottomInset, container.clientHeight * 0.55), left: 24, right: 24 } } : {}),
-    });
+    if (!journeyActive || journeyFollowing) {
+      markSystemCameraIntent();
+      const reliableHeading = journeyActive && journeySpeedMps !== null && journeySpeedMps >= 1 &&
+        journeyHeadingDegrees !== null && Number.isFinite(journeyHeadingDegrees)
+        ? journeyHeadingDegrees
+        : 0;
+      map.easeTo({
+        center: [userLocation.longitude, userLocation.latitude],
+        zoom: Math.max(map.getZoom(), journeyActive ? compact ? 16.5 : 15.5 : 14),
+        bearing: reliableHeading,
+        pitch: journeyActive ? compact ? 36 : 22 : 0,
+        duration: 650,
+        ...(journeyActive ? {
+          padding: {
+            top: 112,
+            bottom: Math.min(bottomInset, container.clientHeight * 0.55),
+            left: 24,
+            right: 24,
+          },
+        } : {}),
+      });
+    }
   }, [
     userLocation,
     journeyActive,
     journeyFollowing,
     journeyFocusKey,
+    journeyHeadingDegrees,
+    journeySpeedMps,
+    markSystemCameraIntent,
   ]);
 
   /*
@@ -2275,6 +2303,8 @@ export function GetraMap({
       data-camera-owner={cameraOwner}
       data-route-candidate-count={journeyActive ? 0 : routeCandidates.filter((candidate) => isRouteGeometry(candidate.geometry)).length}
       data-selected-route-id={journeyActive ? "" : selectedRouteId ?? ""}
+      data-navigation-layer-state={navigationLayerState}
+      data-camera-follow-state={journeyActive ? journeyFollowing ? "FOLLOWING" : "FREE_LOOK" : "EXPLORATION"}
     >
 
       <div
