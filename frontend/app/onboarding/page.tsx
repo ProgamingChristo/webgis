@@ -4,15 +4,20 @@ import {
   ArrowRight,
   BriefcaseBusiness,
   Check,
+  Globe2,
   Landmark,
+  LockKeyhole,
   MapPinned,
   ShieldCheck,
+  Sparkles,
   Store,
 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authenticatedFetch } from "@/src/lib/auth-client";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
+import { GetraLogo } from "@/src/components/getra-ui";
 import styles from "./onboarding.module.css";
 
 const STAKEHOLDER_MODES = [
@@ -130,77 +135,85 @@ export default function OnboardingPage() {
 
   return (
     <main className={styles.page}>
+      <Image
+        alt=""
+        className={styles.backdrop}
+        fill
+        preload
+        sizes="100vw"
+        src="/images/onboarding/getra-orbit-earth.png"
+      />
+
+      <div className={styles.backdropOverlay} aria-hidden="true" />
+      <div className={styles.aurora} aria-hidden="true" />
+
+      <header className={styles.topbar}>
+        <div className={styles.brand}>
+          <GetraLogo className={styles.brandLogo} />
+        </div>
+
+        <div className={styles.progress} aria-label="Progres onboarding">
+          <span className={styles.progressDot} />
+          <span>Account setup</span>
+          <strong>01 / 01</strong>
+        </div>
+      </header>
+
       <section className={styles.shell}>
         <aside className={styles.brandPanel}>
-          <div className={styles.brand}>
-            <span className={styles.brandMark}>
-              G
-            </span>
-
-            <div>
-              <strong>
-                GETRA
-              </strong>
-
-              <span>
-                Geo-Enabled Transit & Retail Analytics
-              </span>
-            </div>
-          </div>
-
           <div className={styles.heroCopy}>
-            <span className={styles.eyebrow}>
-              Account setup
+            <span className={styles.heroBadge}>
+              <Sparkles size={14} />
+              Spatial intelligence, personalized
             </span>
 
             <h1>
-              Pilih cara GETRA membaca kota untuk kamu.
+              Pilih cara GETRA membaca
+              <span> kota untuk kamu.</span>
             </h1>
 
             <p>
-              Akses peta, pencarian, transit, UMKM/POI, community, dan
-              eksplorasi area langsung aktif. Mode tambahan hanya menyesuaikan
-              sudut pandang analisis.
+              Bangun pengalaman kota yang relevan untuk perjalanan, bisnis,
+              investasi, atau pelayanan publik—semuanya dari satu peta.
             </p>
           </div>
 
-          <div className={styles.signalGrid}>
+          <div className={styles.signalGrid} aria-label="Kapabilitas GETRA">
             <div>
-              <MapPinned size={18} />
-              <span>
-                Peta & transit
-              </span>
+              <MapPinned size={17} />
+              <span>Peta & transit</span>
             </div>
 
             <div>
-              <Store size={18} />
-              <span>
-                Retail lokal
-              </span>
+              <Store size={17} />
+              <span>Retail lokal</span>
             </div>
 
             <div>
-              <ShieldCheck size={18} />
-              <span>
-                USER by default
-              </span>
+              <Globe2 size={17} />
+              <span>Spatial insight</span>
             </div>
+          </div>
+
+          <div className={styles.heroNote}>
+            <ShieldCheck size={16} />
+            Mode dapat diubah kembali setelah onboarding selesai.
           </div>
         </aside>
 
         <section className={styles.formPanel}>
           <div className={styles.header}>
             <span className={styles.eyebrow}>
-              GETRA experience
+              Personalize your workspace
             </span>
 
             <h2>
-              Selesaikan onboarding
+              Mulai dari kebutuhanmu
             </h2>
 
             <p>
-              General selalu aktif. Tambahkan mode khusus bila kamu ingin
-              konteks analisis yang lebih spesifik.
+              General selalu aktif. Pilih satu atau beberapa perspektif untuk
+              menyesuaikan insight di dashboard GETRA.
             </p>
           </div>
 
@@ -214,7 +227,7 @@ export default function OnboardingPage() {
 
             <div>
               <span className={styles.generalEyebrow}>
-                Aktif untuk semua pengguna
+                Core experience
               </span>
 
               <h3>
@@ -222,13 +235,13 @@ export default function OnboardingPage() {
               </h3>
 
               <p>
-                Baseline GETRA. Tidak dikirim dan tidak disimpan sebagai
-                stakeholder mode.
+                Peta, pencarian, transit, UMKM/POI, dan eksplorasi area.
               </p>
             </div>
 
             <span className={styles.generalBadge}>
-              Default
+              <Check size={12} strokeWidth={3} />
+              Aktif
             </span>
           </section>
 
@@ -255,6 +268,7 @@ export default function OnboardingPage() {
                   key={mode.id}
                   type="button"
                   className={`${styles.modeCard} ${isSelected ? styles.selected : ""}`}
+                  aria-pressed={isSelected}
                   onClick={() => toggleMode(mode.id)}
                 >
                   <span className={styles.modeIcon}>
@@ -311,6 +325,11 @@ export default function OnboardingPage() {
 
               <ArrowRight size={16} />
             </button>
+          </div>
+
+          <div className={styles.securityNote}>
+            <LockKeyhole size={13} />
+            Pilihan tersimpan aman pada profil GETRA kamu.
           </div>
         </section>
       </section>

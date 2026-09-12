@@ -1,385 +1,86 @@
 "use client";
 
 import Link from "next/link";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
-import {
-  FormEvent,
-  useState,
-} from "react";
-
-import {
-  useRouter,
-} from "next/navigation";
-
-import {
-  getUserContext,
-  persistAuthSession,
-  type BrowserAuthSession,
-} from "@/src/lib/auth-client";
-import { GetraLogo } from "@/src/components/getra-ui";
+import { getUserContext, persistAuthSession, type BrowserAuthSession } from "@/src/lib/auth-client";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
 
 import styles from "../auth.module.css";
 
+type Preference = "commuter" | "business" | "investor";
+
 interface RegisterResponse {
   success: boolean;
-
-  data?: {
-    session?: BrowserAuthSession | null;
-
-    user?: {
-      id?: string | null;
-      email?: string | null;
-    };
-
-    profile?: {
-      display_name?: string | null;
-      account_role?: "USER";
-      onboarding_complete?: boolean;
-    };
-  };
-
-  error?: {
-    code?: string;
-    message?: string;
-  };
+  data?: { session?: BrowserAuthSession | null };
+  error?: { message?: string };
 }
 
+const preferences: Array<{ value: Preference; title: string; description: string; icon: string }> = [
+  { value: "commuter", title: "Komuter & Warga", description: "Cari tempat, rute, transportasi, dan akses di sekitar.", icon: "/images/auth/signup-walk.png" },
+  { value: "business", title: "Pelaku UMKM", description: "Kelola atau klaim usaha, tingkatkan visibilitas, dan lihat kondisi sekitar.", icon: "/images/auth/signup-store.png" },
+  { value: "investor", title: "Investor", description: "Lihat potensi wilayah, aktivitas, demand, dan peluang usaha.", icon: "/images/auth/signup-investor.png" },
+];
+
 export default function SignupPage() {
-  const router =
-    useRouter();
+  const router = useRouter();
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [preference, setPreference] = useState<Preference>("commuter");
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const [
-    displayName,
-    setDisplayName,
-  ] =
-    useState("");
-
-  const [
-    email,
-    setEmail,
-  ] =
-    useState("");
-
-  const [
-    password,
-    setPassword,
-  ] =
-    useState("");
-
-  const [
-    errorMessage,
-    setErrorMessage,
-  ] =
-    useState<string | null>(
-      null,
-    );
-
-  const [
-    successMessage,
-    setSuccessMessage,
-  ] =
-    useState<string | null>(
-      null,
-    );
-
-  const [
-    loading,
-    setLoading,
-  ] =
-    useState(false);
-
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
-    setErrorMessage(
-      null,
-    );
-
-    setSuccessMessage(
-      null,
-    );
-
-    setLoading(
-      true,
-    );
-
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setLoading(true);
     try {
-      const response =
-        await fetch(
-          getGetraApiUrl("/api/auth/register"),
-          {
-            method:
-              "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-
-            body:
-              JSON.stringify({
-                email:
-                  email.trim(),
-
-                password,
-
-                display_name:
-                  displayName.trim(),
-              }),
-          },
-        );
-
-      const json =
-        (await response.json()) as RegisterResponse;
-
-      if (
-        !response.ok ||
-        !json.success
-      ) {
-        throw new Error(
-          json.error?.message ||
-          "Pendaftaran gagal.",
-        );
-      }
-
-      const session =
-        json.data?.session;
-
-      if (
-        session?.access_token &&
-        session.refresh_token
-      ) {
-        setSuccessMessage(
-          "Akun berhasil dibuat. Menyiapkan onboarding GETRA...",
-        );
-
-        await persistAuthSession(
-          session,
-        );
-
-        const userContext =
-          await getUserContext();
-
-        if (!userContext?.profile) {
-          throw new Error(
-            "Akun dibuat, tetapi konteks GETRA belum tersedia. Coba masuk ulang.",
-          );
-        }
-
-        router.replace(
-          userContext.profile.onboarding_complete
-            ? "/app"
-            : "/onboarding",
-        );
-
-        router.refresh();
-
-        return;
-      }
-
-      throw new Error(
-        "Registrasi belum mengembalikan session. Pastikan email verification Supabase sedang OFF untuk development.",
-      );
-    } catch (
-      error: unknown
-    ) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Pendaftaran gagal.",
-      );
-    } finally {
-      setLoading(
-        false,
-      );
-    }
+      const response = await fetch(getGetraApiUrl("/api/auth/register"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password, display_name: displayName.trim() }),
+      });
+      const json = (await response.json()) as RegisterResponse;
+      if (!response.ok || !json.success) throw new Error(json.error?.message || "Pendaftaran gagal.");
+      const session = json.data?.session;
+      if (!session?.access_token || !session.refresh_token) throw new Error("Registrasi belum mengembalikan session. Pastikan email verification Supabase sedang OFF untuk development.");
+      setSuccessMessage("Akun berhasil dibuat. Menyiapkan onboarding GETRA...");
+      await persistAuthSession(session);
+      const userContext = await getUserContext();
+      if (!userContext?.profile) throw new Error("Akun dibuat, tetapi konteks GETRA belum tersedia. Coba masuk ulang.");
+      router.replace(userContext.profile.onboarding_complete ? "/app" : "/onboarding");
+      router.refresh();
+    } catch (error: unknown) {
+      setErrorMessage(error instanceof Error ? error.message : "Pendaftaran gagal.");
+    } finally { setLoading(false); }
   }
 
   return (
-    <main className={styles.page}>
-      <section className={styles.hero}>
-        <div className={styles.brand}>
-          <GetraLogo className={styles.brandLogo} />
-
-          <div className={styles.brandText}>
-            <strong>
-              GETRA
-            </strong>
-
-            <span>
-              Geo-Enabled Transit & Retail Analytics
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.heroContent}>
-          <span className={styles.eyebrow}>
-            Build your spatial profile
-          </span>
-
-          <h1>
-            Satu akun.
-            Banyak cara
-            melihat kota.
-          </h1>
-
-          <p>
-            Semua akun mendapat akses
-            eksplorasi GETRA. Mode tambahan
-            UMKM, Investor, dan Pemerintah
-            dapat dipilih setelah akun dibuat.
-          </p>
-
-          <div className={styles.signalRow}>
-            <span className={styles.signal}>
-              GENERAL ACCESS
-            </span>
-
-            <span className={styles.signal}>
-              UMKM MODE
-            </span>
-
-            <span className={styles.signal}>
-              INVESTOR MODE
-            </span>
-
-            <span className={styles.signal}>
-              GOVERNMENT MODE
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.heroFooter}>
-          Tidak ada role selector pada public signup.
-        </div>
-      </section>
-
-      <section className={styles.formSide}>
-        <div className={styles.card}>
-          <header className={styles.cardHeader}>
-            <span>
-              New account
-            </span>
-
-            <h2>
-              Buat akun GETRA
-            </h2>
-
-            <p>
-              Daftar sebagai pengguna GETRA.
-              Pilihan mode tambahan dilakukan
-              setelah proses registrasi.
-            </p>
-          </header>
-
-          <form
-            className={styles.form}
-            onSubmit={handleSubmit}
-          >
-            <div className={styles.field}>
-              <label htmlFor="display-name">
-                Nama
-              </label>
-
-              <input
-                id="display-name"
-                type="text"
-                value={displayName}
-                onChange={(
-                  event,
-                ) =>
-                  setDisplayName(
-                    event.target.value,
-                  )
-                }
-                placeholder="Nama kamu"
-                autoComplete="name"
-                required
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="email">
-                Email
-              </label>
-
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(
-                  event,
-                ) =>
-                  setEmail(
-                    event.target.value,
-                  )
-                }
-                placeholder="nama@email.com"
-                autoComplete="email"
-                required
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="password">
-                Password
-              </label>
-
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(
-                  event,
-                ) =>
-                  setPassword(
-                    event.target.value,
-                  )
-                }
-                placeholder="Buat password"
-                autoComplete="new-password"
-                required
-              />
-            </div>
-
-            {errorMessage ? (
-              <p className={styles.error}>
-                {errorMessage}
-              </p>
-            ) : null}
-
-            {successMessage ? (
-              <p className={styles.success}>
-                {successMessage}
-              </p>
-            ) : null}
-
-            <button
-              className={styles.submitButton}
-              type="submit"
-              disabled={loading}
-            >
-              {loading
-                ? "Membuat akun..."
-                : "Buat akun"}
-            </button>
+    <main className={`${styles.page} ${styles.signupPage}`}>
+      <section className={`${styles.shell} ${styles.signupShell}`} aria-label="Buat akun GETRA">
+        <aside className={`${styles.hero} ${styles.signupHero}`} aria-label="GETRA overview"><div className={styles.heroContent}><h1>Mulai melihat kota dari cara Anda sendiri.</h1><p>Temukan tempat, rute, dan peluang di sekitar Anda dengan lebih mudah.</p></div></aside>
+        <section className={`${styles.formSide} ${styles.signupFormSide}`} aria-labelledby="signup-title"><div className={`${styles.card} ${styles.signupCard}`}>
+          <Link href="/" className={styles.backLink}><img src="/images/auth/signup-back-arrow.png" width="16" height="16" alt="" aria-hidden="true" />Kembali ke Beranda</Link>
+          <header className={styles.signupHeader}><h1 id="signup-title">Buat Akun GETRA</h1><p>Daftar untuk mulai menggunakan GETRA.</p></header>
+          <button className={styles.googleButton} type="button" aria-label="Daftar dengan Google"><img src="/images/auth/signup-google-g.png" width="20" height="20" alt="" aria-hidden="true" />Daftar dengan Google</button>
+          <div className={styles.signupDivider}><span>atau daftar dengan email</span></div>
+          <p className={styles.signupSwitch}>Sudah punya akun? <Link href="/login">Masuk</Link></p>
+          <form className={styles.signupForm} onSubmit={handleSubmit}>
+            <div className={styles.field}><label htmlFor="display-name">NAMA LENGKAP</label><div className={styles.inputWrap}><input id="display-name" type="text" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Nama lengkap Anda" autoComplete="name" required /></div></div>
+            <div className={styles.field}><label htmlFor="email">ALAMAT EMAIL</label><div className={styles.inputWrap}><input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="nama@email.com" autoComplete="email" required /></div></div>
+            <div className={styles.field}><label htmlFor="password">KATA SANDI</label><div className={styles.inputWrap}><input id="password" type={passwordVisible ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Minimal 8 karakter" minLength={8} autoComplete="new-password" required /><button className={styles.passwordToggle} type="button" onClick={() => setPasswordVisible((value) => !value)} aria-label={passwordVisible ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}><img src="/images/auth/signup-eye.png" width="20" height="20" alt="" /></button></div></div>
+            <fieldset className={styles.preferenceField}><legend>GETRA AKAN ANDA GUNAKAN SEBAGAI?</legend><p>Pilihan ini dapat diubah kapan saja.</p><div>{preferences.map((option) => <label className={`${styles.preferenceCard} ${preference === option.value ? styles.preferenceSelected : ""}`} key={option.value}><input type="radio" name="preference" value={option.value} checked={preference === option.value} onChange={() => setPreference(option.value)} /><span className={styles.radioMark} aria-hidden="true" /><span><b>{option.title}</b><small>{option.description}</small></span><img src={option.icon} width="24" height="24" alt="" aria-hidden="true" /></label>)}</div></fieldset>
+            <label className={styles.terms}><input type="checkbox" checked={termsAccepted} onChange={(event) => setTermsAccepted(event.target.checked)} required /><span>Saya menyetujui <a href="/terms">Ketentuan Layanan</a> dan <a href="/privacy">Kebijakan Privasi</a>.</span></label>
+            {errorMessage ? <p className={styles.error} role="alert">{errorMessage}</p> : null}{successMessage ? <p className={styles.success}>{successMessage}</p> : null}
+            <button className={styles.submitButton} type="submit" disabled={loading}>{loading ? "Membuat akun..." : "Buat Akun"}</button>
           </form>
-
-          <p className={styles.switchText}>
-            Sudah punya akun?{" "}
-            <Link href="/login">
-              Masuk
-            </Link>
-          </p>
-
-          <p className={styles.securityNote}>
-            Akun publik selalu dibuat dengan
-            account_role USER.
-          </p>
-        </div>
+        </div></section>
       </section>
     </main>
   );
