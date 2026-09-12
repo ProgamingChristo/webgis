@@ -12,7 +12,7 @@ describe("AI search actions", () => {
   it("returns validated criteria using one extraction call, without fabricated results or success claims", async () => {
     mocks.generate.mockReset().mockResolvedValue({ source: "openai", data: { action: "SEARCH", criteria, clarification: "" } });
     const response = await new AiService("Bearer fixture").handleAskRequest({ question: "Bakso dekat Stasiun Manggarai budget 15000", active_experience: "GENERAL", context: { enable_search: true } });
-    expect(response.search_action?.criteria).toEqual(criteria);
+    expect(response.action).toEqual({ type: "APPLY_SEARCH_CRITERIA", criteria });
     expect(response.answer).not.toContain("sudah menampilkan");
     expect(mocks.generate).toHaveBeenCalledTimes(1);
     expect(response).not.toHaveProperty("merchants");
@@ -20,7 +20,10 @@ describe("AI search actions", () => {
   it("asks for location instead of applying near-me without GPS", async () => {
     mocks.generate.mockReset().mockResolvedValue({ source: "openai", data: { action: "SEARCH", criteria: { ...criteria, reference_text: null, near_user: true }, clarification: "" } });
     const response = await new AiService("Bearer fixture").handleAskRequest({ question: "Bakso dekat saya", active_experience: "GENERAL", context: { enable_search: true } });
-    expect(response.search_action).toBeUndefined();
+    expect(response.action).toEqual({
+      type: "REQUEST_CLARIFICATION",
+      prompt: "Aktifkan lokasi saya sebelum mencari tempat terdekat.",
+    });
     expect(response.answer).toContain("Aktifkan lokasi");
   });
   it("rejects model-added coordinates, invalid budgets and manufactured merchant data", () => {

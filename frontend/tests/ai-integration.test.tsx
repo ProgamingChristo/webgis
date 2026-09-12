@@ -97,7 +97,7 @@ describe("GETRA AI frontend integration", () => {
   it("keeps chat conversational with compact accessible window controls", () => {
     const html = renderToStaticMarkup(<AiPanel activeExperience="GENERAL" onClose={vi.fn()} onMinimize={vi.fn()} />);
     expect(html).toContain("Tanya GETRA");
-    expect(html).toContain("Asisten AI untuk eksplorasi kota");
+    expect(html).toContain("Asisten Mobilitas Cerdas");
     expect(html).toContain('aria-label="Minimalkan Tanya GETRA"');
     expect(html).toContain('role="log"');
     expect(html).not.toContain("commuter-merchant");

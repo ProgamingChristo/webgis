@@ -90,6 +90,12 @@ export type AiApplicationAction =
       destination: AiActionDestination;
     }
   | {
+      type: "PREPARE_ROUTE";
+      origin: AiActionOrigin;
+      destination: AiActionDestination;
+      requested_modes?: AiRouteMode[];
+    }
+  | {
       type: "CHANGE_ROUTE_MODE";
       mode: AiRouteMode;
     }

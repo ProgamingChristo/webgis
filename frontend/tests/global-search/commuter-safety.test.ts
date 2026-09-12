@@ -180,4 +180,11 @@ describe("commuter browser safety", () => {
       );
     },
   );
+
+  it("prevents stale AI searches from overwriting newer manual criteria", () => {
+    expect(dashboard).toContain("canonicalSearchGenerationRef");
+    expect(dashboard).toContain("generation !== canonicalSearchGenerationRef.current");
+    expect(dashboard).toContain("searchRevision !== searchRevisionRef.current");
+    expect(dashboard).toContain("searchRevisionRef.current++; canonicalRequestRef.current?.abort(); serviceAreaRequestRef.current?.abort()");
+  });
 });

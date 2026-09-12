@@ -425,7 +425,10 @@ Use NEAREST_TRANSIT when the user is asking for the transit place itself, for ex
 Also return at most one strict AiApplicationAction:
 
 - CALCULATE_ROUTE:
-  when the user explicitly asks GETRA to calculate/show a route.
+  when the user explicitly asks GETRA to calculate/show a route and names exactly one transport mode.
+
+- PREPARE_ROUTE:
+  when origin and destination are known but the user names no mode or more than one mode. GETRA must show its mode chooser before calculating.
 
 - CHANGE_ROUTE_MODE:
   when there is an active route and the user asks to change the transport mode.
@@ -1162,10 +1165,8 @@ export function determineApplicationAction(
       .replace(/\s+/g, " ")
       .trim();
 
-  const mode =
-    inferRouteMode(
-      normalized,
-    );
+  const requestedModes = inferRequestedRouteModes(normalized);
+  const mode = requestedModes.length === 1 ? requestedModes[0] : null;
 
   const asksForRoute =
     /\b(rute|route|berapa lama|arah|navigasi)\b/u.test(
@@ -1236,18 +1237,16 @@ export function determineApplicationAction(
       };
     }
 
-    return {
-      type:
-        "CALCULATE_ROUTE",
+    if (!mode) {
+      return {
+        type: "PREPARE_ROUTE",
+        origin,
+        destination,
+        ...(requestedModes.length ? { requested_modes: requestedModes } : {}),
+      };
+    }
 
-      mode:
-        mode ??
-        "walking",
-
-      origin,
-
-      destination,
-    };
+    return { type: "CALCULATE_ROUTE", mode, origin, destination };
   }
 
   return {
@@ -1256,38 +1255,12 @@ export function determineApplicationAction(
   };
 }
 
-function inferRouteMode(
-  question: string,
-):
-  | "walking"
-  | "motorcycle"
-  | "car"
-  | null {
-  if (
-    /\b(jalan kaki|berjalan|kaki)\b/u.test(
-      question,
-    )
-  ) {
-    return "walking";
-  }
-
-  if (
-    /\b(motor|motorcycle|sepeda motor)\b/u.test(
-      question,
-    )
-  ) {
-    return "motorcycle";
-  }
-
-  if (
-    /\b(mobil|car|mengemudi)\b/u.test(
-      question,
-    )
-  ) {
-    return "car";
-  }
-
-  return null;
+function inferRequestedRouteModes(question: string): Array<"walking" | "motorcycle" | "car"> {
+  const modes: Array<"walking" | "motorcycle" | "car"> = [];
+  if (/\b(jalan kaki|berjalan|kaki)\b/u.test(question)) modes.push("walking");
+  if (/\b(motor|motorcycle|sepeda motor)\b/u.test(question)) modes.push("motorcycle");
+  if (/\b(mobil|car|mengemudi)\b/u.test(question)) modes.push("car");
+  return modes;
 }
 
 function extractOriginQuery(
@@ -1353,6 +1326,9 @@ function actionMessage(
       return selectedName
         ? `Saya menyiapkan rute ke ${selectedName} menggunakan GETRA.`
         : "Saya menyiapkan rute menggunakan GETRA.";
+
+    case "PREPARE_ROUTE":
+      return "Titik awal dan tujuan sudah disiapkan. Pilih moda perjalanan untuk menghitung rute.";
 
     case "CHANGE_ROUTE_MODE":
       if (

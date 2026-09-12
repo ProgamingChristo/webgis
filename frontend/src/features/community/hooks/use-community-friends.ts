@@ -22,7 +22,7 @@ const INITIAL_META: CommunityFeedMeta = {
   total_pages: 1,
 };
 
-export function useCommunityFriends(view: CommunityFriendshipView) {
+export function useCommunityFriends(view: CommunityFriendshipView, enabled = true) {
   const { context } = useAuth();
   const [items, setItems] = useState<CommunityFriendListItem[]>([]);
   const [meta, setMeta] = useState<CommunityFeedMeta>(INITIAL_META);
@@ -31,6 +31,10 @@ export function useCommunityFriends(view: CommunityFriendshipView) {
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -52,7 +56,7 @@ export function useCommunityFriends(view: CommunityFriendshipView) {
     } finally {
       setLoading(false);
     }
-  }, [view]);
+  }, [enabled, view]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -63,7 +67,7 @@ export function useCommunityFriends(view: CommunityFriendshipView) {
   }, [reload]);
 
   useEffect(() => {
-    if (!context?.user.id) {
+    if (!enabled || !context?.user.id) {
       return;
     }
 
@@ -91,7 +95,7 @@ export function useCommunityFriends(view: CommunityFriendshipView) {
       mounted = false;
       subscription?.unsubscribe();
     };
-  }, [context?.user.id, reload]);
+  }, [context?.user.id, enabled, reload]);
 
   const act = useCallback(
     async (friendshipId: string, action: CommunityFriendshipAction) => {

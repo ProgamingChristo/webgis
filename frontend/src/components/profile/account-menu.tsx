@@ -2,6 +2,7 @@
 
 import {
   BookUser,
+  ChevronDown,
   LogOut,
   Megaphone,
   Settings,
@@ -18,9 +19,9 @@ import {
 import type {
   UserContext,
 } from "@/src/lib/auth-client";
+import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
 import {
   getExperienceBadges,
-  getPrimaryExperienceLabel,
 } from "@/src/lib/user-experience";
 
 interface AccountMenuProps {
@@ -46,6 +47,7 @@ export function AccountMenu({
   onLogout,
 }: AccountMenuProps) {
   const router = useRouter();
+  const { activeExperience } = useStakeholder();
   const [open, setOpen] =
     useState(false);
   const menuRef =
@@ -63,10 +65,17 @@ export function AccountMenu({
       ? `@${context.profile.username}`
       : "Lengkapi username";
 
-  const primaryExperience =
-    getPrimaryExperienceLabel(
-      context,
-    );
+  const primaryExperience = {
+    GENERAL: "Umum",
+    UMKM: "UMKM",
+    INVESTOR: "Investor",
+    GOVERNMENT: "Pemerintah",
+  }[activeExperience];
+
+  const accountRole =
+    context?.profile?.account_role === "ADMIN"
+      ? "Administrator"
+      : "Pengguna";
 
   const experienceBadges =
     getExperienceBadges(
@@ -139,10 +148,11 @@ export function AccountMenu({
           )}
         </span>
         <span className="account-menu__identity">
-          <strong>Profil</strong>
-          <small>{displayName}</small>
-          <em>{primaryExperience}</em>
+          <strong>{displayName}</strong>
+          <small>{accountRole}</small>
+          <em>Mode {primaryExperience}</em>
         </span>
+        <ChevronDown className="account-menu__chevron" size={14} aria-hidden="true" />
       </button>
 
       {open ? (

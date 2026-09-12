@@ -60,7 +60,7 @@ describe("Business Space frontend contract", () => {
   it("exposes Menu Go media as safe canonical merchant enrichment", () => {
     expect(placeDetail).toContain("Foto &amp; Menu");
     expect(placeDetail).toContain("menuPhotos");
-    expect(placeDetail).toContain("merchantPrice");
+    expect(placeDetail).toContain("observedPriceAmount");
     expect(placeDetail).not.toContain("Menu utama");
     expect(nextConfig).toContain("remotePatterns");
     expect(nextConfig).toContain("mapidstorage.cdn.mapid.io");

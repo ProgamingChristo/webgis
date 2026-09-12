@@ -650,12 +650,22 @@ export function GetraMap({
       getDefaultBasemapId(),
     );
 
+  const [styleRevision, setStyleRevision] = useState(0);
+  const [basemapStatus, setBasemapStatus] = useState<"LOADING" | "READY" | "ERROR">("LOADING");
+  const [basemapRetryRevision, setBasemapRetryRevision] = useState(0);
+  const basemapReadyRef = useRef(false);
+
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => setActiveBasemapId(getPreferredBasemapId()), 0);
+    const timeoutId = window.setTimeout(() => {
+      const preferred = getPreferredBasemapId();
+      if (preferred !== getDefaultBasemapId()) {
+        basemapReadyRef.current = false;
+        setBasemapStatus("LOADING");
+        setActiveBasemapId(preferred);
+      }
+    }, 0);
     return () => window.clearTimeout(timeoutId);
   }, []);
-
-  const [styleRevision, setStyleRevision] = useState(0);
   const [renderedClusterFeatureCount, setRenderedClusterFeatureCount] = useState(0);
   const [clusterSourceFeatureCount, setClusterSourceFeatureCount] = useState(0);
   const [boundaryLayersReady, setBoundaryLayersReady] = useState(false);
@@ -1025,6 +1035,8 @@ export function GetraMap({
     );
 
     map.on("load", () => {
+      basemapReadyRef.current = true;
+      setBasemapStatus("READY");
       const initialBounds = datasetBoundsRef.current;
       addJakartaAdminBoundaries(
         map,
@@ -1098,6 +1110,7 @@ export function GetraMap({
         console.error(
           "[GETRA MAP ERROR] Map resource failed to load.",
         );
+        if (!basemapReadyRef.current) setBasemapStatus("ERROR");
       },
     );
 
@@ -1175,6 +1188,7 @@ export function GetraMap({
       return;
     }
 
+    basemapReadyRef.current = false;
     map.setStyle(
       activeBasemap.style,
     );
@@ -1217,31 +1231,43 @@ export function GetraMap({
         150,
       );
 
+    const failureTimeoutId = window.setTimeout(() => {
+      if (!basemapReadyRef.current) setBasemapStatus("ERROR");
+    }, 12_000);
+
+    const markBasemapReady = () => {
+      basemapReadyRef.current = true;
+      setBasemapStatus("READY");
+      syncBasemapOverlays();
+    };
+
     map.once(
       "style.load",
-      syncBasemapOverlays,
+      markBasemapReady,
     );
 
     map.once(
       "idle",
-      syncBasemapOverlays,
+      markBasemapReady,
     );
 
     return () => {
       window.clearTimeout(
         timeoutId,
       );
+      window.clearTimeout(failureTimeoutId);
       map.off(
         "style.load",
-        syncBasemapOverlays,
+        markBasemapReady,
       );
       map.off(
         "idle",
-        syncBasemapOverlays,
+        markBasemapReady,
       );
     };
   }, [
     activeBasemapId,
+    basemapRetryRevision,
   ]);
 
   /*
@@ -1455,7 +1481,7 @@ export function GetraMap({
         source: MERCHANT_SOURCE_ID,
         filter: ["!", ["has", "point_count"]],
         paint: {
-          "circle-color": "#ef4444",
+          "circle-color": "#0891b2",
           "circle-radius": 7,
           "circle-stroke-color": "#ffffff",
           "circle-stroke-width": 2,
@@ -2242,7 +2268,18 @@ export function GetraMap({
         className="map-canvas"
       />
 
-      <div className="map-status map-status--top-left">
+      {basemapStatus !== "READY" ? (
+        <div className="map-basemap-state" data-state={basemapStatus} role={basemapStatus === "ERROR" ? "alert" : "status"}>
+          <div>
+            <Layers size={22} aria-hidden="true" />
+            <strong>{basemapStatus === "ERROR" ? "Peta dasar belum dapat dimuat" : "Memuat peta dasar…"}</strong>
+            {basemapStatus === "ERROR" ? <span>Periksa koneksi atau coba muat ulang peta dasar.</span> : null}
+            {basemapStatus === "ERROR" ? <button type="button" onClick={() => { basemapReadyRef.current = false; setBasemapStatus("LOADING"); setBasemapRetryRevision((revision) => revision + 1); }}>Coba lagi</button> : null}
+          </div>
+        </div>
+      ) : null}
+
+      {basemapStatus === "READY" ? <div className="map-status map-status--top-left">
         <span
           className={
             "status-dot status-dot--ok"
@@ -2262,7 +2299,7 @@ export function GetraMap({
             )?.description ?? "Peta MAPID"}
           </span>
         </div>
-      </div>
+      </div> : null}
 
       {selectedId ? (
         <button
@@ -2301,6 +2338,8 @@ export function GetraMap({
               aria-pressed={option.id === activeBasemapId}
               title={option.description}
               onClick={() => {
+                basemapReadyRef.current = false;
+                setBasemapStatus("LOADING");
                 persistBasemapPreference(option.id);
                 setActiveBasemapId(option.id);
               }}

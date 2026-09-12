@@ -32,10 +32,22 @@ describe("Tanya GETRA application actions", () => {
     })).toEqual({ type: "CHANGE_ROUTE_MODE", mode: "motorcycle" });
   });
 
-  it("keeps typo search as an application search action", () => {
-    expect(determineApplicationAction("cari basko dekat sini")).toEqual({
-      type: "APPLY_SEARCH_CRITERIA",
-      query: "basko",
+  it("leaves merchant criteria to the validated search extractor", () => {
+    expect(determineApplicationAction("cari basko dekat sini")).toEqual({ type: "ANSWER_ONLY" });
+  });
+
+  it("prepares endpoints without silently choosing a route mode", () => {
+    expect(determineApplicationAction("berikan rute dari Stasiun Gambir ke Kopi Tuku Cipete")).toEqual({
+      type: "PREPARE_ROUTE",
+      origin: { type: "PLACE_QUERY", query: "Stasiun Gambir" },
+      destination: { type: "PLACE_QUERY", query: "Kopi Tuku Cipete" },
+    });
+  });
+
+  it("prepares a multi-mode request for explicit user choice", () => {
+    expect(determineApplicationAction("rute jalan kaki atau motor dari Stasiun Gambir ke Kopi Tuku Cipete")).toMatchObject({
+      type: "PREPARE_ROUTE",
+      requested_modes: ["walking", "motorcycle"],
     });
   });
 

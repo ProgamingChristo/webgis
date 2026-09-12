@@ -97,6 +97,30 @@
 .sheetModeActive { border-color: #0891b2 !important; background: #ecfeff !important; color: #155e75 !important; font-weight: 800 !important; }
 .sheetModeButton { min-height: 48px; display: grid; place-items: center; gap: 2px; padding: 6px; border: 1px solid #cbd5e1; background: #fff; color: #475569; border-radius: 5px; cursor: pointer; font-size: 0.72rem; }
 
+/* Compact inline route result used by the map-first sidebar. */
+.inlinePlanner { gap: 8px; margin-top: 6px; }
+.inlineSection { gap: 7px; }
+.inlinePlanner .sheetModes { gap: 5px; }
+.inlinePlanner .sheetModes button,
+.inlinePlanner .sheetModeButton { min-height: 40px; padding: 4px; border-radius: 7px; font-size: .64rem; }
+.inlinePlanner .preferenceControl { gap: 5px; margin-top: 2px; }
+.inlinePlanner .preferenceControl button { min-height: 34px; padding: 5px; border-color: #d6e1ec; border-radius: 7px; font-size: .66rem; }
+.inlinePlanner .candidateList { gap: 6px; margin: 5px 0; }
+.inlinePlanner .candidateCard { min-height: 0; gap: 4px; padding: 8px 9px; border-width: 1px; border-left-width: 3px; border-radius: 8px; box-shadow: none; }
+.inlinePlanner .candidateCard[aria-pressed="true"],
+.inlinePlanner .candidateCardSelected { padding: 7px 8px 7px 7px; border-width: 1px !important; border-left-width: 4px !important; box-shadow: 0 2px 8px rgba(2, 132, 199, .12) !important; }
+.inlinePlanner .categoryBadge,
+.inlinePlanner .selectedPill { padding: 2px 5px; font-size: .58rem; }
+.inlinePlanner .routeIdentity { font-size: .72rem; }
+.inlinePlanner .candidateTime { font-size: 1rem; }
+.inlinePlanner .candidateDist { font-size: .72rem; }
+.inlinePlanner .candidateDelta,
+.inlinePlanner .candidateCard small,
+.inlinePlanner .selectRoute,
+.inlinePlanner .trafficNotice { font-size: .62rem; }
+.inlinePlanner .sheetStart { position: static; min-height: 38px; border-radius: 7px; background: #0891b2; font-size: .75rem; box-shadow: none; }
+.inlinePlanner .sheetStart:hover { background: #087f9d; box-shadow: none; }
+
 /* Collapsible directions */
 .directionsDetails { border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; overflow: hidden; margin-top: 8px; }
 .directionsSummary { display: flex; align-items: center; gap: 8px; padding: 10px 12px; font-size: 0.82rem; font-weight: 700; color: #1e293b; cursor: pointer; background: #f1f5f9; user-select: none; transition: background 0.12s ease; }

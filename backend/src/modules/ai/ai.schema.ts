@@ -161,6 +161,13 @@ export const AiApplicationActionSchema = z.discriminatedUnion("type", [
     destination: AiDestinationSchema,
   }),
 
+  z.object({
+    type: z.literal("PREPARE_ROUTE"),
+    origin: AiOriginSchema,
+    destination: AiDestinationSchema,
+    requested_modes: z.array(AiRouteModeSchema).max(3).optional(),
+  }),
+
   /**
    * Change the currently active route transportation mode.
    * GETRA must recalculate the route using the routing engine.

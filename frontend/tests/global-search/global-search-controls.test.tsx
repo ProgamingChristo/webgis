@@ -52,9 +52,11 @@ describe("GlobalSearchControls", () => {
       />,
     );
     expect(html).toContain('id="global-search-query"');
-    expect(html).toContain("Cakupan pencarian");
+    expect(html).toContain("Ganti area");
     expect(html).toContain("Jakarta Selatan");
-    expect(html).toContain("Cari di area ini");
+    expect(html).toContain("Cari di area peta ini");
+    expect(html).toContain("Filter Pencarian");
+    expect(html).toContain("Radius");
     expect(html).toContain('aria-live="polite"');
   });
 });

@@ -33,7 +33,7 @@ function labelNotification(notification: CommunityNotification): string {
   }
 }
 
-export function CommunityNotificationsMenu() {
+export function CommunityNotificationsMenu({ variant = "light" }: { variant?: "light" | "dark" }) {
   const { context } = useAuth();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<CommunityNotification[]>([]);
@@ -106,7 +106,7 @@ export function CommunityNotificationsMenu() {
   }
 
   return (
-    <div className={styles.notificationMenu}>
+    <div className={styles.notificationMenu} data-variant={variant}>
       <button
         aria-label="Notifikasi komunitas"
         className={styles.notificationButton}
