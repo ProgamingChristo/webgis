@@ -2,8 +2,18 @@ import { z } from "zod";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  openaiConfigured: vi.fn(),
+  openaiGenerate: vi.fn(),
   sub2apiConfigured: vi.fn(),
   sub2apiGenerate: vi.fn(),
+}));
+
+vi.mock("@/lib/ai/openai", () => ({
+  openAIProvider: {
+    id: "openai",
+    isConfigured: mocks.openaiConfigured,
+    generateStructured: mocks.openaiGenerate,
+  },
 }));
 
 vi.mock("@/lib/ai/sub2api", () => ({
@@ -31,6 +41,7 @@ describe("AI provider selection", () => {
     vi.clearAllMocks();
     delete process.env.AI_PROVIDER;
     mocks.sub2apiConfigured.mockReturnValue(false);
+    mocks.openaiConfigured.mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -57,6 +68,20 @@ describe("AI provider selection", () => {
     });
     expect(getConfiguredProvider()).toBe("sub2api");
     expect(mocks.sub2apiGenerate).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses the official OpenAI Responses adapter when AI_PROVIDER=openai", async () => {
+    process.env.AI_PROVIDER = "openai";
+    mocks.openaiConfigured.mockReturnValue(true);
+    mocks.openaiGenerate.mockResolvedValue({ ok: true });
+
+    await expect(generateStructured(request)).resolves.toEqual({
+      data: { ok: true },
+      source: "openai",
+    });
+    expect(getConfiguredProvider()).toBe("openai");
+    expect(mocks.openaiGenerate).toHaveBeenCalledTimes(1);
+    expect(mocks.sub2apiGenerate).not.toHaveBeenCalled();
   });
 
   it("throws a typed configuration error when explicit Sub2API has no key", async () => {

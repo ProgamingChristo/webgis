@@ -1328,6 +1328,16 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     allowedRequestHeaders: AUTH_HEADERS,
     purpose: "List transport corridors",
   },
+  {
+    method: "GET",
+    path: "/api/places/resolve",
+    classification: "AUTHENTICATED",
+    role: "AUTHENTICATED",
+    rateLimit: "spatial",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_HEADERS,
+    purpose: "Resolve a user-entered Indonesian place for a GETRA action",
+  },
 
   // UMKM Workspace & Submissions & Analytics (Phase 11)
   {

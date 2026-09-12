@@ -11,7 +11,6 @@ import {
   extractRegionFromQuery,
   findRegionByText,
   GLOBAL_SEARCH_REGION_IDS,
-  normalizeSearchText,
 } from "@/src/features/global-search/global-search-regions";
 import type {
   GlobalSearchResult,
@@ -21,6 +20,7 @@ import type {
 } from "@/src/features/global-search/global-search.types";
 import { CanonicalMerchantReadService } from "@/src/features/merchant-reconciliation/canonical-merchant-read.service";
 import { ApplicationError } from "@/src/lib/errors";
+import { resolveSearchQuery } from "@/src/features/global-search/search-query-normalizer";
 
 export class GlobalSearchService {
   constructor(private readonly supabase: SupabaseClient<any>) {}
@@ -171,6 +171,9 @@ export function resolveGlobalSearchIntent(
     const originalQuery = query.q.trim();
     const parsedCommuter = parseDeterministicCommuterText(originalQuery);
     const queryLocation = extractRegionFromQuery(parsedCommuter.keyword_text);
+    const queryResolution = resolveSearchQuery(
+      queryLocation ? queryLocation.keyword ?? "" : parsedCommuter.keyword_text,
+    );
     const explicitLocation = query.location_text
       ? findRegionByText(query.location_text)
       : null;
@@ -222,9 +225,7 @@ export function resolveGlobalSearchIntent(
     return {
       domain: "MERCHANT",
       original_query: originalQuery,
-      keyword: queryLocation
-        ? queryLocation.keyword
-        : normalizeSearchText(parsedCommuter.keyword_text) || null,
+      keyword: queryResolution.canonical || null,
       location_text: locationRegion?.name ?? null,
       scope: { type: scopeType, region_ids: regionIds, bounds },
       category: query.category?.trim() || null,
@@ -248,6 +249,12 @@ export function resolveGlobalSearchIntent(
         : null,
       parser: "DETERMINISTIC",
       confidence: parsedCommuter.confidence,
+      query_resolution: {
+        normalized: queryResolution.normalized,
+        canonical: queryResolution.canonical,
+        correction: queryResolution.correction,
+        confidence: queryResolution.confidence,
+      },
     };
 }
 

@@ -33,6 +33,7 @@ export function useAi() {
       setMessages([...nextMessages, assistantMessage]);
       setProvider(res.provider);
       setState("SUCCESS");
+      return res;
     } catch (err: unknown) {
       setError(
         err instanceof Error
@@ -41,8 +42,13 @@ export function useAi() {
       );
       setProvider(null);
       setState("ERROR");
+      return null;
     }
   }, [messages]);
+
+  const appendAssistantMessage = useCallback((content: string) => {
+    setMessages((current) => [...current, { role: "assistant", content }]);
+  }, []);
 
   const clearChat = useCallback(() => {
     setMessages([]);
@@ -58,5 +64,5 @@ export function useAi() {
     setProvider(null);
   }, []);
 
-  return { state, messages, error, provider, askQuestion, clearChat, reset };
+  return { state, messages, error, provider, askQuestion, appendAssistantMessage, clearChat, reset };
 }

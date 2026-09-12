@@ -160,6 +160,11 @@ export function GlobalSearchControls(props: GlobalSearchControlsProps) {
           </button>
         ) : null}
       </div>
+      {props.intent?.query_resolution?.correction ? (
+        <p className="global-search__correction">
+          Menampilkan hasil untuk &quot;{props.intent.query_resolution.canonical}&quot;. Input awal: &quot;{props.intent.original_query}&quot;.
+        </p>
+      ) : null}
     </section>
   );
 }

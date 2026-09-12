@@ -27,6 +27,12 @@ export interface StructuredCommuterIntent {
   origin: CommuterOrigin | null;
   parser: "DETERMINISTIC";
   confidence: "HIGH" | "MEDIUM";
+  query_resolution: {
+    normalized: string;
+    canonical: string;
+    correction: string | null;
+    confidence: "EXACT" | "ALIAS" | "HIGH_FUZZY" | "NONE";
+  };
 }
 
 export interface WalkingCandidateInput {

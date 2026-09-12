@@ -13,13 +13,26 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAi } from "@/src/hooks/use-ai";
+import type { AiApplicationAction, AiRouteMode } from "@/src/services/ai.service";
+
+export interface AiActionExecutionResult {
+  status: "COMPLETED" | "ROUTE_PENDING" | "REJECTED";
+  message?: string;
+}
 
 interface AiPanelProps {
   activeExperience: "GENERAL" | "UMKM" | "INVESTOR" | "GOVERNMENT";
   currentOrigin?: { latitude: number; longitude: number };
   currentDestination?: { latitude: number; longitude: number };
   selectedEntityId?: string;
+  selectedEntityName?: string;
   studyAreaId?: string;
+  activeRoute?: {
+    mode: AiRouteMode;
+    distance_meters: number;
+    duration_seconds: number;
+  };
+  onAction?: (action: AiApplicationAction) => Promise<AiActionExecutionResult>;
 }
 
 export function AiPanel({
@@ -27,10 +40,14 @@ export function AiPanel({
   currentOrigin,
   currentDestination,
   selectedEntityId,
+  selectedEntityName,
   studyAreaId,
+  activeRoute,
+  onAction,
 }: AiPanelProps) {
-  const { state, messages, provider, askQuestion, clearChat } = useAi();
+  const { state, messages, provider, askQuestion, appendAssistantMessage, clearChat } = useAi();
   const [question, setQuestion] = useState("");
+  const pendingRouteRef = useRef<{ mode: AiRouteMode; previousSignature: string | null } | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -40,21 +57,49 @@ export function AiPanel({
     }
   }, [messages, state]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const pendingRoute = pendingRouteRef.current;
+    if (!pendingRoute || !activeRoute || activeRoute.mode !== pendingRoute.mode) return;
+    const signature = routeSignature(activeRoute);
+    if (signature === pendingRoute.previousSignature) return;
+    appendAssistantMessage(
+      `Rute ${routeModeLabel(activeRoute.mode).toLocaleLowerCase("id-ID")} sudah saya tampilkan di peta. ` +
+      `Perjalanannya sekitar ${Math.ceil(activeRoute.duration_seconds / 60)} menit dengan jarak ${formatDistance(activeRoute.distance_meters)}.`,
+    );
+    pendingRouteRef.current = null;
+  }, [activeRoute, appendAssistantMessage]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!question.trim() || state === "LOADING") return;
 
-    void askQuestion({
+    const response = await askQuestion({
       question: question.trim(),
       active_experience: activeExperience,
       context: {
         study_area_id: studyAreaId,
         selected_entity_id: selectedEntityId,
+        selected_entity_name: selectedEntityName,
         origin: currentOrigin,
         destination: currentDestination,
+        active_route: activeRoute,
       },
     });
     setQuestion("");
+    if (!response?.action || response.action.type === "ANSWER_ONLY" || response.action.type === "REQUEST_CLARIFICATION") return;
+    if (!onAction) {
+      appendAssistantMessage("Tindakan tersebut belum dapat dijalankan pada tampilan ini.");
+      return;
+    }
+    const result = await onAction(response.action);
+    if (result.status === "ROUTE_PENDING") {
+      const mode = response.action.type === "CALCULATE_ROUTE" || response.action.type === "CHANGE_ROUTE_MODE"
+        ? response.action.mode
+        : activeRoute?.mode;
+      if (mode) pendingRouteRef.current = { mode, previousSignature: activeRoute ? routeSignature(activeRoute) : null };
+    } else if (result.message) {
+      appendAssistantMessage(result.message);
+    }
   };
 
   const contextLabel =
@@ -104,7 +149,7 @@ export function AiPanel({
         <div className="flex shrink-0 items-center gap-2">
           {provider && state === "SUCCESS" && (
             <span className="whitespace-nowrap rounded-full border border-cyan-300/20 bg-cyan-300/[0.07] px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-cyan-100">
-              {provider === "sub2api" ? "Asisten siap" : "Jawaban data GETRA"}
+              {provider === "openai" || provider === "sub2api" ? "Asisten siap" : "Jawaban data GETRA"}
             </span>
           )}
           <span className="rounded-full border border-lime-300/25 bg-lime-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-lime-200">
@@ -238,4 +283,20 @@ export function AiPanel({
       </p>
     </section>
   );
+}
+
+function routeModeLabel(mode: AiRouteMode): string {
+  if (mode === "walking") return "Jalan kaki";
+  if (mode === "motorcycle") return "motor";
+  return "mobil";
+}
+
+function formatDistance(distanceMeters: number): string {
+  return distanceMeters < 1000
+    ? `${Math.round(distanceMeters)} m`
+    : `${(distanceMeters / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} km`;
+}
+
+function routeSignature(route: NonNullable<AiPanelProps["activeRoute"]>): string {
+  return `${route.mode}:${route.distance_meters}:${route.duration_seconds}`;
 }

@@ -131,7 +131,7 @@ export type AiProviderErrorCategory =
 
 export interface AiProviderErrorOptions {
   category: AiProviderErrorCategory;
-  provider: "sub2api";
+  provider: "openai" | "sub2api";
   upstreamCode?: string;
   upstreamMessage?: string;
   upstreamStatus?: number;
@@ -147,7 +147,7 @@ const providerErrorCodes: Record<AiProviderErrorCategory, ApplicationErrorCode> 
 
 export class AiProviderError extends ApplicationError {
   readonly category: AiProviderErrorCategory;
-  readonly provider: "sub2api";
+  readonly provider: "openai" | "sub2api";
   readonly upstreamCode?: string;
   readonly upstreamMessage?: string;
   readonly upstreamStatus?: number;

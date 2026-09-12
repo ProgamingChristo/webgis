@@ -3,6 +3,7 @@ import {
   type AiAskRequest,
   type AiAskResponse,
   type AiIntent,
+  type AiApplicationAction,
   type AiMapAction,
   IntentClassificationSchema,
   GroundedGenerationSchema,
@@ -19,7 +20,23 @@ export class AiService {
     const { question, active_experience, context, history } = req;
 
     // 1. Determine Intent
-    const intent = await this.determineIntent(question, history);
+    const deterministicAction = determineApplicationAction(question, context);
+    const decision = await this.determineIntentAndAction(question, context, history);
+    const intent = decision.intent;
+    const action = deterministicAction.type !== "ANSWER_ONLY"
+      ? deterministicAction
+      : decision.action ?? deterministicAction;
+
+    if (action.type !== "ANSWER_ONLY") {
+      return {
+        answer: actionMessage(action, context?.selected_entity_name),
+        intent,
+        limitations: [],
+        evidence: [],
+        action,
+        provider: decision.provider,
+      };
+    }
 
     // 2. Fetch Facts based on intent
     const { facts, provenance, limitations, mapAction } = await this.fetchGroundingFacts(intent, context);
@@ -37,13 +54,21 @@ export class AiService {
     };
   }
 
-  private async determineIntent(question: string, history?: AiAskRequest["history"]): Promise<AiIntent> {
+  private async determineIntentAndAction(
+    question: string,
+    context?: AiAskRequest["context"],
+    history?: AiAskRequest["history"],
+  ): Promise<{
+    intent: AiIntent;
+    action?: AiApplicationAction;
+    provider: "openai" | "sub2api" | "deterministic";
+  }> {
     const deterministicIntent = classifyIntentDeterministically(question, history);
     if (
       deterministicIntent === "ASSISTANT_IDENTITY" ||
       deterministicIntent === "CASUAL_CHAT"
     ) {
-      return deterministicIntent;
+      return { intent: deterministicIntent, provider: "deterministic" };
     }
 
     let inputContext = "";
@@ -55,6 +80,12 @@ export class AiService {
       inputContext += "\n";
     }
     inputContext += `Current Question: ${question}`;
+    inputContext += `\nSafe GETRA Context: ${JSON.stringify({
+      selected_merchant_available: Boolean(context?.selected_entity_id),
+      current_location_available: Boolean(context?.origin),
+      route_active: Boolean(context?.active_route),
+      active_route_mode: context?.active_route?.mode ?? null,
+    })}`;
 
     const response = await generateStructured({
       schema: IntentClassificationSchema,
@@ -66,11 +97,19 @@ export class AiService {
 - NEAREST_TRANSIT: Questions specifically about the closest public transit (bus, train, etc.).
 - WALKING_ROUTE: Questions about walking distance, route, or how to get somewhere.
 - UMKM_POI: Questions about specific businesses, POIs, or merchants.
-- UNKNOWN: Cannot determine.`,
+- UNKNOWN: Cannot determine.
+
+Also return one strict application action. Use CALCULATE_ROUTE for a request to show or calculate a route, CHANGE_ROUTE_MODE for a follow-up mode change on an active route, APPLY_SEARCH_CRITERIA for merchant/food search, REQUEST_CLARIFICATION only when required information is genuinely ambiguous, and ANSWER_ONLY otherwise. Never invent coordinates. Use PLACE_QUERY text or CURRENT_LOCATION; use SELECTED_MERCHANT only when selected_merchant_available is true.`,
       input: inputContext,
     });
 
-    return response?.data.intent ?? deterministicIntent;
+    return {
+      intent: response?.data.intent ?? deterministicIntent,
+      action: response?.data.action,
+      provider: response?.source === "openai" || response?.source === "sub2api"
+        ? response.source
+        : "deterministic",
+    };
   }
 
   private async fetchGroundingFacts(intent: AiIntent, context: AiAskRequest["context"]) {
@@ -244,7 +283,7 @@ export class AiService {
   ): Promise<{
     answer: string;
     limitations_mentioned: string[];
-    provider: "sub2api" | "deterministic";
+    provider: "openai" | "sub2api" | "deterministic";
   }> {
     let inputContext = "";
     if (history && history.length > 0) {
@@ -290,7 +329,9 @@ ${JSON.stringify(facts, null, 2)}
     }
     return {
       ...response.data,
-      provider: response.source === "sub2api" ? "sub2api" : "deterministic",
+      provider: response.source === "openai" || response.source === "sub2api"
+        ? response.source
+        : "deterministic",
     };
   }
 }
@@ -321,6 +362,78 @@ function classifyIntentDeterministically(
   if (/umkm|merchant|usaha|toko|warung|poi/.test(combined)) return "UMKM_POI";
   if (/area|wilayah|sekitar|kawasan/.test(combined)) return "GENERAL_AREA";
   return "UNKNOWN";
+}
+
+export function determineApplicationAction(
+  question: string,
+  context?: AiAskRequest["context"],
+): AiApplicationAction {
+  const normalized = question.toLocaleLowerCase("id-ID").replace(/\s+/g, " ").trim();
+  const mode = inferRouteMode(normalized);
+  const asksForRoute = /\b(rute|route|berapa lama|arah|navigasi)\b/u.test(normalized);
+
+  if (context?.active_route && /\b(naik|pakai|ganti|ubah)\b/u.test(normalized) && mode) {
+    return { type: "CHANGE_ROUTE_MODE", mode };
+  }
+
+  if (asksForRoute) {
+    const origin = /\b(lokasi (?:saya|aku)|posisi (?:saya|aku)|dari sini)\b/u.test(normalized)
+      ? { type: "CURRENT_LOCATION" as const }
+      : extractOriginQuery(question);
+    const destination = context?.selected_entity_id
+      ? { type: "SELECTED_MERCHANT" as const }
+      : extractDestinationQuery(question);
+
+    if (!origin) {
+      return { type: "REQUEST_CLARIFICATION", prompt: "Dari mana Anda ingin memulai perjalanan?" };
+    }
+    if (!destination) {
+      return { type: "REQUEST_CLARIFICATION", prompt: "Tempat mana yang ingin Anda tuju?" };
+    }
+    return { type: "CALCULATE_ROUTE", mode: mode ?? "walking", origin, destination };
+  }
+
+  const searchMatch = normalized.match(/^(?:tolong\s+)?(?:cari|carikan|temukan|rekomendasikan)\s+(.+)$/u);
+  if (searchMatch?.[1]) {
+    const query = searchMatch[1]
+      .replace(/\b(dekat sini|di sekitar sini|sekitar saya)\b/gu, "")
+      .trim();
+    if (query.length >= 2) return { type: "APPLY_SEARCH_CRITERIA", query };
+  }
+
+  return { type: "ANSWER_ONLY" };
+}
+
+function inferRouteMode(question: string): "walking" | "motorcycle" | "car" | null {
+  if (/\b(jalan kaki|berjalan|kaki)\b/u.test(question)) return "walking";
+  if (/\b(motor|motorcycle|sepeda motor)\b/u.test(question)) return "motorcycle";
+  if (/\b(mobil|car|mengemudi)\b/u.test(question)) return "car";
+  return null;
+}
+
+function extractOriginQuery(question: string): { type: "PLACE_QUERY"; query: string } | null {
+  const match = question.match(/\bdari\s+(.+?)(?=\s+(?:berapa\s+lama|ke\s+|menuju\s+|jalan\s+kaki|naik\s+|pakai\s+)|[?!,.]|$)/iu);
+  const query = match?.[1]?.trim();
+  return query && query.length >= 2 ? { type: "PLACE_QUERY", query } : null;
+}
+
+function extractDestinationQuery(question: string): { type: "PLACE_QUERY"; query: string } | null {
+  const match = question.match(/\b(?:ke|menuju)\s+(.+?)(?=\s+(?:berapa\s+lama|jalan\s+kaki|naik\s+|pakai\s+)|[?!,.]|$)/iu);
+  const query = match?.[1]?.trim();
+  return query && query.length >= 2 ? { type: "PLACE_QUERY", query } : null;
+}
+
+function actionMessage(action: AiApplicationAction, selectedName?: string): string {
+  if (action.type === "CALCULATE_ROUTE") {
+    return selectedName
+      ? `Saya menyiapkan rute ke ${selectedName} menggunakan layanan rute GETRA.`
+      : "Saya menyiapkan rute menggunakan layanan rute GETRA.";
+  }
+  if (action.type === "CHANGE_ROUTE_MODE") return "Saya memperbarui moda pada rute yang sama.";
+  if (action.type === "APPLY_SEARCH_CRITERIA") return `Saya mencari \"${action.query}\" pada data GETRA.`;
+  if (action.type === "REQUEST_CLARIFICATION") return action.prompt;
+  if (action.type === "FOCUS_PLACE") return `Saya mencari lokasi ${action.query}.`;
+  return "";
 }
 
 function formatDeterministicAnswer(intent: AiIntent, facts: Record<string, unknown>): string {

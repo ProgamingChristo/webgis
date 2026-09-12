@@ -12,6 +12,7 @@ export interface AiAskRequest {
   context?: {
     study_area_id?: string;
     selected_entity_id?: string;
+    selected_entity_name?: string;
     origin?: {
       latitude: number;
       longitude: number;
@@ -19,6 +20,11 @@ export interface AiAskRequest {
     destination?: {
       latitude: number;
       longitude: number;
+    };
+    active_route?: {
+      mode: "walking" | "motorcycle" | "car";
+      distance_meters: number;
+      duration_seconds: number;
     };
   };
   history?: AiAskMessage[];
@@ -29,8 +35,29 @@ export interface AiAskResponse {
   intent: string;
   limitations: string[];
   evidence: { source: string; dataset: string; description?: string }[];
-  provider: "sub2api" | "deterministic";
+  action?: AiApplicationAction;
+  provider: "openai" | "sub2api" | "deterministic";
 }
+
+export type AiRouteMode = "walking" | "motorcycle" | "car";
+export type AiApplicationAction =
+  | { type: "ANSWER_ONLY" }
+  | { type: "APPLY_SEARCH_CRITERIA"; query: string }
+  | {
+      type: "CALCULATE_ROUTE";
+      mode: AiRouteMode;
+      origin:
+        | { type: "CURRENT_LOCATION" }
+        | { type: "PLACE_QUERY"; query: string }
+        | { type: "MAP_POINT"; longitude: number; latitude: number };
+      destination:
+        | { type: "SELECTED_MERCHANT" }
+        | { type: "MERCHANT_ID"; merchant_id: string }
+        | { type: "PLACE_QUERY"; query: string };
+    }
+  | { type: "CHANGE_ROUTE_MODE"; mode: AiRouteMode }
+  | { type: "FOCUS_PLACE"; query: string }
+  | { type: "REQUEST_CLARIFICATION"; prompt: string };
 
 export type MerchantDescriptionMode =
   | "generate"
@@ -79,7 +106,7 @@ export class AiService {
       throw new Error("Jawaban belum dapat disiapkan. Coba lagi.");
     }
 
-    if (!["sub2api", "deterministic"].includes(json.data.provider)) {
+    if (!["openai", "sub2api", "deterministic"].includes(json.data.provider)) {
       throw new Error("Jawaban belum dapat disiapkan. Coba lagi.");
     }
 

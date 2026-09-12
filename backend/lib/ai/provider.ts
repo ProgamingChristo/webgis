@@ -1,17 +1,18 @@
 import { sub2ApiProvider } from "@/lib/ai/sub2api";
+import { openAIProvider } from "@/lib/ai/openai";
 import type { ModelProvider, StructuredGenerationRequest } from "@/lib/ai/provider-contract";
 import { AiProviderError } from "@/src/lib/errors";
 
-type ProviderMode = "deterministic" | "sub2api";
+type ProviderMode = "deterministic" | "openai" | "sub2api";
 
 function providerMode(): ProviderMode {
   const configured = process.env.AI_PROVIDER?.trim().toLowerCase();
   if (!configured || configured === "deterministic") return "deterministic";
-  if (configured === "sub2api") return configured;
+  if (configured === "openai" || configured === "sub2api") return configured;
 
   throw new AiProviderError({
     category: "configuration",
-    provider: "sub2api",
+    provider: "openai",
   });
 }
 
@@ -22,26 +23,32 @@ export async function generateStructured<T>(
     return null;
   }
 
-  if (!sub2ApiProvider.isConfigured()) {
+  const mode = providerMode();
+  const provider = mode === "openai" ? openAIProvider : sub2ApiProvider;
+  const providerId = mode === "openai" ? "openai" : "sub2api";
+  if (!provider.isConfigured()) {
     throw new AiProviderError({
       category: "configuration",
-      provider: "sub2api",
+      provider: providerId,
     });
   }
 
   return {
-    data: await sub2ApiProvider.generateStructured(request),
-    source: "sub2api",
+    data: await provider.generateStructured(request),
+    source: providerId,
   };
 }
 
 export function getConfiguredProvider(): ModelProvider | "fallback" {
   if (providerMode() === "deterministic") return "fallback";
-  if (!sub2ApiProvider.isConfigured()) {
+  const mode = providerMode();
+  const provider = mode === "openai" ? openAIProvider : sub2ApiProvider;
+  const providerId = mode === "openai" ? "openai" : "sub2api";
+  if (!provider.isConfigured()) {
     throw new AiProviderError({
       category: "configuration",
-      provider: "sub2api",
+      provider: providerId,
     });
   }
-  return "sub2api";
+  return providerId;
 }
