@@ -1,28 +1,20 @@
-import { FeatureExplorerSection } from "./feature-explorer-section";
-import { GisAiSection } from "./gis-ai-section";
+import { FigmaActionMapSection } from "./figma-action-map-section";
+import { FigmaCapabilitiesSection } from "./figma-capabilities-section";
 import { LandingFooter } from "./landing-footer";
 import { LandingHeader } from "./landing-header";
 import { LandingHero } from "./landing-hero";
-import {
-  AdvertisingSection,
-  BusinessSpaceSection,
-  CommunitySection,
-  CommuterSection,
-  DataTrustSection,
-  FairDiscoverySection,
-  FinalCtaSection,
-  MerchantSubmissionSection,
-  TechnologySection,
-  UmkmSection,
-} from "./product-story-sections";
-import { WhatIsGetraSection } from "./what-is-getra-section";
-import { WhyGetraSection } from "./why-getra-section";
+import { FigmaIntroSection } from "./figma-intro-section";
+import { FigmaPersonaStoriesSection } from "./figma-persona-stories-section";
+import { FigmaCommunityValidationSection, FigmaOpportunitySection } from "./figma-opportunity-community-sections";
+import { FigmaEditorialQuoteSection, FigmaHowItWorksSection } from "./figma-how-it-works-quote-sections";
+import { FigmaFaqSection, FigmaFinalCtaSection } from "./figma-faq-final-cta";
+import { LandingPolish } from "./landing-polish";
 
 export function LandingPage() {
   return (
     <main
       id="top"
-      className="getra-landing min-h-screen bg-[radial-gradient(circle_at_18%_0%,rgba(41,199,216,0.18),transparent_30%),radial-gradient(circle_at_84%_16%,rgba(122,212,59,0.12),transparent_28%),linear-gradient(180deg,#07111f_0%,#081827_38%,#07111f_72%,#050b14_100%)] text-white"
+      className="getra-landing min-h-screen"
     >
       <a
         href="#tentang"
@@ -31,21 +23,18 @@ export function LandingPage() {
         Lewati ke konten utama
       </a>
       <LandingHeader />
+      <LandingPolish />
       <LandingHero />
-      <WhyGetraSection />
-      <WhatIsGetraSection />
-      <GisAiSection />
-      <FeatureExplorerSection />
-      <FairDiscoverySection />
-      <CommuterSection />
-      <CommunitySection />
-      <UmkmSection />
-      <MerchantSubmissionSection />
-      <AdvertisingSection />
-      <BusinessSpaceSection />
-      <DataTrustSection />
-      <TechnologySection />
-      <FinalCtaSection />
+      <FigmaIntroSection />
+      <FigmaPersonaStoriesSection />
+      <FigmaCapabilitiesSection />
+      <FigmaActionMapSection />
+      <FigmaOpportunitySection />
+      <FigmaCommunityValidationSection />
+      <FigmaHowItWorksSection />
+      <FigmaEditorialQuoteSection />
+      <FigmaFaqSection />
+      <FigmaFinalCtaSection />
       <LandingFooter />
     </main>
   );

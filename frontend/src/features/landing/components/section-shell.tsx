@@ -22,10 +22,6 @@ export function SectionShell({
       id={id}
       className="relative overflow-hidden px-4 py-18 sm:px-6 lg:px-8"
     >
-      <div
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_14%_8%,rgba(41,199,216,0.08),transparent_26%),radial-gradient(circle_at_86%_18%,rgba(122,212,59,0.055),transparent_24%)]"
-        aria-hidden="true"
-      />
       <RevealOnScroll className="mx-auto max-w-7xl">
         <div className="max-w-3xl">
           <span className="text-xs font-black uppercase tracking-[0.2em] text-getra-cyan">
