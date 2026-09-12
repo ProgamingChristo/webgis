@@ -63,10 +63,6 @@ export class TransportNodeService {
     return this.repository.findMany(query);
   }
 
-  async findNodesByName(query: string, limit = 5): Promise<TransportNodeDTO[]> {
-    return this.repository.findByName(query, limit);
-  }
-
   async findNodeById(id: string): Promise<TransportNodeDTO | null> {
     return this.repository.findById(id);
   }

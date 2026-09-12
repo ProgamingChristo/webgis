@@ -18,7 +18,6 @@ export const runtime = "nodejs";
 const PaginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   page: z.coerce.number().int().min(1).max(10_000).default(1),
-  q: z.string().trim().min(2).max(120).optional(),
 });
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -37,10 +36,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const parsed = PaginationSchema.safeParse({
       limit: searchParams.get("limit") ?? undefined,
       page: searchParams.get("page") ?? undefined,
-      q: searchParams.get("q") ?? undefined,
     });
     if (!parsed.success) throw new ApplicationError("VALIDATION_ERROR");
-    const { limit, page, q } = parsed.data;
+    const { limit, page } = parsed.data;
 
     const supabase = getRequestSupabaseClient(authorization);
     const repo = new TransportNodeRepository(supabase);
@@ -48,21 +46,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const spatial = createSpatialService(supabase, config);
     const service = new TransportNodeService(repo, spatial);
 
-    const result = q
-      ? {
-          items: await service.findNodesByName(q, limit),
-          limit,
-          page: 1,
-          offset: 0,
-          total: undefined,
-        }
-      : await service.findNodes({
-          limit,
-          page,
-          offset: (page - 1) * limit,
-          sort: "created_at",
-          order: "desc",
-        });
+    const result = await service.findNodes({
+      limit,
+      page,
+      offset: (page - 1) * limit,
+      sort: "created_at",
+      order: "desc",
+    });
 
     return NextResponse.json(result);
   });
