@@ -42,7 +42,6 @@ export function calculateRouteProgress(input: RouteProgressInput): RouteProgress
 
   let bestDistance = Number.POSITIVE_INFINITY;
   let bestSegment = 0;
-  let bestSegmentFraction = 0;
   let bestMatched = projectedRoute[0];
   let traversedGeometry = 0;
   let lengthBeforeSegment = 0;
@@ -65,7 +64,6 @@ export function calculateRouteProgress(input: RouteProgressInput): RouteProgress
     if (distance < bestDistance) {
       bestDistance = distance;
       bestSegment = index;
-      bestSegmentFraction = fraction;
       bestMatched = matched;
       traversedGeometry = lengthBeforeSegment + length * fraction;
     }
