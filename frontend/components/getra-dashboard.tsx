@@ -141,6 +141,55 @@ const PROPERTY_REGION_OPTIONS = [
   { id: "jakarta-utara", label: "Jakarta Utara" },
 ] as const;
 
+function deduplicateRegions(regions: SearchRegion[]): SearchRegion[] {
+  const seen = new Set<string>();
+  const result: SearchRegion[] = [];
+  for (const region of regions) {
+    if (!region?.id || seen.has(region.id)) continue;
+    seen.add(region.id);
+    result.push(region);
+  }
+  return result;
+}
+
+export const CANONICAL_SEARCH_REGIONS: SearchRegion[] = [
+  {
+    id: "jakarta-barat",
+    name: "Jakarta Barat",
+    aliases: ["jakarta barat", "jakbar"],
+    bounds: { west: 106.68, south: -6.24, east: 106.83, north: -6.11 },
+    geometry_source: "CANONICAL",
+  },
+  {
+    id: "jakarta-pusat",
+    name: "Jakarta Pusat",
+    aliases: ["jakarta pusat", "jakpus"],
+    bounds: { west: 106.80, south: -6.23, east: 106.88, north: -6.15 },
+    geometry_source: "CANONICAL",
+  },
+  {
+    id: "jakarta-selatan",
+    name: "Jakarta Selatan",
+    aliases: ["jakarta selatan", "jaksel"],
+    bounds: { west: 106.75, south: -6.37, east: 106.87, north: -6.20 },
+    geometry_source: "CANONICAL",
+  },
+  {
+    id: "jakarta-timur",
+    name: "Jakarta Timur",
+    aliases: ["jakarta timur", "jaktim"],
+    bounds: { west: 106.84, south: -6.37, east: 106.97, north: -6.18 },
+    geometry_source: "CANONICAL",
+  },
+  {
+    id: "jakarta-utara",
+    name: "Jakarta Utara",
+    aliases: ["jakarta utara", "jakut"],
+    bounds: { west: 106.72, south: -6.18, east: 106.98, north: -6.08 },
+    geometry_source: "CANONICAL",
+  },
+];
+
 const PROPERTY_BUSINESS_CATEGORIES: Array<{ value: BusinessCategorySlug; label: string }> = [
   { value: "bakso", label: "Bakso" },
   { value: "coffee", label: "Kopi / Kafe" },
@@ -1063,7 +1112,7 @@ function GeneralGetraDashboard() {
   const [aiOpen, setAiOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [searchIntent, setSearchIntent] = useState<GlobalSearchIntent | null>(null);
-  const [searchRegions, setSearchRegions] = useState<SearchRegion[]>([]);
+  const [searchRegions, setSearchRegions] = useState<SearchRegion[]>(CANONICAL_SEARCH_REGIONS);
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>([]);
   const [searchTotal, setSearchTotal] = useState<number | null>(null);
   const [searchActive, setSearchActive] = useState(false);
@@ -1200,21 +1249,6 @@ function GeneralGetraDashboard() {
       merchant: Merchant;
     } | null>(null);
 
-  const allMerchants =
-    useMemo(
-      () => deduplicateMerchants([
-        ...(adminImportedLayer?.merchants ??
-          []),
-        ...mapidMerchants,
-        ...(datasetId === "coffee-jakarta-barat" ? COFFEE_SHOPS : []),
-      ]),
-      [
-        adminImportedLayer,
-        mapidMerchants,
-        datasetId,
-      ],
-    );
-
   const [destinationSearchActive, setDestinationSearchActive] = useState(false);
   const {
     results: canonicalDestinationResults,
@@ -1248,12 +1282,31 @@ function GeneralGetraDashboard() {
   const fallbackAdminImportedMerchants =
     adminImportedLayer?.merchants;
 
+  const allMerchants =
+    useMemo(
+      () => deduplicateMerchants([
+        ...(isAdminImportDataset(datasetId)
+          ? (activeAdminImportedLayer?.merchants ?? fallbackAdminImportedMerchants ?? [])
+          : []),
+        ...mapidMerchants,
+        ...(datasetId === "coffee-jakarta-barat" || datasetId === "all-areas"
+          ? COFFEE_SHOPS
+          : []),
+      ]),
+      [
+        activeAdminImportedLayer,
+        datasetId,
+        fallbackAdminImportedMerchants,
+        mapidMerchants,
+      ],
+    );
+
   const baseMerchants =
     useMemo(
       () =>
         datasetId ===
           "all-areas"
-          ? mapidMerchants
+          ? (searchActive && mapidMerchants.length > 0 ? mapidMerchants : allMerchants)
           : isAdminImportDataset(
               datasetId,
             )
@@ -1267,9 +1320,11 @@ function GeneralGetraDashboard() {
               : COFFEE_SHOPS,
       [
         activeAdminImportedLayer,
+        allMerchants,
         datasetId,
         fallbackAdminImportedMerchants,
         mapidMerchants,
+        searchActive,
       ],
     );
 
@@ -1297,7 +1352,7 @@ function GeneralGetraDashboard() {
         "all-areas"
           ? {
               ...calculateMerchantOrigin(
-                allMerchants,
+                searchActive && mapidMerchants.length > 0 ? mapidMerchants : allMerchants,
                 {
                   ...COFFEE_SHOP_ORIGIN,
                   name:
@@ -1359,6 +1414,7 @@ function GeneralGetraDashboard() {
         allMerchants,
         datasetId,
         mapidMerchants,
+        searchActive,
       ],
     );
 
@@ -1983,7 +2039,7 @@ function GeneralGetraDashboard() {
         setMaxBudget(layer.intent.constraints.budget ? String(layer.intent.constraints.budget.max_idr) : "");
         setOpenOnly(Boolean(layer.intent.constraints.opening));
         setMaxWalkingMinutes(layer.intent.constraints.walking?.max_minutes ?? null);
-        setSearchRegions(layer.available_regions);
+        setSearchRegions((prev) => deduplicateRegions([...prev, ...(layer.available_regions ?? [])]));
         setSelectedRegionIds(layer.intent.scope.region_ids);
         setSearchTotal(layer.total_available);
         const walkingThreshold = layer.intent.constraints.walking?.max_minutes;
