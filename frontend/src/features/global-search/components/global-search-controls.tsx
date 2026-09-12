@@ -85,6 +85,11 @@ export function GlobalSearchControls(props: GlobalSearchControlsProps) {
         {props.advanced}
         <button type="button" className="commuter-apply" disabled={props.loading} onClick={() => { props.onSubmit(); setFiltersOpen(false); }}>Terapkan filter</button>
       </div>
+      {props.intent?.query_resolution?.correction ? (
+        <p className="global-search__correction">
+          Menampilkan hasil untuk &quot;{props.intent.query_resolution.canonical}&quot;. Input awal: &quot;{props.intent.original_query}&quot;.
+        </p>
+      ) : null}
     </section>
 
     <section className="commuter-section commuter-scope">

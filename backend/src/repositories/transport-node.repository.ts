@@ -90,6 +90,25 @@ export class TransportNodeRepository
     return this.executeListQuery({ kind: "table" }, parsed);
   }
 
+  async findByName(queryText: string, limit = 5): Promise<TransportNodeDTO[]> {
+    const normalized = queryText.trim().replace(/[%,_]/g, " ").replace(/\s+/g, " ");
+    if (normalized.length < 2) return [];
+
+    const { data, error } = await this.supabase
+      .from("transport_nodes")
+      .select(TRANSPORT_NODE_COLUMNS)
+      .ilike("name", `%${normalized}%`)
+      .order("name", { ascending: true })
+      .limit(Math.min(Math.max(limit, 1), 10));
+
+    if (error) throw mapDatabaseError(error, "transportNodes.findByName");
+    return mapRepositoryRows<TransportNodeDatabaseRow, TransportNodeDTO>(
+      normalizeRepositoryRows(data, "transportNodes.findByName.rows"),
+      mapTransportNodeRowToDTO,
+      "transportNodes.findByName.map",
+    );
+  }
+
   async findWithinBBox(
     bbox: BoundingBox,
     options: TransportNodeListQuery,

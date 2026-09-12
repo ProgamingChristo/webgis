@@ -63,6 +63,11 @@ import {
   getPreferredBasemapId,
   persistBasemapPreference,
 } from "@/lib/mapid";
+import {
+  computeMapSafeArea,
+  isInRightSafeZone,
+  isInLeftSafeZone,
+} from "@/src/lib/map-safe-area";
 
 setWorkerUrl(
   "/maplibre/maplibre-gl-worker.mjs",
@@ -673,6 +678,13 @@ export function GetraMap({
   const mapRef =
     useRef<MapLibreMap | null>(null);
 
+  /**
+   * Cached right safe-area width (basemap panel measured width + gap).
+   * Updated by a ResizeObserver on the .basemap-switcher element.
+   * Used by all fitBounds and easeTo calls that need to avoid the panel.
+   */
+  const basemapSafeRightRef = useRef<number>(48);
+
   const markUserCameraControl = useCallback(() => {
     journeyOverrideRef.current?.();
     if (cameraOwnerRef.current === "USER") return;
@@ -793,9 +805,10 @@ export function GetraMap({
     const map = mapRef.current;
     if (!map || !focusBounds || focusKey === 0) return;
     const compact = window.innerWidth <= 768;
-    
+    const safeArea = computeMapSafeArea(map.getContainer(), compact);
+
     markSystemCameraIntent();
-    
+
     const spanLng = Math.abs(focusBounds.east - focusBounds.west);
     const spanLat = Math.abs(focusBounds.north - focusBounds.south);
     if (spanLng < 0.001 || spanLat < 0.001) {
@@ -812,8 +825,8 @@ export function GetraMap({
         ],
         {
           padding: compact
-            ? { top: 36, right: 28, bottom: 190, left: 28 }
-            : { top: 52, right: 52, bottom: 52, left: 52 },
+            ? { top: safeArea.top, right: safeArea.left, bottom: 190, left: safeArea.left }
+            : { top: safeArea.top, right: safeArea.right, bottom: safeArea.bottom, left: safeArea.left },
           maxZoom: 14,
           duration: 800,
         },
@@ -936,6 +949,33 @@ export function GetraMap({
     const resizeObserver = new ResizeObserver(() => map.resize());
     resizeObserver.observe(map.getContainer());
 
+    /*
+     * Track basemap panel width for safe-area calculations.
+     * The panel is a sibling inside .map-shell — wait one frame for it
+     * to be mounted before measuring.
+     */
+    const basemapPanelObserver = new ResizeObserver(() => {
+      const container = map.getContainer();
+      const compact = container.clientWidth < 600;
+      const safeArea = computeMapSafeArea(container, compact);
+      basemapSafeRightRef.current = safeArea.right;
+    });
+    const scheduleBasemapMeasure = () => {
+      const shell = map.getContainer().closest(".map-shell") ?? map.getContainer().parentElement;
+      const basemapEl = shell?.querySelector(".basemap-switcher");
+      if (basemapEl) {
+        basemapPanelObserver.observe(basemapEl);
+        // Trigger immediate measurement
+        const compact = map.getContainer().clientWidth < 600;
+        const safeArea = computeMapSafeArea(map.getContainer(), compact);
+        basemapSafeRightRef.current = safeArea.right;
+      } else {
+        // Panel not yet mounted; retry after a frame
+        requestAnimationFrame(scheduleBasemapMeasure);
+      }
+    };
+    requestAnimationFrame(scheduleBasemapMeasure);
+
     map.on("dragstart", markUserCameraControl);
     map.on("rotatestart", markUserCameraControl);
     map.on("pitchstart", markUserCameraControl);
@@ -1004,22 +1044,32 @@ export function GetraMap({
         initialBounds,
       );
 
-      map.fitBounds(
-        [
+      {
+        const initContainer = map.getContainer();
+        const initCompact = initContainer.clientWidth < 600;
+        const initSafeArea = computeMapSafeArea(initContainer, initCompact);
+        map.fitBounds(
           [
-            initialBounds.west,
-            initialBounds.south,
+            [
+              initialBounds.west,
+              initialBounds.south,
+            ],
+            [
+              initialBounds.east,
+              initialBounds.north,
+            ],
           ],
-          [
-            initialBounds.east,
-            initialBounds.north,
-          ],
-        ],
-        {
-          padding: 42,
-          duration: 0,
-        },
-      );
+          {
+            padding: {
+              top: initSafeArea.top,
+              right: initSafeArea.right,
+              bottom: initSafeArea.bottom,
+              left: initSafeArea.left,
+            },
+            duration: 0,
+          },
+        );
+      }
     });
 
     const emitViewport = () => {
@@ -1093,6 +1143,7 @@ export function GetraMap({
       routeLabelMarkers.forEach((marker) => marker.remove());
       routeLabelMarkers.clear();
 
+      basemapPanelObserver.disconnect();
       resizeObserver.disconnect();
       map.remove();
 
@@ -1770,12 +1821,14 @@ export function GetraMap({
     userLocationMarkerRef.current =
       marker;
 
-    const basemap = map.getContainer().parentElement?.querySelector(".basemap-switcher");
-    const containerRect = map.getContainer().getBoundingClientRect();
-    const navigationPanel = map.getContainer().closest(".map-panel")?.querySelector('[data-navigation-metrics]');
+    const container = map.getContainer();
+    const compact = container.clientWidth < 600;
+    const safeArea = computeMapSafeArea(container, compact);
+    const containerRect = container.getBoundingClientRect();
+    const navigationPanel = container.closest(".map-panel")?.querySelector('[data-navigation-metrics]');
     const bottomInset = journeyActive && navigationPanel
       ? containerRect.bottom - navigationPanel.getBoundingClientRect().top + 20
-      : basemap ? containerRect.bottom - basemap.getBoundingClientRect().top + 24 : 72;
+      : safeArea.bottom;
     if (!journeyActive || journeyFollowing) map.easeTo({
       center: [
         userLocation.longitude,
@@ -1786,7 +1839,7 @@ export function GetraMap({
         14,
       ),
       duration: 650,
-      ...(journeyActive ? { padding: { top: 112, bottom: Math.min(bottomInset, map.getContainer().clientHeight * 0.55), left: 24, right: 24 } } : {}),
+      ...(journeyActive ? { padding: { top: 112, bottom: Math.min(bottomInset, container.clientHeight * 0.55), left: 24, right: 24 } } : {}),
     });
   }, [
     userLocation,
@@ -1798,6 +1851,44 @@ export function GetraMap({
   /*
    * Route endpoint markers
    */
+
+  /**
+   * Update badge label anchor (left/right) for A/B markers based on
+   * their projected screen position relative to the basemap panel.
+   * Called after camera moves to keep the label readable.
+   */
+  const syncEndpointLabelAnchors = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const container = map.getContainer();
+    const compact = container.clientWidth < 600;
+    const safeRight = Math.max(
+      computeMapSafeArea(container, compact).right,
+      basemapSafeRightRef.current,
+    );
+    const safeLeft = 40;
+    const w = container.clientWidth;
+
+    for (const [markerRef, point] of [
+      [routeOriginMarkerRef, routeOriginPoint] as const,
+      [routeDestinationMarkerRef, routeDestinationPoint] as const,
+    ]) {
+      const marker = markerRef.current;
+      if (!marker || !point) continue;
+      const projected = map.project([point.longitude, point.latitude]);
+      const el = marker.getElement();
+      if (isInRightSafeZone(projected.x, w, safeRight)) {
+        el.classList.add("route-endpoint--label-left");
+        el.classList.remove("route-endpoint--label-right");
+      } else if (isInLeftSafeZone(projected.x, safeLeft)) {
+        el.classList.add("route-endpoint--label-right");
+        el.classList.remove("route-endpoint--label-left");
+      } else {
+        el.classList.remove("route-endpoint--label-left", "route-endpoint--label-right");
+      }
+    }
+  }, [routeOriginPoint, routeDestinationPoint]);
+
   useEffect(() => {
     const map =
       mapRef.current;
@@ -1865,9 +1956,25 @@ export function GetraMap({
           )
           .addTo(map);
     }
+
+    // Initial label anchor sync after marker placement
+    requestAnimationFrame(syncEndpointLabelAnchors);
+
+    // Re-sync on every camera move (throttled via rAF)
+    let rafId = 0;
+    const onMove = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(syncEndpointLabelAnchors);
+    };
+    map.on("move", onMove);
+    return () => {
+      cancelAnimationFrame(rafId);
+      map.off("move", onMove);
+    };
   }, [
     routeDestinationPoint,
     routeOriginPoint,
+    syncEndpointLabelAnchors,
   ]);
 
   useEffect(() => {
@@ -1983,20 +2090,26 @@ export function GetraMap({
 
         if (!bounds.isEmpty()) {
           const container = map.getContainer();
-          const basemap = container.parentElement?.querySelector(".basemap-switcher");
           const routeSheet = container.closest(".map-panel")?.querySelector('[data-sheet-open]');
           const compact = container.clientWidth < 600;
+          const safeArea = computeMapSafeArea(container, compact);
           const sheetRect = routeSheet?.getBoundingClientRect();
-          const bottomInset = sheetRect && compact ? sheetRect.height + 50 : 72;
-          const leftInset = sheetRect && !compact ? sheetRect.width + 32 : 40;
+          const bottomInset = sheetRect && compact ? sheetRect.height + 50 : safeArea.bottom;
+          const leftInset = sheetRect && !compact ? sheetRect.width + 32 : safeArea.left;
+          /*
+           * Use the live-measured basemap panel width as right safe-area.
+           * basemapSafeRightRef is updated by the ResizeObserver in the map
+           * init effect, ensuring we always use the current rendered width.
+           */
+          const safeRight = Math.max(safeArea.right, basemapSafeRightRef.current);
           map.fitBounds(
             bounds,
             {
               padding: {
-                top: 72,
+                top: safeArea.top,
                 bottom: Math.min(bottomInset, container.clientHeight * 0.6),
                 left: Math.min(leftInset, container.clientWidth * 0.5),
-                right: basemap ? Math.min(110, container.clientWidth * 0.2) : 40,
+                right: Math.min(safeRight, container.clientWidth * 0.45),
               },
               maxZoom: 16,
               duration: 650,

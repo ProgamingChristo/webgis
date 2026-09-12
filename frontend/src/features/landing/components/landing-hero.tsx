@@ -63,15 +63,8 @@ export function LandingHero() {
           </p>
         </div>
 
-        <div className="getra-hero-step relative min-h-[320px] overflow-hidden rounded-[2rem] border border-white/80 bg-[#e9f5f6] shadow-[0_24px_65px_rgba(70,75,113,0.14)] sm:min-h-[430px] lg:min-h-[560px] lg:rounded-[2.5rem]">
+        <div className="getra-hero-step relative min-h-[340px] overflow-hidden rounded-[2rem] border border-white/80 bg-[#e9f5f6] shadow-[0_24px_65px_rgba(17,138,178,0.16)] ring-1 ring-white/80 sm:min-h-[440px] lg:min-h-[560px] lg:rounded-[2.5rem]">
           <WebgisHeroMap className="absolute inset-0 h-full w-full" />
-          <div
-            className="pointer-events-none absolute inset-y-0 left-0 w-2/5 bg-gradient-to-r from-white/70 via-white/10 to-transparent"
-            aria-hidden="true"
-          />
-          <div className="absolute bottom-4 left-4 rounded-full border border-white/80 bg-white/90 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-[#464b71] shadow-[0_8px_20px_rgba(70,75,113,0.1)] backdrop-blur sm:bottom-6 sm:left-6">
-            Peta sebagai titik awal
-          </div>
         </div>
       </div>
 

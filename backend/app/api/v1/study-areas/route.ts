@@ -1,9 +1,13 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
 import { StudyAreaRepository } from "@/src/repositories/study-area.repository";
+import { withApiLogger } from "@/src/lib/api-logger";
+import { createOptionsHandler } from "@/src/lib/api-security";
+import { getRequestId } from "@/src/lib/request-id";
 
-export async function GET(request: Request) {
-  try {
+export async function GET(request: NextRequest) {
+  const requestId = getRequestId(request);
+  return withApiLogger(request, requestId, async () => {
     const authHeader = request.headers.get("Authorization") || "";
     // Note: To support public reads if RLS allows, we pass the header (which might be empty).
     // If it requires auth, RLS will block it if empty, or we can explicitly check.
@@ -31,11 +35,7 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ data: items });
-  } catch (error) {
-    console.error("GET /api/v1/study-areas Error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
+  });
 }
+
+export const OPTIONS = createOptionsHandler("/api/v1/study-areas");

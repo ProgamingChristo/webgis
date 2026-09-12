@@ -32,7 +32,9 @@ import { StakeholderContextShell } from "@/src/components/stakeholder/stakeholde
 import { GetraGlobalHeader } from "@/src/components/getra-ui";
 import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
 import type { AiSearchAction, SearchCriteria } from "@/types/search-recommendation";
-import { AiPanel } from "@/components/ai/ai-panel";
+import { AiPanel, type AiActionExecutionResult } from "@/components/ai/ai-panel";
+import type { AiApplicationAction } from "@/src/services/ai.service";
+import { resolveGetraPlace, type ResolvedPlace } from "@/src/features/ai-orchestration/place-resolver";
 import { CommunityNotificationsMenu } from "@/src/features/community/components/notifications/community-notifications-menu";
 
 import { GetraMap } from "@/components/getra-map";
@@ -1106,6 +1108,7 @@ function GeneralGetraDashboard() {
   const [mapPickMode, setMapPickMode] = useState<"NONE" | "ROUTE_START" | "ROUTE_DESTINATION">("NONE");
   const [manualRouteStart, setManualRouteStart] = useState<{ latitude: number; longitude: number } | null>(null);
   const [manualRouteDestination, setManualRouteDestination] = useState<Coordinate | null>(null);
+  const [manualRouteDestinationLabel, setManualRouteDestinationLabel] = useState("Titik tujuan di peta");
 
   const [
     locating,
@@ -1709,12 +1712,12 @@ function GeneralGetraDashboard() {
 
   const routeDestination = useMemo(() => (
     manualRouteDestination ? {
-      ...manualRouteDestination, id: undefined, name: "Titik tujuan di peta", district: null, city: null,
+      ...manualRouteDestination, id: undefined, name: manualRouteDestinationLabel, district: null, city: null,
     } : routeDestinationMerchant ?? mapMerchants.find(
       (merchant) =>
         merchant.id ===
         routeDestinationId,
-    ) ?? null), [manualRouteDestination, routeDestinationMerchant, mapMerchants, routeDestinationId]);
+    ) ?? null), [manualRouteDestination, manualRouteDestinationLabel, routeDestinationMerchant, mapMerchants, routeDestinationId]);
 
   const routeOrigin = useMemo(() => (
     routeOriginValue === ROUTE_ORIGIN_MANUAL && manualRouteStart
@@ -1730,7 +1733,7 @@ function GeneralGetraDashboard() {
               longitude: userLocation.longitude,
             },
           }
-        : explicitRouteOrigin && routeOriginValue.startsWith("MERCHANT:")
+        : explicitRouteOrigin && (routeOriginValue.startsWith("MERCHANT:") || routeOriginValue.startsWith("PLACE:"))
           ? { label: explicitRouteOrigin.label, coordinate: explicitRouteOrigin.coordinate }
           : null
   ), [
@@ -1813,6 +1816,7 @@ function GeneralGetraDashboard() {
 
   const clearRouteDestination = useCallback(() => {
     setManualRouteDestination(null);
+    setManualRouteDestinationLabel("Titik tujuan di peta");
     setRouteDestinationId(null);
     setRouteDestinationMerchant(null);
     setDestinationSearch("");
@@ -2462,8 +2466,10 @@ function GeneralGetraDashboard() {
       ],
     );
 
-  const handleOpenMerchantDetail = useCallback(() => { setDetailOpen(true); setAiOpen(false); }, []);
-
+  const handleOpenMerchantDetail = useCallback(() => {
+    setDetailOpen(true);
+    setAiOpen(false);
+  }, []);
   const handleRouteChoice =
     useCallback(
       (
@@ -2701,6 +2707,7 @@ function GeneralGetraDashboard() {
 
   const selectDestination = useCallback((coordinate: Coordinate) => {
     setManualRouteDestination({ ...coordinate });
+    setManualRouteDestinationLabel("Titik tujuan di peta");
     setRouteDestinationId(null);
     setRouteDestinationMerchant(null);
     setDestinationSearch("");
@@ -2720,6 +2727,7 @@ function GeneralGetraDashboard() {
     setMapPickMode("NONE");
     setManualRouteStart(null);
     setManualRouteDestination(null);
+    setManualRouteDestinationLabel("Titik tujuan di peta");
     setRouteOriginValue(ROUTE_ORIGIN_NONE);
     setExplicitRouteOrigin(null);
     setRouteDestinationId(null);
@@ -2728,6 +2736,271 @@ function GeneralGetraDashboard() {
     setDestinationSearch("");
     setDestinationSearchActive(false);
   }, [clearRoute, journey.controller]);
+
+  const applyResolvedOrigin = useCallback((place: ResolvedPlace) => {
+    setManualRouteStart(null);
+    setRouteOriginValue(`PLACE:${place.id}`);
+    setExplicitRouteOrigin(place);
+    setOriginSearch(place.label);
+    setMapPickMode("NONE");
+  }, []);
+
+  const applyResolvedDestination = useCallback((place: ResolvedPlace) => {
+    if (place.merchant) {
+      setManualRouteDestination(null);
+      setRouteDestinationId(place.merchant.id);
+      setRouteDestinationMerchant(place.merchant);
+      setSelectedId(place.merchant.id);
+    } else {
+      setManualRouteDestination(place.coordinate);
+      setManualRouteDestinationLabel(place.label);
+      setRouteDestinationId(null);
+      setRouteDestinationMerchant(null);
+    }
+    setDestinationSearch(place.label);
+    setDestinationSearchActive(false);
+    setMapPickMode("NONE");
+  }, []);
+
+  const handleAiAction = useCallback(async (
+    action: AiApplicationAction,
+  ): Promise<AiActionExecutionResult> => {
+    if (action.type === "APPLY_SEARCH_CRITERIA") {
+      setSelectedId(null);
+      setDetailOpen(false);
+      setSidebarMode("search");
+      setSidebarCollapsed(false);
+
+      const message = await applyAiSearch(
+        {
+          type: "APPLY_SEARCH_CRITERIA",
+          criteria: action.criteria,
+        },
+        true,
+      );
+
+      return {
+        status: "COMPLETED",
+        message,
+      };
+    }
+
+    if (action.type === "CHANGE_ROUTE_MODE") {
+      if (!routeOrigin || !routeDestination) {
+        return {
+          status: "REJECTED",
+          message: "Pilih titik awal dan tujuan terlebih dahulu.",
+        };
+      }
+
+      setActiveMode(action.mode);
+      setEditingEndpoints(false);
+      setRouteSheetOpen(true);
+      setSidebarMode("route");
+      setSidebarCollapsed(false);
+      setDetailOpen(false);
+
+      return { status: "ROUTE_PENDING" };
+    }
+
+    if (action.type === "FOCUS_PLACE") {
+      const resolution = await resolveGetraPlace(
+        action.query,
+        canonical.data.transportNodes,
+      );
+
+      if (resolution.status === "AMBIGUOUS") {
+        return {
+          status: "REJECTED",
+          message: `Lokasinya belum unik. Pilih salah satu: ${resolution.candidates.join(", ")}.`,
+        };
+      }
+
+      if (resolution.status === "NOT_FOUND") {
+        return {
+          status: "REJECTED",
+          message: `Lokasi "${action.query}" belum ditemukan.`,
+        };
+      }
+
+      const place = resolution.place;
+
+      setPrimaryMode("merchant");
+      setViewMode("dataset");
+      setSidebarMode("search");
+      setSidebarCollapsed(false);
+      setDetailOpen(false);
+
+      if (place.merchant) {
+        setSelectedId(place.merchant.id);
+        suppressNextViewportRef.current = true;
+        setSearchFocusBounds(merchantFocusBounds(place.merchant));
+      } else {
+        const padding = 0.006;
+        suppressNextViewportRef.current = true;
+        setSearchFocusBounds({
+          west: place.coordinate.longitude - padding,
+          south: place.coordinate.latitude - padding,
+          east: place.coordinate.longitude + padding,
+          north: place.coordinate.latitude + padding,
+        });
+      }
+
+      setSearchFocusKey((key) => key + 1);
+
+      return {
+        status: "COMPLETED",
+        message: `${place.label} sudah saya fokuskan di peta.`,
+      };
+    }
+
+    if (action.type !== "CALCULATE_ROUTE") {
+      return {
+        status: "REJECTED",
+        message: "Saya memerlukan pilihan lokasi yang lebih spesifik.",
+      };
+    }
+
+    let resolvedOrigin: ResolvedPlace;
+
+    if (action.origin.type === "CURRENT_LOCATION") {
+      if (!userLocation) {
+        return {
+          status: "REJECTED",
+          message:
+            "Aktifkan lokasi perangkat agar saya dapat memakai posisi Anda sebagai titik awal.",
+        };
+      }
+
+      resolvedOrigin = {
+        id: "current-location",
+        label: "Lokasi saya",
+        coordinate: {
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+        },
+      };
+    } else if (action.origin.type === "MAP_POINT") {
+      resolvedOrigin = {
+        id: "ai-map-point",
+        label: "Titik pilihan",
+        coordinate: {
+          latitude: action.origin.latitude,
+          longitude: action.origin.longitude,
+        },
+      };
+    } else {
+      const resolution = await resolveGetraPlace(
+        action.origin.query,
+        canonical.data.transportNodes,
+      );
+
+      if (resolution.status === "AMBIGUOUS") {
+        return {
+          status: "REJECTED",
+          message: `Lokasi asalnya belum unik. Pilih salah satu: ${resolution.candidates.join(", ")}.`,
+        };
+      }
+
+      if (resolution.status === "NOT_FOUND") {
+        return {
+          status: "REJECTED",
+          message: `Lokasi "${action.origin.query}" belum ditemukan. Pilih titiknya di peta.`,
+        };
+      }
+
+      resolvedOrigin = resolution.place;
+    }
+
+    let resolvedDestination: ResolvedPlace;
+    const destination = action.destination;
+
+    if (destination.type === "SELECTED_MERCHANT") {
+      if (!selectedMerchant) {
+        return {
+          status: "REJECTED",
+          message: "Pilih tempat tujuan pada daftar atau peta terlebih dahulu.",
+        };
+      }
+
+      resolvedDestination = {
+        id: selectedMerchant.id,
+        label: selectedMerchant.name,
+        coordinate: {
+          latitude: selectedMerchant.latitude,
+          longitude: selectedMerchant.longitude,
+        },
+        merchant: selectedMerchant,
+      };
+    } else if (destination.type === "MERCHANT_ID") {
+      const merchantId = destination.merchant_id;
+      const merchant = mapMerchants.find(
+        (item) => item.id === merchantId,
+      );
+
+      if (!merchant) {
+        return {
+          status: "REJECTED",
+          message: "Tempat tujuan tersebut belum tersedia pada konteks peta.",
+        };
+      }
+
+      resolvedDestination = {
+        id: merchant.id,
+        label: merchant.name,
+        coordinate: {
+          latitude: merchant.latitude,
+          longitude: merchant.longitude,
+        },
+        merchant,
+      };
+    } else {
+      const destinationQuery = destination.query;
+      const resolution = await resolveGetraPlace(
+        destinationQuery,
+        canonical.data.transportNodes,
+      );
+
+      if (resolution.status === "AMBIGUOUS") {
+        return {
+          status: "REJECTED",
+          message: `Tujuannya belum unik. Pilih salah satu: ${resolution.candidates.join(", ")}.`,
+        };
+      }
+
+      if (resolution.status === "NOT_FOUND") {
+        return {
+          status: "REJECTED",
+          message: `Tujuan "${destinationQuery}" belum ditemukan.`,
+        };
+      }
+
+      resolvedDestination = resolution.place;
+    }
+
+    applyResolvedOrigin(resolvedOrigin);
+    applyResolvedDestination(resolvedDestination);
+
+    setActiveMode(action.mode);
+    setEditingEndpoints(false);
+    setRouteSheetOpen(true);
+    setMapPickMode("NONE");
+    setSidebarMode("route");
+    setSidebarCollapsed(false);
+    setDetailOpen(false);
+
+    return { status: "ROUTE_PENDING" };
+  }, [
+    applyAiSearch,
+    applyResolvedDestination,
+    applyResolvedOrigin,
+    canonical.data.transportNodes,
+    mapMerchants,
+    routeDestination,
+    routeOrigin,
+    selectedMerchant,
+    userLocation,
+  ]);
 
   return (
     <main className="workspace workspace--figma commuter-workspace">
@@ -2748,13 +3021,13 @@ function GeneralGetraDashboard() {
                   Rute perjalanan
                 </span>
                 <strong>
-                  {journeyOpen ? `Menuju ${routeDestination?.name ?? "tujuan"}` : (route && !editingEndpoints) ? "Opsi Rute" : "Mulai dari mana?"}
+                  {journeyOpen ? `Menuju ${routeDestination?.name ?? "tujuan"}` : (routeOrigin && routeDestination && !editingEndpoints) ? "Opsi Rute" : "Mulai dari mana?"}
                 </strong>
               </div>
               <Route size={18} />
             </div>
 
-            {route && route.distance_meters !== null && !journeyOpen && !editingEndpoints ? (
+            {routeOrigin && routeDestination && !journeyOpen && !editingEndpoints ? (
               <>
                 <div className="route-endpoints-summary" aria-label="Titik perjalanan terpilih">
                   <div className="route-endpoints-summary__header">
@@ -2790,23 +3063,27 @@ function GeneralGetraDashboard() {
                   </div>
                 </div>
 
-                <RouteSelectionSheet
-                  route={route}
-                  inline
-                  open={true}
-                  originLabel={routeOriginPoint?.label ?? "Titik mulai"}
-                  destinationLabel={routeDestinationPoint?.label ?? routeDestination?.name ?? "Tujuan"}
-                  onOpenChange={setRouteSheetOpen}
-                  onSelect={preview.selectCandidate}
-                  onModeChange={setActiveMode}
-                  preference={routePreference}
-                  onPreferenceChange={setRoutePreference}
-                  onStart={() => {
-                    setRouteSheetOpen(false);
-                    setMapPickMode("NONE");
-                    void journey.controller.start();
-                  }}
-                />
+                {route && route.distance_meters !== null ? (
+                  <RouteSelectionSheet
+                    route={route}
+                    inline
+                    open={true}
+                    originLabel={routeOriginPoint?.label ?? "Titik mulai"}
+                    destinationLabel={routeDestinationPoint?.label ?? routeDestination?.name ?? "Tujuan"}
+                    onOpenChange={setRouteSheetOpen}
+                    onSelect={preview.selectCandidate}
+                    onModeChange={setActiveMode}
+                    preference={routePreference}
+                    onPreferenceChange={setRoutePreference}
+                    onStart={() => {
+                      setRouteSheetOpen(false);
+                      setMapPickMode("NONE");
+                      void journey.controller.start();
+                    }}
+                  />
+                ) : (
+                  <p className="route-message" role="status">Menghitung rute dan pilihan alternatif...</p>
+                )}
               </>
             ) : (
               <>
@@ -2869,7 +3146,8 @@ function GeneralGetraDashboard() {
                       </div>
                     </div>
                   ) : null}
-                  <details className="route-advanced"><summary>Opsi koordinat asal</summary>
+                  <details className="route-advanced-options">
+                    <summary>Opsi lainnya</summary>
                     <CoordinateEntry label="Asal" coordinate={routeOrigin?.coordinate ?? null} onSelect={selectOrigin} />
                   </details>
                   <div className="route-search-box">
@@ -2993,7 +3271,8 @@ function GeneralGetraDashboard() {
                     setMapPickMode("ROUTE_DESTINATION");
                     document.querySelector(".map-panel")?.scrollIntoView({ block: "nearest" });
                   }}><Target size={14} aria-hidden="true" /> Pilih tujuan di peta</button>
-                  <details className="route-advanced"><summary>Opsi koordinat tujuan</summary>
+                  <details className="route-advanced-options">
+                    <summary>Koordinat manual</summary>
                     <CoordinateEntry label="Tujuan" coordinate={routeDestination} onSelect={selectDestination} />
                   </details>
                   </> : null}
@@ -3780,16 +4059,85 @@ function GeneralGetraDashboard() {
              {sidebarCollapsed ? <button type="button" onClick={() => setSidebarCollapsed(false)}><Search size={16} />Cari / Rute</button> : null}
              <button className="commuter-ai-launcher" type="button" aria-expanded={aiOpen} aria-controls="commuter-assistant" onClick={() => { setAiOpen(!aiOpen); setDetailOpen(false); if (!aiOpen && window.innerWidth <= 760) setSidebarCollapsed(true); }}><Bot size={16} />Tanya GETRA</button>
            </div>
-          <div id="commuter-assistant" className="commuter-assistant" hidden={!aiOpen} onKeyDown={(event) => { if (event.key === "Escape") setAiOpen(false); }}>
-            <AiPanel activeExperience={activeExperience} currentOrigin={userLocation ?? undefined}
-              currentDestination={selectedMerchant ?? undefined} selectedEntityId={selectedMerchant?.id}
-              onMinimize={() => setAiOpen(false)} onClose={() => setAiOpen(false)}
+          <div
+            id="commuter-assistant"
+            className="commuter-assistant"
+            hidden={!aiOpen}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") setAiOpen(false);
+            }}
+          >
+            <AiPanel
+              activeExperience={activeExperience}
+              currentOrigin={
+                routeOrigin?.coordinate ??
+                (userLocation
+                  ? {
+                      latitude: userLocation.latitude,
+                      longitude: userLocation.longitude,
+                    }
+                  : undefined)
+              }
+              currentDestination={
+                selectedMerchant
+                  ? {
+                      latitude: selectedMerchant.latitude,
+                      longitude: selectedMerchant.longitude,
+                    }
+                  : routeDestination
+                    ? {
+                        latitude: routeDestination.latitude,
+                        longitude: routeDestination.longitude,
+                      }
+                    : undefined
+              }
+              selectedEntityId={selectedMerchant?.id}
+              selectedEntityName={selectedMerchant?.name}
+              activeRoute={
+                route &&
+                typeof route.distance_meters === "number" &&
+                typeof route.duration_seconds === "number"
+                  ? {
+                      mode: route.mode,
+                      distance_meters: route.distance_meters,
+                      duration_seconds: route.duration_seconds,
+                    }
+                  : undefined
+              }
+              onMinimize={() => setAiOpen(false)}
+              onClose={() => setAiOpen(false)}
               getSearchRevision={() => searchRevisionRef.current}
-              searchContext={query.trim() ? { query, max_budget: maxBudget ? Number(maxBudget) : null, open_now: openOnly, max_walking_minutes: maxWalkingMinutes,
-                reference_text: searchIntent?.reference?.type === "TRANSIT" ? searchIntent.reference.label : null,
-                near_user: searchIntent?.reference?.type === "USER_LOCATION", radius_meters: searchIntent?.radius_meters ?? null, sort: searchIntent?.sort ?? "RELEVANCE" } : undefined}
-              onSearchAction={applyAiSearch} />
+              searchContext={
+                searchActive
+                  ? {
+                      query: query || searchIntent?.keyword || "",
+                      max_budget: maxBudget ? Number(maxBudget) : null,
+                      open_now: openOnly,
+                      max_walking_minutes: maxWalkingMinutes,
+                      reference_text:
+                        searchCriteriaRef.current?.reference_text ??
+                        (searchIntent?.reference?.type === "TRANSIT"
+                          ? searchIntent.reference.label
+                          : null),
+                      near_user:
+                        searchCriteriaRef.current?.near_user ??
+                        searchIntent?.reference?.type === "USER_LOCATION",
+                      radius_meters:
+                        searchCriteriaRef.current?.radius_meters ??
+                        searchIntent?.radius_meters ??
+                        null,
+                      sort:
+                        searchCriteriaRef.current?.sort ??
+                        searchIntent?.sort ??
+                        "RELEVANCE",
+                    }
+                  : undefined
+              }
+              onSearchAction={applyAiSearch}
+              onAction={handleAiAction}
+            />
           </div>
+
           {mapPickMode !== "NONE" && (
             <div className={routingStyles.pickBanner} role="status">
               <strong>{mapPickMode === "ROUTE_START" ? "Memilih asal (A)" : "Memilih tujuan (B)"}</strong>

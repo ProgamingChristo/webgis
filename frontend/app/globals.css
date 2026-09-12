@@ -127,6 +127,11 @@ html {
   box-shadow: 0 0 0 1px #118ab2;
 }
 
+.getra-onboarding-map__legend-dot--umkm {
+  background: #367e77;
+  box-shadow: 0 0 0 1px #367e77;
+}
+
 .getra-onboarding-map__legend-line {
   width: 17px;
   height: 4px;
@@ -138,12 +143,25 @@ html {
   .getra-onboarding-map__caption {
     top: 12px;
     left: 12px;
+    max-width: calc(100% - 24px);
   }
 
   .getra-onboarding-map__legend {
     right: 12px;
     bottom: 12px;
+    font-size: 9px;
+    padding: 7px 9px;
+    gap: 7px;
   }
+}
+
+/* Crisp browser autofill reset across themes */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #464b71 !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .getra-reveal {
@@ -2697,37 +2715,54 @@ select:focus-visible {
   bottom: 42px;
   z-index: 5;
   display: grid;
-  grid-template-columns: repeat(5, minmax(72px, 1fr));
-  gap: 4px;
-  padding: 5px;
-  border: 1px solid rgba(238, 248, 250, 0.14);
-  background: rgba(5, 11, 18, 0.88);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+  grid-template-columns: repeat(5, minmax(64px, 1fr));
+  gap: 3px;
+  padding: 4px;
+  max-width: min(370px, calc(100vw - 28px));
+  border: 1px solid rgba(238, 248, 250, 0.16);
+  border-radius: 10px;
+  background: rgba(5, 11, 18, 0.92);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.36);
 }
 
 .basemap-button {
-  min-height: 45px;
+  min-height: 42px;
   display: grid;
   align-content: center;
   gap: 2px;
-  padding: 6px 8px;
+  padding: 5px 7px;
   border: 1px solid transparent;
+  border-radius: 7px;
   background: transparent;
   color: var(--getra-ink-soft);
   cursor: pointer;
   text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
 .basemap-button:hover {
-  border-color: rgba(34, 211, 238, 0.3);
+  border-color: rgba(34, 211, 238, 0.32);
+  background: rgba(34, 211, 238, 0.06);
   color: var(--getra-ink);
 }
 
 .basemap-button--active {
   border-color: var(--getra-primary);
-  background: rgba(34, 211, 238, 0.12);
+  background: rgba(34, 211, 238, 0.14);
   color: var(--getra-primary);
+  position: relative;
+}
+
+.basemap-button--active::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--getra-primary);
 }
 
 .basemap-button span,
@@ -2742,7 +2777,7 @@ select:focus-visible {
 
 .basemap-button small {
   color: inherit;
-  opacity: 0.72;
+  opacity: 0.68;
   font-size: 9px;
 }
 
@@ -3201,6 +3236,25 @@ select:focus-visible {
 .route-endpoint--destination .route-endpoint__badge {
   border-color: rgba(154, 242, 74, 0.58);
   color: var(--getra-action);
+}
+
+/*
+ * Phase 12A.2.8A — Dynamic label anchor switching.
+ * When a marker is near a right-side panel the JS adds --label-left,
+ * flipping the badge so it extends leftward instead of clipping under
+ * the basemap selector. --label-right is the symmetric case for the
+ * left edge. The default (centre) is preserved when neither applies.
+ */
+.route-endpoint--label-left .route-endpoint__badge {
+  left: auto;
+  right: 50%;
+  transform: translateX(50%);
+}
+
+.route-endpoint--label-right .route-endpoint__badge {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
 }
 
 /* Phase 12A.2.1 - Interactive Map Route Labels */
@@ -3998,7 +4052,9 @@ select:focus-visible {
     left: 10px;
     bottom: 34px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: none;
     width: auto;
+    border-radius: 8px;
   }
 
   .contextual-layer-control {
@@ -4008,7 +4064,8 @@ select:focus-visible {
   }
 
   .basemap-button {
-    min-height: 34px;
+    min-height: 36px;
+    border-radius: 5px;
   }
 
   .map-legend {
@@ -5316,6 +5373,83 @@ select:focus-visible {
   border-color: #118ab2;
   outline: 2px solid rgba(17, 138, 178, 0.15);
   outline-offset: 1px;
+}
+
+.workspace--figma .route-planner {
+  color: #172554;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.workspace--figma .route-planner__header strong,
+.workspace--figma .route-field > span,
+.workspace--figma .route-selection-card__title {
+  color: #172554;
+}
+
+.workspace--figma .route-search-box,
+.workspace--figma .route-search-result,
+.workspace--figma .route-selection-card,
+.workspace--figma .route-selection-card--empty,
+.workspace--figma .route-mode,
+.workspace--figma .route-secondary-button {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+}
+
+.workspace--figma .route-search-box--destination {
+  border-color: #bae6fd;
+}
+
+.workspace--figma .route-search-box input {
+  color: #172554;
+}
+
+.workspace--figma .route-search-box input::placeholder {
+  color: #64748b;
+}
+
+.workspace--figma .route-search-result:hover,
+.workspace--figma .route-search-result--active,
+.workspace--figma .route-mode--active,
+.workspace--figma .route-chip-button--active {
+  border-color: #0891b2;
+  background: #ecfeff;
+  color: #155e75;
+}
+
+.workspace--figma .route-selection-card__meta,
+.workspace--figma .route-selection-card__label,
+.workspace--figma .route-search-result span {
+  color: #64748b;
+}
+
+.workspace--figma .route-primary-button {
+  border-color: #0891b2;
+  background: #0891b2;
+  color: #ffffff;
+}
+
+.route-advanced-options {
+  border-top: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 11px;
+}
+
+.route-advanced-options > summary {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #0369a1;
+  font-weight: 750;
+}
+
+.global-search__correction {
+  margin: 6px 0 0;
+  color: #475569;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .workspace--figma .search-box input {
