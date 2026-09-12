@@ -169,8 +169,8 @@ export class MerchantSubmissionRepository {
     });
     if (error || !merchantId) throw error || new Error("Gagal menyetujui pengajuan merchant.");
     const updatedSub = await this.findById(id);
-    if (!updatedSub || updatedSub.reviewed_by !== adminId) {
-      throw new Error("Identitas reviewer pengajuan tidak konsisten.");
+    if (!updatedSub || updatedSub.status !== "APPROVED") {
+      throw new Error("Pengajuan tidak berhasil disetujui.");
     }
 
     return {

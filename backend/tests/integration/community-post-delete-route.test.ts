@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { createCommunityPostDeleteHandler } from "@/app/api/community/posts/[postId]/route";
+import { createCommunityPostDeleteHandler } from "@/app/api/community/posts/[postId]/handlers";
 import { ApplicationError } from "@/src/lib/errors";
 
 const postId = "11111111-1111-4111-8111-111111111111";

@@ -7,6 +7,10 @@ const workspace = readFileSync(resolve(root, "src/features/business-space/compon
 const service = readFileSync(resolve(root, "src/features/business-space/services/business-space.service.ts"), "utf8");
 const map = readFileSync(resolve(root, "src/features/business-space/components/business-space-map.tsx"), "utf8");
 const dashboard = readFileSync(resolve(root, "components/getra-dashboard.tsx"), "utf8");
+const merchantSourceEvidence = readFileSync(
+  resolve(root, "src/features/merchant-evidence/merchant-source-evidence.tsx"),
+  "utf8",
+);
 const sharedMap = readFileSync(resolve(root, "components/getra-map.tsx"), "utf8");
 const nextConfig = readFileSync(resolve(root, "next.config.ts"), "utf8");
 const detail = readFileSync(resolve(root, "src/features/business-space/components/property-candidate-detail.tsx"), "utf8");
@@ -63,8 +67,8 @@ describe("Business Space frontend contract", () => {
     expect(dashboard).toContain("MerchantMediaGallery");
     expect(dashboard).toContain("Foto tempat");
     expect(dashboard).toContain("Foto menu");
-    expect(dashboard).toContain("Harga observasi");
-    expect(dashboard).toContain("Sumber data:");
+    expect(merchantSourceEvidence).toContain("Harga observasi");
+    expect(merchantSourceEvidence).toContain("Sumber data:");
     expect(nextConfig).toContain("remotePatterns");
     expect(nextConfig).toContain("mapidstorage.cdn.mapid.io");
     expect(dashboard).not.toMatch(/raw_payload|checksum|SUPABASE_SERVICE_ROLE_KEY|x-api-key/i);

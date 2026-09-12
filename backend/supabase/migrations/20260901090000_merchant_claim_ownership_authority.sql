@@ -221,7 +221,7 @@ $$;
 
 CREATE OR REPLACE FUNCTION public.reject_merchant_claim(
   claim_id uuid,
-  review_note text
+  review_note text DEFAULT NULL
 )
 RETURNS uuid
 LANGUAGE plpgsql

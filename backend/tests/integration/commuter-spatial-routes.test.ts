@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 import { describe, expect, it, vi } from "vitest";
 
-import { createGraphHealthHandler } from "@/app/api/internal/routing/graph-health/route";
-import { createRoutingProviderHealthHandler } from "@/app/api/internal/routing/provider-health/route";
-import { createRoutingHandler } from "@/app/api/routing/route";
-import { createServiceAreaHandler } from "@/app/api/spatial/service-area/route";
+import { createGraphHealthHandler } from "@/app/api/internal/routing/graph-health/handlers";
+import { createRoutingProviderHealthHandler } from "@/app/api/internal/routing/provider-health/handlers";
+import { createRoutingHandler } from "@/app/api/routing/handlers";
+import { createServiceAreaHandler } from "@/app/api/spatial/service-area/handlers";
 import { ApplicationError } from "@/src/lib/errors";
 import { HttpTimeoutError } from "@/src/lib/http/timeout-fetch";
 

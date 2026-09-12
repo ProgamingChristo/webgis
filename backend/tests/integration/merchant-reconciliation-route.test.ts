@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createMerchantReconciliationHandlers,
   type MerchantReconciliationRouteDependencies,
-} from "@/app/api/admin/merchant-reconciliation/route";
+} from "@/app/api/admin/merchant-reconciliation/handlers";
 import { ApplicationError } from "@/src/lib/errors";
 
 vi.mock("server-only", () => ({}));

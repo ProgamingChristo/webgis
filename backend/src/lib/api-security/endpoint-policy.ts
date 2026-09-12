@@ -1023,6 +1023,16 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     purpose: "Submit a pending merchant ownership claim for review",
   },
   {
+    method: "PATCH",
+    path: "/api/merchants/[id]/profile",
+    classification: "AUTHENTICATED",
+    role: "AUTHENTICATED",
+    rateLimit: "mutation",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_CONTENT_HEADERS,
+    purpose: "Verified owner update merchant profile information",
+  },
+  {
     method: "GET",
     path: "/api/umkm/advertising/my-merchants",
     classification: "AUTHENTICATED",

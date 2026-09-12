@@ -3,8 +3,8 @@ import type { NextRequest } from "next/server";
 
 vi.mock("server-only", () => ({}));
 
-import { createCommunityRequestDetailHandler } from "@/app/api/community/requests/[requestId]/route";
-import { createCommunityRequestsHandlers } from "@/app/api/community/requests/route";
+import { createCommunityRequestDetailHandler } from "@/app/api/community/requests/[requestId]/handlers";
+import { createCommunityRequestsHandlers } from "@/app/api/community/requests/handlers";
 
 const requestId = "11111111-2222-4333-8444-555555555555";
 

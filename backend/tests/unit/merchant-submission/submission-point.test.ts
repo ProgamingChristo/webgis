@@ -22,7 +22,10 @@ function binaryPoint(littleEndian: boolean, srid?: number) {
 describe("Submission geometry preservation", () => {
   it.each([
     { type: "Point", coordinates: [106.75, -6.25] },
+    { type: "Point", crs: { type: "name", properties: { name: "EPSG:4326" } }, coordinates: [106.75, -6.25] },
+    { type: "Point", crs: { type: "name", properties: { name: "urn:ogc:def:crs:OGC:1.3:CRS84" } }, coordinates: [106.75, -6.25] },
     '{"type":"Point","coordinates":[106.75,-6.25]}',
+    '{"type":"Point","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[106.75,-6.25]}',
     "POINT(106.75 -6.25)",
     "SRID=4326;POINT(1.0675e2 -6.25)",
     binaryPoint(true), binaryPoint(false), binaryPoint(true, 4326), `\\x${binaryPoint(false, 4326)}`,
@@ -33,6 +36,7 @@ describe("Submission geometry preservation", () => {
   it.each([
     null, undefined, "", "unreadable-geometry", "POINT EMPTY", "POINT(200 -6.25)", "SRID=3857;POINT(106.75 -6.25)",
     { type: "Point", coordinates: [NaN, -6.25] }, binaryPoint(true, 3857), binaryPoint(true, 4326).slice(0, -2),
+    { type: "Point", crs: { type: "name", properties: { name: "EPSG:3857" } }, coordinates: [106.75, -6.25] },
   ])("rejects unavailable or invalid locations instead of inventing Jakarta coordinates", (value) => {
     expect(() => parseSubmissionPoint(value)).toThrow("Lokasi pengajuan belum dapat dibaca");
   });

@@ -1,16 +1,19 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
-import { StudyAreaRepository } from "@/src/repositories/study-area.repository";
+import { NextResponse, type NextRequest } from "next/server";
 import { withApiLogger } from "@/src/lib/api-logger";
 import { createOptionsHandler } from "@/src/lib/api-security";
+import { requireAuthenticatedUser } from "@/src/lib/auth";
+import { ApplicationError } from "@/src/lib/errors";
+import { rateLimiter } from "@/src/lib/rate-limit";
 import { getRequestId } from "@/src/lib/request-id";
+import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
+import { StudyAreaRepository } from "@/src/repositories/study-area.repository";
 
 export async function GET(request: NextRequest) {
-  const requestId = getRequestId(request);
-  return withApiLogger(request, requestId, async () => {
-    const authHeader = request.headers.get("Authorization") || "";
-    // Note: To support public reads if RLS allows, we pass the header (which might be empty).
-    // If it requires auth, RLS will block it if empty, or we can explicitly check.
+  return withApiLogger(request, getRequestId(request), async () => {
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader) throw new ApplicationError("UNAUTHORIZED");
+    const userId = await requireAuthenticatedUser(request);
+    await rateLimiter.checkLimit(request, `${userId}:api:v1-study-areas`);
     const supabase = getRequestSupabaseClient(authHeader);
 
     const { searchParams } = new URL(request.url);

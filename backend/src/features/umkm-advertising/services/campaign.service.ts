@@ -2,6 +2,7 @@ import { CampaignRepository } from "../repositories/campaign.repository";
 import { AdvertisingEligibilityService } from "./advertising-eligibility.service";
 import { mapCampaignToDto } from "../mappers/campaign.mapper";
 import { CreateCampaignInput, UpdateCampaignInput } from "../types/campaign.types";
+import { ApplicationError } from "@/src/lib/errors";
 
 export class CampaignService {
   constructor(
@@ -13,7 +14,7 @@ export class CampaignService {
     const eligibility = await this.eligibilityService.checkEligibility(userId, input.merchantId);
     
     if (!eligibility.eligible) {
-      throw new Error(`User not eligible to advertise for this merchant: ${eligibility.reason}`);
+      throw new ApplicationError("FORBIDDEN", `User not eligible to advertise for this merchant: ${eligibility.reason}`);
     }
 
     const row = await this.repository.createCampaign(userId, input);
@@ -24,7 +25,7 @@ export class CampaignService {
     // 1. Verify eligibility (this guarantees ownership natively, thus acting as authorization)
     const eligibility = await this.eligibilityService.checkEligibility(userId, merchantId);
     if (!eligibility.eligible) {
-      throw new Error(`Unauthorized access to campaigns: ${eligibility.reason}`);
+      throw new ApplicationError("FORBIDDEN", `Unauthorized access to campaigns: ${eligibility.reason}`);
     }
 
     const rows = await this.repository.getCampaigns(merchantId);
@@ -37,7 +38,7 @@ export class CampaignService {
     // Authorization: User must be eligible to manage this campaign's merchant
     const eligibility = await this.eligibilityService.checkEligibility(userId, row.merchant_id);
     if (!eligibility.eligible) {
-      throw new Error(`Unauthorized access to campaign: ${eligibility.reason}`);
+      throw new ApplicationError("FORBIDDEN", `Unauthorized access to campaign: ${eligibility.reason}`);
     }
 
     return mapCampaignToDto(row);
@@ -48,7 +49,7 @@ export class CampaignService {
     
     const eligibility = await this.eligibilityService.checkEligibility(userId, row.merchant_id);
     if (!eligibility.eligible) {
-      throw new Error(`Unauthorized update to campaign: ${eligibility.reason}`);
+      throw new ApplicationError("FORBIDDEN", `Unauthorized update to campaign: ${eligibility.reason}`);
     }
 
     if (row.status !== "DRAFT") {
@@ -64,7 +65,7 @@ export class CampaignService {
     
     const eligibility = await this.eligibilityService.checkEligibility(userId, row.merchant_id);
     if (!eligibility.eligible) {
-      throw new Error(`Unauthorized cancellation of campaign: ${eligibility.reason}`);
+      throw new ApplicationError("FORBIDDEN", `Unauthorized cancellation of campaign: ${eligibility.reason}`);
     }
 
     if (row.status === "CANCELLED") {
@@ -75,3 +76,4 @@ export class CampaignService {
     return mapCampaignToDto(updatedRow);
   }
 }
+

@@ -1,3 +1,4 @@
+import type { AiSearchAction, SearchCriteria } from "@/types/search-recommendation";
 import { authenticatedFetch } from "@/src/lib/auth-client";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
 
@@ -10,9 +11,10 @@ export interface AiAskRequest {
   question: string;
   active_experience?: "GENERAL" | "UMKM" | "INVESTOR" | "GOVERNMENT";
   context?: {
+    enable_search?: boolean;
+    search_context?: SearchCriteria;
     study_area_id?: string;
     selected_entity_id?: string;
-    selected_entity_name?: string;
     origin?: {
       latitude: number;
       longitude: number;
@@ -21,43 +23,18 @@ export interface AiAskRequest {
       latitude: number;
       longitude: number;
     };
-    active_route?: {
-      mode: "walking" | "motorcycle" | "car";
-      distance_meters: number;
-      duration_seconds: number;
-    };
   };
   history?: AiAskMessage[];
 }
 
 export interface AiAskResponse {
+  search_action?: AiSearchAction;
   answer: string;
   intent: string;
   limitations: string[];
   evidence: { source: string; dataset: string; description?: string }[];
-  action?: AiApplicationAction;
-  provider: "openai" | "sub2api" | "deterministic";
+  provider: "sub2api" | "openai" | "deterministic";
 }
-
-export type AiRouteMode = "walking" | "motorcycle" | "car";
-export type AiApplicationAction =
-  | { type: "ANSWER_ONLY" }
-  | { type: "APPLY_SEARCH_CRITERIA"; query: string }
-  | {
-      type: "CALCULATE_ROUTE";
-      mode: AiRouteMode;
-      origin:
-        | { type: "CURRENT_LOCATION" }
-        | { type: "PLACE_QUERY"; query: string }
-        | { type: "MAP_POINT"; longitude: number; latitude: number };
-      destination:
-        | { type: "SELECTED_MERCHANT" }
-        | { type: "MERCHANT_ID"; merchant_id: string }
-        | { type: "PLACE_QUERY"; query: string };
-    }
-  | { type: "CHANGE_ROUTE_MODE"; mode: AiRouteMode }
-  | { type: "FOCUS_PLACE"; query: string }
-  | { type: "REQUEST_CLARIFICATION"; prompt: string };
 
 export type MerchantDescriptionMode =
   | "generate"
@@ -106,7 +83,7 @@ export class AiService {
       throw new Error("Jawaban belum dapat disiapkan. Coba lagi.");
     }
 
-    if (!["openai", "sub2api", "deterministic"].includes(json.data.provider)) {
+    if (!["sub2api", "openai", "deterministic"].includes(json.data.provider)) {
       throw new Error("Jawaban belum dapat disiapkan. Coba lagi.");
     }
 

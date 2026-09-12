@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { describe, expect, it, vi } from "vitest";
-import { createUmkmIntelligenceHandler } from "@/app/api/umkm/intelligence/route";
-import { createUmkmCopilotHandler } from "@/app/api/umkm/intelligence/copilot/route";
+import { createUmkmIntelligenceHandler } from "@/app/api/umkm/intelligence/handlers";
+import { createUmkmCopilotHandler } from "@/app/api/umkm/intelligence/copilot/handlers";
 import { ApplicationError } from "@/src/lib/errors";
 
 vi.mock("server-only", () => ({}));

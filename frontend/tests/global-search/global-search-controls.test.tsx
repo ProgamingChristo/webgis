@@ -56,4 +56,43 @@ describe("GlobalSearchControls", () => {
     expect(html).toContain("Cari di area ini");
     expect(html).toContain('aria-live="polite"');
   });
+
+  it("renders Sekitar Saya nearby radius chips (250m, 500m, 1km, 2km) and GPS status", () => {
+    const html = renderToStaticMarkup(
+      <GlobalSearchControls
+        query="kopi"
+        regions={[]}
+        selectedRegionIds={[]}
+        intent={null}
+        loading={false}
+        error={null}
+        total={5}
+        mapMoved={false}
+        maxBudget=""
+        openNow={false}
+        maxWalkingMinutes={null}
+        radiusMeters={500}
+        locationStatus="ACTIVE"
+        accuracyMeters={18}
+        onQueryChange={vi.fn()}
+        onSubmit={vi.fn()}
+        onClear={vi.fn()}
+        onToggleRegion={vi.fn()}
+        onSearchThisArea={vi.fn()}
+        onMaxBudgetChange={vi.fn()}
+        onOpenNowChange={vi.fn()}
+        onMaxWalkingMinutesChange={vi.fn()}
+        onRadiusChange={vi.fn()}
+        onRequestLocation={vi.fn()}
+      />,
+    );
+    expect(html).toContain("Sekitar Saya (Radius UMKM)");
+    expect(html).toContain("250 m");
+    expect(html).toContain("500 m");
+    expect(html).toContain("1 km");
+    expect(html).toContain("2 km");
+    expect(html).toContain("ACTIVE");
+    expect(html).toContain("±18m");
+    expect(html).toContain("nearby-radius-chip--active");
+  });
 });

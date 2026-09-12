@@ -149,14 +149,39 @@ export class MerchantSubmissionService {
   }
 
   async checkPotentialDuplicates(
-    _coordinates: [number, number],
+    coordinates: [number, number],
     name: string
   ): Promise<DuplicateMerchantWarning> {
-    // Search existing merchants within ~100m with similar name
+    const trimmedName = name.trim();
+    const searchPrefix = trimmedName.slice(0, 5);
+
+    // If coordinates are provided, check spatial RPC within 100m
+    if (coordinates && coordinates.length === 2 && !isNaN(coordinates[0]) && !isNaN(coordinates[1])) {
+      try {
+        const { data: nearbyRpc } = await this.supabase.rpc("search_canonical_merchants_v2", {
+          p_lng: coordinates[0],
+          p_lat: coordinates[1],
+          p_radius_meters: 100,
+          p_query: searchPrefix,
+          p_limit: 3,
+        });
+        if (nearbyRpc && nearbyRpc.length > 0) {
+          return {
+            has_potential_duplicate: true,
+            nearby_merchant_id: nearbyRpc[0].id,
+            nearby_merchant_name: nearbyRpc[0].name,
+          };
+        }
+      } catch {
+        // Fallback to table query if RPC is not available
+      }
+    }
+
+    // Search existing merchants with similar name
     const { data: nearbyMerchants } = await this.supabase
       .from("merchants")
       .select("id, name")
-      .ilike("name", `%${name.slice(0, 5)}%`)
+      .ilike("name", `%${searchPrefix}%`)
       .limit(3);
 
     if (nearbyMerchants && nearbyMerchants.length > 0) {

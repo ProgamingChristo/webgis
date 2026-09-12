@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   AiService,
   type AiAskMessage,
@@ -9,12 +9,14 @@ import {
 type AiState = "IDLE" | "LOADING" | "SUCCESS" | "ERROR";
 
 export function useAi() {
+  const generation = useRef(0);
   const [state, setState] = useState<AiState>("IDLE");
   const [messages, setMessages] = useState<AiAskMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [provider, setProvider] = useState<AiAskResponse["provider"] | null>(null);
 
-  const askQuestion = useCallback(async (req: AiAskRequest) => {
+  const askQuestion = useCallback(async (req: AiAskRequest, onResponse?: (response: AiAskResponse) => Promise<string | undefined>) => {
+    const requestGeneration = ++generation.current;
     setState("LOADING");
     setError(null);
     setProvider(null);
@@ -29,12 +31,16 @@ export function useAi() {
         ...req,
         history,
       });
-      const assistantMessage: AiAskMessage = { role: "assistant", content: res.answer };
+      if (requestGeneration !== generation.current) return;
+      const appliedAnswer = await onResponse?.(res);
+      if (requestGeneration !== generation.current) return;
+      const assistantMessage: AiAskMessage = { role: "assistant", content: appliedAnswer ?? res.answer };
       setMessages([...nextMessages, assistantMessage]);
       setProvider(res.provider);
       setState("SUCCESS");
       return res;
     } catch (err: unknown) {
+      if (requestGeneration !== generation.current) return;
       setError(
         err instanceof Error
           ? err.message
@@ -51,6 +57,7 @@ export function useAi() {
   }, []);
 
   const clearChat = useCallback(() => {
+    generation.current++;
     setMessages([]);
     setError(null);
     setProvider(null);
@@ -58,6 +65,7 @@ export function useAi() {
   }, []);
 
   const reset = useCallback(() => {
+    generation.current++;
     setState("IDLE");
     setMessages([]);
     setError(null);

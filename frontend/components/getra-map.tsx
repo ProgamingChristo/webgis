@@ -4,6 +4,7 @@ import { bindRouteAlternativeSelection, syncRouteAlternatives, syncWalkingRoute 
 import { isRouteGeometry } from "@/src/features/routing/route-geometry";
 import { formatRouteDistance, formatRouteMinutes, getRouteLabelAnchor, getRouteLabelOffset } from "@/src/features/routing/route-presentation";
 import type { RoutingCandidate } from "@/src/services/routing.service";
+import { createMerchantMapPopup } from "@/src/features/global-search/merchant-map-popup";
 import { Layers } from "lucide-react";
 
 import type * as GeoJSON from "geojson";
@@ -90,6 +91,8 @@ type GetraMapProps = {
   journeyFocusKey?: number;
   onJourneyCameraOverride?: () => void;
   onSelect: (merchant: Merchant) => void;
+  onRequestMerchantRoute?: (merchant: Merchant) => void;
+  onMerchantDetail?: (merchant: Merchant) => void;
   onSelectProperty?: (candidate: BusinessSpaceCandidate) => void;
   onSelectAccessibilityEvidence?: (evidence: AccessibilityEvidence) => void;
   onClearSelection: () => void;
@@ -608,6 +611,8 @@ export function GetraMap({
   journeyFocusKey = 0,
   onJourneyCameraOverride,
   onSelect,
+  onRequestMerchantRoute,
+  onMerchantDetail,
   onSelectProperty,
   onSelectAccessibilityEvidence,
   onClearSelection,
@@ -1908,6 +1913,37 @@ export function GetraMap({
       }
     }
   }, [routeOriginPoint, routeDestinationPoint]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const merchant = merchants.find((item) => item.id === selectedId);
+    if (!map || !merchant) return;
+    const content = createMerchantMapPopup(merchant, {
+      onClose: onClearSelection,
+      onDetail: onMerchantDetail,
+      onRoute: onRequestMerchantRoute,
+    });
+    const markerElements = createMerchantMarker(true, merchant);
+    markerElements.button.onclick = () => onSelect(merchant);
+    const marker = new Marker({ element: markerElements.element, anchor: "center" })
+      .setLngLat([merchant.longitude, merchant.latitude])
+      .addTo(map);
+    const popup = new Popup({
+      offset: 24,
+      closeButton: false,
+      closeOnClick: false,
+      focusAfterOpen: false,
+      maxWidth: "300px",
+      className: "commuter-merchant-popup",
+    })
+      .setLngLat([merchant.longitude, merchant.latitude])
+      .setDOMContent(content)
+      .addTo(map);
+    return () => {
+      popup.remove();
+      marker.remove();
+    };
+  }, [selectedId, merchants, onSelect, onRequestMerchantRoute, onMerchantDetail, onClearSelection, styleRevision]);
 
   useEffect(() => {
     const map =

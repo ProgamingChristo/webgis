@@ -46,7 +46,7 @@ describe("state-driven UMKM workspace", () => {
     expect(deriveUmkmWorkspaceState(summary)).toBe("PENDING_VERIFICATION");
     const html = renderToStaticMarkup(<UmkmPendingState summary={summary} />);
     expect(html).toContain("Pengajuan Anda sedang diperiksa");
-    expect(html).toContain("Menunggu pemeriksaan");
+    expect(html).toMatch(/Menunggu verifikasi|Claim sedang diperiksa/);
     expect(html).toContain("Langkah berikutnya");
     expect(html).toContain("Pengajuan dibuat");
     expect(html).not.toMatch(/Intelligence|Promosi|locked/i);

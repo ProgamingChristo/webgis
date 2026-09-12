@@ -1,18 +1,18 @@
-import { sub2ApiProvider } from "@/lib/ai/sub2api";
 import { openAIProvider } from "@/lib/ai/openai";
+import { sub2ApiProvider } from "@/lib/ai/sub2api";
 import type { ModelProvider, StructuredGenerationRequest } from "@/lib/ai/provider-contract";
 import { AiProviderError } from "@/src/lib/errors";
 
-type ProviderMode = "deterministic" | "openai" | "sub2api";
+type ProviderMode = "deterministic" | "sub2api" | "openai";
 
 function providerMode(): ProviderMode {
   const configured = process.env.AI_PROVIDER?.trim().toLowerCase();
   if (!configured || configured === "deterministic") return "deterministic";
-  if (configured === "openai" || configured === "sub2api") return configured;
+  if (configured === "sub2api" || configured === "openai") return configured;
 
   throw new AiProviderError({
     category: "configuration",
-    provider: "openai",
+    provider: "sub2api",
   });
 }
 
@@ -23,32 +23,28 @@ export async function generateStructured<T>(
     return null;
   }
 
-  const mode = providerMode();
-  const provider = mode === "openai" ? openAIProvider : sub2ApiProvider;
-  const providerId = mode === "openai" ? "openai" : "sub2api";
-  if (!provider.isConfigured()) {
+  const selected = providerMode() === "openai" ? openAIProvider : sub2ApiProvider;
+  if (!selected.isConfigured()) {
     throw new AiProviderError({
       category: "configuration",
-      provider: providerId,
+      provider: selected.id === "openai" ? "openai" : "sub2api",
     });
   }
 
   return {
-    data: await provider.generateStructured(request),
-    source: providerId,
+    data: await selected.generateStructured(request),
+    source: selected.id,
   };
 }
 
 export function getConfiguredProvider(): ModelProvider | "fallback" {
   if (providerMode() === "deterministic") return "fallback";
-  const mode = providerMode();
-  const provider = mode === "openai" ? openAIProvider : sub2ApiProvider;
-  const providerId = mode === "openai" ? "openai" : "sub2api";
-  if (!provider.isConfigured()) {
+  const selected = providerMode() === "openai" ? openAIProvider : sub2ApiProvider;
+  if (!selected.isConfigured()) {
     throw new AiProviderError({
       category: "configuration",
-      provider: providerId,
+      provider: selected.id === "openai" ? "openai" : "sub2api",
     });
   }
-  return providerId;
+  return selected.id;
 }

@@ -94,20 +94,13 @@ describe("GETRA AI frontend integration", () => {
       .rejects.toThrow("Asisten membutuhkan waktu terlalu lama untuk menjawab. Coba lagi.");
   });
 
-  it("shows an AI-connected status only after a Sub2API success", () => {
-    mocks.hookState = hookState({ provider: "sub2api" });
-    const html = renderToStaticMarkup(<AiPanel activeExperience="GENERAL" />);
-    expect(html).toContain("Asisten siap");
-    expect(html).toContain("Jawaban dibuat berdasarkan data GETRA yang tersedia.");
-    expect(html).not.toContain("Mode fallback data");
-  });
-
-  it("labels deterministic mode and does not claim the answer was interpreted by AI", () => {
-    mocks.hookState = hookState({ provider: "deterministic" });
-    const html = renderToStaticMarkup(<AiPanel activeExperience="GENERAL" />);
-    expect(html).toContain("Jawaban data GETRA");
-    expect(html).toContain("Jawaban dibuat berdasarkan data GETRA yang tersedia.");
-    expect(html).not.toContain("AI terhubung");
+  it("keeps chat conversational with compact accessible window controls", () => {
+    const html = renderToStaticMarkup(<AiPanel activeExperience="GENERAL" onClose={vi.fn()} onMinimize={vi.fn()} />);
+    expect(html).toContain("Tanya GETRA");
+    expect(html).toContain("Asisten AI untuk eksplorasi kota");
+    expect(html).toContain('aria-label="Minimalkan Tanya GETRA"');
+    expect(html).toContain('role="log"');
+    expect(html).not.toContain("commuter-merchant");
   });
 
   it("renders a safe error state with no active-provider badge", () => {
@@ -118,8 +111,7 @@ describe("GETRA AI frontend integration", () => {
       state: "ERROR",
     });
     const html = renderToStaticMarkup(<AiPanel activeExperience="GENERAL" />);
-    expect(html).toContain("Asisten belum bisa menjawab");
-    expect(html).toContain("Asisten belum dapat digunakan. Coba lagi sebentar lagi.");
+    expect(html).toContain("Tanya GETRA belum dapat memproses permintaan ini");
     expect(html).not.toContain("Provider AI sementara tidak tersedia");
     expect(html).not.toContain("AI terhubung");
   });

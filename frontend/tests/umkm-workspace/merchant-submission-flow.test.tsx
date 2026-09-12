@@ -3,7 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MerchantSubmissionRecord } from "@/src/features/merchant-submission/types/merchant-submission.types";
 
 const mocks = vi.hoisted(() => ({ push: vi.fn() }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: mocks.push }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mocks.push }),
+  useSearchParams: () => new URLSearchParams(),
+}));
 vi.mock("@/src/features/merchant-submission/components/merchant-submission-map-picker", () => ({
   MerchantMapPicker: () => <div>Map picker</div>,
 }));
@@ -61,10 +64,10 @@ describe("merchant search-first registration", () => {
   });
 
   it("announces the current step and disables navigation while saving", () => {
-    const html = renderToStaticMarkup(<MerchantRegistrationSteps currentStep={3} disabled onStepChange={vi.fn()} />);
-    expect(html).toContain("Langkah 4 dari 6");
+    const html = renderToStaticMarkup(<MerchantRegistrationSteps currentStep={1} disabled onStepChange={vi.fn()} />);
+    expect(html).toContain("Langkah 2 dari 3");
     expect(html.match(/aria-current="step"/g)).toHaveLength(1);
-    expect(html.match(/disabled=""/g)).toHaveLength(6);
+    expect(html.match(/disabled=""/g)).toHaveLength(3);
   });
 
   it("previews only entered information and explicitly identifies missing fields", () => {

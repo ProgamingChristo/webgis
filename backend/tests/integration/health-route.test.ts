@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { createHealthHandler } from "@/app/api/health/route";
+import { createHealthHandler } from "@/app/api/health/handlers";
 import { DatabaseUnavailableError } from "@/src/lib/errors";
 import type { HealthChecker } from "@/src/services/health.service";
 

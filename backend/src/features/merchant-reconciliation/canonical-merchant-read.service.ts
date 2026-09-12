@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { parseObservedPrice } from "@/src/features/commuter/commuter-intent";
-import { evaluateOpeningHours, type OpeningStatus } from "@/src/features/commuter/opening-hours";
+import { evaluateOpeningHours, openingHoursLabel, type OpeningStatus } from "@/src/features/commuter/opening-hours";
 
 export interface CanonicalMerchantMapItem {
   id: string;
@@ -15,13 +15,17 @@ export interface CanonicalMerchantMapItem {
   priceLabel: "Hemat" | "Sedang" | "Premium";
   openNow: boolean;
   source: string;
-  sources: Array<"PREMIUM" | "MENU_GO">;
+  sources: Array<"PREMIUM" | "MENU_GO" | "OWNER_SUBMITTED">;
   status: "surveyed" | "verified";
   updatedAt: string;
   limitation: string;
   address?: string;
   phone?: string;
   photo?: string;
+  openingHoursLabel?: string;
+  referenceDistance?: { meters: number; label: string; kind: "STRAIGHT_LINE" };
+  searchRelevance?: number;
+  recommendation?: import("../global-search/recommendation-engine").RecommendationBreakdown;
   menuPhotos?: string[];
   menu?: string;
   observedPrice?: string;
@@ -39,6 +43,15 @@ export interface CanonicalMerchantMapItem {
   regionIds: string[];
   regions: string[];
   city?: string;
+  // Phase 16A: Canonical inventory + provenance
+  /** UUID of the authenticated owner. null = no verified owner yet. */
+  owner_id: string | null;
+  /** publish_status from the merchants table. Only PUBLISHED merchants are surfaced in discovery. */
+  publish_status: string;
+  /** user_id of the person who submitted this merchant via merchant_submissions (OWNER_SUBMITTED provenance). null = surveyed/reconciled. */
+  submitted_by: string | null;
+  /** ID of the merchant_submission that created this canonical merchant. null = not owner-submitted. */
+  submission_id: string | null;
 }
 
 export interface CanonicalMerchantPage {
@@ -56,6 +69,8 @@ export interface CanonicalMerchantViewportQuery {
   keyword?: string | null;
   category?: string | null;
   regionIds?: string[];
+  radiusMeters?: number | null;
+  origin?: { longitude: number; latitude: number } | null;
 }
 
 export class CanonicalMerchantReadService {
@@ -63,17 +78,20 @@ export class CanonicalMerchantReadService {
 
   async list(query: CanonicalMerchantViewportQuery): Promise<CanonicalMerchantPage> {
     const { data: pageRows, error: pageError } = await this.supabase.rpc(
-      "search_canonical_merchants_v1",
+      "search_canonical_merchants_v2",
       {
         p_west: query.west ?? null,
         p_south: query.south ?? null,
         p_east: query.east ?? null,
         p_north: query.north ?? null,
-        p_limit: query.limit,
-        p_offset: query.offset,
         p_region_ids: query.regionIds?.length ? query.regionIds : null,
         p_keyword: query.keyword ?? null,
         p_category: query.category ?? null,
+        p_limit: query.limit,
+        p_offset: query.offset,
+        p_origin_lng: query.origin?.longitude ?? null,
+        p_origin_lat: query.origin?.latitude ?? null,
+        p_radius_meters: query.radiusMeters ?? null,
       },
     );
     if (pageError) throw pageError;
@@ -100,7 +118,8 @@ export class CanonicalMerchantReadService {
       .filter((link: any) => link.source_table === "mapid_mission_observations:MENU_GO")
       .map((link: any) => link.source_record_id);
 
-    const [merchants, observationResult] = await Promise.all([
+    // Phase 16A: Parallel fetch — observations + owner-submitted provenance
+    const [merchants, observationResult, submissionResult] = await Promise.all([
       this.listMerchantsByIds(merchantIds),
       menuSourceIds.length === 0
         ? Promise.resolve({ data: [], error: null })
@@ -110,8 +129,28 @@ export class CanonicalMerchantReadService {
             .eq("source_type", "MENU_GO")
             .in("source_record_id", menuSourceIds)
             .range(0, 4_999),
+      // Resolve OWNER_SUBMITTED provenance: find approved submissions whose
+      // canonical_merchant_id is in our result set.
+      this.supabase
+        .from("merchant_submissions")
+        .select("id,submitted_by,canonical_merchant_id")
+        .eq("status", "APPROVED")
+        .in("canonical_merchant_id", merchantIds)
+        .range(0, merchantIds.length - 1),
     ]);
     if (observationResult.error) throw observationResult.error;
+    // Non-fatal: if submission provenance lookup fails, surface organic results without it.
+    const submissionByMerchantId = new Map<string, { id: string; submitted_by: string }>();
+    if (!submissionResult.error) {
+      for (const sub of submissionResult.data ?? []) {
+        if (sub.canonical_merchant_id && !submissionByMerchantId.has(sub.canonical_merchant_id)) {
+          submissionByMerchantId.set(sub.canonical_merchant_id, {
+            id: sub.id,
+            submitted_by: sub.submitted_by,
+          });
+        }
+      }
+    }
 
     const linksByMerchant = new Map<string, any[]>();
     for (const link of links ?? []) {
@@ -133,6 +172,7 @@ export class CanonicalMerchantReadService {
         linksByMerchant.get(merchant.id) ?? [],
         observationBySourceId,
         pageByMerchantId.get(merchant.id),
+        submissionByMerchantId.get(merchant.id) ?? null,
       ))
       .filter(
         (item: CanonicalMerchantMapItem | null): item is CanonicalMerchantMapItem =>
@@ -147,7 +187,8 @@ export class CanonicalMerchantReadService {
     for (let offset = 0; offset < ids.length; offset += 150) {
       const { data, error } = await this.supabase
         .from("merchants")
-        .select("id,name,description,location,address,price_level,opening_hours,is_mobile,verification_status,publish_status,data_quality_score,metadata,updated_at")
+        // Phase 16A: include owner_id and publish_status for canonical inventory
+        .select("id,name,description,location,address,price_level,opening_hours,is_mobile,verification_status,publish_status,data_quality_score,metadata,updated_at,owner_id")
         .in("id", ids.slice(offset, offset + 150))
         .eq("publish_status", "PUBLISHED")
         .range(0, 149);
@@ -163,6 +204,8 @@ export function mapCanonicalMerchantRow(
   links: any[],
   observationBySourceId: Map<string, any>,
   searchRow?: any,
+  // Phase 16A: owner-submitted provenance resolved from merchant_submissions join
+  ownerSubmission?: { id: string; submitted_by: string } | null,
 ): CanonicalMerchantMapItem | null {
   const point = readPoint(merchant.location);
   if (!point) return null;
@@ -179,13 +222,21 @@ export function mapCanonicalMerchantRow(
   const observed = asObject(latestObservation?.normalized_properties);
   const openingStatus = evaluateOpeningHours(merchant.opening_hours);
   const observedPriceAmount = parseObservedPrice(observed.harga_rata_rata);
+  // Phase 16A: OWNER_SUBMITTED source type appears when the merchant was created
+  // via an approved user submission. It is ADDITIVE — not a replacement for
+  // PREMIUM or MENU_GO sources which describe the data evidence.
+  const isOwnerSubmitted = ownerSubmission != null;
   const sources = [
     links.some((link) => link.source_table === "mapid_premium_merchants")
       ? "PREMIUM" as const
       : null,
     menuLinks.length > 0 ? "MENU_GO" as const : null,
-  ].filter((source): source is "PREMIUM" | "MENU_GO" => source !== null);
-  const photo = optionalString(observed.foto_tempat);
+    isOwnerSubmitted ? "OWNER_SUBMITTED" as const : null,
+  ].filter((source): source is "PREMIUM" | "MENU_GO" | "OWNER_SUBMITTED" => source !== null);
+  const approvedOwnerMedia = merchant.verification_status === "VERIFIED" && metadata.approved_by && metadata.approved_at
+    ? asObject(metadata.public_media) : {};
+  const ownerPhoto = safePublicImage(approvedOwnerMedia.storefront_url);
+  const photo = ownerPhoto ?? safePublicImage(observed.foto_tempat) ?? optionalString(observed.foto_tempat);
   const menuPhotos = [observed.foto_menu_1, observed.foto_menu_2]
     .map(optionalString)
     .filter((value): value is string => value !== undefined);
@@ -193,26 +244,31 @@ export function mapCanonicalMerchantRow(
   return {
     id: merchant.id,
     name: merchant.name,
-    category: optionalString(metadata.category) ??
+    category: optionalString(metadata.category_label) ??
+      optionalString(metadata.category) ??
       optionalString(observed.jenis_tempat) ??
       merchant.description ?? "Makanan dan Minuman",
     brand: optionalString(metadata.brand) ?? "Makanan dan Minuman",
     longitude: point[0],
     latitude: point[1],
     walkingMinutes: null,
-    distanceMeters: null,
+    distanceMeters: searchRow?.distance_meters != null ? Math.round(Number(searchRow.distance_meters)) : null,
     accessibilityScore: merchant.data_quality_score ?? 80,
     priceLabel: toPriceLabel(merchant.price_level),
     openNow: openingStatus === "OPEN",
     openStatusKnown: openingStatus !== "UNKNOWN",
     openingStatus,
+    openingHoursLabel: openingHoursLabel(merchant.opening_hours),
+    searchRelevance: Number(searchRow?.relevance_score ?? 0),
     source: sources.join(" + "),
     sources,
     status: merchant.verification_status === "VERIFIED" ? "verified" : "surveyed",
     updatedAt: merchant.updated_at,
     limitation: merchant.is_mobile
       ? "Menu Go geometry is an observed mobile location, not a permanent address."
-      : "Canonical merchant with auditable Premium and Menu Go source evidence.",
+      : isOwnerSubmitted
+        ? "Canonical merchant created from an owner-verified submission."
+        : "Canonical merchant with auditable Premium and Menu Go source evidence.",
     address: merchant.address ?? undefined,
     phone: optionalString(metadata.phone),
     photo,
@@ -223,11 +279,12 @@ export function mapCanonicalMerchantRow(
     mobility: optionalString(observed.mobilitas),
     observedAt: optionalString(latestObservation?.observed_at),
     provenance: {
+      source_type: isOwnerSubmitted ? "OWNER_SUBMITTED" : sources.includes("PREMIUM") ? "PREMIUM" : "MENU_GO",
       attributes: {
         address: merchant.address ? "PREMIUM_OR_CANONICAL" : null,
-        geometry: sources.includes("PREMIUM") ? "PREMIUM" : "MENU_GO_OBSERVED_LOCATION",
+        geometry: sources.includes("PREMIUM") ? "PREMIUM" : isOwnerSubmitted ? "OWNER_SUBMITTED" : "MENU_GO_OBSERVED_LOCATION",
         menu: observed.menu_utama ? "MENU_GO" : null,
-        name: sources.includes("PREMIUM") ? "PREMIUM" : "MENU_GO",
+        name: sources.includes("PREMIUM") ? "PREMIUM" : isOwnerSubmitted ? "OWNER_SUBMITTED" : "MENU_GO",
         observed_price: observed.harga_rata_rata ? "MENU_GO" : null,
         phone: metadata.phone ? "PREMIUM" : null,
         photo: observed.foto_tempat ? "MENU_GO" : null,
@@ -242,6 +299,11 @@ export function mapCanonicalMerchantRow(
     regionIds: searchRow?.region_ids ?? [],
     regions: searchRow?.region_names ?? [],
     city: searchRow?.region_names?.[0] ?? undefined,
+    // Phase 16A: canonical inventory fields
+    owner_id: merchant.owner_id ?? null,
+    publish_status: merchant.publish_status,
+    submitted_by: ownerSubmission?.submitted_by ?? null,
+    submission_id: ownerSubmission?.id ?? null,
   };
 }
 
@@ -252,6 +314,16 @@ function asObject(value: unknown): Record<string, unknown> {
 }
 
 function readPoint(value: unknown): [number, number] | null {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed.startsWith("{")) {
+      try {
+        value = JSON.parse(trimmed);
+      } catch {
+        // fall through to regex match
+      }
+    }
+  }
   if (
     typeof value === "object" && value !== null &&
     Array.isArray((value as { coordinates?: unknown }).coordinates)
@@ -276,4 +348,14 @@ function toPriceLabel(value: string | null) {
   if (value?.toLowerCase() === "hemat") return "Hemat" as const;
   if (value?.toLowerCase() === "premium") return "Premium" as const;
   return "Sedang" as const;
+}
+
+function safePublicImage(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password ? url.href : undefined;
+  } catch {
+    return undefined;
+  }
 }

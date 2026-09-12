@@ -6,15 +6,15 @@ vi.mock("server-only", () => ({}));
 import {
   createBBoxHandler,
   type BBoxHandlerDependencies,
-} from "@/app/api/spatial/bbox/route";
+} from "@/app/api/spatial/bbox/handlers";
 import {
   createDistanceHandler,
   type DistanceHandlerDependencies,
-} from "@/app/api/spatial/distance/route";
+} from "@/app/api/spatial/distance/handlers";
 import {
   createNearbyHandler,
   type NearbyHandlerDependencies,
-} from "@/app/api/spatial/nearby/route";
+} from "@/app/api/spatial/nearby/handlers";
 import { ApplicationError } from "@/src/lib/errors";
 import { readBoundedJsonBody } from "@/src/lib/spatial/request";
 import {

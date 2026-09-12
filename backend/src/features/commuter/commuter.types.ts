@@ -4,6 +4,7 @@ export interface CommuterConstraints {
   budget: { max_idr: number } | null;
   opening: { open_now: true; timezone: "Asia/Jakarta" } | null;
   walking: { max_minutes: number } | null;
+  radius?: { radius_meters: number } | null;
 }
 
 export interface CommuterOrigin {
@@ -13,6 +14,11 @@ export interface CommuterOrigin {
 }
 
 export interface StructuredCommuterIntent {
+  reference?: import("../global-search/search-reference").SearchReference | null;
+  radius_meters?: number;
+  sort?: "RELEVANCE" | "NEAREST" | "PRICE_ASC";
+  recommendation?: boolean;
+  candidate_limited?: boolean;
   domain: "MERCHANT";
   original_query: string;
   keyword: string | null;

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SearchCriteriaSchema } from "./search-action";
 
 export const AiIntentEnum = z.enum([
   "ASSISTANT_IDENTITY",
@@ -7,19 +8,19 @@ export const AiIntentEnum = z.enum([
   "NEAREST_TRANSIT",
   "WALKING_ROUTE",
   "UMKM_POI",
+  "MERCHANT_SEARCH",
   "UNKNOWN",
 ]);
 export type AiIntent = z.infer<typeof AiIntentEnum>;
-
-const AiRouteModeSchema = z.enum(["walking", "motorcycle", "car"]);
 
 export const AiAskRequestSchema = z.object({
   question: z.string().min(2).max(1000),
   active_experience: z.enum(["GENERAL", "UMKM", "INVESTOR", "GOVERNMENT"]).default("GENERAL"),
   context: z.object({
+    enable_search: z.boolean().optional(),
+    search_context: SearchCriteriaSchema.optional(),
     study_area_id: z.string().optional(),
     selected_entity_id: z.string().optional(),
-    selected_entity_name: z.string().trim().max(160).optional(),
     origin: z.object({
       latitude: z.number().finite().min(-90).max(90),
       longitude: z.number().finite().min(-180).max(180),
@@ -27,11 +28,6 @@ export const AiAskRequestSchema = z.object({
     destination: z.object({
       latitude: z.number().finite().min(-90).max(90),
       longitude: z.number().finite().min(-180).max(180),
-    }).optional(),
-    active_route: z.object({
-      mode: AiRouteModeSchema,
-      distance_meters: z.number().finite().positive(),
-      duration_seconds: z.number().finite().positive(),
     }).optional(),
   }).optional(),
   history: z.array(
@@ -57,36 +53,6 @@ export const AiMapActionSchema = z.object({
   label: z.string().optional(),
 });
 export type AiMapAction = z.infer<typeof AiMapActionSchema>;
-
-const AiOriginSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("CURRENT_LOCATION") }),
-  z.object({ type: z.literal("PLACE_QUERY"), query: z.string().trim().min(2).max(120) }),
-  z.object({
-    type: z.literal("MAP_POINT"),
-    longitude: z.number().finite().min(-180).max(180),
-    latitude: z.number().finite().min(-90).max(90),
-  }),
-]);
-const AiDestinationSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("SELECTED_MERCHANT") }),
-  z.object({ type: z.literal("MERCHANT_ID"), merchant_id: z.string().uuid() }),
-  z.object({ type: z.literal("PLACE_QUERY"), query: z.string().trim().min(2).max(120) }),
-]);
-
-export const AiApplicationActionSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("ANSWER_ONLY") }),
-  z.object({ type: z.literal("APPLY_SEARCH_CRITERIA"), query: z.string().trim().min(2).max(120) }),
-  z.object({
-    type: z.literal("CALCULATE_ROUTE"),
-    mode: AiRouteModeSchema,
-    origin: AiOriginSchema,
-    destination: AiDestinationSchema,
-  }),
-  z.object({ type: z.literal("CHANGE_ROUTE_MODE"), mode: AiRouteModeSchema }),
-  z.object({ type: z.literal("FOCUS_PLACE"), query: z.string().trim().min(2).max(120) }),
-  z.object({ type: z.literal("REQUEST_CLARIFICATION"), prompt: z.string().trim().min(2).max(240) }),
-]);
-export type AiApplicationAction = z.infer<typeof AiApplicationActionSchema>;
 
 export const AiFactBaseSchema = z.object({
   intent: AiIntentEnum,
@@ -143,8 +109,8 @@ export const AiAskResponseSchema = z.object({
   limitations: z.array(z.string()),
   evidence: z.array(AiProvenanceSchema),
   map_action: AiMapActionSchema.optional(),
-  action: AiApplicationActionSchema.optional(),
-  provider: z.enum(["openai", "sub2api", "deterministic"]),
+  search_action: z.object({ type: z.literal("APPLY_SEARCH_CRITERIA"), criteria: SearchCriteriaSchema }).optional(),
+  provider: z.enum(["sub2api", "openai", "deterministic"]),
 });
 export type AiAskResponse = z.infer<typeof AiAskResponseSchema>;
 
@@ -153,7 +119,6 @@ export const IntentClassificationSchema = z.object({
   intent: AiIntentEnum,
   confidence: z.number().min(0).max(1),
   reasoning: z.string(),
-  action: AiApplicationActionSchema.optional(),
 });
 export type IntentClassification = z.infer<typeof IntentClassificationSchema>;
 

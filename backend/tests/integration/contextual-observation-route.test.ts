@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createContextualObservationHandler,
   type ContextualObservationRouteDependencies,
-} from "@/app/api/contextual-observations/route";
+} from "@/app/api/contextual-observations/handlers";
 import { ApplicationError } from "@/src/lib/errors";
 
 vi.mock("server-only", () => ({}));

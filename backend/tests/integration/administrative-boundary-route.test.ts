@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createAdministrativeBoundaryHandler,
   type AdministrativeBoundaryRouteDependencies,
-} from "@/app/api/regions/route";
+} from "@/app/api/regions/handlers";
 import { ApplicationError } from "@/src/lib/errors";
 
 vi.mock("server-only", () => ({}));

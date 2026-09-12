@@ -14,6 +14,7 @@ import {
 import { MerchantSubmissionRecord } from "../types/merchant-submission.types";
 import { MerchantSubmissionService } from "../services/merchant-submission.service";
 import { MerchantSubmissionStatusBadge } from "./merchant-submission-status-badge";
+import { PendingLocationPreview } from "@/src/features/umkm-workspace/components/pending-location-preview";
 
 interface SubmissionDetailProps {
   submissionId: string;
@@ -187,16 +188,16 @@ export function MerchantSubmissionDetail({ submissionId }: SubmissionDetailProps
 
         {/* Details Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
+          <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1 sm:col-span-2">
             <span className="text-slate-400">Alamat Lengkap</span>
             <p className="break-words text-slate-200 font-medium">{submission.address || "Tidak dicantumkan"}</p>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
-            <span className="text-slate-400">Lokasi usaha</span>
-            <p className="break-all text-slate-200 font-mono font-medium">
-              Lng: {lng.toFixed(6)}, Lat: {lat.toFixed(6)}
-            </p>
+          <div className="sm:col-span-2">
+            <PendingLocationPreview
+              coordinates={[lng, lat]}
+              merchantName={submission.name}
+            />
           </div>
 
           {submission.description ? (

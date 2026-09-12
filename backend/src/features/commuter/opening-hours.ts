@@ -69,3 +69,12 @@ function asObject(value: unknown): Record<string, unknown> {
     ? value as Record<string, unknown>
     : {};
 }
+
+/** Today's validated schedule in Jakarta; unknown schedules stay unknown. */
+export function openingHoursLabel(value: unknown, now = new Date()): string | undefined {
+  const schedule = asObject(value);
+  if (schedule.timezone !== JAKARTA_TIMEZONE) return undefined;
+  const intervals = readIntervals(asObject(schedule.weekly)[DAY_KEYS[localParts(now).dayIndex]]);
+  if (!intervals || intervals.some(item => parseClock(item.open) === null || parseClock(item.close) === null)) return undefined;
+  return intervals.length ? `${intervals.map(item => `${item.open}-${item.close}`).join(", ")} WIB` : "Tutup hari ini";
+}

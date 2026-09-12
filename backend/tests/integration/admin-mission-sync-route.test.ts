@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createAdminMissionSyncHandlers,
   type AdminMissionSyncRouteDependencies,
-} from "@/app/api/admin/mission/sync/route";
+} from "@/app/api/admin/mission/sync/handlers";
 import type {
   MapidMissionSource,
   MapidMissionSyncSummary,

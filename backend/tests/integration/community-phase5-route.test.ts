@@ -3,9 +3,9 @@ import type { NextRequest } from "next/server";
 
 vi.mock("server-only", () => ({}));
 
-import { createCommunityCommentsHandlers } from "@/app/api/community/posts/[postId]/comments/route";
-import { createCommunityPostDetailHandler } from "@/app/api/community/posts/[postId]/route";
-import { createCommunityReactionHandlers } from "@/app/api/community/posts/[postId]/reactions/[reactionType]/route";
+import { createCommunityCommentsHandlers } from "@/app/api/community/posts/[postId]/comments/handlers";
+import { createCommunityPostDetailHandler } from "@/app/api/community/posts/[postId]/handlers";
+import { createCommunityReactionHandlers } from "@/app/api/community/posts/[postId]/reactions/[reactionType]/handlers";
 
 const postId = "11111111-1111-4111-8111-111111111111";
 

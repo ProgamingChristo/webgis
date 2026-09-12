@@ -23,11 +23,13 @@ export default function AdvertisingPage() {
   );
 }
 
-export function MerchantAdvertising() {
+function MerchantAdvertising() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { ownedMerchants, ineligibleMerchants, loading, error, refetch } = useUserMerchants();
-  const merchants = [...ownedMerchants, ...ineligibleMerchants];
+  const { ownedMerchants, ineligibleMerchants, allBusinesses, loading, error, refetch } = useUserMerchants();
+  const merchants = allBusinesses && allBusinesses.length > 0
+    ? allBusinesses
+    : [...ownedMerchants, ...ineligibleMerchants];
   const requestedMerchantId = searchParams.get("merchantId");
   const activeMerchant = requestedMerchantId
     ? merchants.find((merchant) => merchant.id === requestedMerchantId)
@@ -63,17 +65,67 @@ export function MerchantAdvertising() {
               onChange={(event) => router.replace(`/umkm/advertising?merchantId=${encodeURIComponent(event.target.value)}`, { scroll: false })}
             >
               {!activeMerchant && <option value="" disabled>Pilih usaha Anda</option>}
-              {merchants.map((merchant) => <option key={merchant.id} value={merchant.id}>{merchant.name}</option>)}
+              {merchants.map((merchant) => (
+                <option key={merchant.id} value={merchant.id}>
+                  {merchant.name} ({merchant.statusLabel || (merchant.canCreateCampaign ? "Siap dipromosikan" : "Perlu verifikasi")})
+                </option>
+              ))}
             </select>
           </div>
         ) : <p className="mt-3 break-words font-bold">{activeMerchant.name}</p>}
         {activeMerchant?.address && <p className="mt-2 break-words text-sm text-slate-400">{activeMerchant.address}</p>}
       </section>
+
       {activeMerchant ? (
-        <AdvertisingEligibilityGate key={activeMerchant.id} merchantId={activeMerchant.id}>
-          <CampaignList key={activeMerchant.id} merchantId={activeMerchant.id} merchantName={activeMerchant.name} />
-        </AdvertisingEligibilityGate>
-      ) : <p className="text-sm text-slate-300" role="alert">Usaha pada tautan tidak tersedia untuk akun Anda. Pilih usaha dari daftar di atas.</p>}
+        activeMerchant.relationshipState === "SUBMISSION_PENDING" ? (
+          <section className="rounded-2xl border border-amber-500/30 bg-slate-950/80 p-5 sm:p-6" data-testid="submission-pending-card">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-100">{activeMerchant.name}</h3>
+              <span className="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-semibold text-amber-300">
+                Menunggu verifikasi
+              </span>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              Verifikasi diperlukan sebelum promosi dapat dibuat.
+            </p>
+            <div className="mt-4">
+              <Link
+                href="/umkm#pengajuan"
+                className="inline-flex min-h-11 items-center rounded-xl border border-amber-400/40 px-4 text-sm font-semibold text-amber-200 hover:bg-amber-400/10"
+              >
+                Lihat Status
+              </Link>
+            </div>
+          </section>
+        ) : activeMerchant.relationshipState === "CLAIM_PENDING" ? (
+          <section className="rounded-2xl border border-amber-500/30 bg-slate-950/80 p-5 sm:p-6" data-testid="claim-pending-card">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-100">{activeMerchant.name}</h3>
+              <span className="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-semibold text-amber-300">
+                Claim sedang diperiksa
+              </span>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              Setelah kepemilikan disetujui, usaha dapat dipromosikan.
+            </p>
+            <div className="mt-4">
+              <Link
+                href="/umkm#klaim"
+                className="inline-flex min-h-11 items-center rounded-xl border border-amber-400/40 px-4 text-sm font-semibold text-amber-200 hover:bg-amber-400/10"
+              >
+                Lihat Status
+              </Link>
+            </div>
+          </section>
+        ) : (
+          <AdvertisingEligibilityGate key={activeMerchant.id} merchantId={activeMerchant.id}>
+            <CampaignList key={activeMerchant.id} merchantId={activeMerchant.id} merchantName={activeMerchant.name} />
+          </AdvertisingEligibilityGate>
+        )
+      ) : (
+        <p className="text-sm text-slate-300" role="alert">Usaha pada tautan tidak tersedia untuk akun Anda. Pilih usaha dari daftar di atas.</p>
+      )}
     </div>
   );
 }
+
