@@ -1,0 +1,113 @@
+.emptyState {
+  display: grid;
+  min-height: calc(100vh - 96px);
+  place-items: start center;
+  padding: 56px 24px 96px;
+  background: #fff;
+}
+
+.card {
+  width: min(100%, 828px);
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  background: #fff;
+  padding: 52px 50px 50px;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, .04);
+  text-align: center;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  border: 1px solid #dbe4ee;
+  border-radius: 999px;
+  background: #f1f5f9;
+  padding: 0 20px;
+  color: #464b71;
+  font: 600 16px/24px var(--font-getra-sans), "Plus Jakarta Sans", sans-serif;
+}
+
+.icon {
+  display: grid;
+  width: 96px;
+  height: 96px;
+  place-items: center;
+  margin: 30px auto 38px;
+  border: 1px solid #a5e8f2;
+  border-radius: 24px;
+  background: #ecfeff;
+}
+
+.icon img { width: 42px; height: 42px; object-fit: contain; }
+
+.card h1 {
+  margin: 0;
+  color: #464b71;
+  font-family: var(--font-getra-landing-display), "DM Sans", sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: 50px;
+}
+
+.description {
+  max-width: 650px;
+  margin: 20px auto 30px;
+  color: #64748b;
+  font: 400 24px/36px Inter, sans-serif;
+}
+
+.benefits {
+  margin: 0;
+  border: 1px solid #dbe4ee;
+  border-radius: 18px;
+  background: #f8fafc;
+  padding: 32px;
+  text-align: left;
+}
+
+.benefits h2 { margin: 0 0 20px; color: #464b71; font: 700 20px/28px var(--font-getra-landing-display), "DM Sans", sans-serif; }
+.benefits ul { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.benefits li { display: flex; align-items: center; gap: 16px; color: #464b71; font: 400 20px/28px Inter, sans-serif; }
+.benefits li img { width: 28px; height: 28px; flex: 0 0 auto; object-fit: contain; }
+
+.cta {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 36px;
+  border-radius: 16px;
+  background: #118ab2;
+  box-shadow: 0 8px 16px rgba(17, 138, 178, .16);
+  color: #fff;
+  font: 700 20px/28px var(--font-getra-sans), "Plus Jakarta Sans", sans-serif;
+  text-decoration: none;
+  transition: background-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+.cta:hover { background: #0e7596; box-shadow: 0 10px 20px rgba(17, 138, 178, .24); transform: translateY(-2px); }
+.cta:focus-visible { outline: 3px solid rgba(17, 138, 178, .35); outline-offset: 4px; }
+
+:global(.getra-app-shell--umkm.umkm-empty-mode) :global(.getra-context-nav),
+:global(.getra-app-shell--umkm.umkm-empty-mode) :global(.getra-app-page-header) { display: none; }
+:global(.getra-app-shell--umkm.umkm-empty-mode) :global(.getra-app-main) { padding: 0; background: #fff; }
+:global(.getra-app-shell--umkm.umkm-empty-mode) :global(.getra-app-content) { max-width: none; padding: 0; }
+
+@media (max-width: 760px) {
+  .emptyState { min-height: calc(100vh - 72px); padding: 28px 16px 56px; }
+  .card { border-radius: 18px; padding: 36px 20px 24px; }
+  .status { min-height: 34px; padding: 0 14px; font-size: 14px; }
+  .icon { width: 76px; height: 76px; margin: 22px auto 28px; border-radius: 20px; }
+  .icon img { width: 34px; height: 34px; }
+  .card h1 { font-size: 32px; line-height: 38px; }
+  .description { margin: 14px auto 24px; font-size: 17px; line-height: 26px; }
+  .benefits { border-radius: 14px; padding: 22px 18px; }
+  .benefits h2 { font-size: 18px; }
+  .benefits li { gap: 12px; font-size: 16px; line-height: 24px; }
+  .benefits li img { width: 24px; height: 24px; }
+  .cta { min-height: 58px; margin-top: 24px; border-radius: 12px; font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) { .cta { transition: none; } }

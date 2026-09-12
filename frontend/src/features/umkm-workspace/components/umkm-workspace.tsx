@@ -18,6 +18,7 @@ import { UmkmWorkspaceSummary } from "../types/umkm-workspace.types";
 import { UmkmWorkspaceSummaryView } from "./umkm-workspace-summary";
 import { OwnedMerchantList } from "./owned-merchant-list";
 import { SubmissionSummary } from "./submission-summary";
+import { UmkmEmptyState } from "./umkm-empty-state";
 import { UmkmIntelligenceDashboard } from "@/src/features/umkm-intelligence";
 
 export function UmkmWorkspace() {
@@ -101,6 +102,13 @@ export function UmkmWorkspace() {
   }
 
   const hasVerifiedMerchant = (summary?.owned_merchants.length ?? 0) > 0;
+  const hasPendingBusinessFlow =
+    (summary?.recent_submissions.length ?? 0) > 0 ||
+    (summary?.recent_claims.length ?? 0) > 0;
+
+  if (summary && !hasVerifiedMerchant && !hasPendingBusinessFlow) {
+    return <UmkmEmptyState />;
+  }
 
   return (
     <div className="mx-auto max-w-6xl space-y-7 py-2 sm:py-4">
