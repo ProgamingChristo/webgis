@@ -40,35 +40,37 @@ export function CommunityNavigation({
   activeView,
   onChangeView,
 }: CommunityNavigationProps) {
+  const activeLabel = communityNavigationItems.find(
+    (item) => item.status === "available" && item.value === activeView,
+  )?.label;
+
   return (
-    <nav
-      aria-label="Navigasi komunitas"
-      className={styles.navigation}
-    >
-      {communityNavigationItems.map((item) =>
-        item.status === "available" ? (
-          <button
-            aria-current={activeView === item.value ? "page" : undefined}
-            className={`${styles.navItem} ${
-              activeView === item.value ? styles.navItemActive : ""
-            }`}
-            key={item.label}
-            onClick={() => onChangeView(item.value)}
-            type="button"
-          >
-            {item.label}
-          </button>
-        ) : (
-          <button
-            className={styles.navItem}
-            disabled
-            key={item.label}
-            type="button"
-          >
-            {item.label}
-          </button>
-        ),
-      )}
-    </nav>
+    <details className={styles.navigationDisclosure} open={activeView !== "home" || undefined}>
+      <summary>
+        <span>Jelajah komunitas</span>
+        {activeView !== "home" ? <strong>{activeLabel}</strong> : null}
+      </summary>
+      <nav aria-label="Navigasi komunitas" className={styles.navigation}>
+        {communityNavigationItems.map((item) =>
+          item.status === "available" ? (
+            <button
+              aria-current={activeView === item.value ? "page" : undefined}
+              className={`${styles.navItem} ${
+                activeView === item.value ? styles.navItemActive : ""
+              }`}
+              key={item.label}
+              onClick={() => onChangeView(item.value)}
+              type="button"
+            >
+              {item.label}
+            </button>
+          ) : (
+            <button className={styles.navItem} disabled key={item.label} type="button">
+              {item.label}
+            </button>
+          ),
+        )}
+      </nav>
+    </details>
   );
 }

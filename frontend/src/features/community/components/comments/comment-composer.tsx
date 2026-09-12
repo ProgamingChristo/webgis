@@ -5,6 +5,7 @@ import { useState } from "react";
 import styles from "../community.module.css";
 
 type CommentComposerProps = {
+  compact?: boolean;
   error: string | null;
   replyTargetName?: string | null;
   submitting: boolean;
@@ -13,6 +14,7 @@ type CommentComposerProps = {
 };
 
 export function CommentComposer({
+  compact = false,
   error,
   replyTargetName = null,
   submitting,
@@ -31,7 +33,7 @@ export function CommentComposer({
   }
 
   return (
-    <form className={styles.commentComposer} onSubmit={handleSubmit}>
+    <form className={`${styles.commentComposer} ${compact ? styles.commentComposerCompact : ""}`} onSubmit={handleSubmit}>
       {replyTargetName ? (
         <div className={styles.replyContext}>
           <span>Membalas {replyTargetName}</span>
@@ -51,7 +53,7 @@ export function CommentComposer({
         id="community-comment"
         maxLength={500}
         onChange={(event) => setContent(event.target.value)}
-        placeholder="Tulis balasan..."
+        placeholder={compact ? "Balas postingan..." : "Tulis balasan..."}
         value={content}
       />
       {error ? <p className={styles.formError}>{error}</p> : null}

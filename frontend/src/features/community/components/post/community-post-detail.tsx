@@ -88,6 +88,7 @@ export function CommunityPostDetail({ postId }: CommunityPostDetailProps) {
           <span className={styles.eyebrow}>Diskusi Komunitas</span>
         </div>
         <PostCard
+          discussionMode="link"
           pendingReaction={detail.pendingReaction}
           post={detail.post}
           onToggleReaction={(_, reactionType) =>

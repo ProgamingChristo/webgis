@@ -2162,3 +2162,470 @@
 .notificationMenu[data-variant="light"] .notificationPanel { border-color: #e2e8f0; background: #fff; color: #0f172a; box-shadow: 0 16px 40px rgba(15, 23, 42, .14); }
 .notificationMenu[data-variant="light"] .notificationItem { border-color: #e2e8f0; background: #fff; color: #334155; }
 .notificationMenu[data-variant="light"] .notificationItemUnread { background: #f0f9ff; }
+
+/* Owner Figma alignment: compact, flat social feed. */
+.navigationDisclosure {
+  margin: 0 0 10px;
+  border-bottom: 1px solid #edf1f5;
+  color: #7b859b;
+}
+
+.navigationDisclosure > summary {
+  width: fit-content;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  border-radius: 6px;
+  padding: 0 4px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.navigationDisclosure > summary::-webkit-details-marker { display: none; }
+.navigationDisclosure > summary::after { content: "+"; color: #0b91b3; font-size: 15px; }
+.navigationDisclosure[open] > summary::after { content: "-"; }
+.navigationDisclosure > summary strong { color: #0b91b3; font-size: 10px; font-weight: 700; }
+.navigationDisclosure > summary:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+
+.navigationDisclosure .navigation {
+  display: flex;
+  margin: 0;
+  gap: 4px;
+  border: 0;
+  padding: 5px 0 10px;
+  background: transparent;
+  overflow-x: auto;
+}
+
+.navigationDisclosure .navItem {
+  min-height: 32px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 9px;
+  background: transparent;
+  color: #778198;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.navigationDisclosure .navItemActive {
+  background: #eaf8fb;
+  color: #087f9d;
+}
+
+:global(.getra-app-shell--community) .content {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+:global(.getra-app-shell--community) .composer {
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  margin: 0;
+  border: 1px solid #e0e7ee;
+  border-radius: 11px;
+  padding: 12px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+:global(.getra-app-shell--community) .avatar {
+  width: 34px;
+  height: 34px;
+  border-color: #c9edf4;
+  background: #e9f9fb;
+  color: #0784a4;
+  font-size: 10px;
+}
+
+:global(.getra-app-shell--community) .composer textarea {
+  min-height: 34px;
+  margin: 0;
+  resize: vertical;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 6px;
+  background: #ffffff;
+  color: #303854;
+  font-size: 12px;
+  line-height: 1.45;
+  box-shadow: none;
+}
+
+:global(.getra-app-shell--community) .composer textarea:focus {
+  border: 0;
+  background: #ffffff;
+  outline: 2px solid rgba(8, 145, 178, 0.16);
+  box-shadow: none;
+}
+
+:global(.getra-app-shell--community) .composerModeRow {
+  margin: 0 0 6px;
+}
+
+:global(.getra-app-shell--community) .segmentedControl {
+  border-color: #e5eaf0;
+  border-radius: 7px;
+  padding: 2px;
+  background: #f7f9fb;
+}
+
+:global(.getra-app-shell--community) .segmentedButton,
+:global(.getra-app-shell--community) .segmentedButtonActive {
+  min-height: 29px;
+  border-radius: 5px;
+  padding-inline: 9px;
+  font-size: 10px;
+}
+
+:global(.getra-app-shell--community) .composerActions {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+  border-top: 1px solid #edf1f5;
+  padding-top: 7px;
+}
+
+:global(.getra-app-shell--community) .composerToolGroup {
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 5px;
+}
+
+:global(.getra-app-shell--community) .composer .secondaryButton {
+  min-height: 29px;
+  border-color: #e4e9ef;
+  border-radius: 7px;
+  padding: 0 8px;
+  background: #ffffff;
+  color: #657089;
+  font-size: 10px;
+}
+
+:global(.getra-app-shell--community) .composer .primaryButton {
+  min-height: 31px;
+  flex: 0 0 auto;
+  border-color: #0796b7;
+  border-radius: 999px;
+  padding: 0 16px;
+  background: #0796b7;
+  font-size: 10px;
+  box-shadow: none;
+}
+
+:global(.getra-app-shell--community) .counter,
+:global(.getra-app-shell--community) .counterDanger {
+  flex: 0 0 auto;
+  font-size: 9px;
+}
+
+.photoMenu { position: relative; }
+.photoMenuPanel {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 5px);
+  z-index: 20;
+  width: 132px;
+  display: grid;
+  gap: 2px;
+  border: 1px solid #e1e7ed;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 4px;
+  box-shadow: 0 10px 28px rgba(42, 52, 76, 0.12);
+}
+
+.photoMenuPanel button {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 9px;
+  background: transparent;
+  color: #4c5670;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.photoMenuPanel button:hover,
+.photoMenuPanel button:focus-visible { background: #eef9fb; color: #087f9d; outline: none; }
+
+:global(.getra-app-shell--community) .feedTabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 10px;
+  border-bottom: 1px solid #e7ecf1;
+  background: transparent;
+}
+
+:global(.getra-app-shell--community) .feedTabs button {
+  min-height: 40px;
+  border: 0;
+  border-bottom: 1.5px solid transparent;
+  background: transparent;
+  color: #a2aabd;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+:global(.getra-app-shell--community) .feedTabs button[aria-selected="true"] {
+  border-bottom-color: #3e456c;
+  color: #3e456c;
+}
+
+:global(.getra-app-shell--community) .feed {
+  display: grid;
+  gap: 0;
+}
+
+:global(.getra-app-shell--community) .postCard {
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid #edf1f5;
+  border-radius: 0;
+  padding: 15px 4px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+:global(.getra-app-shell--community) .postHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+:global(.getra-app-shell--community) .postHeader > div:first-child {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+:global(.getra-app-shell--community) .authorProfileLink {
+  color: #3d4564;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+:global(.getra-app-shell--community) .postHeader time {
+  color: #a3abbc;
+  font-size: 9px;
+}
+
+:global(.getra-app-shell--community) .categoryBadge {
+  min-height: 18px;
+  margin: 0;
+  border-color: #c9edf4;
+  padding: 0 6px;
+  background: #effafb;
+  color: #12809a;
+  font-size: 8px;
+  text-transform: none;
+}
+
+:global(.getra-app-shell--community) .postContent {
+  margin: 7px 0 0;
+  color: #414962;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+:global(.getra-app-shell--community) .postPhoto {
+  max-height: 360px;
+  margin-top: 9px;
+  border-radius: 8px;
+}
+
+:global(.getra-app-shell--community) .postLocation {
+  width: fit-content;
+  display: inline-flex;
+  margin-top: 8px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  background: transparent;
+}
+
+:global(.getra-app-shell--community) .postLocation .locationLinkButton {
+  min-height: 23px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #c7edf4;
+  border-radius: 999px;
+  padding: 0 8px;
+  background: #effafb;
+  color: #16819a;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+:global(.getra-app-shell--community) .reactionBar {
+  gap: 3px;
+  margin-top: 8px;
+}
+
+:global(.getra-app-shell--community) .reactionButton,
+:global(.getra-app-shell--community) .reactionButtonActive {
+  min-width: 34px;
+  min-height: 30px;
+  justify-content: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 7px;
+  background: transparent;
+  color: #8e98ad;
+  font-size: 9px;
+}
+
+:global(.getra-app-shell--community) .reactionButton:hover:not(:disabled),
+:global(.getra-app-shell--community) .reactionButtonActive {
+  border: 0;
+  background: #eef9fb;
+  color: #0784a4;
+}
+
+:global(.getra-app-shell--community) .reactionButton strong,
+:global(.getra-app-shell--community) .reactionButtonActive strong {
+  color: currentColor;
+  font-size: 9px;
+}
+
+.postActionsMenu { position: relative; flex: 0 0 auto; }
+.postActionsMenu > summary {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  list-style: none;
+  border-radius: 6px;
+  color: #9ca5b7;
+  cursor: pointer;
+}
+.postActionsMenu > summary::-webkit-details-marker { display: none; }
+.postActionsMenu > summary:hover,
+.postActionsMenu > summary:focus-visible { background: #f3f6f8; color: #59627a; outline: none; }
+.postActionsPanel {
+  position: absolute;
+  top: calc(100% + 3px);
+  right: 0;
+  z-index: 25;
+  min-width: 132px;
+  display: grid;
+  gap: 2px;
+  border: 1px solid #e1e7ed;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 4px;
+  box-shadow: 0 10px 28px rgba(42, 52, 76, 0.12);
+}
+.postActionsPanel .reportAction,
+.postActionsPanel .postDelete { display: block; width: 100%; }
+.postActionsPanel .reportButton,
+.postActionsPanel .deleteTrigger { width: 100%; min-height: 34px; justify-content: flex-start; padding: 0 9px; font-size: 10px; }
+
+.inlineDiscussion {
+  margin-top: 9px;
+  border-top: 1px solid #edf1f5;
+  padding-top: 4px;
+}
+
+.inlineDiscussionState {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 0;
+  color: #8b95a8;
+  font-size: 10px;
+}
+
+.inlineDiscussionState button { border: 0; background: transparent; color: #0784a4; font-size: 10px; cursor: pointer; }
+.inlineDiscussion .commentThread,
+.inlineDiscussion .commentList { display: grid; }
+.inlineDiscussion .commentItem {
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 8px;
+  border-bottom: 0;
+  padding: 9px 0;
+}
+.inlineDiscussion .commentItem .avatar { width: 28px; height: 28px; font-size: 8px; }
+.inlineDiscussion .commentDepth1 { margin-left: 20px; border-left-width: 1px; }
+.inlineDiscussion .commentDepth2 { margin-left: 36px; border-left-width: 1px; }
+.inlineDiscussion .commentHeader { justify-content: flex-start; gap: 6px; font-size: 8px; }
+.inlineDiscussion .commentContent { margin-top: 3px; font-size: 10px; line-height: 1.5; }
+.inlineDiscussion .commentActions { margin-top: 3px; }
+.inlineDiscussion .reportButton,
+.inlineDiscussion .locationLinkButton { min-height: 26px; padding: 0 5px; font-size: 9px; }
+
+.commentComposerCompact {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  border: 0;
+  padding: 8px 0 0;
+}
+.commentComposerCompact .textareaLabel,
+.commentComposerCompact .counter,
+.commentComposerCompact .counterDanger,
+.commentComposerCompact .composerActions > span { display: none; }
+.commentComposerCompact .replyContext,
+.commentComposerCompact .formError { grid-column: 1 / -1; }
+.commentComposerCompact textarea {
+  min-height: 32px;
+  resize: none;
+  border-color: #e6ebf0;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: #f5f7fa;
+  font-size: 10px;
+}
+.commentComposerCompact .composerActions { display: contents; }
+.commentComposerCompact .primaryButton {
+  min-height: 32px;
+  align-self: end;
+  border: 0;
+  padding: 0 8px;
+  background: transparent;
+  color: #0784a4;
+  font-size: 9px;
+  box-shadow: none;
+}
+
+@media (max-width: 760px) {
+  :global(.getra-app-shell--community) .composer,
+  :global(.getra-app-shell--community) .postCard {
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 8px;
+    padding: 12px 2px;
+  }
+
+  :global(.getra-app-shell--community) .composer {
+    border-radius: 10px;
+    padding-inline: 10px;
+  }
+
+  :global(.getra-app-shell--community) .avatar { width: 32px; height: 32px; }
+  :global(.getra-app-shell--community) .composerActions { align-items: flex-end; }
+  :global(.getra-app-shell--community) .composerToolGroup { gap: 3px; }
+  :global(.getra-app-shell--community) .composer .secondaryButton { min-width: auto; min-height: 36px; padding-inline: 7px; }
+  :global(.getra-app-shell--community) .composer .primaryButton { min-height: 36px; }
+  :global(.getra-app-shell--community) .feedTabs button { min-height: 42px; }
+  :global(.getra-app-shell--community) .reactionButton,
+  :global(.getra-app-shell--community) .reactionButtonActive { min-width: 38px; min-height: 36px; }
+  .postActionsMenu > summary { width: 36px; height: 36px; }
+  .navigationDisclosure .navigation { padding-bottom: 8px; }
+  .postActionsPanel { right: -2px; }
+}

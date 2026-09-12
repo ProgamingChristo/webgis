@@ -23,8 +23,8 @@ export function CommunityShell({
 }: CommunityShellProps) {
   return (
     <GetraAppShell
-      description="Berbagi temuan, kondisi sekitar, dan informasi berbasis lokasi bersama komunitas."
-      eyebrow="GETRA"
+      description="Cerita dan info dari sekitar Jakarta."
+      eyebrow=""
       title="Komunitas"
       tone="community"
       utilities={<CommunityNotificationsMenu variant="light" />}

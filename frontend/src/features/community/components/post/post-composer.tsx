@@ -236,7 +236,7 @@ export function PostComposer({
           onFocus={() => setExpanded(true)}
           placeholder="Bagikan sesuatu di sekitar kamu..."
           ref={textareaRef}
-          rows={expanded ? 4 : 2}
+          rows={expanded ? 3 : 1}
           value={content}
         />
 
@@ -309,9 +309,11 @@ export function PostComposer({
               disabled={submitting}
               onSelect={selectPhoto}
             />
-            <button className={styles.secondaryButton} onClick={() => setExpanded((current) => !current)} type="button">
-              {expanded ? "Lebih ringkas" : "Opsi"}
-            </button>
+            {expanded ? (
+              <button className={styles.secondaryButton} onClick={() => setExpanded(false)} type="button">
+                Ringkas
+              </button>
+            ) : null}
           </div>
           {expanded || content.length ? <span
             className={

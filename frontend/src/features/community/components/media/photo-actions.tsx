@@ -2,7 +2,7 @@
 
 import { Camera, ImagePlus } from "lucide-react";
 import type { ChangeEvent } from "react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import { COMMUNITY_PHOTO_ACCEPT } from "../../constants/community.constants";
 import styles from "../community.module.css";
@@ -18,6 +18,7 @@ export function PhotoActions({
 }: PhotoActionsProps) {
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const [open, setOpen] = useState(false);
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -30,35 +31,30 @@ export function PhotoActions({
   }
 
   return (
-    <>
+    <div className={styles.photoMenu}>
       <button
-        aria-label="Ambil foto"
+        aria-expanded={open}
+        aria-label="Tambahkan foto"
         className={styles.secondaryButton}
         disabled={disabled}
-        onClick={() => cameraInputRef.current?.click()}
+        onClick={() => setOpen((current) => !current)}
         type="button"
       >
-        <Camera aria-hidden="true" size={15} />
-        Kamera
+        <ImagePlus aria-hidden="true" size={14} />
+        Foto
       </button>
-      <input
-        accept={COMMUNITY_PHOTO_ACCEPT}
-        capture="environment"
-        className={styles.hiddenFileInput}
-        onChange={handleChange}
-        ref={cameraInputRef}
-        type="file"
-      />
-      <button
-        aria-label="Pilih foto dari galeri"
-        className={styles.secondaryButton}
-        disabled={disabled}
-        onClick={() => galleryInputRef.current?.click()}
-        type="button"
-      >
-        <ImagePlus aria-hidden="true" size={15} />
-        Galeri
-      </button>
+      {open ? (
+        <div className={styles.photoMenuPanel} role="menu">
+          <button onClick={() => { setOpen(false); cameraInputRef.current?.click(); }} role="menuitem" type="button">
+            <Camera aria-hidden="true" size={15} />Kamera
+          </button>
+          <button onClick={() => { setOpen(false); galleryInputRef.current?.click(); }} role="menuitem" type="button">
+            <ImagePlus aria-hidden="true" size={15} />Galeri
+          </button>
+        </div>
+      ) : null}
+      <input accept={COMMUNITY_PHOTO_ACCEPT} capture="environment" className={styles.hiddenFileInput}
+        onChange={handleChange} ref={cameraInputRef} type="file" />
       <input
         accept={COMMUNITY_PHOTO_ACCEPT}
         className={styles.hiddenFileInput}
@@ -66,6 +62,6 @@ export function PhotoActions({
         ref={galleryInputRef}
         type="file"
       />
-    </>
+    </div>
   );
 }

@@ -89,18 +89,18 @@ describe("Community feature UI", () => {
     );
 
     expect(html).toContain(">Komunitas</h1>");
-    expect(html).toContain("Berbagi temuan, kondisi sekitar, dan informasi berbasis lokasi bersama komunitas.");
+    expect(html).toContain("Cerita dan info dari sekitar Jakarta.");
+    expect(html).toContain("Jelajah komunitas");
     expect(html).toContain("Beranda");
     expect(html).toContain("Temuan Komuter");
     expect(html).toContain("Bagikan sesuatu di sekitar kamu...");
-    expect(html).toContain("Opsi");
     expect(html).toContain("Tambahkan Lokasi");
-    expect(html).toContain("Kamera");
-    expect(html).toContain("Galeri");
+    expect(html).toContain("Foto");
     expect(html).toContain("Posting");
     expect(html).toContain("Nemunya warung murah 🍜🔥 Mantap 👍");
     expect(html).toContain("Sekitar lokasi ini");
-    expect(html).toContain("Lihat di peta");
+    expect(html).toContain("Lihat -6.175 / 106.827 di peta");
+    expect(html).toContain("Buka tindakan postingan");
   });
 
   it("renders selected photo preview and signed feed photo", () => {

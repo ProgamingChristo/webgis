@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { MapPin } from "lucide-react";
+import { useState } from "react";
 
 import type { CommunityFeedItem } from "../../types/community.types";
 import type { CommunityReactionType } from "../../types/community.types";
@@ -12,10 +14,10 @@ import {
 } from "../../utils/community-format";
 import { CommunityAvatar } from "../common/community-avatar";
 import { PostPhoto } from "../media/post-photo";
-import { ReportButton } from "../moderation/report-button";
 import styles from "../community.module.css";
 import { ReactionBar } from "./reaction-bar";
-import { PostDeleteAction } from "./post-delete-action";
+import { PostActionsMenu } from "./post-actions-menu";
+import { PostInlineDiscussion } from "./post-inline-discussion";
 
 type PostCardProps = {
   post: CommunityFeedItem;
@@ -26,6 +28,7 @@ type PostCardProps = {
   deleting?: boolean;
   moderationDelete?: boolean;
   onDelete?(postId: string): Promise<boolean>;
+  discussionMode?: "inline" | "link";
 };
 
 export function PostCard({
@@ -37,7 +40,10 @@ export function PostCard({
   deleting = false,
   moderationDelete = false,
   onDelete,
+  discussionMode = "inline",
 }: PostCardProps) {
+  const [discussionOpen, setDiscussionOpen] = useState(false);
+
   return (
     <article className={styles.postCard}>
       <CommunityAvatar
@@ -58,13 +64,16 @@ export function PostCard({
                 {formatCommunityFindingCategory(post.category)}
               </span>
             ) : null}
-          </div>
-          <div className={styles.postHeaderActions}>
             <time dateTime={post.createdAt}>{formatCommunityTime(post.createdAt)}</time>
-            <ReportButton targetId={post.id} targetType="POST" />
-            {canDelete && onDelete ? <PostDeleteAction authorName={post.author.displayName} deleting={deleting} moderation={moderationDelete}
-              onDelete={() => onDelete(post.id)} /> : null}
           </div>
+          <PostActionsMenu
+            authorName={post.author.displayName}
+            canDelete={canDelete}
+            deleting={deleting}
+            moderationDelete={moderationDelete}
+            onDelete={onDelete ? () => onDelete(post.id) : undefined}
+            postId={post.id}
+          />
         </header>
         <Link className={styles.postLink} href={`/community/${post.id}`}>
           <p className={styles.postContent}>{post.content}</p>
@@ -74,28 +83,14 @@ export function PostCard({
         ) : null}
         {post.location ? (
           <div className={styles.postLocation}>
-            <strong>
-              {post.location.visibility === "EXACT"
-                ? formatExactLocationCoordinate(
-                    post.location.latitude,
-                    post.location.longitude,
-                  )
-                : "Sekitar lokasi ini"}
-            </strong>
-            {post.location.visibility === "APPROXIMATE" ? (
-              <span>
-                {formatLocationCoordinate(
-                  post.location.latitude,
-                  post.location.longitude,
-                )}
-              </span>
-            ) : null}
             <button
+              aria-label={`Lihat ${post.location.visibility === "EXACT" ? formatExactLocationCoordinate(post.location.latitude, post.location.longitude) : formatLocationCoordinate(post.location.latitude, post.location.longitude)} di peta`}
               className={styles.locationLinkButton}
               onClick={() => onViewLocation(post.location!)}
               type="button"
             >
-              Lihat di peta
+              <MapPin aria-hidden="true" size={11} />
+              {post.location.visibility === "EXACT" ? "Lokasi presisi" : "Sekitar lokasi ini"}
             </button>
           </div>
         ) : null}
@@ -103,11 +98,16 @@ export function PostCard({
           pendingReaction={pendingReaction}
           reactions={post.reactions}
           replyCount={post.replyCount}
-          threadHref={`/community/${post.id}`}
+          threadHref={discussionMode === "link" ? `/community/${post.id}` : undefined}
+          onOpenThread={() => setDiscussionOpen((open) => !open)}
+          threadOpen={discussionOpen}
           onToggleReaction={(reactionType) =>
             onToggleReaction?.(post.id, reactionType)
           }
         />
+        {discussionMode === "inline" && discussionOpen ? (
+          <PostInlineDiscussion postId={post.id} />
+        ) : null}
       </div>
     </article>
   );

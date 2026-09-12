@@ -40,6 +40,7 @@ type ReactionBarProps = {
   threadHref?: string;
   onToggleReaction?(reactionType: CommunityReactionType): void;
   onOpenThread?(): void;
+  threadOpen?: boolean;
 };
 
 export function ReactionBar({
@@ -49,11 +50,12 @@ export function ReactionBar({
   threadHref,
   onToggleReaction,
   onOpenThread,
+  threadOpen = false,
 }: ReactionBarProps) {
   const replyContent = (
     <>
-      <MessageCircle aria-hidden="true" size={15} />
-      <span>Balasan</span>
+      <MessageCircle aria-hidden="true" size={14} />
+      <span className={styles.visuallyHidden}>Balasan</span>
       <strong>{replyCount}</strong>
     </>
   );
@@ -66,27 +68,32 @@ export function ReactionBar({
 
         return (
           <button
+            aria-label={`${label}: ${reactions[countKey]}`}
             aria-pressed={active}
             className={active ? styles.reactionButtonActive : styles.reactionButton}
             disabled={pending}
             key={type}
             onClick={() => onToggleReaction?.(type)}
+            title={label}
             type="button"
           >
-            <Icon aria-hidden="true" size={15} />
-            <span>{label}</span>
+            <Icon aria-hidden="true" size={14} />
+            <span className={styles.visuallyHidden}>{label}</span>
             <strong>{reactions[countKey]}</strong>
           </button>
         );
       })}
       {threadHref ? (
-        <Link className={styles.reactionButton} href={threadHref}>
+        <Link aria-label={`Balasan: ${replyCount}`} className={styles.reactionButton} href={threadHref} title="Balasan">
           {replyContent}
         </Link>
       ) : (
         <button
+          aria-label={`Balasan: ${replyCount}`}
+          aria-expanded={threadOpen}
           className={styles.reactionButton}
           onClick={onOpenThread}
+          title="Balasan"
           type="button"
         >
           {replyContent}

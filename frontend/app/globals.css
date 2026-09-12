@@ -4171,6 +4171,134 @@ select:focus-visible {
   }
 }
 
+/* Community follows the owner's compact social-feed reference without changing other product shells. */
+body:has(.getra-app-shell--community) {
+  background: #ffffff;
+}
+
+.getra-app-shell--community {
+  background: #ffffff;
+}
+
+.getra-app-shell--community > .getra-global-header {
+  min-height: 52px;
+  border-bottom-color: #e7edf3;
+  background: #ffffff;
+  padding-block: 5px;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.getra-app-shell--community .getra-global-header__brand img {
+  height: 36px;
+}
+
+.getra-app-shell--community .getra-global-header .getra-app-logo__copy strong,
+.getra-app-shell--community .account-menu__identity strong {
+  color: #31385f;
+}
+
+.getra-app-shell--community .getra-global-header .getra-app-logo__copy small,
+.getra-app-shell--community .account-menu__identity small,
+.getra-app-shell--community .account-menu__identity em {
+  color: #78839d;
+}
+
+.getra-app-shell--community .getra-global-nav__item {
+  min-height: 32px;
+  border-radius: 6px;
+  padding-inline: 9px;
+  color: #66708d;
+  font-size: 11px;
+}
+
+.getra-app-shell--community .getra-global-nav__item:hover,
+.getra-app-shell--community .getra-global-nav__item--active {
+  border-color: transparent;
+  background: #e8f7fa;
+  color: #0784a4;
+}
+
+.getra-app-shell--community .getra-utility-menu {
+  display: none;
+}
+
+.getra-app-shell--community .account-menu__trigger {
+  min-height: 38px;
+  border-color: #e3e9ef;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #39415f;
+  box-shadow: none;
+}
+
+.getra-app-shell--community .account-menu__panel {
+  border-color: #e3e9ef;
+  background: #ffffff;
+  color: #39415f;
+}
+
+.getra-app-shell--community .getra-app-main {
+  width: min(680px, calc(100% - 32px));
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 26px 0 72px;
+}
+
+.getra-app-shell--community .getra-app-page-header {
+  display: block;
+  margin: 0 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+
+.getra-app-shell--community .getra-app-page-header span {
+  display: none;
+}
+
+.getra-app-shell--community .getra-app-page-header h1 {
+  margin: 0;
+  color: #3e456c;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.getra-app-shell--community .getra-app-page-header p {
+  margin: 4px 0 0;
+  color: #98a2b5;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.getra-app-shell--community .getra-app-content {
+  margin-top: 0;
+}
+
+@media (max-width: 760px) {
+  .getra-app-shell--community > .getra-global-header {
+    min-height: 52px;
+    padding-inline: 10px;
+  }
+
+  .getra-app-shell--community .getra-app-main {
+    width: min(100% - 24px, 680px);
+    padding-top: 20px;
+  }
+
+  .getra-app-shell--community .getra-app-page-header {
+    margin-bottom: 12px;
+    padding: 0;
+  }
+
+  .getra-app-shell--community .getra-app-page-header h1 {
+    font-size: 21px;
+  }
+}
+
 /* Compact map workspace header. Main navigation stays primary; product mode sits below it. */
 .workspace--figma > .getra-global-header {
   top: 0;
