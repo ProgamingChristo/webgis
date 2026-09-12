@@ -17,11 +17,23 @@ export type PlaceResolution =
   | { status: "AMBIGUOUS"; candidates: string[] }
   | { status: "NOT_FOUND" };
 
+const MERCHANT_FALLBACK_STOP_WORDS = new Set([
+  "tempat",
+  "lokasi",
+  "tujuan",
+  "alamat",
+  "ke",
+  "menuju",
+  "di",
+  "yang",
+]);
+
 export async function resolveGetraPlace(
   query: string,
   transportNodes: TransportNodeDto[],
 ): Promise<PlaceResolution> {
-  const normalized = normalizePlaceText(query);
+  const cleanedQuery = cleanPlaceQuery(query);
+  const normalized = normalizePlaceText(cleanedQuery);
   if (normalized.length < 2) return { status: "NOT_FOUND" };
 
   const transportMatches = transportNodes
@@ -50,7 +62,7 @@ export async function resolveGetraPlace(
 
   const remoteTransport = await getraApiGet<PaginatedEnvelope<TransportNodeDto>>(
     "/api/v1/transport/nodes",
-    { query: { q: query, limit: 5, page: 1 } },
+    { query: { q: cleanedQuery, limit: 5, page: 1 } },
   );
   const remoteTransportMatches = remoteTransport.items
     .filter((node) => node.geometry?.type === "Point")
@@ -74,44 +86,90 @@ export async function resolveGetraPlace(
     };
   }
 
-  const merchantLayer = await mapidLayerService.searchCanonicalMerchants(query, { limit: 4 });
-  const candidates = merchantLayer.merchants;
-  if (candidates.length === 0) {
-    const geocoded = await getraApiGet<{
-      data: { candidates: Array<{ id: string; label: string; latitude: number; longitude: number }> };
-    }>("/api/places/resolve", { query: { q: query } });
-    const placeCandidates = geocoded.data.candidates;
-    if (placeCandidates.length === 0) return { status: "NOT_FOUND" };
-    if (placeCandidates.length > 1) {
-      return { status: "AMBIGUOUS", candidates: placeCandidates.slice(0, 3).map((place) => place.label) };
+  const candidates = await searchMerchantCandidates(cleanedQuery, normalized);
+  const scoredMerchants = candidates
+    .map((merchant) => ({
+      merchant,
+      score: placeMatchScore(normalized, normalizePlaceText(merchant.name)),
+    }))
+    .filter((candidate) => candidate.score >= 0.5)
+    .sort((left, right) =>
+      right.score - left.score || left.merchant.name.localeCompare(right.merchant.name, "id"),
+    );
+
+  if (scoredMerchants.length > 0) {
+    const top = scoredMerchants[0];
+    const similarlyNamed = scoredMerchants.filter((candidate) =>
+      candidate.score >= top.score - 0.03,
+    );
+    if (similarlyNamed.length > 1 && top.score < 0.98) {
+      return {
+        status: "AMBIGUOUS",
+        candidates: similarlyNamed.slice(0, 3).map((candidate) => candidate.merchant.name),
+      };
     }
-    const place = placeCandidates[0];
     return {
       status: "RESOLVED",
       place: {
-        id: place.id,
-        label: place.label,
-        coordinate: { latitude: place.latitude, longitude: place.longitude },
+        id: top.merchant.id,
+        label: top.merchant.name,
+        coordinate: { latitude: top.merchant.latitude, longitude: top.merchant.longitude },
+        merchant: top.merchant,
       },
     };
   }
-  const top = candidates[0];
-  const topScore = placeMatchScore(normalized, normalizePlaceText(top.name));
-  const similarlyNamed = candidates.filter((merchant) =>
-    placeMatchScore(normalized, normalizePlaceText(merchant.name)) >= topScore - 0.03,
-  );
-  if (similarlyNamed.length > 1 && topScore < 0.98) {
-    return { status: "AMBIGUOUS", candidates: similarlyNamed.slice(0, 3).map((merchant) => merchant.name) };
+
+  const geocoded = await getraApiGet<{
+    data: { candidates: Array<{ id: string; label: string; latitude: number; longitude: number }> };
+  }>("/api/places/resolve", { query: { q: cleanedQuery } });
+  const placeCandidates = geocoded.data.candidates;
+  if (placeCandidates.length === 0) return { status: "NOT_FOUND" };
+  if (placeCandidates.length > 1) {
+    return { status: "AMBIGUOUS", candidates: placeCandidates.slice(0, 3).map((place) => place.label) };
   }
+  const place = placeCandidates[0];
   return {
     status: "RESOLVED",
     place: {
-      id: top.id,
-      label: top.name,
-      coordinate: { latitude: top.latitude, longitude: top.longitude },
-      merchant: top,
+      id: place.id,
+      label: place.label,
+      coordinate: { latitude: place.latitude, longitude: place.longitude },
     },
   };
+}
+
+async function searchMerchantCandidates(
+  query: string,
+  normalizedQuery: string,
+): Promise<Merchant[]> {
+  const primary = await mapidLayerService.searchCanonicalMerchants(query, { limit: 6 });
+  if (primary.merchants.length > 0) return primary.merchants;
+
+  const fallbackQueries = [...new Set(
+    normalizedQuery
+      .split(" ")
+      .filter((token) => token.length >= 3 && !MERCHANT_FALLBACK_STOP_WORDS.has(token))
+      .reverse(),
+  )].slice(0, 2);
+
+  const byId = new Map<string, Merchant>();
+  for (const fallbackQuery of fallbackQueries) {
+    try {
+      const layer = await mapidLayerService.searchCanonicalMerchants(fallbackQuery, { limit: 8 });
+      for (const merchant of layer.merchants) byId.set(merchant.id, merchant);
+    } catch {
+      // A failed fallback token must not hide a later geocoding fallback.
+    }
+  }
+  return [...byId.values()];
+}
+
+export function cleanPlaceQuery(value: string): string {
+  let cleaned = value.trim().replace(/\s+/g, " ");
+  cleaned = cleaned.replace(/^(?:ke|menuju)\s+/iu, "");
+  cleaned = cleaned.replace(/^(?:tempat|lokasi|tujuan|alamat)\s+(?:bernama\s+)?/iu, "");
+  cleaned = cleaned.replace(/\s+(?:ya|dong|tolong)$/iu, "");
+  return cleaned.trim();
 }
 
 export function normalizePlaceText(value: string): string {

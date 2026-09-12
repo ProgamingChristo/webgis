@@ -32,10 +32,20 @@ describe("Tanya GETRA application actions", () => {
     })).toEqual({ type: "CHANGE_ROUTE_MODE", mode: "motorcycle" });
   });
 
-  it("keeps typo search as an application search action", () => {
+  it("extracts named origin and destination so the GETRA place resolver can execute the route", () => {
+    expect(determineApplicationAction(
+      "berikan saya rute dari Stasiun Gambir ke tempat Bakso Gachor",
+    )).toEqual({
+      type: "CALCULATE_ROUTE",
+      mode: "walking",
+      origin: { type: "PLACE_QUERY", query: "Stasiun Gambir" },
+      destination: { type: "PLACE_QUERY", query: "tempat Bakso Gachor" },
+    });
+  });
+
+  it("leaves merchant discovery to the structured search extractor", () => {
     expect(determineApplicationAction("cari basko dekat sini")).toEqual({
-      type: "APPLY_SEARCH_CRITERIA",
-      query: "basko",
+      type: "ANSWER_ONLY",
     });
   });
 

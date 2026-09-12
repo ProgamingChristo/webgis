@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Bell } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import { useAuth } from "@/src/components/providers/AuthProvider";
 import {
@@ -34,11 +35,13 @@ function labelNotification(notification: CommunityNotification): string {
 }
 
 export function CommunityNotificationsMenu() {
+  const pathname = usePathname();
   const { context } = useAuth();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<CommunityNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const lightHeader = pathname === "/app" || pathname.startsWith("/app/");
 
   const loadNotifications = useCallback(async () => {
     if (!context?.user.id) {
@@ -111,6 +114,12 @@ export function CommunityNotificationsMenu() {
         aria-label="Notifikasi komunitas"
         className={styles.notificationButton}
         onClick={() => setOpen((current) => !current)}
+        style={lightHeader ? {
+          background: "#ffffff",
+          borderColor: "#d7e3ea",
+          color: "#0f6f8c",
+          boxShadow: "0 1px 2px rgba(15, 23, 42, 0.06)",
+        } : undefined}
         type="button"
       >
         <Bell size={16} />
