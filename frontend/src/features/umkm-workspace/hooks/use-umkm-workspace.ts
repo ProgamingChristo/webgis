@@ -6,14 +6,14 @@ import type { UmkmWorkspaceSummary } from "../types/umkm-workspace.types";
 
 export function useUmkmWorkspace(userId: string | null) {
   const [result, setResult] = useState<{ userId: string; summary: UmkmWorkspaceSummary } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
   const sequence = useRef(0);
   const refresh = useCallback(() => setRevision((value) => value + 1), []);
   useEffect(() => {
-    const requestId = ++sequence.current;
     if (!userId) return;
+    const requestId = ++sequence.current;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
       setLoading(true);
@@ -34,5 +34,10 @@ export function useUmkmWorkspace(userId: string | null) {
     document.addEventListener("visibilitychange", onVisible);
     return () => { window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", onVisible); };
   }, [refresh]);
-  return { summary: result?.userId === userId ? result.summary : null, loading, error, refresh };
+  return {
+    summary: userId && result?.userId === userId ? result.summary : null,
+    loading: Boolean(userId) && loading,
+    error: userId ? error : null,
+    refresh,
+  };
 }

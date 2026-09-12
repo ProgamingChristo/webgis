@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Map as MapLibreMap, Marker } from "maplibre-gl";
-import { MapPin, Locate, AlertCircle } from "lucide-react";
+import { AlertCircle, Locate, MapPin } from "lucide-react";
 import { getBasemapOption, getPreferredBasemapId } from "@/lib/mapid";
 
 interface MerchantMapPickerProps {
-  initialCoordinates?: [number, number]; // [longitude, latitude]
+  initialCoordinates?: [number, number];
   onCoordinatesChange: (coordinates: [number, number]) => void;
 }
 
@@ -21,13 +21,23 @@ export function MerchantMapPicker({
   const markerRef = useRef<Marker | null>(null);
   const initialCoordinatesRef = useRef(initialCoordinates);
   const onCoordinatesChangeRef = useRef(onCoordinatesChange);
-  const [coords, setCoords] = useState<[number, number]>(initialCoordinates);
+  const displayCoords = initialCoordinates || DEFAULT_JAKARTA_COORDS;
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
 
   useEffect(() => {
     onCoordinatesChangeRef.current = onCoordinatesChange;
   }, [onCoordinatesChange]);
+
+  useEffect(() => {
+    if (!initialCoordinates) return;
+    if (markerRef.current) {
+      markerRef.current.setLngLat(initialCoordinates);
+    }
+    if (mapRef.current) {
+      mapRef.current.flyTo({ center: initialCoordinates, zoom: 16 });
+    }
+  }, [initialCoordinates]);
 
   useEffect(() => {
     let isMounted = true;
@@ -63,13 +73,13 @@ export function MerchantMapPicker({
           <div style="
             width: 32px;
             height: 32px;
-            background: #059669;
+            background: #0284c7;
             border: 3px solid #ffffff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
             color: white;
             cursor: grab;
           ">
@@ -90,7 +100,6 @@ export function MerchantMapPicker({
             parseFloat(lngLat.lng.toFixed(6)),
             parseFloat(lngLat.lat.toFixed(6)),
           ];
-          setCoords(newCoords);
           onCoordinatesChangeRef.current(newCoords);
         });
 
@@ -102,7 +111,6 @@ export function MerchantMapPicker({
           parseFloat(e.lngLat.lng.toFixed(6)),
           parseFloat(e.lngLat.lat.toFixed(6)),
         ];
-        setCoords(newCoords);
         onCoordinatesChangeRef.current(newCoords);
         if (markerRef.current) {
           markerRef.current.setLngLat(newCoords);
@@ -142,8 +150,7 @@ export function MerchantMapPicker({
           parseFloat(pos.coords.longitude.toFixed(6)),
           parseFloat(pos.coords.latitude.toFixed(6)),
         ];
-        setCoords(newCoords);
-        onCoordinatesChange(newCoords);
+        onCoordinatesChangeRef.current(newCoords);
         if (mapRef.current) {
           mapRef.current.flyTo({ center: newCoords, zoom: 16 });
         }
@@ -154,7 +161,11 @@ export function MerchantMapPicker({
       },
       (err) => {
         console.warn("[MerchantMapPicker] Geolocation error:", err);
-        setGeoError("Izin lokasi ditolak atau tidak tersedia. Silakan klik pada peta.");
+        setGeoError(
+          err.code === 1
+            ? "Izin lokasi diperlukan untuk menggunakan lokasi saat ini."
+            : "Lokasi tidak dapat diperoleh. Silakan klik langsung pada peta."
+        );
         setGeoLoading(false);
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -162,38 +173,38 @@ export function MerchantMapPicker({
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-          <MapPin size={14} className="text-emerald-400" />
+        <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+          <MapPin size={14} className="text-sky-600" />
           Titik Lokasi Usaha (Klik peta atau geser pin)
         </label>
         <button
           type="button"
           onClick={handleUseMyLocation}
           disabled={geoLoading}
-          className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] text-slate-300 font-medium transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 font-semibold shadow-sm transition-colors disabled:opacity-50"
         >
-          <Locate size={12} className={geoLoading ? "animate-spin" : ""} />
+          <Locate size={12} className={geoLoading ? "animate-spin text-sky-600" : "text-sky-600"} />
           {geoLoading ? "Mencari lokasi..." : "Gunakan Lokasi Saya"}
         </button>
       </div>
 
       {geoError ? (
-        <div className="p-2 rounded bg-amber-950/40 border border-amber-500/30 text-[11px] text-amber-300 flex items-center gap-1.5">
-          <AlertCircle size={13} className="shrink-0" />
+        <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center gap-2">
+          <AlertCircle size={14} className="shrink-0 text-amber-600" />
           <span>{geoError}</span>
         </div>
       ) : null}
 
-      <div className="relative w-full h-64 rounded-xl overflow-hidden border border-slate-700/80 bg-slate-950 shadow-inner">
+      <div className="relative w-full h-64 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm">
         <div ref={containerRef} className="w-full h-full" />
       </div>
 
-      <div className="flex flex-col gap-1 rounded-lg border border-slate-800 bg-slate-950/60 p-2 text-[11px] leading-5 text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-        <span>Koordinat Terpilih:</span>
-        <span className="font-mono text-slate-200 font-medium">
-          Lng: {coords[0].toFixed(6)}, Lat: {coords[1].toFixed(6)}
+      <div className="flex flex-col gap-1 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+        <span className="font-medium">Koordinat Terpilih:</span>
+        <span className="font-mono text-slate-900 font-semibold">
+          Lng: {displayCoords[0].toFixed(6)}, Lat: {displayCoords[1].toFixed(6)}
         </span>
       </div>
     </div>

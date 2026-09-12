@@ -45,4 +45,45 @@ describe("server-side place geocoding", () => {
 
     await expect(searchGeocodedPlaces("unresolvable place")).resolves.toEqual([]);
   });
+
+  it("reverse geocodes coordinates to a clean Indonesian address", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      display_name: "Jalan Senopati No. 41, RT.8/RW.2, Selong, Kebayoran Baru, Jakarta Selatan, Daerah Khusus Ibukota Jakarta, 12110, Indonesia",
+      lat: "-6.2345000",
+      lon: "106.8123000",
+      address: {
+        road: "Jalan Senopati",
+        house_number: "41",
+        neighbourhood: "RT.8/RW.2",
+        suburb: "Selong",
+        city_district: "Kebayoran Baru",
+        city: "Jakarta Selatan",
+        state: "Daerah Khusus Ibukota Jakarta",
+        postcode: "12110",
+        country: "Indonesia",
+      },
+    }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const { reverseGeocodePlace } = await import(
+      "@/src/features/place-resolution/geocoding.service"
+    );
+
+    const result = await reverseGeocodePlace(-6.2345, 106.8123);
+    expect(result).not.toBeNull();
+    expect(result?.address).toContain("Jalan Senopati No. 41");
+    expect(result?.address).toContain("Kebayoran Baru");
+    expect(result?.source).toBe("OPENSTREETMAP_NOMINATIM");
+  });
+
+  it("returns null on invalid coordinates and upstream failure without fabricating address", async () => {
+    const { reverseGeocodePlace } = await import(
+      "@/src/features/place-resolution/geocoding.service"
+    );
+
+    await expect(reverseGeocodePlace(999, 999)).resolves.toBeNull();
+
+    const fetchMock = vi.fn().mockResolvedValue(new Response("error", { status: 500 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(reverseGeocodePlace(-6.2, 106.8)).resolves.toBeNull();
+  });
 });

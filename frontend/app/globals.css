@@ -503,10 +503,94 @@ select:focus-visible {
   margin: 8px 0 0;
 }
 
+body:has(.getra-app-shell--umkm) {
+  background: #f8fafc;
+}
+
 .getra-app-shell--umkm {
-  --getra-primary: #9af24a;
-  --getra-primary-hover: #c7ff92;
-  --getra-primary-soft: rgba(154, 242, 74, 0.12);
+  --getra-canvas: #f8fafc;
+  --getra-canvas-grid: rgba(148, 163, 184, 0.08);
+  --getra-surface: #ffffff;
+  --getra-surface-raised: #ffffff;
+  --getra-surface-dark: #f8fafc;
+  --getra-ink: #0f172a;
+  --getra-ink-soft: #64748b;
+  --getra-ink-inverse: #ffffff;
+  --getra-line: #e2e8f0;
+  --getra-line-strong: #cbd5e1;
+  --getra-primary: #0284c7;
+  --getra-primary-hover: #0369a1;
+  --getra-primary-soft: #f0f9ff;
+  --getra-action: #0284c7;
+  --getra-warning: #d97706;
+  --getra-danger: #ef4444;
+  --getra-app-glass: #ffffff;
+  --getra-app-glass-strong: #ffffff;
+  --getra-app-radius: 16px;
+  --getra-app-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  color-scheme: light;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.getra-app-shell--umkm > .getra-global-header {
+  min-height: 56px;
+  border-bottom-color: #e2e8f0;
+  background: #ffffff;
+  padding-block: 6px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  backdrop-filter: none;
+}
+
+.getra-app-shell--umkm .getra-global-header .getra-app-logo__copy strong,
+.getra-app-shell--umkm .account-menu__identity strong {
+  color: #0f172a;
+}
+
+.getra-app-shell--umkm .getra-global-header .getra-app-logo__copy small,
+.getra-app-shell--umkm .account-menu__identity small,
+.getra-app-shell--umkm .account-menu__identity em {
+  color: #64748b;
+}
+
+.getra-app-shell--umkm .getra-global-nav__item {
+  color: #475569;
+}
+
+.getra-app-shell--umkm .getra-global-nav__item:hover,
+.getra-app-shell--umkm .getra-global-nav__item--active {
+  border-color: #e2e8f0;
+  background: #f0f9ff;
+  color: #0284c7;
+}
+
+.getra-app-shell--umkm .account-menu__trigger {
+  border-color: #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+}
+
+.getra-app-shell--umkm .account-menu__panel {
+  border-color: #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.getra-app-shell--umkm .getra-context-nav {
+  border-bottom-color: #e2e8f0;
+  background: #ffffff;
+}
+
+.getra-app-shell--umkm .getra-context-nav a {
+  color: #64748b;
+}
+
+.getra-app-shell--umkm .getra-context-nav a:hover,
+.getra-app-shell--umkm .getra-context-nav .getra-context-nav__item--active {
+  background: #f0f9ff;
+  color: #0284c7;
 }
 
 .getra-app-shell--admin {

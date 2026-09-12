@@ -1437,7 +1437,7 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     role: "AUTHENTICATED",
     rateLimit: "mutation",
     cors: "allowlist",
-    allowedRequestHeaders: AUTH_HEADERS,
+    allowedRequestHeaders: AUTH_CONTENT_HEADERS,
     purpose: "Submit draft merchant submission for review",
   },
   {
@@ -1447,7 +1447,7 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     role: "AUTHENTICATED",
     rateLimit: "mutation",
     cors: "allowlist",
-    allowedRequestHeaders: AUTH_HEADERS,
+    allowedRequestHeaders: AUTH_CONTENT_HEADERS,
     purpose: "Cancel pending merchant submission",
   },
   {

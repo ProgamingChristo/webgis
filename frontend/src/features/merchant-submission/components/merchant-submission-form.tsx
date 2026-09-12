@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { apiClient } from "@/src/lib/api-client";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -122,6 +123,30 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
     initialData?.business_info?.payment_methods || ["CASH"]
   );
   const [facilities, setFacilities] = useState<string[]>(["Tempat Duduk", "Take Away"]);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [locationStatus, setLocationStatus] = useState<string | null>(null);
+  const reverseDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleCoordinatesChange = useCallback((newCoords: [number, number]) => {
+    setCoordinates(newCoords);
+    if (reverseDebounceRef.current) {
+      clearTimeout(reverseDebounceRef.current);
+    }
+    reverseDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await apiClient.get<{
+          address?: string;
+          display_name?: string;
+        }>(`/api/places/resolve?lat=${newCoords[1]}&lng=${newCoords[0]}`);
+        if (res?.address?.trim()) {
+          setAddress((prev) => (!prev.trim() ? res.address!.trim() : prev));
+          setLocationStatus("Pin lokasi diperbarui");
+        }
+      } catch {
+        // Silently preserve manual address and coordinate truth
+      }
+    }, 600);
+  }, []);
 
   // Step 3 Form State
   const [storedImageUrl, setStoredImageUrl] = useState(initialData?.image_url || "");
@@ -493,6 +518,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
   };
 
   const handleSubmitForReview = async () => {
+    if (submitting) return;
     if (!validateRegistration(true)) return;
 
     try {
@@ -513,7 +539,12 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
       router.push(`/umkm/submissions/${submissionId}`);
     } catch (err: any) {
       console.error("[MerchantSubmissionForm] Submit review error:", err);
-      setError("Pengajuan usaha belum dapat dikirim untuk diperiksa. Coba lagi.");
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+        setError("Pengajuan belum berhasil dikirim. Periksa koneksi lalu coba lagi.");
+      } else {
+        setError(msg || "Pengajuan usaha belum dapat dikirim untuk diperiksa. Coba lagi.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -525,15 +556,64 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
       return;
     }
 
+    setGeoLoading(true);
+    setLocationStatus("Mencari lokasi...");
+    setError(null);
+
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoordinates([pos.coords.longitude, pos.coords.latitude]);
+      async (pos) => {
+        const lat = parseFloat(pos.coords.latitude.toFixed(6));
+        const lng = parseFloat(pos.coords.longitude.toFixed(6));
+        const accuracy = Math.round(pos.coords.accuracy);
+        setCoordinates([lng, lat]);
+        setLocationStatus(
+          accuracy > 0
+            ? `Lokasi ditemukan (Akurasi ±${accuracy} m)`
+            : "Lokasi ditemukan"
+        );
+
+        // Reverse-geocoding via GETRA backend place-resolution endpoint
+        try {
+          const res = await apiClient.get<{
+            address?: string;
+            display_name?: string;
+          }>(`/api/places/resolve?lat=${lat}&lng=${lng}`);
+
+          if (res?.address?.trim()) {
+            setAddress(res.address.trim());
+            setLocationStatus(
+              accuracy > 0
+                ? `Alamat ditemukan (Akurasi ±${accuracy} m)`
+                : "Alamat ditemukan"
+            );
+          } else if (res?.display_name?.trim()) {
+            setAddress(res.display_name.trim());
+            setLocationStatus("Alamat ditemukan");
+          } else {
+            setLocationStatus("Lokasi ditemukan, tetapi alamat belum dapat dikenali. Silakan lengkapi alamat secara manual.");
+          }
+        } catch (reverseErr) {
+          console.warn("[MerchantSubmissionForm] Reverse geocode error:", reverseErr);
+          setLocationStatus("Lokasi ditemukan, tetapi alamat belum dapat dikenali. Silakan lengkapi alamat secara manual.");
+        } finally {
+          setGeoLoading(false);
+        }
       },
       (geoErr) => {
         console.warn("[MerchantSubmissionForm] Geolocation error:", geoErr);
-        setError("Lokasi tidak dapat diperoleh. Silakan klik langsung pada peta.");
+        setGeoLoading(false);
+        setLocationStatus(null);
+        if (geoErr.code === 1) {
+          setError("Izin lokasi diperlukan untuk menggunakan lokasi saat ini.");
+        } else if (geoErr.code === 2) {
+          setError("Lokasi saat ini tidak tersedia. Silakan klik langsung pada peta.");
+        } else if (geoErr.code === 3) {
+          setError("Waktu permintaan lokasi habis. Silakan coba lagi atau klik pada peta.");
+        } else {
+          setError("Lokasi tidak dapat diperoleh. Silakan klik langsung pada peta.");
+        }
       },
-      { timeout: 8000 }
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   };
 
@@ -1077,12 +1157,19 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                     <button
                       type="button"
                       onClick={handleUseMyLocation}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-sky-700 hover:text-sky-800"
+                      disabled={geoLoading}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-700 hover:text-sky-800 disabled:opacity-50 transition-colors"
                     >
-                      <Locate size={13} />
-                      <span>Gunakan Lokasi Saya</span>
+                      <Locate size={13} className={geoLoading ? "animate-spin text-sky-600" : "text-sky-600"} />
+                      <span>{geoLoading ? "Mencari lokasi..." : "Gunakan Lokasi Saya"}</span>
                     </button>
                   </div>
+                  {locationStatus ? (
+                    <p className="mb-2 text-xs font-medium text-sky-700 flex items-center gap-1.5">
+                      <CheckCircle2 size={13} className="text-sky-600 shrink-0" />
+                      <span>{locationStatus}</span>
+                    </p>
+                  ) : null}
                   <textarea
                     id="merchant-address"
                     rows={2}
@@ -1106,7 +1193,7 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                     <MerchantMapPicker
                       key={`merchant-map-${formResetVersion}`}
                       initialCoordinates={coordinates}
-                      onCoordinatesChange={setCoordinates}
+                      onCoordinatesChange={handleCoordinatesChange}
                     />
                   </div>
                 </div>
@@ -1647,8 +1734,8 @@ export function MerchantSubmissionForm({ initialData }: MerchantSubmissionFormPr
                       disabled={submitting}
                       className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-sky-600 px-7 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-500 active:scale-[0.99] w-full sm:w-auto disabled:opacity-50"
                     >
-                      <Send size={14} />
-                      <span>{submitting ? "Memproses..." : "Ajukan Usaha →"}</span>
+                      <Send size={14} className={submitting ? "animate-spin" : ""} />
+                      <span>{submitting ? "Mengirim pengajuan..." : "Ajukan Usaha →"}</span>
                       <span className="sr-only">Ajukan Verifikasi</span>
                     </button>
                   </div>

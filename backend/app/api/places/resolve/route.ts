@@ -1,7 +1,10 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
-import { searchGeocodedPlaces } from "@/src/features/place-resolution/geocoding.service";
+import {
+  reverseGeocodePlace,
+  searchGeocodedPlaces,
+} from "@/src/features/place-resolution/geocoding.service";
 import { withApiLogger } from "@/src/lib/api-logger";
 import { createSuccessResponse } from "@/src/lib/api-response";
 import { createOptionsHandler } from "@/src/lib/api-security";
@@ -20,7 +23,28 @@ export async function GET(request: NextRequest) {
   return withApiLogger(request, requestId, async () => {
     const userId = await requireAuthenticatedUser(request);
     await rateLimiter.checkLimit(request, `${userId}:spatial:place-resolve`);
-    const parsed = QuerySchema.safeParse(new URL(request.url).searchParams.get("q"));
+
+    const searchParams = new URL(request.url).searchParams;
+    const latParam = searchParams.get("lat") ?? searchParams.get("latitude");
+    const lngParam = searchParams.get("lng") ?? searchParams.get("lon") ?? searchParams.get("longitude");
+
+    if (latParam !== null && lngParam !== null) {
+      const lat = Number(latParam);
+      const lng = Number(lngParam);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        throw new ApplicationError("VALIDATION_ERROR", "Koordinat tidak valid.");
+      }
+      const reverseResult = await reverseGeocodePlace(lat, lng);
+      return createSuccessResponse(requestId, {
+        address: reverseResult?.address ?? "",
+        display_name: reverseResult?.display_name ?? "",
+        latitude: lat,
+        longitude: lng,
+        source: "OPENSTREETMAP_NOMINATIM",
+      });
+    }
+
+    const parsed = QuerySchema.safeParse(searchParams.get("q"));
     if (!parsed.success) throw new ApplicationError("VALIDATION_ERROR");
     const candidates = await searchGeocodedPlaces(parsed.data);
     return createSuccessResponse(requestId, {

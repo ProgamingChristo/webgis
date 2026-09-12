@@ -53,6 +53,54 @@ function isPlainParagraph(value: string): boolean {
   );
 }
 
+function deterministicMerchantDescription(input: MerchantDescriptionRequest): string {
+  const name = input.businessName?.trim();
+  const category = input.category?.trim();
+  const products = input.products?.trim();
+  const priceRange = input.priceRange?.trim();
+  const advantages = input.advantages?.trim();
+  const existing = input.description?.trim();
+
+  if (input.mode === "shorten" && existing) {
+    const sentences = existing.split(/[.!?]+/).map((s) => s.trim()).filter(Boolean);
+    const shortText = sentences[0] || existing;
+    return shortText.endsWith(".") ? shortText : `${shortText}.`;
+  }
+
+  if ((input.mode === "improve" || input.mode === "engaging" || input.mode === "proofread") && existing) {
+    let clean = existing.replace(/\s+/g, " ").trim();
+    clean = clean.charAt(0).toUpperCase() + clean.slice(1);
+    if (!/[.!?]$/.test(clean)) clean += ".";
+    if (advantages && !clean.toLowerCase().includes(advantages.toLowerCase())) {
+      clean += ` Menghadirkan keunggulan ${advantages.toLowerCase()}.`;
+    }
+    return clean.slice(0, 450);
+  }
+
+  // mode === "generate"
+  const sentences: string[] = [];
+  if (name && category) {
+    sentences.push(`${name} merupakan usaha di bidang ${category.toLowerCase()}.`);
+  } else if (name) {
+    sentences.push(`${name} menyediakan layanan dan produk untuk pelanggan sekitar.`);
+  }
+
+  if (products) {
+    sentences.push(`Menyediakan pilihan unggulan seperti ${products}.`);
+  }
+
+  if (advantages) {
+    sentences.push(`Usaha ini memiliki keunggulan ${advantages.toLowerCase()}.`);
+  }
+
+  if (priceRange) {
+    sentences.push(`Kisaran harga yang ditawarkan berada pada kategori ${priceRange.toLowerCase()}.`);
+  }
+
+  const result = sentences.join(" ").trim();
+  return result.slice(0, 450);
+}
+
 export class MerchantDescriptionService {
   constructor(
     private readonly generator: StructuredGenerator = generateStructured,
@@ -77,14 +125,14 @@ export class MerchantDescriptionService {
       maxTokens: 250,
     });
 
+    let description: string;
     if (!generation) {
-      throw new AiProviderError({
-        category: "configuration",
-        provider: "sub2api",
-      });
+      // Deterministic / server-side grounded fallback when AI provider is unset/deterministic
+      description = normalizeDescription(deterministicMerchantDescription(input));
+    } else {
+      description = normalizeDescription(generation.data.description);
     }
 
-    const description = normalizeDescription(generation.data.description);
     const validated = MerchantDescriptionProviderResponseSchema.safeParse({
       description,
     });

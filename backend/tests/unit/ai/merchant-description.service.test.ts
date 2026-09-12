@@ -62,15 +62,14 @@ describe("MerchantDescriptionService", () => {
     });
   });
 
-  it("rejects provider fallback and malformed markdown output", async () => {
+  it("uses deterministic fallback when provider returns null and rejects malformed markdown output", async () => {
     const input = MerchantDescriptionRequestSchema.parse({
       mode: "shorten",
       description: "Usaha ini menjual kopi dan teh untuk pengunjung sekitar.",
     });
 
-    await expect(
-      new MerchantDescriptionService(vi.fn().mockResolvedValue(null)).assist(input),
-    ).rejects.toMatchObject({ code: "AI_PROVIDER_CONFIGURATION" });
+    const deterministicResult = await new MerchantDescriptionService(vi.fn().mockResolvedValue(null)).assist(input);
+    expect(deterministicResult.description).toBe("Usaha ini menjual kopi dan teh untuk pengunjung sekitar.");
 
     await expect(
       new MerchantDescriptionService(
