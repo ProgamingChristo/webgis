@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { createMerchantDescriptionHandler } from "@/app/api/ai/merchant-description/route";
+import { createMerchantDescriptionHandler } from "@/app/api/ai/merchant-description/handlers";
 import { AiProviderError, ApplicationError, RateLimitExceededError } from "@/src/lib/errors";
 
 function request(body: unknown) {

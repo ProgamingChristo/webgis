@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { parseObservedPrice } from "@/src/features/commuter/commuter-intent";
-import { evaluateOpeningHours, type OpeningStatus } from "@/src/features/commuter/opening-hours";
+import { evaluateOpeningHours, openingHoursLabel, type OpeningStatus } from "@/src/features/commuter/opening-hours";
 
 export interface CanonicalMerchantMapItem {
   id: string;
@@ -22,6 +22,10 @@ export interface CanonicalMerchantMapItem {
   address?: string;
   phone?: string;
   photo?: string;
+  openingHoursLabel?: string;
+  referenceDistance?: { meters: number; label: string; kind: "STRAIGHT_LINE" };
+  searchRelevance?: number;
+  recommendation?: import("../global-search/recommendation-engine").RecommendationBreakdown;
   menuPhotos?: string[];
   menu?: string;
   observedPrice?: string;
@@ -229,7 +233,10 @@ export function mapCanonicalMerchantRow(
     menuLinks.length > 0 ? "MENU_GO" as const : null,
     isOwnerSubmitted ? "OWNER_SUBMITTED" as const : null,
   ].filter((source): source is "PREMIUM" | "MENU_GO" | "OWNER_SUBMITTED" => source !== null);
-  const photo = optionalString(observed.foto_tempat);
+  const approvedOwnerMedia = merchant.verification_status === "VERIFIED" && metadata.approved_by && metadata.approved_at
+    ? asObject(metadata.public_media) : {};
+  const ownerPhoto = safePublicImage(approvedOwnerMedia.storefront_url);
+  const photo = ownerPhoto ?? safePublicImage(observed.foto_tempat) ?? optionalString(observed.foto_tempat);
   const menuPhotos = [observed.foto_menu_1, observed.foto_menu_2]
     .map(optionalString)
     .filter((value): value is string => value !== undefined);
@@ -237,7 +244,8 @@ export function mapCanonicalMerchantRow(
   return {
     id: merchant.id,
     name: merchant.name,
-    category: optionalString(metadata.category) ??
+    category: optionalString(metadata.category_label) ??
+      optionalString(metadata.category) ??
       optionalString(observed.jenis_tempat) ??
       merchant.description ?? "Makanan dan Minuman",
     brand: optionalString(metadata.brand) ?? "Makanan dan Minuman",
@@ -250,6 +258,8 @@ export function mapCanonicalMerchantRow(
     openNow: openingStatus === "OPEN",
     openStatusKnown: openingStatus !== "UNKNOWN",
     openingStatus,
+    openingHoursLabel: openingHoursLabel(merchant.opening_hours),
+    searchRelevance: Number(searchRow?.relevance_score ?? 0),
     source: sources.join(" + "),
     sources,
     status: merchant.verification_status === "VERIFIED" ? "verified" : "surveyed",
@@ -338,4 +348,14 @@ function toPriceLabel(value: string | null) {
   if (value?.toLowerCase() === "hemat") return "Hemat" as const;
   if (value?.toLowerCase() === "premium") return "Premium" as const;
   return "Sedang" as const;
+}
+
+function safePublicImage(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password ? url.href : undefined;
+  } catch {
+    return undefined;
+  }
 }

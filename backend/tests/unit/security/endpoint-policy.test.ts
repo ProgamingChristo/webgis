@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { describe, expect, it } from "vitest";
+import ts from "typescript";
 
 import {
   API_ENDPOINT_POLICIES,
@@ -86,6 +87,12 @@ function discoverRoutes(): DiscoveredRoute[] {
       routeFile,
       apiRoot,
     );
+    const syntax = ts.createSourceFile(routeFile, source, ts.ScriptTarget.Latest, true);
+    const reexports = new Set(syntax.statements.flatMap((statement) =>
+      ts.isExportDeclaration(statement) && statement.exportClause && ts.isNamedExports(statement.exportClause)
+        ? statement.exportClause.elements.map((element) => element.name.text)
+        : [],
+    ));
 
     for (const method of ROUTE_METHODS) {
       const exportedFunction = new RegExp(
@@ -98,7 +105,8 @@ function discoverRoutes(): DiscoveredRoute[] {
 
       if (
         exportedFunction.test(source) ||
-        exportedConst.test(source)
+        exportedConst.test(source) ||
+        reexports.has(method)
       ) {
         discovered.push({
           method,

@@ -112,7 +112,9 @@ describe("Phase 16B — Frontend UMKM Ownership, Claim, and Pending States", () 
       const fs = await import("fs");
       const path = await import("path");
       const dashboardPath = path.resolve(__dirname, "../../components/getra-dashboard.tsx");
-      const dashboardCode = fs.readFileSync(dashboardPath, "utf-8");
+      const mountCode = fs.readFileSync(dashboardPath, "utf-8");
+      expect(mountCode).toContain("<PlaceDetailDrawer merchant={selectedMerchant} onRoute={handleRouteToMerchant}");
+      const dashboardCode = fs.readFileSync(path.resolve(__dirname, "../../src/features/global-search/components/place-detail-drawer.tsx"), "utf-8");
 
       // Claim CTA when merchant is unowned
       expect(dashboardCode).toContain('data-testid="merchant-claim-cta"');

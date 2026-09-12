@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { describe, expect, it, vi } from "vitest";
-import { createDemandAnalyticsHandler } from "@/app/api/analytics/demand/route";
-import { createRetailGapHandler } from "@/app/api/analytics/retail-gap/route";
-import { createAnalyticsInterpretationHandler } from "@/app/api/analytics/interpretation/route";
+import { createDemandAnalyticsHandler } from "@/app/api/analytics/demand/handlers";
+import { createRetailGapHandler } from "@/app/api/analytics/retail-gap/handlers";
+import { createAnalyticsInterpretationHandler } from "@/app/api/analytics/interpretation/handlers";
 import { ApplicationError } from "@/src/lib/errors";
 
 vi.mock("server-only", () => ({}));

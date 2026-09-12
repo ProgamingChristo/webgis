@@ -12,6 +12,9 @@ const mapContent = readFileSync(
   resolve(process.cwd(), "components/getra-map.tsx"),
   "utf8",
 );
+const detailContent = readFileSync(
+  resolve(process.cwd(), "src/features/global-search/components/place-detail-drawer.tsx"), "utf8",
+);
 const routingServiceContent = readFileSync(
   resolve(process.cwd(), "src/services/routing.service.ts"),
   "utf8",
@@ -32,10 +35,11 @@ describe("Phase 14: Unified Routing & Destination Decoupling", () => {
 
     // 3. handleRouteToMerchant must handle merchants regardless of viewport presence
     expect(dashboardContent).toContain("handleRouteToMerchant");
-    expect(dashboardContent).toContain("data-testid=\"merchant-route-cta\"");
+    expect(dashboardContent).toContain("<PlaceDetailDrawer merchant={selectedMerchant} onRoute={handleRouteToMerchant}");
+    expect(detailContent).toContain('data-testid="merchant-route-cta"');
 
     // 4. Fair Discovery onRequestRoute must use handleRouteToMerchant directly
-    expect(dashboardContent).toMatch(/onRequestRoute=\{\(item\)\s*=>\s*\{[\s\S]*?handleRouteToMerchant/);
+    expect(dashboardContent).toContain("onRequestRoute={(item) => handleRouteToMerchant(discoveryMerchant(item))}");
   });
 
   it("handles destination from Fair Discovery when merchant is outside map viewport", () => {
@@ -68,8 +72,8 @@ describe("Phase 14: Unified Routing & Destination Decoupling", () => {
   });
 
   it("exposes primary merchant CTA 'Rute ke sini' for one-tap routing", () => {
-    expect(dashboardContent).toContain("Rute ke sini");
-    expect(dashboardContent).toContain("Lihat pilihan rute");
+    expect(detailContent).toContain("Rute ke sini");
+    expect(detailContent).toContain("onClick={() => onRoute(merchant)}");
 
     // When GPS fix exists, handleRouteToMerchant activates ROUTE_ORIGIN_USER and requests route
     expect(dashboardContent).toMatch(/if\s*\(hasGps\)\s*\{[\s\S]*?setRouteOriginValue\(ROUTE_ORIGIN_USER\)[\s\S]*?requestRoute\(\);/);

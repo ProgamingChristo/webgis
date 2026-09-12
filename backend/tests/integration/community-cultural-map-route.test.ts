@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 vi.mock("server-only", () => ({}));
 
-import { createCommunityCulturalMapHandler } from "@/app/api/community/cultural-map/route";
+import { createCommunityCulturalMapHandler } from "@/app/api/community/cultural-map/handlers";
 
 function createRequest(url: string, init: RequestInit = {}) {
   return new Request(url, {

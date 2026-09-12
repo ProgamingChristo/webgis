@@ -31,6 +31,10 @@ const regionIdsSchema = z.preprocess(
 );
 
 export const globalSearchQuerySchema = z.object({
+  reference_text: optionalText(80),
+  radius_meters: queryNumber(z.number().int().min(250).max(3000)).optional(),
+  sort: z.enum(["RELEVANCE", "NEAREST", "PRICE_ASC"]).optional(),
+  recommendation: z.enum(["true", "false"]).transform(value => value === "true").optional(),
   q: optionalText(120).default(""),
   scope: z.enum(SEARCH_SCOPE_TYPES).default("CURRENT_VIEWPORT"),
   region_ids: regionIdsSchema,
@@ -39,7 +43,6 @@ export const globalSearchQuerySchema = z.object({
   max_budget: queryNumber(z.number().int().min(1_000).max(10_000_000)).optional(),
   open_now: z.enum(["true", "false"]).transform((value) => value === "true").optional(),
   max_walking_minutes: queryNumber(z.number().int().min(5).max(30)).optional(),
-  radius_meters: queryNumber(z.number().int().min(50).max(10_000)).optional(),
   origin_longitude: queryNumber(longitudeSchema).optional(),
   origin_latitude: queryNumber(latitudeSchema).optional(),
   origin_source: z.enum(["USER_LOCATION", "SELECTED_POINT", "EXPLICIT_ORIGIN"]).optional(),
@@ -92,11 +95,8 @@ export const globalSearchQuerySchema = z.object({
   if (originCount !== 0 && originCount !== 2) {
     context.addIssue({ code: "custom", message: "origin coordinates must be complete" });
   }
-  if (value.max_walking_minutes !== undefined && originCount !== 2) {
+  if ((value.max_walking_minutes !== undefined || value.radius_meters !== undefined || value.sort === "NEAREST") && originCount !== 2 && !value.reference_text) {
     context.addIssue({ code: "custom", message: "walking constraint requires origin" });
-  }
-  if (value.radius_meters !== undefined && originCount !== 2) {
-    context.addIssue({ code: "custom", message: "radius constraint requires origin" });
   }
 });
 

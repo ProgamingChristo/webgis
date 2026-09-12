@@ -3,12 +3,12 @@ import type { NextRequest } from "next/server";
 
 vi.mock("server-only", () => ({}));
 
-import { createCommunityContributionDetailHandler } from "@/app/api/community/contributions/[contributionId]/route";
+import { createCommunityContributionDetailHandler } from "@/app/api/community/contributions/[contributionId]/handlers";
 import {
   createCommunityContributionHistoryHandler,
   createCommunityContributionsHandler,
-} from "@/app/api/community/contributions/route";
-import { createCommunityContributionMapHandler } from "@/app/api/community/contributions/map/route";
+} from "@/app/api/community/contributions/handlers";
+import { createCommunityContributionMapHandler } from "@/app/api/community/contributions/map/handlers";
 import { ApplicationError } from "@/src/lib/errors";
 
 const authorId = "99999999-aaaa-4bbb-8ccc-dddddddddddd";

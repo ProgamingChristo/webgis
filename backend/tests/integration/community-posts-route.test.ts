@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 vi.mock("server-only", () => ({}));
 
-import { createCommunityPostsHandler } from "@/app/api/community/posts/route";
+import { createCommunityPostsHandler } from "@/app/api/community/posts/handlers";
 import { ApplicationError } from "@/src/lib/errors";
 
 describe("POST /api/community/posts", () => {

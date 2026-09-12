@@ -1,13 +1,14 @@
+import { openAIProvider } from "@/lib/ai/openai";
 import { sub2ApiProvider } from "@/lib/ai/sub2api";
 import type { ModelProvider, StructuredGenerationRequest } from "@/lib/ai/provider-contract";
 import { AiProviderError } from "@/src/lib/errors";
 
-type ProviderMode = "deterministic" | "sub2api";
+type ProviderMode = "deterministic" | "sub2api" | "openai";
 
 function providerMode(): ProviderMode {
   const configured = process.env.AI_PROVIDER?.trim().toLowerCase();
   if (!configured || configured === "deterministic") return "deterministic";
-  if (configured === "sub2api") return configured;
+  if (configured === "sub2api" || configured === "openai") return configured;
 
   throw new AiProviderError({
     category: "configuration",
@@ -22,26 +23,28 @@ export async function generateStructured<T>(
     return null;
   }
 
-  if (!sub2ApiProvider.isConfigured()) {
+  const selected = providerMode() === "openai" ? openAIProvider : sub2ApiProvider;
+  if (!selected.isConfigured()) {
     throw new AiProviderError({
       category: "configuration",
-      provider: "sub2api",
+      provider: selected.id === "openai" ? "openai" : "sub2api",
     });
   }
 
   return {
-    data: await sub2ApiProvider.generateStructured(request),
-    source: "sub2api",
+    data: await selected.generateStructured(request),
+    source: selected.id,
   };
 }
 
 export function getConfiguredProvider(): ModelProvider | "fallback" {
   if (providerMode() === "deterministic") return "fallback";
-  if (!sub2ApiProvider.isConfigured()) {
+  const selected = providerMode() === "openai" ? openAIProvider : sub2ApiProvider;
+  if (!selected.isConfigured()) {
     throw new AiProviderError({
       category: "configuration",
-      provider: "sub2api",
+      provider: selected.id === "openai" ? "openai" : "sub2api",
     });
   }
-  return "sub2api";
+  return selected.id;
 }

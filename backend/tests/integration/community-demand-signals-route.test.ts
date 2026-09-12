@@ -3,9 +3,9 @@ import type { NextRequest } from "next/server";
 
 vi.mock("server-only", () => ({}));
 
-import { createCommunityDemandSignalDetailHandler } from "@/app/api/community/requests/signals/[signalId]/route";
-import { createCommunityDemandSignalResponsesHandlers } from "@/app/api/community/requests/signals/[signalId]/responses/route";
-import { createCommunityDemandSignalsHandler } from "@/app/api/community/requests/signals/route";
+import { createCommunityDemandSignalDetailHandler } from "@/app/api/community/requests/signals/[signalId]/handlers";
+import { createCommunityDemandSignalResponsesHandlers } from "@/app/api/community/requests/signals/[signalId]/responses/handlers";
+import { createCommunityDemandSignalsHandler } from "@/app/api/community/requests/signals/handlers";
 
 const signalId = "11111111-2222-4333-8444-555555555555";
 

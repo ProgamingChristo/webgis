@@ -1,3 +1,4 @@
+import { referenceBounds, referenceDistance, resolveSearchReference } from "./search-reference";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   CommuterNetworkRepository,
@@ -21,6 +22,8 @@ import type {
 } from "@/src/features/global-search/global-search.types";
 import { CanonicalMerchantReadService } from "@/src/features/merchant-reconciliation/canonical-merchant-read.service";
 import { ApplicationError } from "@/src/lib/errors";
+import { resolveFoodEntity } from "./food-entity-resolver";
+import { rankRecommendations } from "./recommendation-engine";
 
 export class GlobalSearchService {
   constructor(private readonly supabase: SupabaseClient<any>) {}
@@ -28,20 +31,27 @@ export class GlobalSearchService {
   async search(query: GlobalSearchQuery): Promise<GlobalSearchResult> {
     const availableRegions = await this.listRegions();
     const intent = resolveGlobalSearchIntent(query, availableRegions);
+    const spatialSearch = Boolean(query.reference_text || query.radius_meters || query.sort === "NEAREST" || query.recommendation);
+    if (spatialSearch) {
+      const reference = await resolveSearchReference(this.supabase, query.reference_text, intent.origin);
+      if ((query.reference_text || query.radius_meters || query.sort === "NEAREST") && !reference) throw new ApplicationError("VALIDATION_ERROR", "Aktifkan lokasi atau pilih acuan pencarian.");
+      intent.reference = reference;
+      intent.radius_meters = query.radius_meters;
+      intent.sort = query.sort ?? "RELEVANCE";
+      intent.recommendation = query.recommendation;
+      if (reference) {
+        intent.origin = { longitude: reference.longitude, latitude: reference.latitude, source: reference.type === "USER_LOCATION" ? "USER_LOCATION" : "SELECTED_POINT" };
+        if (query.radius_meters) intent.scope = { type: "CURRENT_VIEWPORT", region_ids: [], bounds: referenceBounds(reference, query.radius_meters) };
+      }
+    }
     if (intent.constraints.walking && !intent.origin) {
       throw new ApplicationError(
         "VALIDATION_ERROR",
         "Pilih titik awal untuk menggunakan batas waktu berjalan.",
       );
     }
-    if (intent.constraints.radius && !intent.origin) {
-      throw new ApplicationError(
-        "VALIDATION_ERROR",
-        "Pilih titik awal untuk menggunakan filter radius.",
-      );
-    }
     const hasHardConstraints = Boolean(
-      intent.constraints.budget || intent.constraints.opening || intent.constraints.walking,
+      intent.constraints.budget || intent.constraints.opening || intent.constraints.walking || spatialSearch || query.sort === "PRICE_ASC",
     );
     const candidateLimit = intent.constraints.walking ? MAX_WALKING_CANDIDATES : 100;
     const globalScope = intent.scope.type === "GLOBAL";
@@ -55,10 +65,11 @@ export class GlobalSearchService {
       keyword: intent.keyword,
       category: intent.category,
       regionIds: intent.scope.region_ids,
-      radiusMeters: intent.constraints.radius?.radius_meters ?? null,
-      origin: intent.origin
-        ? { longitude: intent.origin.longitude, latitude: intent.origin.latitude }
-        : null,
+      radiusMeters: query.radius_meters,
+      origin: intent.reference ? {
+        longitude: intent.reference.longitude,
+        latitude: intent.reference.latitude,
+      } : undefined,
     });
 
     const metadata: CommuterSearchMetadata = {
@@ -78,6 +89,17 @@ export class GlobalSearchService {
     };
 
     let merchants = page.merchants;
+    if (intent.reference) {
+      const reference = intent.reference;
+      merchants = merchants.map(merchant => ({ ...merchant, referenceDistance: {
+        meters: referenceDistance(reference, merchant), label: reference.label, kind: "STRAIGHT_LINE" as const,
+      }}));
+      if (query.radius_meters) {
+        metadata.hard_constraints_applied.push("REFERENCE_RADIUS_METERS");
+        merchants = merchants.filter(merchant => merchant.referenceDistance!.meters <= query.radius_meters!);
+      }
+    }
+    if (spatialSearch || query.sort) intent.candidate_limited = page.total > page.merchants.length;
     if (intent.constraints.budget) {
       metadata.hard_constraints_applied.push("MAX_BUDGET_IDR");
       merchants = merchants.filter((merchant) => {
@@ -140,6 +162,16 @@ export class GlobalSearchService {
       });
     }
 
+    // Ranking operates only on the filtered canonical set. Sponsorship never enters this score.
+    if (query.recommendation) {
+      merchants = rankRecommendations(merchants, {
+        keyword: intent.keyword,
+        maxBudget: intent.constraints.budget?.max_idr ?? null,
+        radiusMeters: query.radius_meters ?? null,
+        openNow: Boolean(intent.constraints.opening),
+      });
+    } else if (query.sort === "PRICE_ASC") merchants.sort((a, b) => (a.observedPriceAmount ?? Infinity) - (b.observedPriceAmount ?? Infinity) || a.id.localeCompare(b.id));
+    else if (intent.reference && query.sort === "NEAREST") merchants.sort((a, b) => (a.referenceDistance?.meters ?? Infinity) - (b.referenceDistance?.meters ?? Infinity) || a.id.localeCompare(b.id));
     metadata.constrained_count = merchants.length;
     const resultMerchants = hasHardConstraints
       ? merchants.slice(query.offset, query.offset + query.limit)
@@ -254,9 +286,9 @@ export function resolveGlobalSearchIntent(
     return {
       domain: "MERCHANT",
       original_query: originalQuery,
-      keyword: queryLocation
+      keyword: resolveFoodEntity(queryLocation
         ? queryLocation.keyword
-        : normalizeSearchText(parsedCommuter.keyword_text) || null,
+        : normalizeSearchText(parsedCommuter.keyword_text) || null),
       location_text: locationRegion?.name ?? null,
       scope: { type: scopeType, region_ids: regionIds, bounds },
       category: query.category?.trim() || null,

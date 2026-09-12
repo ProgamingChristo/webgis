@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 vi.mock("server-only", () => ({}));
 
-import { createCommunityFeedHandler } from "@/app/api/community/feed/route";
+import { createCommunityFeedHandler } from "@/app/api/community/feed/handlers";
 
 describe("GET /api/community/feed", () => {
   it("requires auth handoff and returns a list envelope with public location only", async () => {

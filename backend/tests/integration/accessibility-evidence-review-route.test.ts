@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createAdminAccessibilityEvidenceReviewHandler,
   type AdminAccessibilityEvidenceReviewDependencies,
-} from "@/app/api/admin/accessibility/evidence/[evidenceId]/review/route";
+} from "@/app/api/admin/accessibility/evidence/[evidenceId]/review/handlers";
 import { ApplicationError } from "@/src/lib/errors";
 import type {
   AccessibilityEvidenceDetailDTO,

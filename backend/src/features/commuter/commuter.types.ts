@@ -14,6 +14,11 @@ export interface CommuterOrigin {
 }
 
 export interface StructuredCommuterIntent {
+  reference?: import("../global-search/search-reference").SearchReference | null;
+  radius_meters?: number;
+  sort?: "RELEVANCE" | "NEAREST" | "PRICE_ASC";
+  recommendation?: boolean;
+  candidate_limited?: boolean;
   domain: "MERCHANT";
   original_query: string;
   keyword: string | null;

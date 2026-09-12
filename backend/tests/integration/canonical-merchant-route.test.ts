@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createCanonicalMerchantHandler,
   type CanonicalMerchantRouteDependencies,
-} from "@/app/api/merchants/canonical/route";
+} from "@/app/api/merchants/canonical/handlers";
 import { ApplicationError } from "@/src/lib/errors";
 
 vi.mock("server-only", () => ({}));
