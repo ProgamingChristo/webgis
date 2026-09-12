@@ -14,7 +14,7 @@ export type Merchant = {
   accessibilityScore: number;
   priceLabel: "Hemat" | "Sedang" | "Premium";
   openNow: boolean;
-  source: string;
+  source?: string;
   status: DataStatus;
   updatedAt: string;
   limitation: string;
@@ -27,7 +27,7 @@ export type Merchant = {
   observedCondition?: string;
   mobility?: string;
   observedAt?: string;
-  sources?: Array<"PREMIUM" | "MENU_GO">;
+  sources?: Array<"PREMIUM" | "MENU_GO" | "OWNER_SUBMITTED">;
   provenance?: Record<string, unknown>;
   district?: string;
   village?: string;

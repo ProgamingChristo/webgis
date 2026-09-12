@@ -44,6 +44,8 @@ import { useCanonicalData } from "@/src/hooks/useCanonicalData";
 import { useActiveJourney } from "@/src/hooks/use-active-journey";
 import { JourneyControls } from "@/src/features/routing/components/journey-controls";
 import { RouteSelectionSheet } from "@/src/features/routing/components/route-selection-sheet";
+import { useCompactRoutingLayout } from "@/src/features/routing/hooks/use-compact-routing-layout";
+import { MerchantSourceEvidence } from "@/src/features/merchant-evidence/merchant-source-evidence";
 import { useAuth } from "@/src/components/providers/AuthProvider";
 import { useDestinationMerchantSearch } from "@/src/features/routing/hooks/use-destination-merchant-search";
 import type { RoutePreference, RoutingMode } from "@/src/services/routing.service";
@@ -389,14 +391,6 @@ function isSafeMediaUrl(value: string) {
   } catch {
     return false;
   }
-}
-
-function formatMerchantSources(merchant: Merchant) {
-  const sources = merchant.sources?.length
-    ? merchant.sources
-    : merchant.source.split("+").map((item) => item.trim()).filter(Boolean);
-  if (sources.length === 0) return "Tidak tersedia";
-  return sources.join(" + ");
 }
 
 function ensureSearchableBounds(bounds: MapViewportBounds): MapViewportBounds {
@@ -753,25 +747,6 @@ function MerchantMediaGallery({ merchant }: { merchant: Merchant }) {
   );
 }
 
-function MerchantSourceEvidence({ merchant }: { merchant: Merchant }) {
-  const hasMenuGo = merchant.sources?.includes("MENU_GO") || merchant.source.includes("MENU_GO");
-  return (
-    <section className="evidence-section">
-      <h4>Sumber data</h4>
-      <p className="limitation-box">Sumber data: {formatMerchantSources(merchant)}</p>
-      {hasMenuGo ? (
-        <dl className="evidence-list evidence-list--compact">
-          <OptionalDetail label="Menu utama" value={merchant.menu} />
-          <OptionalDetail label="Harga observasi" value={merchant.observedPrice} />
-          <OptionalDetail label="Kondisi tempat" value={merchant.observedCondition} />
-          <OptionalDetail label="Mobilitas" value={merchant.mobility} />
-          <OptionalDetail label="Waktu pengamatan" value={merchant.observedAt} />
-        </dl>
-      ) : null}
-    </section>
-  );
-}
-
 function OptionalDetail({ label, value }: { label: string; value?: string | number | null }) {
   if (value === undefined || value === null || value === "") return null;
   return (
@@ -1067,6 +1042,7 @@ export function GetraDashboard() {
 
 function GeneralGetraDashboard() {
   const { activeExperience } = useStakeholder();
+  const compactRoutingLayout = useCompactRoutingLayout();
 
   const [
     datasetId,
@@ -1885,6 +1861,11 @@ function GeneralGetraDashboard() {
   const routingError = journeyOpen ? journey.error : preview.error;
   const authRequired = journeyOpen ? journey.authRequired : preview.authRequired;
   const journeyPosition = journey.position;
+  useEffect(() => {
+    if (routingState === "ROUTABLE" && route?.distance_meters !== null) {
+      setEditingEndpoints(false);
+    }
+  }, [route, routingState]);
   useEffect(() => {
     if (!authContext) journey.controller.sessionLost();
   }, [authContext, journey.controller]);
@@ -3097,23 +3078,25 @@ function GeneralGetraDashboard() {
                   </div>
                 </div>
 
-                <RouteSelectionSheet
-                  route={route}
-                  inline
-                  open={true}
-                  originLabel={routeOriginPoint?.label ?? "Titik mulai"}
-                  destinationLabel={routeDestinationPoint?.label ?? routeDestination?.name ?? "Tujuan"}
-                  onOpenChange={setRouteSheetOpen}
-                  onSelect={preview.selectCandidate}
-                  onModeChange={setActiveMode}
-                  preference={routePreference}
-                  onPreferenceChange={setRoutePreference}
-                  onStart={() => {
-                    setRouteSheetOpen(false);
-                    setMapPickMode("NONE");
-                    void journey.controller.start();
-                  }}
-                />
+                {!compactRoutingLayout ? (
+                  <RouteSelectionSheet
+                    route={route}
+                    inline
+                    open={true}
+                    originLabel={routeOriginPoint?.label ?? "Titik mulai"}
+                    destinationLabel={routeDestinationPoint?.label ?? routeDestination?.name ?? "Tujuan"}
+                    onOpenChange={setRouteSheetOpen}
+                    onSelect={preview.selectCandidate}
+                    onModeChange={setActiveMode}
+                    preference={routePreference}
+                    onPreferenceChange={setRoutePreference}
+                    onStart={() => {
+                      setRouteSheetOpen(false);
+                      setMapPickMode("NONE");
+                      void journey.controller.start();
+                    }}
+                  />
+                ) : null}
               </>
             ) : (
               <>
@@ -4038,7 +4021,7 @@ function GeneralGetraDashboard() {
             mode={activeMode}
             onModeChange={setActiveMode}
           /> : null}
-          {route && route.distance_meters !== null && !journeyOpen ? (
+          {compactRoutingLayout && route && route.distance_meters !== null && !journeyOpen ? (
             <div className={routingStyles.mobileSheetOnly}>
               <RouteSelectionSheet route={route} open={routeSheetOpen}
                 originLabel={routeOriginPoint?.label ?? "Titik mulai"}
