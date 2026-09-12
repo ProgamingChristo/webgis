@@ -18,25 +18,24 @@ describe("optional backend proxy", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("preserves the browser origin and backend rejection instead of spoofing a trusted origin", async () => {
+  it("rejects a cross-origin caller before contacting the backend", async () => {
     vi.stubEnv("GETRA_BACKEND_INTERNAL_URL", "http://backend:8080");
-    const fetchMock = vi.fn().mockResolvedValue(new Response("Forbidden", { status: 403 }));
+    const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     const response = await GET(new NextRequest("http://frontend:3000/api/v1/transport/nodes", { headers: { origin: "https://untrusted.example" } }), context());
-    expect(fetchMock.mock.calls[0][1].headers.get("origin")).toBe("https://untrusted.example");
     expect(response.status).toBe(403);
-    expect(response.headers.get("access-control-allow-origin")).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("delegates preflight to the backend's exact origin policy", async () => {
+  it("uses a server-to-server upstream hop for a same-origin request", async () => {
     vi.stubEnv("GETRA_BACKEND_INTERNAL_URL", "http://backend:8080");
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204, headers: { "access-control-allow-origin": "https://getra.example", vary: "Origin" } }));
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
     vi.stubGlobal("fetch", fetchMock);
-    const response = await OPTIONS(new NextRequest("http://frontend:3000/api/v1/transport/nodes", { method: "OPTIONS", headers: { origin: "https://getra.example", "access-control-request-method": "POST" } }), context());
+    const response = await OPTIONS(new NextRequest("http://frontend:3000/api/v1/transport/nodes", { method: "OPTIONS", headers: { origin: "http://frontend:3000", "access-control-request-method": "POST" } }), context());
     expect(fetchMock.mock.calls[0][1].method).toBe("OPTIONS");
     expect(fetchMock.mock.calls[0][1].headers.get("access-control-request-method")).toBe("POST");
+    expect(fetchMock.mock.calls[0][1].headers.get("origin")).toBeNull();
     expect(response.status).toBe(204);
-    expect(response.headers.get("access-control-allow-origin")).toBe("https://getra.example");
   });
 
   it("preserves query, body and auth while stripping stale compression and connection headers", async () => {
@@ -47,6 +46,8 @@ describe("optional backend proxy", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("http://backend:8080/api/routing?mode=car");
     expect(init.headers.get("authorization")).toBe("Bearer fixture");
+    expect(init.headers.get("origin")).toBeNull();
+    expect(init.headers.get("cookie")).toBeNull();
     expect(new TextDecoder().decode(init.body)).toBe('{"origin":[1,2]}');
     expect(init.cache).toBe("no-store");
     expect(response.headers.get("content-length")).toBeNull();

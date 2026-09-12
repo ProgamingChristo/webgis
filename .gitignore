@@ -10,6 +10,7 @@ secrets/
 
 # Local environment files. Keep the safe template versioned.
 .env*
+!frontend/.env.example
 !.env.example
 
 # Tooling output
@@ -46,6 +47,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!frontend/.env.example
 
 # vercel
 .vercel

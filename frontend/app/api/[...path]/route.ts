@@ -19,7 +19,31 @@ function forwardHeaders(source: Headers, excluded: string[]) {
   return headers;
 }
 
+function isSameOriginRequest(req: NextRequest): boolean {
+  const origin = req.headers.get("origin");
+  if (!origin) return true;
+
+  try {
+    return new URL(origin).origin === req.nextUrl.origin;
+  } catch {
+    return false;
+  }
+}
+
 async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
+  if (!isSameOriginRequest(req)) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: "PROXY_ORIGIN_DENIED",
+          message: "Origin frontend tidak diizinkan.",
+        },
+      },
+      { status: 403 },
+    );
+  }
+
   const backend = backendOrigin();
   if (!backend) {
     return NextResponse.json({ success: false, error: { code: "BACKEND_PROXY_UNCONFIGURED", message: "Proxy backend belum dikonfigurasi." } }, { status: 503 });
@@ -30,8 +54,15 @@ async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
   }
   const search = req.nextUrl.search;
   const targetUrl = `${backend}/api/${path.map(encodeURIComponent).join("/")}${search}`;
-  // The backend must evaluate the browser's actual Origin and bearer token.
-  const headers = forwardHeaders(req.headers, ["host", "content-length"]);
+  // This is a same-origin BFF hop. The bearer token is forwarded, while browser-only
+  // origin/cookie metadata never changes the backend's explicit public CORS policy.
+  const headers = forwardHeaders(req.headers, [
+    "host",
+    "content-length",
+    "origin",
+    "referer",
+    "cookie",
+  ]);
 
   const init: RequestInit = {
     method: req.method,

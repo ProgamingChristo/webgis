@@ -45,6 +45,16 @@ describe("Phase 5 pure data mappers", () => {
     ).toThrow(GeometryMappingError);
   });
 
+  it("normalizes legacy PostGIS CRS metadata before strict GeoJSON validation", () => {
+    expect(
+      mapDatabaseGeometryToGeoJson({
+        type: "Point",
+        coordinates: [106.8, -6.2],
+        crs: { type: "name", properties: { name: "EPSG:4326" } },
+      } as never),
+    ).toEqual({ type: "Point", coordinates: [106.8, -6.2] });
+  });
+
   it("canonicalizes accepted LineString input for the database typemod", () => {
     expect(
       canonicalizeCorridorGeometry({

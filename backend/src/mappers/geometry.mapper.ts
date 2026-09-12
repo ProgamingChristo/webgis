@@ -21,21 +21,30 @@ export class GeometryMappingError extends Error {
 }
 
 function decodeDatabaseGeometry(geometry: DatabaseGeometry): unknown {
-  if (typeof geometry !== "string") {
-    return geometry;
+  let decoded: unknown = geometry;
+
+  if (typeof geometry === "string") {
+    const serialized = geometry.trim();
+
+    if (!serialized.startsWith("{")) {
+      throw new GeometryMappingError();
+    }
+
+    try {
+      decoded = JSON.parse(serialized) as unknown;
+    } catch {
+      throw new GeometryMappingError();
+    }
   }
 
-  const serialized = geometry.trim();
+  if (!decoded || typeof decoded !== "object" || Array.isArray(decoded)) return decoded;
 
-  if (!serialized.startsWith("{")) {
-    throw new GeometryMappingError();
-  }
+  const record = decoded as Record<string, unknown>;
+  if (!("crs" in record)) return decoded;
 
-  try {
-    return JSON.parse(serialized) as unknown;
-  } catch {
-    throw new GeometryMappingError();
-  }
+  const geoJson = { ...record };
+  delete geoJson.crs;
+  return geoJson;
 }
 
 export function mapDatabaseGeometryToGeoJson(
