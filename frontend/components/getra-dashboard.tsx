@@ -39,6 +39,9 @@ import { PlaceDetailDrawer } from "@/src/features/global-search/components/place
 import type { AiSearchAction, SearchCriteria } from "@/types/search-recommendation";
 import "@/src/features/global-search/commuter-sidebar.css";
 import { CommunityNotificationsMenu } from "@/src/features/community/components/notifications/community-notifications-menu";
+import { resolveGetraPlace, type ResolvedPlace } from "@/src/features/ai-orchestration/place-resolver";
+import type { AiApplicationAction } from "@/src/services/ai.service";
+import type { AiActionExecutionResult } from "@/components/ai/ai-panel";
 
 import { GetraMap } from "@/components/getra-map";
 import { useFairDiscovery, FairDiscoveryResults } from "@/src/features/fair-discovery";
@@ -1799,7 +1802,7 @@ function GeneralGetraDashboard() {
               longitude: userLocation.longitude,
             },
           }
-        : explicitRouteOrigin && routeOriginValue.startsWith("MERCHANT:")
+        : explicitRouteOrigin && (routeOriginValue.startsWith("MERCHANT:") || routeOriginValue.startsWith("PLACE:"))
           ? { label: explicitRouteOrigin.label, coordinate: explicitRouteOrigin.coordinate }
           : null
   ), [
@@ -2055,7 +2058,7 @@ function GeneralGetraDashboard() {
     sort: searchSort,
   };
 
-  const applyAiSearchAction = async (action: AiSearchAction): Promise<string> => {
+  const applyAiSearchAction = useCallback(async (action: AiSearchAction): Promise<string> => {
     const criteria = action.criteria;
     if (criteria.near_user && !userLocation) {
       commuterLocation.startTracking();
@@ -2092,7 +2095,7 @@ function GeneralGetraDashboard() {
     return result.merchants.length
       ? `Saya tampilkan ${result.merchants.length} tempat dari data GETRA yang sesuai dengan pencarian Anda.`
       : "Belum ada tempat yang sesuai dengan kriteria ini pada data GETRA.";
-  };
+  }, [clearRoute, commuterLocation, datasetBounds, executeCanonicalSearch, selectedRegionIds, userLocation]);
 
   const executePropertySearch = useCallback(async ({
     bbox,
@@ -2718,6 +2721,226 @@ function GeneralGetraDashboard() {
     if (!alternative || alternative.id === routeDestination?.id) return;
     handleRouteToMerchant(alternative);
   }, [handleRouteToMerchant, merchants, routeDestination?.id, routeOrigin]);
+
+  const handleAiAction = useCallback(async (
+    action: AiApplicationAction,
+  ): Promise<AiActionExecutionResult> => {
+    if (action.type === "APPLY_SEARCH_CRITERIA") {
+      const message = await applyAiSearchAction({
+        type: "APPLY_SEARCH_CRITERIA",
+        criteria: action.criteria,
+      });
+      return {
+        status: "COMPLETED",
+        message,
+      };
+    }
+
+    if (action.type === "CHANGE_ROUTE_MODE") {
+      if (!routeOrigin || !routeDestination) {
+        return {
+          status: "REJECTED",
+          message: "Pilih titik awal dan tujuan terlebih dahulu.",
+        };
+      }
+      setActiveMode(action.mode);
+      setEditingEndpoints(false);
+      setRouteSheetOpen(true);
+      setSidebarMode("route");
+      setSidebarCollapsed(false);
+      setDetailOpen(false);
+      return { status: "ROUTE_PENDING" };
+    }
+
+    if (action.type === "FOCUS_PLACE") {
+      const resolution = await resolveGetraPlace(
+        action.query,
+        [],
+      );
+      if (resolution.status === "AMBIGUOUS") {
+        return {
+          status: "REJECTED",
+          message: `Lokasinya belum unik. Pilih salah satu: ${resolution.candidates.join(", ")}.`,
+        };
+      }
+      if (resolution.status === "NOT_FOUND") {
+        return {
+          status: "REJECTED",
+          message: `Lokasi "${action.query}" belum ditemukan.`,
+        };
+      }
+      const place = resolution.place;
+      setPrimaryMode("merchant");
+      setViewMode("dataset");
+      setSidebarMode("search");
+      setSidebarCollapsed(false);
+      setDetailOpen(false);
+      const padding = 0.006;
+      if (place.merchant) {
+        setSelectedId(place.merchant.id);
+        setSearchFocusBounds({
+          west: place.merchant.longitude - padding,
+          south: place.merchant.latitude - padding,
+          east: place.merchant.longitude + padding,
+          north: place.merchant.latitude + padding,
+        });
+      } else {
+        setSearchFocusBounds({
+          west: place.coordinate.longitude - padding,
+          south: place.coordinate.latitude - padding,
+          east: place.coordinate.longitude + padding,
+          north: place.coordinate.latitude + padding,
+        });
+      }
+      setSearchFocusKey((key) => key + 1);
+      return {
+        status: "COMPLETED",
+        message: `${place.label} sudah saya fokuskan di peta.`,
+      };
+    }
+
+    if (action.type !== "CALCULATE_ROUTE") {
+      return {
+        status: "REJECTED",
+        message: "Saya memerlukan pilihan lokasi yang lebih spesifik.",
+      };
+    }
+
+    let resolvedOrigin: ResolvedPlace;
+    if (action.origin.type === "CURRENT_LOCATION") {
+      if (!userLocation) {
+        commuterLocation.startTracking();
+        return {
+          status: "REJECTED",
+          message: "Aktifkan lokasi perangkat agar saya dapat memakai posisi Anda sebagai titik awal.",
+        };
+      }
+      resolvedOrigin = {
+        id: "current-location",
+        label: "Lokasi saya",
+        coordinate: {
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+        },
+      };
+    } else if (action.origin.type === "MAP_POINT") {
+      resolvedOrigin = {
+        id: "ai-map-point",
+        label: "Titik pilihan",
+        coordinate: {
+          latitude: action.origin.latitude,
+          longitude: action.origin.longitude,
+        },
+      };
+    } else {
+      const resolution = await resolveGetraPlace(
+        action.origin.query,
+        [],
+      );
+      if (resolution.status === "AMBIGUOUS") {
+        return {
+          status: "REJECTED",
+          message: `Lokasi asalnya belum unik. Pilih salah satu: ${resolution.candidates.join(", ")}.`,
+        };
+      }
+      if (resolution.status === "NOT_FOUND") {
+        return {
+          status: "REJECTED",
+          message: `Lokasi "${action.origin.query}" belum ditemukan. Pilih titiknya di peta.`,
+        };
+      }
+      resolvedOrigin = resolution.place;
+    }
+
+    let resolvedDestination: ResolvedPlace;
+    const destination = action.destination;
+    if (destination.type === "SELECTED_MERCHANT") {
+      if (!selectedMerchant) {
+        return {
+          status: "REJECTED",
+          message: "Pilih tempat tujuan pada daftar atau peta terlebih dahulu.",
+        };
+      }
+      resolvedDestination = {
+        id: selectedMerchant.id,
+        label: selectedMerchant.name,
+        coordinate: {
+          latitude: selectedMerchant.latitude,
+          longitude: selectedMerchant.longitude,
+        },
+        merchant: selectedMerchant,
+      };
+    } else if (destination.type === "MERCHANT_ID") {
+      const merchant = merchants.find((item) => item.id === destination.merchant_id);
+      if (!merchant) {
+        return {
+          status: "REJECTED",
+          message: "Tempat tujuan tersebut belum tersedia pada konteks peta.",
+        };
+      }
+      resolvedDestination = {
+        id: merchant.id,
+        label: merchant.name,
+        coordinate: {
+          latitude: merchant.latitude,
+          longitude: merchant.longitude,
+        },
+        merchant,
+      };
+    } else {
+      const resolution = await resolveGetraPlace(
+        destination.query,
+        [],
+      );
+      if (resolution.status === "AMBIGUOUS") {
+        return {
+          status: "REJECTED",
+          message: `Tujuannya belum unik. Pilih salah satu: ${resolution.candidates.join(", ")}.`,
+        };
+      }
+      if (resolution.status === "NOT_FOUND") {
+        return {
+          status: "REJECTED",
+          message: `Tujuan "${destination.query}" belum ditemukan.`,
+        };
+      }
+      resolvedDestination = resolution.place;
+    }
+
+    setManualRouteStart(null);
+    setRouteOriginValue(`PLACE:${resolvedOrigin.id}`);
+    setExplicitRouteOrigin(resolvedOrigin);
+    setOriginSearch(resolvedOrigin.label);
+
+    if (resolvedDestination.merchant) {
+      handleRouteToMerchant(resolvedDestination.merchant);
+    } else {
+      setManualRouteDestination(resolvedDestination.coordinate);
+      setDestinationSearch(resolvedDestination.label);
+      setRouteDestinationId(null);
+      setRouteDestinationMerchant(null);
+    }
+
+    setActiveMode(action.mode);
+    setEditingEndpoints(false);
+    setRouteSheetOpen(true);
+    setMapPickMode("NONE");
+    setSidebarMode("route");
+    setSidebarCollapsed(false);
+    setDetailOpen(false);
+
+    return { status: "ROUTE_PENDING" };
+  }, [
+    applyAiSearchAction,
+    commuterLocation,
+    handleRouteToMerchant,
+    merchants,
+    routeDestination,
+    routeOrigin,
+    selectedMerchant,
+    userLocation,
+  ]);
+
 
   const handleRouteChoice =
     useCallback(
@@ -4016,6 +4239,12 @@ function GeneralGetraDashboard() {
               searchContext={aiSearchContext}
               getSearchRevision={() => searchRevision.current}
               onSearchAction={applyAiSearchAction}
+              onAction={handleAiAction}
+              activeRoute={route && route.distance_meters !== null && route.duration_seconds !== null ? {
+                mode: activeMode,
+                distance_meters: route.distance_meters,
+                duration_seconds: route.duration_seconds,
+              } : undefined}
               onMinimize={() => setAiOpen(false)} onClose={() => setAiOpen(false)}
             />
           </div>

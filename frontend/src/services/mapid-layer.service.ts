@@ -78,7 +78,6 @@ export interface GlobalSearchIntent {
     budget: { max_idr: number } | null;
     opening: { open_now: true; timezone: "Asia/Jakarta" } | null;
     walking: { max_minutes: number } | null;
-    radius?: { radius_meters: number } | null;
   };
   origin: {
     longitude: number;
@@ -87,6 +86,12 @@ export interface GlobalSearchIntent {
   } | null;
   parser: "DETERMINISTIC";
   confidence: "HIGH" | "MEDIUM";
+  query_resolution?: {
+    normalized: string;
+    canonical: string;
+    correction: string | null;
+    confidence: "EXACT" | "ALIAS" | "HIGH_FUZZY" | "NONE";
+  };
 }
 
 export interface CanonicalMerchantSearchOptions {
@@ -110,6 +115,86 @@ export interface CanonicalMerchantSearchOptions {
     latitude: number;
     source: "USER_LOCATION" | "SELECTED_POINT" | "EXPLICIT_ORIGIN";
   };
+}
+
+interface ResolvedPlaceCandidate {
+  id: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+}
+
+const EXPLICIT_PLACE_QUERY = /^(?:perumahan|komplek|kompleks|cluster|apartemen|apartment|gedung|jalan|jl\.?|mall|plaza|pasar|sekolah|kampus|universitas)\b/i;
+
+function placeBounds(place: ResolvedPlaceCandidate, radiusMeters = 1000): MapViewportBounds {
+  const latitudeDelta = radiusMeters / 111_320;
+  const longitudeScale = Math.max(Math.cos((place.latitude * Math.PI) / 180), 0.2);
+  const longitudeDelta = radiusMeters / (111_320 * longitudeScale);
+  return {
+    west: place.longitude - longitudeDelta,
+    south: place.latitude - latitudeDelta,
+    east: place.longitude + longitudeDelta,
+    north: place.latitude + latitudeDelta,
+  };
+}
+
+async function resolveExplicitPlaceFallback(
+  layer: CanonicalMerchantLayer,
+  options: CanonicalMerchantSearchOptions,
+): Promise<CanonicalMerchantLayer> {
+  const query = options.query?.trim() ?? "";
+  if (
+    layer.merchants.length > 0 ||
+    !EXPLICIT_PLACE_QUERY.test(query) ||
+    options.regionIds?.length ||
+    options.referenceText ||
+    options.maxBudget ||
+    options.openNow ||
+    options.maxWalkingMinutes
+  ) {
+    return layer;
+  }
+
+  try {
+    const resolved = await apiClient.get<{
+      candidates: ResolvedPlaceCandidate[];
+      query: string;
+      source: string;
+    }>(`/api/places/resolve?q=${encodeURIComponent(query)}`, { signal: options.signal });
+    if (resolved.candidates.length !== 1) return layer;
+
+    const place = resolved.candidates[0];
+    const bounds = placeBounds(place);
+    return {
+      ...layer,
+      bbox: bounds,
+      intent: {
+        ...layer.intent,
+        keyword: null,
+        location_text: place.label,
+        reference: {
+          id: place.id,
+          label: place.label,
+          longitude: place.longitude,
+          latitude: place.latitude,
+          type: "SELECTED_POINT",
+        },
+        radius_meters: 1000,
+        origin: {
+          longitude: place.longitude,
+          latitude: place.latitude,
+          source: "SELECTED_POINT",
+        },
+        scope: {
+          type: "CURRENT_VIEWPORT",
+          region_ids: [],
+          bounds,
+        },
+      },
+    };
+  } catch {
+    return layer;
+  }
 }
 
 export const mapidLayerService = {
@@ -148,10 +233,11 @@ export const mapidLayerService = {
       params.set("origin_latitude", String(options.origin.latitude));
       params.set("origin_source", options.origin.source);
     }
-    return apiClient.get<CanonicalMerchantLayer>(
+    const layer = await apiClient.get<CanonicalMerchantLayer>(
       `/api/merchants/canonical?${params.toString()}`,
       { signal: options.signal },
     );
+    return resolveExplicitPlaceFallback(layer, options);
   },
 
   async searchCanonicalMerchants(

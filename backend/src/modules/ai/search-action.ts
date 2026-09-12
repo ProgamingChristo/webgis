@@ -19,11 +19,78 @@ const ExtractionSchema = z.object({
   clarification: z.string().max(300),
 }).strict();
 
+const ADMIN_REGION_HINTS = [
+  { canonical: "Jakarta Barat", aliases: ["jakarta barat", "jakbar"] },
+  { canonical: "Jakarta Pusat", aliases: ["jakarta pusat", "jakpus"] },
+  { canonical: "Jakarta Selatan", aliases: ["jakarta selatan", "jaksel"] },
+  { canonical: "Jakarta Timur", aliases: ["jakarta timur", "jaktim"] },
+  { canonical: "Jakarta Utara", aliases: ["jakarta utara", "jakut"] },
+] as const;
+
+function normalizeRegionText(value: string) {
+  return value
+    .toLocaleLowerCase("id-ID")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function findAdministrativeRegionMention(value: string) {
+  const normalized = normalizeRegionText(value);
+  return ADMIN_REGION_HINTS.find((region) =>
+    region.aliases.some((alias) => {
+      const normalizedAlias = normalizeRegionText(alias);
+      return normalized === normalizedAlias
+        || normalized.startsWith(`${normalizedAlias} `)
+        || normalized.endsWith(` ${normalizedAlias}`)
+        || normalized.includes(` ${normalizedAlias} `);
+    }),
+  ) ?? null;
+}
+
+function ensureRegionInCriteriaQuery(
+  requestQuestion: string,
+  criteria: z.infer<typeof SearchCriteriaSchema>,
+) {
+  const region = findAdministrativeRegionMention(requestQuestion);
+  if (!region) return criteria;
+
+  const normalizedQuery = normalizeRegionText(criteria.query);
+  const alreadyContainsRegion = region.aliases.some((alias) => {
+    const normalizedAlias = normalizeRegionText(alias);
+    return normalizedQuery === normalizedAlias
+      || normalizedQuery.startsWith(`${normalizedAlias} `)
+      || normalizedQuery.endsWith(` ${normalizedAlias}`)
+      || normalizedQuery.includes(` ${normalizedAlias} `);
+  }) || normalizedQuery.includes(normalizeRegionText(region.canonical));
+
+  if (alreadyContainsRegion) return criteria;
+
+  const enriched = {
+    ...criteria,
+    query: `${criteria.query} ${region.canonical}`.trim().slice(0, 120),
+  };
+  const parsed = SearchCriteriaSchema.safeParse(enriched);
+  return parsed.success ? parsed.data : criteria;
+}
+
 export async function extractSearchAction(request: AiAskRequest) {
-  return generateStructured({
+  const result = await generateStructured({
     schema: ExtractionSchema, schemaName: "commuter_search_intent", maxTokens: 420,
     instructions: `Extract GETRA merchant search intent. Return CHAT for explanations about a selected place, routes, greetings, or non-search questions. Return SEARCH for finding food/businesses and changes to active search criteria. For follow-ups use current search_context, changing only requested fields. For a new search reset prior constraints. query is only the food/business keyword, no budget/location/request filler. Expand common Indonesian food aliases when unambiguous. reference_text is an explicitly NAMED transit station/stop only, copied from the request; never invent a station or coordinates. For unnamed "dekat stasiun/halte" return CLARIFY asking for its name, rather than picking one. Set near_user for "dekat saya/sekitar sini". radius_meters is the requested radius, or 1000 for near_user/named transit without an explicit radius. If location is an administrative region retain its name in query for the canonical region parser. "Enak" is not evidence; remove taste adjectives from query. Do not return merchant data, taste claims, ratings, scores, distances, prices of merchants, or execution-success claims. If request is ambiguous or unsupported return CLARIFY with a brief Indonesian question. All nullable criteria fields must be explicit null. Default sort RELEVANCE, open_now false, near_user false.`,
     input: JSON.stringify({ question: request.question, search_context: request.context?.search_context ?? null,
       history: request.history?.slice(-4) ?? [] }),
   });
+
+  if (!result || result.data.action !== "SEARCH" || !result.data.criteria) {
+    return result;
+  }
+
+  return {
+    ...result,
+    data: {
+      ...result.data,
+      criteria: ensureRegionInCriteriaQuery(request.question, result.data.criteria),
+    },
+  };
 }
