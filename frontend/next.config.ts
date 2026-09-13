@@ -1,6 +1,22 @@
 import type { NextConfig } from "next";
+import { networkInterfaces } from "node:os";
+
+const localDevOrigins = [
+  ...new Set(
+    Object.values(networkInterfaces()).flatMap((addresses) =>
+      (addresses ?? [])
+        .filter(
+          (address) => address.family === "IPv4" && !address.internal,
+        )
+        .map((address) => address.address),
+    ),
+  ),
+];
 
 const nextConfig: NextConfig = {
+  // Izinkan browser mengakses dev assets lewat alamat LAN laptop yang aktif.
+  allowedDevOrigins: localDevOrigins,
+
   // A separate output directory permits an isolated routing preview beside the owner's dev server.
   distDir: process.env.GETRA_FRONTEND_DIST_DIR || ".next",
   // Dibutuhkan untuk Docker image Christo

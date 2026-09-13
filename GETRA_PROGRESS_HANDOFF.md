@@ -1,5 +1,7 @@
 # GETRA / WebGIS — Progress Handoff & Continuation Checklist
 
+> **ARSIP:** Dokumen ini masih menggambarkan branch `finalmerge` pada Agustus 2026. Gunakan [`GETRA_AIGETRA_HANDOFF_2026-09-13.md`](./GETRA_AIGETRA_HANDOFF_2026-09-13.md) untuk current `AIgetra` worktree.
+
 > **Project:** GETRA — Geo-Enabled Transit & Retail Analytics  
 > **Repo:** `C:\Users\Revan Anthony\OneDrive\Documents\GitHub\webgis`  
 > **Branch integrasi:** `finalmerge`  

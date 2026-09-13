@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSuccessResponse, createErrorResponse } from "@/src/lib/api-response";
 import { ApplicationError } from "@/src/lib/errors";
 import { getRequestId } from "@/src/lib/request-id";
-import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
+import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
 import { requireRole } from "@/src/lib/auth";
 import { withApiLogger } from "@/src/lib/api-logger";
 import { createOptionsHandler } from "@/src/lib/api-security";
@@ -22,7 +22,8 @@ export async function POST(
 
   return withApiLogger(req, reqId, async () => {
     const { userId: adminId } = await requireRole(req, "ADMIN");
-    const supabase = getServiceRoleSupabaseClient();
+    // Use request-scoped client so auth.uid() is populated inside RPC SECURITY DEFINER functions
+    const supabase = getRequestSupabaseClient(req.headers.get("Authorization")!);
 
     const body = await req.json().catch(() => ({}));
     const parsed = adminApproveSubmissionSchema.safeParse(body);
