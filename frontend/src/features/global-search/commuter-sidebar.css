@@ -487,3 +487,27 @@
     box-shadow: 0 18px 48px #10235730;
   }
 }
+
+.commuter-merchant__rank {
+  display: grid;
+  place-items: center;
+  align-self: flex-start;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: #e9eef5;
+  color: #52658a;
+  font-size: 9px;
+  font-weight: 800;
+}
+.commuter-merchant[aria-pressed="true"] .commuter-merchant__rank {
+  background: var(--commuter-blue);
+  color: #fff;
+}
+.commuter-merchant__reasons {
+  color: #087f9d !important;
+  font-size: 9px !important;
+  font-weight: 700;
+}
+

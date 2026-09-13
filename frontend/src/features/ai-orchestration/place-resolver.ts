@@ -53,10 +53,18 @@ export async function resolveGetraPlace(
     };
   }
 
-  const remoteTransport = await getraApiGet<PaginatedEnvelope<TransportNodeDto>>(
-    "/api/v1/transport/nodes",
-    { query: { q: query, limit: 5, page: 1 } },
-  );
+  let remoteTransport: PaginatedEnvelope<TransportNodeDto> = {
+    items: [],
+  };
+  try {
+    remoteTransport = await getraApiGet<PaginatedEnvelope<TransportNodeDto>>(
+      "/api/v1/transport/nodes",
+      { query: { q: query, limit: 5, page: 1 } },
+    );
+  } catch {
+    // Continue to canonical merchants and bounded place resolution. A temporary
+    // transport-index failure must not make every address search fail.
+  }
   const remoteResolution = resolveEntityCandidates(
     query,
     remoteTransport.items.filter((node) => node.geometry?.type === "Point"),
@@ -78,10 +86,20 @@ export async function resolveGetraPlace(
     };
   }
 
-  const layers = [await mapidLayerService.searchCanonicalMerchants(query, { limit: 12 })];
-  if (layers[0].merchants.length === 0) {
+  const layers: Array<{ merchants: Merchant[] }> = [];
+  try {
+    layers.push(await mapidLayerService.searchCanonicalMerchants(query, { limit: 12 }));
+  } catch {
+    // General place resolution remains useful when merchant search is
+    // temporarily unavailable.
+  }
+  if (layers.every((layer) => layer.merchants.length === 0)) {
     for (const term of entityRetrievalTerms(query).slice(0, 2)) {
-      layers.push(await mapidLayerService.searchCanonicalMerchants(term, { limit: 12 }));
+      try {
+        layers.push(await mapidLayerService.searchCanonicalMerchants(term, { limit: 12 }));
+      } catch {
+        // Try the remaining bounded terms, then fall through to place lookup.
+      }
     }
   }
   const candidates = [...new Map(layers.flatMap((layer) => layer.merchants).map((merchant) => [merchant.id, merchant])).values()];

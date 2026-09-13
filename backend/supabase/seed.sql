@@ -39,6 +39,12 @@ INSERT INTO public.user_stakeholder_modes (user_id, mode)
 VALUES ('00000000-0000-0000-0000-000000000002', 'UMKM')
 ON CONFLICT DO NOTHING;
 
+-- The local admin also receives UMKM product context so the existing promotion
+-- workspace can inspect and exercise the development campaigns below.
+INSERT INTO public.user_stakeholder_modes (user_id, mode)
+VALUES ('00000000-0000-0000-0000-000000000001', 'UMKM')
+ON CONFLICT DO NOTHING;
+
 -- Spatial fixtures are synthetic DEV/TEST records only. Coordinates are deliberately
 -- simple and do not represent a real study area, transport route, or research data.
 INSERT INTO public.spatial_sources (
@@ -122,3 +128,100 @@ INSERT INTO public.umkm_profiles (
   'TEST ADDRESS - NOT PRODUCTION DATA',
   ST_SetSRID(ST_MakePoint(0.006, 0.006), 4326)
 );
+
+-- ---------------------------------------------------------------------------
+-- GETRA advertising fixtures: local development only, never Premium MAPID.
+-- Stable identifiers plus ON CONFLICT make this section safe to run repeatedly.
+-- ---------------------------------------------------------------------------
+INSERT INTO public.merchants (
+  id, name, description, address, location, owner_id, created_by,
+  publish_status, verification_status, price_level, metadata
+) VALUES
+  (
+    '20000000-0000-0000-0000-000000000001',
+    'GETRA Demo Kopi Transit',
+    'Fixture promosi untuk pengujian lokal GETRA.',
+    'AREA UJI JAKARTA - BUKAN DATA PRODUKSI',
+    extensions.ST_SetSRID(extensions.ST_MakePoint(106.8219, -6.1945), 4326)::extensions.geography,
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000001',
+    'PUBLISHED', 'VERIFIED', 'BUDGET',
+    '{"fixture":true,"environment":"development","provenance":"GETRA_APP_OWNED_DEMO","category_label":"Kedai Kopi"}'::jsonb
+  ),
+  (
+    '20000000-0000-0000-0000-000000000002',
+    'GETRA Demo Bakso Komuter',
+    'Fixture promosi untuk pengujian lokal GETRA.',
+    'AREA UJI JAKARTA - BUKAN DATA PRODUKSI',
+    extensions.ST_SetSRID(extensions.ST_MakePoint(106.8301, -6.2071), 4326)::extensions.geography,
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000001',
+    'PUBLISHED', 'VERIFIED', 'BUDGET',
+    '{"fixture":true,"environment":"development","provenance":"GETRA_APP_OWNED_DEMO","category_label":"Makanan"}'::jsonb
+  ),
+  (
+    '20000000-0000-0000-0000-000000000003',
+    'GETRA Demo Sarapan Pagi',
+    'Fixture promosi nonaktif untuk pengujian alur Admin.',
+    'AREA UJI JAKARTA - BUKAN DATA PRODUKSI',
+    extensions.ST_SetSRID(extensions.ST_MakePoint(106.8130, -6.2002), 4326)::extensions.geography,
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000001',
+    'PUBLISHED', 'VERIFIED', 'BUDGET',
+    '{"fixture":true,"environment":"development","provenance":"GETRA_APP_OWNED_DEMO","category_label":"Sarapan"}'::jsonb
+  )
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  address = EXCLUDED.address,
+  location = EXCLUDED.location,
+  owner_id = EXCLUDED.owner_id,
+  publish_status = EXCLUDED.publish_status,
+  verification_status = EXCLUDED.verification_status,
+  price_level = EXCLUDED.price_level,
+  metadata = EXCLUDED.metadata,
+  updated_at = now();
+
+INSERT INTO public.ad_campaigns (
+  id, merchant_id, created_by, name, description, status, start_at, end_at
+) VALUES
+  ('21000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'GETRA Demo - Kopi Transit Aktif', 'Kampanye fixture yang dapat dilayani di lingkungan lokal.', 'ACTIVE', now() - interval '1 day', now() + interval '90 days'),
+  ('21000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'GETRA Demo - Bakso Komuter Aktif', 'Kampanye fixture yang dapat dilayani di lingkungan lokal.', 'ACTIVE', now() - interval '1 day', now() + interval '90 days'),
+  ('21000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'GETRA Demo - Sarapan Pagi Draf', 'Kampanye fixture nonaktif untuk pengujian pengelolaan.', 'DRAFT', now() + interval '7 days', now() + interval '97 days')
+ON CONFLICT (id) DO UPDATE SET
+  merchant_id = EXCLUDED.merchant_id,
+  created_by = EXCLUDED.created_by,
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  status = EXCLUDED.status,
+  start_at = EXCLUDED.start_at,
+  end_at = EXCLUDED.end_at,
+  updated_at = now();
+
+INSERT INTO public.ad_creatives (
+  id, campaign_id, creative_type, headline, description, cta_type, status
+) VALUES
+  ('22000000-0000-0000-0000-000000000001', '21000000-0000-0000-0000-000000000001', 'SPONSORED_PIN', 'Kopi singgah dekat perjalananmu', 'Fixture promosi lokal GETRA.', 'VIEW_PROFILE', 'READY'),
+  ('22000000-0000-0000-0000-000000000002', '21000000-0000-0000-0000-000000000002', 'SPONSORED_PIN', 'Bakso untuk jeda komutermu', 'Fixture promosi lokal GETRA.', 'REQUEST_ROUTE', 'READY'),
+  ('22000000-0000-0000-0000-000000000003', '21000000-0000-0000-0000-000000000003', 'SPONSORED_PIN', 'Sarapan sebelum berangkat', 'Fixture promosi lokal GETRA.', 'VIEW_PROFILE', 'DRAFT')
+ON CONFLICT (id) DO UPDATE SET
+  campaign_id = EXCLUDED.campaign_id,
+  creative_type = EXCLUDED.creative_type,
+  headline = EXCLUDED.headline,
+  description = EXCLUDED.description,
+  cta_type = EXCLUDED.cta_type,
+  status = EXCLUDED.status,
+  updated_at = now();
+
+INSERT INTO public.ad_campaign_targets (
+  id, campaign_id, target_type, radius_meters, center_geometry
+) VALUES
+  ('23000000-0000-0000-0000-000000000001', '21000000-0000-0000-0000-000000000001', 'RADIUS', 5000, extensions.ST_SetSRID(extensions.ST_MakePoint(106.8219, -6.1945), 4326)),
+  ('23000000-0000-0000-0000-000000000002', '21000000-0000-0000-0000-000000000002', 'RADIUS', 5000, extensions.ST_SetSRID(extensions.ST_MakePoint(106.8301, -6.2071), 4326)),
+  ('23000000-0000-0000-0000-000000000003', '21000000-0000-0000-0000-000000000003', 'RADIUS', 5000, extensions.ST_SetSRID(extensions.ST_MakePoint(106.8130, -6.2002), 4326))
+ON CONFLICT (campaign_id) DO UPDATE SET
+  target_type = EXCLUDED.target_type,
+  radius_meters = EXCLUDED.radius_meters,
+  study_area_id = NULL,
+  center_geometry = EXCLUDED.center_geometry,
+  updated_at = now();

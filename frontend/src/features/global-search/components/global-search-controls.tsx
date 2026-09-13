@@ -43,9 +43,10 @@ function formatRadius(radius: number | null | undefined) {
   return radius < 1000 ? `${radius} m` : `${radius / 1000} km`;
 }
 
-export function GlobalSearchControls(props: GlobalSearchControlsProps) {
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [regionsOpen, setRegionsOpen] = useState(false);
+export function GlobalSearchControls(props: GlobalSearchControlsProps & { onRetry?: () => void }) {
+  const [disclosure, setDisclosure] = useState<"FILTER" | "REGION" | null>(null);
+  const filtersOpen = disclosure === "FILTER";
+  const regionsOpen = disclosure === "REGION";
   const reference = props.discoveryRadius ? null : props.intent?.reference;
   const locationLabel = reference?.label
     ?? (props.discoveryRadius ? null : props.intent?.location_text)
@@ -66,7 +67,7 @@ export function GlobalSearchControls(props: GlobalSearchControlsProps) {
 
     <div className="commuter-area-bar">
       <span><MapPin size={13} aria-hidden="true" />Peta <strong>{locationLabel}</strong></span>
-      <button type="button" aria-expanded={regionsOpen} aria-controls="commuter-regions" onClick={() => setRegionsOpen(!regionsOpen)}>Ganti area</button>
+      <button type="button" aria-expanded={regionsOpen} aria-controls="commuter-regions" onClick={() => setDisclosure(regionsOpen ? null : "REGION")}>Ganti area</button>
     </div>
 
     <form className="commuter-search__form" onSubmit={(event) => { event.preventDefault(); props.onSubmit(); }}>
@@ -82,8 +83,8 @@ export function GlobalSearchControls(props: GlobalSearchControlsProps) {
     </form>
 
     <div className="commuter-filter-bar">
-      <button className="commuter-filter-trigger" type="button" aria-expanded={filtersOpen} aria-controls="commuter-filters" onClick={() => setFiltersOpen(!filtersOpen)}><SlidersHorizontal size={14} />Filter</button>
-      <button className="commuter-radius-state" type="button" disabled={radiusDisabled} aria-expanded={filtersOpen} aria-controls="commuter-filters" onClick={() => setFiltersOpen(true)}>Radius {radiusLabel}</button>
+      <button className="commuter-filter-trigger" type="button" aria-expanded={filtersOpen} aria-controls="commuter-filters" onClick={() => setDisclosure(filtersOpen ? null : "FILTER")}><SlidersHorizontal size={14} />Filter</button>
+      <button className="commuter-radius-state" type="button" disabled={radiusDisabled} aria-expanded={filtersOpen} aria-controls="commuter-filters" onClick={() => setDisclosure("FILTER")}>Radius {radiusLabel}</button>
     </div>
 
     {(props.query || radius || props.openNow || props.maxBudget || props.maxWalkingMinutes || reference?.type === "TRANSIT") ? <div className="commuter-chips" aria-label="Filter aktif">
@@ -96,7 +97,7 @@ export function GlobalSearchControls(props: GlobalSearchControlsProps) {
     </div> : null}
 
     <div id="commuter-filters" hidden={!filtersOpen} className="commuter-filter-panel">
-      <header><strong>Filter Pencarian</strong><button type="button" aria-label="Tutup filter" onClick={() => setFiltersOpen(false)}><X size={15} /></button></header>
+      <header><strong>Filter Pencarian</strong><button type="button" aria-label="Tutup filter" onClick={() => setDisclosure(null)}><X size={15} /></button></header>
       <fieldset disabled={radiusDisabled}>
         <legend>Radius</legend>
         <div className="commuter-radius-options">
@@ -108,18 +109,18 @@ export function GlobalSearchControls(props: GlobalSearchControlsProps) {
       <fieldset><legend>Kisaran harga</legend><label>Anggaran maksimal<input type="number" inputMode="numeric" min={1000} max={10000000} step={1000} value={props.maxBudget} placeholder="Contoh: 20000" onChange={(event) => props.onMaxBudgetChange(event.target.value)} /></label></fieldset>
       <label className="commuter-check"><input type="checkbox" checked={props.openNow} onChange={(event) => props.onOpenNowChange(event.target.checked)} />Buka sekarang</label>
       <label className="commuter-filter-select">Maksimum jalan kaki<select value={props.maxWalkingMinutes ?? ""} disabled={radiusDisabled} onChange={(event) => props.onMaxWalkingMinutesChange(event.target.value ? Number(event.target.value) : null)}><option value="">Tanpa batas</option>{[5, 10, 15, 20, 30].map((minutes) => <option key={minutes} value={minutes}>{minutes} menit</option>)}</select></label>
-      <footer><button type="button" onClick={props.onClear}>Reset</button><button type="button" className="commuter-apply" disabled={props.loading} onClick={() => { props.onSubmit(); setFiltersOpen(false); }}>Terapkan Filter</button></footer>
+      <footer><button type="button" onClick={props.onClear}>Reset</button><button type="button" className="commuter-apply" disabled={props.loading} onClick={() => { props.onSubmit(); setDisclosure(null); }}>Terapkan Filter</button></footer>
     </div>
 
     <div id="commuter-regions" hidden={!regionsOpen} className="commuter-region-panel">
       <div className="commuter-location-action"><button type="button" onClick={props.onLocate} disabled={props.locating}><LocateFixed size={14} />{props.locating ? "Mengambil lokasi…" : "Gunakan lokasi saya"}</button></div>
       <fieldset><legend>Pilih satu atau beberapa wilayah</legend>{props.regions.map((region) => <label className="commuter-region" key={region.id}><input type="checkbox" checked={props.selectedRegionIds.includes(region.id)} onChange={() => props.onToggleRegion(region.id)} />{region.name}</label>)}{!props.regions.length ? <small>Daftar wilayah belum tersedia.</small> : null}</fieldset>
-      <button type="button" className="commuter-apply" onClick={() => { props.onSearchThisArea(); setRegionsOpen(false); }} disabled={props.loading}>Gunakan area peta saat ini</button>
+      <button type="button" className="commuter-apply" onClick={() => { props.onSearchThisArea(); setDisclosure(null); }} disabled={props.loading}>Gunakan area peta saat ini</button>
     </div>
 
     {props.locationError ? <p className="location-error" role="alert">{props.locationError}</p> : null}
     {props.mapMoved ? <button type="button" className="commuter-search-area" onClick={props.onSearchThisArea} disabled={props.loading}>Cari di area peta ini</button> : null}
     {props.intent?.query_resolution?.correction ? <p className="global-search__correction">Menampilkan hasil untuk &quot;{props.intent.query_resolution.canonical}&quot;. Input awal: &quot;{props.intent.original_query}&quot;.</p> : null}
-    {props.error ? <div className="commuter-error" role="alert">Tempat belum dapat dimuat. Coba lagi.<button type="button" onClick={props.onSubmit}>Coba lagi</button></div> : null}
+    {props.error ? <div className="commuter-error" role="alert"><span>{props.error}</span><button type="button" onClick={props.onRetry ?? props.onSubmit}>Coba lagi</button></div> : null}
   </section>;
 }
