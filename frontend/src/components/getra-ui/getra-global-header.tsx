@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Database, LogOut, Menu, RefreshCw, ShieldCheck, Store, UsersRound, MapPinned, X } from "lucide-react";
+import { Building2, Database, LogOut, Megaphone, Menu, RefreshCw, ShieldCheck, Store, UsersRound, MapPinned, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from "react";
@@ -96,7 +96,7 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
       {contextActions ? <div className="getra-global-header__context">{contextActions}</div> : null}
       <div className="getra-global-header__actions">
         {utilities}
-        <div className="getra-utility-menu">
+        {isAdmin ? <div className="getra-utility-menu">
           <button aria-expanded={utilityOpen} className="getra-utility-menu__trigger" onClick={() => setUtilityOpen((open) => !open)} type="button">Fitur</button>
           {utilityOpen ? (
             <div className="getra-utility-menu__panel">
@@ -108,6 +108,7 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
                   <Link href="/admin/mission-data" onClick={closeMenus}><RefreshCw size={16} />Data Lapangan</Link>
                   <Link href="/admin/import" onClick={closeMenus}><Database size={16} />Impor Data</Link>
                   <Link href="/admin/community/contributions" onClick={closeMenus}><ShieldCheck size={16} />Moderasi Kontribusi</Link>
+                  <Link href="/umkm/advertising" onClick={closeMenus}><Megaphone size={16} />Promosi UMKM</Link>
                 </>
               ) : null}
               <button className="getra-utility-menu__logout" disabled={loggingOut} onClick={handleLogout} type="button">
@@ -115,7 +116,7 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
               </button>
             </div>
           ) : null}
-        </div>
+        </div> : null}
         <AccountMenu context={context} loggingOut={loggingOut} onLogout={() => void handleLogout()} />
         <button ref={menuTriggerRef} aria-expanded={menuOpen} aria-label="Buka menu GETRA" className="getra-global-header__menu" onClick={() => setMenuOpen(true)} type="button"><Menu size={18} /><span>Menu</span></button>
       </div>
@@ -142,6 +143,7 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
                   <Link href="/admin/mission-data" onClick={closeMenus}><RefreshCw size={17} />Data Lapangan</Link>
                   <Link href="/admin/import" onClick={closeMenus}><Database size={17} />Impor Data</Link>
                   <Link href="/admin/community/contributions" onClick={closeMenus}><ShieldCheck size={17} />Moderasi Kontribusi</Link>
+                  <Link href="/umkm/advertising" onClick={closeMenus}><Megaphone size={17} />Promosi UMKM</Link>
                 </>
               ) : null}
             </nav>

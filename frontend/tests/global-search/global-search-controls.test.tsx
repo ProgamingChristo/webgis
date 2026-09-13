@@ -56,7 +56,9 @@ describe("GlobalSearchControls", () => {
     expect(html).toContain("Jakarta Selatan");
     expect(html).toContain("Cari di area peta ini");
     expect(html).toContain("Filter Pencarian");
-    expect(html).toContain("Radius");
+    expect(html).not.toContain("Brand");
+    expect(html).toContain("Harga maksimal");
+    expect(html).not.toContain("Aktifkan lokasi atau pilih acuan agar radius dapat digunakan");
     expect(html).toContain('aria-live="polite"');
   });
 });

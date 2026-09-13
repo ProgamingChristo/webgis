@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { merchantDistance, merchantPrice, MerchantResultRow } from "@/src/features/global-search/components/merchant-result-row";
+import { merchantDistance, merchantPrice, merchantResultReasons, MerchantResultRow } from "@/src/features/global-search/components/merchant-result-row";
 import { CommuterSidebar } from "@/src/features/global-search/components/commuter-sidebar";
 import { PlaceDetailDrawer } from "@/src/features/global-search/components/place-detail-drawer";
 import { apiClient } from "@/src/lib/api-client";
@@ -30,12 +30,24 @@ describe("commuter merchant evidence", () => {
   it("renders only validated route, numeric price, and opening evidence", () => {
     const valid: Merchant = { ...merchant, openingStatus: "OPEN", observedPriceAmount: 12000,
       networkRouteStatus: "ROUTABLE", networkDurationSeconds: 240, networkDistanceMeters: 300 };
-    const html = renderToStaticMarkup(<MerchantResultRow merchant={valid} selected onSelect={vi.fn()} budget={15000} />);
+    const html = renderToStaticMarkup(<MerchantResultRow merchant={valid} selected onSelect={vi.fn()} budget={15000} rank={1} sort="NEAREST" />);
     expect(merchantDistance(valid)).toBe("4 menit · 300 m");
     expect(html).toContain("Rp12.000");
     expect(html).toContain("Buka sekarang");
     expect(html).toContain("Masuk anggaran");
     expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain("Peringkat 1");
+    expect(html).toContain("Paling dekat");
+    expect(html).toContain("Sesuai anggaran");
+  });
+  it("derives recommendation reasons from route and price evidence", () => {
+    const valid: Merchant = { ...merchant, openingStatus: "OPEN", observedPriceAmount: 15000,
+      networkRouteStatus: "ROUTABLE", networkDurationSeconds: 480, networkDistanceMeters: 500 };
+    expect(merchantResultReasons(valid, { budget: 15000, rank: 1, sort: "NEAREST" })).toEqual([
+      "Paling dekat · 500 m",
+      "Sesuai anggaran ≤ Rp15rb",
+    ]);
+    expect(merchantResultReasons({ ...merchant, observedPriceAmount: null }, { budget: 15000 })).not.toContain("Sesuai anggaran ≤ Rp15rb");
   });
   it("rejects non-finite and zero numeric price evidence", () => {
     for (const observedPriceAmount of [NaN, Infinity, -1, 0]) {
@@ -48,10 +60,16 @@ describe("commuter merchant evidence", () => {
     expect(html).toContain('data-status="SPONSORED"');
   });
   it("renders a consumer place detail without internal data tiles or invented menu text", () => {
-    const html = renderToStaticMarkup(<PlaceDetailDrawer merchant={{ ...merchant, address: "Jl. Contoh 1", photo: "https://images.example.test/place.jpg" }} onRoute={vi.fn()} />);
+    const html = renderToStaticMarkup(<PlaceDetailDrawer merchant={{ ...merchant, address: "Jl. Contoh 1", photo: "https://images.example.test/place.jpg", menuPhotos: ["https://images.example.test/menu.jpg"] }} onRoute={vi.fn()} />);
     expect(html).toContain("Jl. Contoh 1");
     expect(html).toContain("Rute ke sini");
-    expect(html).toContain("Belum ada catatan komunitas untuk tempat ini");
+    expect(html).toContain("Foto utama Merchant tanpa metadata");
+    expect(html).toContain("Memeriksa catatan Community");
+    expect(html).toContain("Foto &amp; Menu");
+    expect(html).toContain("Tempat");
+    expect(html).toContain("Menu");
+    expect(html).toContain("Perbesar foto menu 1");
+    expect(html).not.toContain("Belum ada catatan komunitas untuk tempat ini");
     expect(html).not.toContain("Jam buka belum tersedia");
     expect(html).not.toContain("Harga belum tersedia");
     expect(html).not.toContain("Data GETRA");
@@ -61,10 +79,10 @@ describe("commuter merchant evidence", () => {
 });
 
 describe("commuter sidebar modes", () => {
-  it("retains route controls while search mode hides the planner and exposes its summary", () => {
+  it("retains route controls while search mode hides the planner without a duplicate route affordance", () => {
     const html = renderToStaticMarkup(<CommuterSidebar mode="search" onModeChange={vi.fn()} onCollapse={vi.fn()} route={<span>Route controls</span>}><span>Canonical results</span></CommuterSidebar>);
     expect(html).toContain('<div hidden=""><span>Route controls</span></div>');
-    expect(html).toContain("Rute Perjalanan");
+    expect(html).not.toContain("Rute Perjalanan");
     expect(html).toContain("Canonical results");
     expect(html).not.toContain("Asisten");
   });

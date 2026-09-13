@@ -23,7 +23,7 @@ export default function AdvertisingPage() {
   );
 }
 
-export function MerchantAdvertising() {
+function MerchantAdvertising() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { ownedMerchants, ineligibleMerchants, loading, error, refetch } = useUserMerchants();

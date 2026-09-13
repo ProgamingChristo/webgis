@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AdServingService } from "@/src/features/umkm-advertising/ad-serving/services/ad-serving.service";
+import { AdServingService, isPubliclyEligibleMerchant } from "@/src/features/umkm-advertising/ad-serving/services/ad-serving.service";
 import { AdServingContextInvalidError } from "@/src/features/umkm-advertising/ad-serving/errors/ad-serving.errors";
 
 describe("AdServingService Unit Tests", () => {
@@ -96,6 +96,27 @@ describe("AdServingService Unit Tests", () => {
   });
 
   describe("Public DTO Safety & Contract", () => {
+    it("bases public serving eligibility on canonical publication data rather than viewer ownership", () => {
+      expect(isPubliclyEligibleMerchant({
+        ...validMerchant,
+        publish_status: "PUBLISHED",
+        verification_status: "VERIFIED",
+        primary_category_id: null,
+      })).toBe(true);
+      expect(isPubliclyEligibleMerchant({
+        ...validMerchant,
+        publish_status: "HIDDEN",
+        verification_status: "VERIFIED",
+        primary_category_id: null,
+      })).toBe(false);
+      expect(isPubliclyEligibleMerchant({
+        ...validMerchant,
+        publish_status: "PUBLISHED",
+        verification_status: "UNVERIFIED",
+        primary_category_id: null,
+      })).toBe(false);
+    });
+
     it("should produce a strictly safe SponsoredPinDTO without leaking private/financial fields", () => {
       const rawRecord: any = {
         campaign: {

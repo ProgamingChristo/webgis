@@ -1,4 +1,4 @@
-import { ApiError, apiClient } from "@/src/lib/api-client";
+import { ApiError, routingApiClient } from "@/src/lib/api-client";
 import { AuthSessionError } from "@/src/lib/auth-client";
 import { isRouteGeometry } from "@/src/features/routing/route-geometry";
 import { z } from "zod";
@@ -232,7 +232,7 @@ export const routingService = {
     if (signal?.aborted) controller.abort();
     const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 20_000);
     try {
-      const result = await apiClient.post<unknown>("/api/routing", {
+      const result = await routingApiClient.post<unknown>("/api/routing", {
         origin: request.origin,
         destination: request.destination,
         mode,
@@ -261,7 +261,7 @@ export const routingService = {
   },
 
   async getNearestTransport(request: NearestTransportRequest): Promise<NearestTransportResult> {
-    return apiClient.post<NearestTransportResult>(
+    return routingApiClient.post<NearestTransportResult>(
       "/api/transport/nearest",
       request
     );

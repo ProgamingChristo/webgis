@@ -2,9 +2,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "@/src/types/database.types";
 import { AdServingRepository, CandidateCampaignRecord } from "../repositories/ad-serving.repository";
 import { CampaignLifecycleService } from "../../lifecycle/services/campaign-lifecycle.service";
-import { CampaignReadinessService } from "../../lifecycle/services/campaign-readiness.service";
-import { AdvertisingEligibilityService } from "../../services/advertising-eligibility.service";
-import { MerchantOwnershipService } from "@/src/features/merchant-ownership";
+import type { CampaignReadinessResult } from "../../lifecycle/types/lifecycle.types";
 import { CtaType } from "../../creative/types/creative.types";
 import {
   QueryCandidatesOptions,
@@ -23,15 +21,10 @@ import { AdServingContextInvalidError } from "../errors/ad-serving.errors";
 export class AdServingService {
   private readonly repository: AdServingRepository;
   private readonly lifecycleService: CampaignLifecycleService;
-  private readonly readinessService: CampaignReadinessService;
-  private readonly eligibilityService: AdvertisingEligibilityService;
 
   constructor(private readonly supabase: SupabaseClient<Database>) {
     this.repository = new AdServingRepository(supabase);
     this.lifecycleService = new CampaignLifecycleService(supabase);
-    this.readinessService = new CampaignReadinessService(supabase);
-    const ownershipService = new MerchantOwnershipService(supabase);
-    this.eligibilityService = new AdvertisingEligibilityService(supabase, ownershipService);
   }
 
   /**
@@ -69,38 +62,9 @@ export class AdServingService {
     for (const item of rawCandidates) {
       const { campaign, merchant, creative, target } = item;
 
-      // 3.1. Evaluate Campaign Readiness & Effective Lifecycle Status
-      const readiness = await this.readinessService.evaluateReadiness(
-        campaign.merchant_id,
-        campaign.id,
-        {
-          start_at: campaign.start_at,
-          end_at: campaign.end_at,
-          status: campaign.status,
-        },
-        now
-      );
-
-      const effectiveStatus = this.lifecycleService.getEffectiveCampaignStatus(
-        campaign.status,
-        readiness,
-        campaign.start_at,
-        campaign.end_at,
-        now
-      );
-
-      // Must strictly be ACTIVE
-      if (effectiveStatus !== "ACTIVE") {
-        continue;
-      }
-
-      // 3.2. Merchant Eligibility check
-      if (!merchant || merchant.publish_status === "ARCHIVED") {
-        continue;
-      }
-
-      const isMerchantEligible = await this.eligibilityService.verifyEligibility(merchant.id);
-      if (!isMerchantEligible) {
+      // Public serving eligibility is a property of the merchant and campaign.
+      // It must not depend on whether the viewing commuter owns the merchant.
+      if (!isPubliclyEligibleMerchant(merchant)) {
         continue;
       }
 
@@ -128,6 +92,20 @@ export class AdServingService {
       if (!target) {
         continue;
       }
+
+      const readiness: CampaignReadinessResult = {
+        ready: true,
+        checks: { merchant: true, creative: true, targeting: true, schedule: true },
+        blockers: [],
+      };
+      const effectiveStatus = this.lifecycleService.getEffectiveCampaignStatus(
+        campaign.status,
+        readiness,
+        campaign.start_at,
+        campaign.end_at,
+        now,
+      );
+      if (effectiveStatus !== "ACTIVE") continue;
 
       const isInside = await this.evaluateSpatialMatch(target, merchantCoords, context);
       if (!isInside) {
@@ -287,4 +265,13 @@ export class AdServingService {
       image_url: creative?.image_path || null,
     };
   }
+}
+
+export function isPubliclyEligibleMerchant(merchant: CandidateCampaignRecord["merchant"]): merchant is NonNullable<CandidateCampaignRecord["merchant"]> {
+  return Boolean(
+    merchant
+    && merchant.publish_status === "PUBLISHED"
+    && merchant.verification_status === "VERIFIED"
+    && merchant.location,
+  );
 }

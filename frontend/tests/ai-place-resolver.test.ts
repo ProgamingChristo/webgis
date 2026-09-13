@@ -70,4 +70,28 @@ describe("GETRA deterministic place resolver", () => {
       place: { label: "JPO Blok E", coordinate: { latitude: -6.1846856, longitude: 106.8148915 } },
     });
   });
+
+  it("still resolves a place when transport and merchant indexes are temporarily unavailable", async () => {
+    mocks.getraApiGet.mockImplementation((path: string) => path === "/api/v1/transport/nodes"
+      ? Promise.reject(new Error("transport unavailable"))
+      : Promise.resolve({
+          data: {
+            candidates: [{
+              id: "station-manggarai",
+              label: "Stasiun Manggarai",
+              latitude: -6.2099,
+              longitude: 106.8502,
+            }],
+          },
+        }));
+    mocks.searchCanonicalMerchants.mockRejectedValue(new Error("merchant search unavailable"));
+
+    await expect(resolveGetraPlace("Stasiun Manggarai", [])).resolves.toMatchObject({
+      status: "RESOLVED",
+      place: {
+        label: "Stasiun Manggarai",
+        coordinate: { latitude: -6.2099, longitude: 106.8502 },
+      },
+    });
+  });
 });

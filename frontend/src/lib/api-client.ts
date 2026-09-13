@@ -1,7 +1,7 @@
 "use client";
 
 import { authenticatedFetch } from "@/src/lib/auth-client";
-import { getGetraApiUrl } from "@/src/lib/api-base-url";
+import { getGetraApiUrl, getGetraRoutingApiUrl } from "@/src/lib/api-base-url";
 import { getUserFacingApiError } from "@/src/lib/user-facing-api-error";
 
 interface ApiSuccess<T> {
@@ -31,10 +31,11 @@ export class ApiError extends Error {
 async function request<T>(
   path: string,
   init: RequestInit,
+  urlResolver: (path: string) => string = getGetraApiUrl,
 ): Promise<T> {
   const response =
     await authenticatedFetch(
-      getGetraApiUrl(path),
+      urlResolver(path),
       init,
     );
 
@@ -144,6 +145,28 @@ export const apiClient = {
         method: "DELETE",
         ...options,
       },
+    );
+  },
+};
+
+export const routingApiClient = {
+  post<T>(
+    path: string,
+    body?: unknown,
+    options?: RequestInit,
+  ): Promise<T> {
+    return request<T>(
+      path,
+      {
+        method: "POST",
+        headers: {
+          ...(body ? { "Content-Type": "application/json" } : {}),
+          ...options?.headers,
+        },
+        body: body ? JSON.stringify(body) : undefined,
+        ...options,
+      },
+      getGetraRoutingApiUrl,
     );
   },
 };

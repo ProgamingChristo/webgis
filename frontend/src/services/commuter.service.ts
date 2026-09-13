@@ -1,4 +1,4 @@
-import { apiClient } from "@/src/lib/api-client";
+import { routingApiClient } from "@/src/lib/api-client";
 import type { Coordinate } from "@/src/types/spatial";
 
 export interface WalkingServiceArea {
@@ -13,7 +13,7 @@ export interface WalkingServiceArea {
 
 export const commuterService = {
   serviceArea(origin: Coordinate, maxMinutes: number, signal?: AbortSignal) {
-    return apiClient.post<WalkingServiceArea>(
+    return routingApiClient.post<WalkingServiceArea>(
       "/api/spatial/service-area",
       { origin, max_minutes: maxMinutes },
       { signal },

@@ -23,7 +23,7 @@ export type BasemapOption = {
 export const MAPID_BASEMAP_KEY =
   process.env.NEXT_PUBLIC_MAPID_BASEMAP_KEY?.trim() || null;
 
-const OPEN_FALLBACK_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+export const OPEN_FALLBACK_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 
 export const MAPID_STYLE_NAME =
   process.env.NEXT_PUBLIC_MAPID_STYLE_NAME?.trim() ||
@@ -42,23 +42,16 @@ const MAPID_BASEMAP_OPTIONS: BasemapOption[] = [
   {
     id: "mapid-basic",
     mapidStyleId: "basic",
-    label: "Street",
+    label: "Campuran",
     description: "MAPID 3D + 2D building",
     style: mapidGlStyleUrl("basic"),
   },
   {
     id: "mapid-street-2d-building",
     mapidStyleId: "street-2d-building",
-    label: "Street 2D",
+    label: "2D",
     description: "MAPID 2D building",
     style: mapidGlStyleUrl("street-2d-building"),
-  },
-  {
-    id: "mapid-satellite",
-    mapidStyleId: "satellite",
-    label: "Satelit",
-    description: "MAPID satellite",
-    style: mapidGlStyleUrl("satellite"),
   },
   {
     id: "mapid-dark",
@@ -74,6 +67,13 @@ const MAPID_BASEMAP_OPTIONS: BasemapOption[] = [
     description: "MAPID light",
     style: mapidGlStyleUrl("light"),
   },
+  {
+    id: "mapid-satellite",
+    mapidStyleId: "satellite",
+    label: "Satelit",
+    description: "MAPID satellite",
+    style: mapidGlStyleUrl("satellite"),
+  },
 ];
 
 export const BASEMAP_OPTIONS: BasemapOption[] = MAPID_BASEMAP_KEY
@@ -81,7 +81,7 @@ export const BASEMAP_OPTIONS: BasemapOption[] = MAPID_BASEMAP_KEY
   : [{
       id: "mapid-basic",
       mapidStyleId: "basic",
-      label: "Street",
+      label: "OpenStreetMap",
       description: "OpenStreetMap via OpenFreeMap",
       style: OPEN_FALLBACK_STYLE,
     }];

@@ -168,7 +168,7 @@ export default function ProfileSettingsPage() {
 
   const badges = context ? getExperienceBadges(context) : [];
   const experienceLabels: Record<ExperienceMode, string> = {
-    GENERAL: "General / Commuter",
+    GENERAL: "Komuter",
     UMKM: "UMKM",
     INVESTOR: "Investor",
     GOVERNMENT: "Pemerintah",

@@ -30,6 +30,11 @@ const map = readFileSync(
   "utf8",
 );
 
+const searchControls = readFileSync(
+  resolve(process.cwd(), "src/features/global-search/components/global-search-controls.tsx"),
+  "utf8",
+);
+
 const routeLayer = readFileSync(
   resolve(
     process.cwd(),
@@ -186,5 +191,66 @@ describe("commuter browser safety", () => {
     expect(dashboard).toContain("generation !== canonicalSearchGenerationRef.current");
     expect(dashboard).toContain("searchRevision !== searchRevisionRef.current");
     expect(dashboard).toContain("searchRevisionRef.current++; canonicalRequestRef.current?.abort(); serviceAreaRequestRef.current?.abort()");
+  });
+
+  it("keeps automatic nearby context separate from route origin state", () => {
+    expect(dashboard).toContain("requestAutoLocationOnce");
+    expect(dashboard).toContain("started: autoLocationStartedRef");
+    expect(dashboard).toContain("locationRequestInFlightRef.current");
+    expect(dashboard).toContain("setAsRouteOrigin: false");
+    expect(dashboard).toContain("loadNearbyContext: true");
+    expect(dashboard).toContain("Di sekitar kamu");
+    expect(searchControls).toContain("Aktifkan lokasi saya");
+  });
+
+  it("keeps legacy data workspaces out of the commuter sidebar", () => {
+    expect(dashboard).toContain("Layer Peta");
+    expect(dashboard).not.toContain("Eksplorasi & data peta");
+    expect(dashboard).not.toContain("Filter cakupan data");
+    expect(dashboard).not.toContain("Data map siap difilter");
+    expect(searchControls).not.toContain("<legend>Brand</legend>");
+    expect(searchControls).toContain("Harga maksimal");
+  });
+
+  it("keeps bootstrap browsing quiet and retries the same failed search", () => {
+    expect(dashboard).toContain('failureMode?: "SEARCH" | "BOOTSTRAP"');
+    expect(dashboard).toContain('failureMode === "SEARCH"');
+    expect(dashboard).toContain('lastFailedSearchRef.current = retryExecution');
+    expect(dashboard).toContain('}, false, false, "BOOTSTRAP")');
+    expect(dashboard).not.toContain("Belum ada pencarian aktif.");
+  });
+
+  it("keeps commuter layers in the sidebar and hides the duplicate map control", () => {
+    expect(dashboard).toContain('showContextualLayerControl={activeExperience !== "GENERAL"}');
+    expect(dashboard).toContain("Layer Peta");
+    expect(map).toContain("showContextualLayerControl ? <ContextualLayerControl");
+  });
+
+  it("shows a real user marker without a visible dataset-origin marker", () => {
+    expect(map).toContain('"user-location-anchor"');
+    expect(map).toContain('"Lokasi saya"');
+    expect(map).not.toContain("datasetOriginMarkerRef");
+    expect(map).not.toContain("Pusat area data aktif");
+  });
+
+  it("keeps a resolved non-merchant place visible and routable", () => {
+    expect(dashboard).toContain("const [resolvedPlace, setResolvedPlace]");
+    expect(dashboard).toContain('aria-label="Lokasi ditemukan"');
+    expect(dashboard).toContain("routeToResolvedPlace(resolvedPlace)");
+    expect(dashboard).toContain("focusedPlace={resolvedPlace?.merchant ? null : resolvedPlace}");
+    expect(map).toContain("focused-place-marker");
+  });
+
+  it("uses a compact basemap disclosure instead of a permanent map-type card", () => {
+    expect(map).toContain('className="map-basemap-control"');
+    expect(map).toContain("Tampilan Peta");
+    expect(map).not.toContain("JENIS PETA");
+    expect(map).not.toContain('open={journeyActive ? undefined : true}');
+  });
+
+  it("tracks sponsored map clicks once through the dashboard action", () => {
+    expect(map).not.toContain('event_type: "SPONSORED_PIN_CLICK"');
+    expect(dashboard).toContain("trackSponsoredPinClick");
+    expect(dashboard).toContain('surface: "MAPLIBRE_COMMUTER_MAP"');
   });
 });

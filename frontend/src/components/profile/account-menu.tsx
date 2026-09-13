@@ -66,7 +66,7 @@ export function AccountMenu({
       : "Lengkapi username";
 
   const primaryExperience = {
-    GENERAL: "Umum",
+    GENERAL: "Komuter",
     UMKM: "UMKM",
     INVESTOR: "Investor",
     GOVERNMENT: "Pemerintah",

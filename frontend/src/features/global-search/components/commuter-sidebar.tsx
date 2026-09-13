@@ -1,16 +1,15 @@
 "use client";
 
-import { ChevronDown, ChevronsLeft, LocateFixed, Route, Search } from "lucide-react";
+import { ChevronsLeft, LocateFixed, Route, Search } from "lucide-react";
 import type { ReactNode } from "react";
 
 export type SidebarMode = "search" | "route";
 
-export function CommuterSidebar({ mode, onModeChange, onCollapse, route, destination, children }: {
+export function CommuterSidebar({ mode, onModeChange, onCollapse, route, children }: {
   mode: SidebarMode;
   onModeChange: (mode: SidebarMode) => void;
   onCollapse: () => void;
   route: ReactNode;
-  destination?: string;
   children: ReactNode;
 }) {
   return <aside className="left-panel panel commuter-sidebar" aria-label="Kontrol pencarian dan rute">
@@ -26,9 +25,6 @@ export function CommuterSidebar({ mode, onModeChange, onCollapse, route, destina
       <div hidden={mode !== "route"}>{route}</div>
       <div hidden={mode !== "search"}>
         {children}
-        <button className="commuter-route-summary" type="button" onClick={() => onModeChange("route")}>
-          <Route size={22} /><span><strong>Rute Perjalanan</strong><small>{destination ? `Tujuan: ${destination}` : "Pilih asal dan tujuan untuk memulai"}</small></span><ChevronDown size={17} />
-        </button>
       </div>
     </div>
   </aside>;

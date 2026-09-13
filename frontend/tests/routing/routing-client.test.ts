@@ -18,6 +18,7 @@ function respond(data: unknown, status = 200) {
 }
 beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_GETRA_API_URL", "https://api.example.test");
+  vi.stubEnv("NEXT_PUBLIC_GETRA_API_BASE_URL", "https://routing.example.test");
   vi.stubGlobal("fetch", fetchMock);
   fetchMock.mockReset();
   session.mockResolvedValue({ data: { session: { access_token: "unit-test-session" } }, error: null });
@@ -29,9 +30,15 @@ describe("authenticated routing client", () => {
     fetchMock.mockResolvedValue(respond({ success: true, data: result(mode) }));
     expect((await routingService.getRoute({ origin, destination }, mode)).mode).toBe(mode);
     const [url, options] = fetchMock.mock.calls[0];
-    expect(url).toBe("https://api.example.test/api/routing");
+    expect(url).toBe("https://routing.example.test/api/routing");
     expect(new Headers(options.headers).get("Authorization")).toBe("Bearer unit-test-session");
     expect(JSON.parse(options.body)).toEqual({ origin, destination, mode });
+  });
+  it("falls back to the general GETRA API when a separate routing origin is absent", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GETRA_API_BASE_URL", "");
+    fetchMock.mockResolvedValue(respond({ success: true, data: result("walking") }));
+    await routingService.getRoute({ origin, destination }, "walking");
+    expect(fetchMock.mock.calls[0][0]).toBe("https://api.example.test/api/routing");
   });
   it("uses changed A and B independently without product constants", async () => {
     fetchMock.mockImplementation(() => respond({ success: true, data: result() }));

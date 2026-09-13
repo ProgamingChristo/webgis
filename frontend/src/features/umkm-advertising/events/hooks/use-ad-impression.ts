@@ -23,8 +23,13 @@ export function useAdImpression<T extends HTMLElement = HTMLDivElement>({
 }: UseAdImpressionProps) {
   const elementRef = useRef<T | null>(null);
   const recordedRef = useRef<boolean>(false);
+  const recordedCampaignRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (recordedCampaignRef.current !== (campaignId ?? null)) {
+      recordedRef.current = false;
+      recordedCampaignRef.current = campaignId ?? null;
+    }
     if (!enabled || !campaignId || recordedRef.current) {
       return;
     }

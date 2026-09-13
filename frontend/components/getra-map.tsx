@@ -58,6 +58,7 @@ import {
   BASEMAP_OPTIONS,
   type BasemapId,
   FALLBACK_MAP_STYLE,
+  OPEN_FALLBACK_STYLE,
   getBasemapOption,
   getDefaultBasemapId,
   getPreferredBasemapId,
@@ -79,6 +80,11 @@ const EMPTY_TRANSPORT_NODES: TransportNodeDto[] = [];
 
 type GetraMapProps = {
   merchants: Merchant[];
+  focusedPlace?: {
+    id: string;
+    label: string;
+    coordinate: { latitude: number; longitude: number };
+  } | null;
   transportNodes?: TransportNodeDto[];
   selectedId: string | null;
   propertyCandidates?: BusinessSpaceCandidate[];
@@ -110,6 +116,7 @@ type GetraMapProps = {
   contextualLayerData: ContextualLayerData;
   contextualLayerVisibility: ContextualLayerVisibility;
   onContextualLayerChange: (layer: ContextualLayerKey, visible: boolean) => void;
+  showContextualLayerControl?: boolean;
   sponsoredPlacements?: SponsoredPinDTO[];
   onSelectSponsored?: (placement: SponsoredPinDTO) => void;
   onViewportChange?: (bounds: MapViewportBounds) => void;
@@ -193,6 +200,17 @@ function createMerchantMarker(
     element,
     button,
   };
+}
+
+function createFocusedPlaceMarker(label: string) {
+  const element = document.createElement("div");
+  element.className = "map-marker-anchor focused-place-marker";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "map-marker map-marker--selected";
+  button.setAttribute("aria-label", `Lokasi ${label}`);
+  element.append(button);
+  return element;
 }
 
 function createPropertyMarker(
@@ -599,6 +617,7 @@ function syncWalkingServiceArea(
 
 export function GetraMap({
   merchants,
+  focusedPlace = null,
   transportNodes = EMPTY_TRANSPORT_NODES,
   selectedId,
   propertyCandidates = [],
@@ -630,6 +649,7 @@ export function GetraMap({
   contextualLayerData,
   contextualLayerVisibility,
   onContextualLayerChange,
+  showContextualLayerControl = true,
   sponsoredPlacements,
   onSelectSponsored,
   onViewportChange,
@@ -653,7 +673,15 @@ export function GetraMap({
   const [styleRevision, setStyleRevision] = useState(0);
   const [basemapStatus, setBasemapStatus] = useState<"LOADING" | "READY" | "ERROR">("LOADING");
   const [basemapRetryRevision, setBasemapRetryRevision] = useState(0);
+  const [usingOpenFallback, setUsingOpenFallback] = useState(false);
+  const [basemapNotice, setBasemapNotice] = useState<string | null>(null);
   const basemapReadyRef = useRef(false);
+
+  useEffect(() => {
+    if (!basemapNotice) return;
+    const timer = window.setTimeout(() => setBasemapNotice(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [basemapNotice]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -690,7 +718,7 @@ export function GetraMap({
 
   /**
    * Cached right safe-area width (basemap panel measured width + gap).
-   * Updated by a ResizeObserver on the .basemap-switcher element.
+   * Updated by a ResizeObserver on the compact basemap panel.
    * Used by all fitBounds and easeTo calls that need to avoid the panel.
    */
   const basemapSafeRightRef = useRef<number>(48);
@@ -734,11 +762,6 @@ export function GetraMap({
     );
 
   const userLocationMarkerRef =
-    useRef<Marker | null>(
-      null,
-    );
-
-  const datasetOriginMarkerRef =
     useRef<Marker | null>(
       null,
     );
@@ -1031,7 +1054,7 @@ export function GetraMap({
         unit: "metric",
         maxWidth: 120,
       }),
-      "bottom-right",
+      "bottom-left",
     );
 
     map.on("load", () => {
@@ -1110,7 +1133,7 @@ export function GetraMap({
         console.error(
           "[GETRA MAP ERROR] Map resource failed to load.",
         );
-        if (!basemapReadyRef.current) setBasemapStatus("ERROR");
+        // The active style effect decides whether to use the safe fallback.
       },
     );
 
@@ -1143,9 +1166,6 @@ export function GetraMap({
 
       userLocationMarkerRef.current?.remove();
       userLocationMarkerRef.current = null;
-
-      datasetOriginMarkerRef.current?.remove();
-      datasetOriginMarkerRef.current = null;
 
       routeOriginMarkerRef.current?.remove();
       routeOriginMarkerRef.current = null;
@@ -1188,9 +1208,10 @@ export function GetraMap({
       return;
     }
 
+    const requestedStyle = usingOpenFallback ? OPEN_FALLBACK_STYLE : activeBasemap.style;
     basemapReadyRef.current = false;
     map.setStyle(
-      activeBasemap.style,
+      requestedStyle,
     );
 
     const syncBasemapOverlays = () => {
@@ -1232,8 +1253,14 @@ export function GetraMap({
       );
 
     const failureTimeoutId = window.setTimeout(() => {
-      if (!basemapReadyRef.current) setBasemapStatus("ERROR");
-    }, 12_000);
+      if (basemapReadyRef.current) return;
+      if (requestedStyle !== OPEN_FALLBACK_STYLE) {
+        setBasemapNotice("Tampilan MAPID belum tersedia. Menggunakan peta standar.");
+        setUsingOpenFallback(true);
+        return;
+      }
+      setBasemapStatus("ERROR");
+    }, 6_000);
 
     const markBasemapReady = () => {
       basemapReadyRef.current = true;
@@ -1268,10 +1295,12 @@ export function GetraMap({
   }, [
     activeBasemapId,
     basemapRetryRevision,
+    usingOpenFallback,
   ]);
 
   /*
-   * Active dataset extent and center marker
+   * Active dataset extent. Dataset centers stay internal and never masquerade
+   * as the user's current position.
    */
   useEffect(() => {
     const map =
@@ -1298,38 +1327,6 @@ export function GetraMap({
         datasetBounds,
       );
 
-      datasetOriginMarkerRef.current?.remove();
-
-      const originElement =
-        document.createElement("div");
-
-      originElement.className =
-        "transit-marker";
-
-      originElement.title =
-        datasetOrigin.name;
-
-      datasetOriginMarkerRef.current =
-        new Marker({
-          element:
-            originElement,
-          anchor: "center",
-        })
-          .setLngLat([
-            datasetOrigin.longitude,
-            datasetOrigin.latitude,
-          ])
-          .setPopup(
-            new Popup({
-              offset: 18,
-            }).setDOMContent(
-              createPopupContent(
-                datasetOrigin.name,
-                "Pusat area data aktif",
-              ),
-            ),
-          )
-          .addTo(map);
     };
 
     if (map.isStyleLoaded()) {
@@ -1379,7 +1376,6 @@ export function GetraMap({
     }
   }, [
     datasetBounds,
-    datasetOrigin,
     datasetKey,
     markSystemCameraIntent,
     routeGeometry,
@@ -1717,13 +1713,6 @@ export function GetraMap({
       `;
 
       el.onclick = () => {
-        CampaignEventService.recordEvent({
-          event_type: "SPONSORED_PIN_CLICK",
-          campaign_id: placement.campaign_id,
-          creative_id: placement.creative_id,
-          placement: "SPONSORED_PIN",
-          context: { surface: "MAPLIBRE_COMMUTER_MAP" },
-        });
         onSelectSponsored?.(placement);
       };
 
@@ -1855,7 +1844,7 @@ export function GetraMap({
     const bottomInset = journeyActive && navigationPanel
       ? containerRect.bottom - navigationPanel.getBoundingClientRect().top + 20
       : safeArea.bottom;
-    if (!journeyActive || journeyFollowing) map.easeTo({
+    if (journeyActive && journeyFollowing) map.easeTo({
       center: [
         userLocation.longitude,
         userLocation.latitude,
@@ -2018,6 +2007,29 @@ export function GetraMap({
       .setLngLat([merchant.longitude, merchant.latitude]).setDOMContent(content).addTo(map);
     return () => { popup.remove(); marker.remove(); };
   }, [selectedId, merchants, onSelect, onRequestMerchantRoute, onMerchantDetail, onClearSelection, styleRevision]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !focusedPlace) return;
+    const popup = new Popup({
+      offset: 24,
+      closeButton: false,
+      closeOnClick: false,
+      focusAfterOpen: false,
+      className: "commuter-place-popup",
+    }).setDOMContent(createPopupContent("Lokasi", focusedPlace.label));
+    const marker = new Marker({
+      element: createFocusedPlaceMarker(focusedPlace.label),
+      anchor: "center",
+    })
+      .setLngLat([focusedPlace.coordinate.longitude, focusedPlace.coordinate.latitude])
+      .setPopup(popup)
+      .addTo(map);
+    marker.togglePopup();
+    return () => {
+      marker.remove();
+    };
+  }, [focusedPlace, styleRevision]);
 
   /*
    * Focus selected merchant (One-shot)
@@ -2279,27 +2291,7 @@ export function GetraMap({
         </div>
       ) : null}
 
-      {basemapStatus === "READY" ? <div className="map-status map-status--top-left">
-        <span
-          className={
-            "status-dot status-dot--ok"
-          }
-        />
-
-        <div>
-          <strong>
-            JENIS PETA
-          </strong>
-
-          <span>
-            {BASEMAP_OPTIONS.find(
-              (option) =>
-                option.id ===
-                activeBasemapId,
-            )?.description ?? "Peta MAPID"}
-          </span>
-        </div>
-      </div> : null}
+      {basemapNotice ? <div className="map-basemap-notice" role="status">{basemapNotice}</div> : null}
 
       {selectedId ? (
         <button
@@ -2312,14 +2304,14 @@ export function GetraMap({
         </button>
       ) : null}
 
-      <ContextualLayerControl
+      {showContextualLayerControl ? <ContextualLayerControl
         data={contextualLayerData}
         visibility={contextualLayerVisibility}
         onChange={onContextualLayerChange}
-      />
+      /> : null}
 
-      <details className={journeyActive ? "navigation-basemap" : "planning-basemap"} open={journeyActive ? undefined : true}>
-      <summary hidden={!journeyActive} aria-label="Tampilan peta" title="Tampilan peta"><Layers size={20} /></summary>
+      <details className="map-basemap-control">
+      <summary aria-label="Tampilan peta" title="Tampilan peta"><Layers size={17} /><span>Tampilan Peta</span></summary>
       <div
         className="basemap-switcher"
         aria-label="Pilih jenis peta"
@@ -2340,6 +2332,7 @@ export function GetraMap({
               onClick={() => {
                 basemapReadyRef.current = false;
                 setBasemapStatus("LOADING");
+                setUsingOpenFallback(false);
                 persistBasemapPreference(option.id);
                 setActiveBasemapId(option.id);
               }}

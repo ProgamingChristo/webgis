@@ -12,10 +12,12 @@ describe("MAPID GL Style basemap catalog", () => {
     expect(ids).toEqual([
       "mapid-basic",
       "mapid-street-2d-building",
-      "mapid-satellite",
       "mapid-dark",
       "mapid-light",
+      "mapid-satellite",
     ]);
+    expect(catalog).toContain('label: "Campuran"');
+    expect(catalog).toContain('label: "2D"');
   });
 
   it("builds GL Style URLs rather than TileJSON, WMTS, or raster XYZ URLs", () => {
@@ -29,6 +31,12 @@ describe("MAPID GL Style basemap catalog", () => {
     expect(mainMap).toMatch(/aria-pressed=/);
     expect(mainMap).toMatch(/persistBasemapPreference\(option\.id\)/);
     expect(catalog).toMatch(/localStorage\.setItem\(BASEMAP_PREFERENCE_STORAGE_KEY/);
+  });
+
+  it("falls back to OpenFreeMap when a requested MAPID style does not become ready", () => {
+    expect(catalog).toContain("export const OPEN_FALLBACK_STYLE");
+    expect(mainMap).toContain("setUsingOpenFallback(true)");
+    expect(mainMap).toContain("Tampilan MAPID belum tersedia. Menggunakan peta standar.");
   });
 
   it("uses the persisted preference across every secondary MapLibre surface", () => {

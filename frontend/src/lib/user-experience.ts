@@ -53,7 +53,7 @@ export function getExperienceBadges(
 
   const badges: ExperienceBadge[] = [
     {
-      label: "General / Commuter",
+      label: "Komuter",
       tone: "general",
     },
   ];
@@ -87,7 +87,7 @@ export function getPrimaryExperienceLabel(
     );
 
   if (badges.length <= 1) {
-    return "General / Commuter";
+    return "Komuter";
   }
 
   return badges
