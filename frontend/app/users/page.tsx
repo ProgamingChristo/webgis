@@ -184,7 +184,7 @@ export default function UsersPage() {
                   <ShieldCheck size={14} />
                   Role {profile.account_role}
                 </span>
-                <span className="font-black text-lime-200">
+                <span className="profile-trust-score font-black">
                   Trust {profile.trust_score}
                 </span>
               </div>
