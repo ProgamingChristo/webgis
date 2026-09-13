@@ -5,13 +5,9 @@ import {
   BarChart3,
   Bot,
   Building2,
-  CalendarDays,
   Car,
-  Coffee,
   Database,
-  Layers3,
   MapPinned,
-  Phone,
   Footprints,
   Bike,
   Route,
@@ -29,7 +25,7 @@ import type { Coordinate } from "@/src/types/spatial";
 
 import { StakeholderModeSwitcher } from "@/src/components/stakeholder/stakeholder-mode-switcher";
 import { StakeholderContextShell } from "@/src/components/stakeholder/stakeholder-context-shell";
-import { GetraGlobalHeader } from "@/src/components/getra-ui";
+import { GetraAppSkeleton, GetraGlobalHeader } from "@/src/components/getra-ui";
 import { useStakeholder } from "@/src/components/providers/StakeholderProvider";
 import type { AiSearchAction, SearchCriteria } from "@/types/search-recommendation";
 import { AiPanel, type AiActionExecutionResult } from "@/components/ai/ai-panel";
@@ -327,16 +323,6 @@ function distanceMeters(
   );
 }
 
-function formatDistance(
-  meters: number,
-) {
-  if (meters >= 1000) {
-    return `${(meters / 1000).toFixed(1)} km`;
-  }
-
-  return `${Math.round(meters)} m`;
-}
-
 function routeModeLabel(mode: RoutingMode) {
   return mode === "walking" ? "Jalan kaki" : mode === "motorcycle" ? "Motor" : "Mobil";
 }
@@ -437,13 +423,6 @@ function isSafeMediaUrl(value: string) {
   }
 }
 
-function formatMerchantSources(merchant: Merchant) {
-  const sources = merchant.sources?.length
-    ? merchant.sources
-    : merchant.source.split("+").map((item) => item.trim()).filter(Boolean);
-  if (sources.length === 0) return "Tidak tersedia";
-  return sources.join(" + ");
-}
 
 function ensureSearchableBounds(bounds: MapViewportBounds): MapViewportBounds {
   const longitudePadding = bounds.east > bounds.west ? 0 : 0.015;
@@ -722,45 +701,6 @@ function AccessibilityEvidenceDetailPanel({
   );
 }
 
-function MerchantMediaGallery({ merchant }: { merchant: Merchant }) {
-  const items = [
-    { label: "Foto tempat", src: merchant.photo },
-    ...(merchant.menuPhotos ?? []).slice(0, 2).map((src, index) => ({
-      label: `Foto menu ${index + 1}`,
-      src,
-    })),
-  ];
-  if (!items.some((item) => item.src && isSafeMediaUrl(item.src))) return null;
-  return (
-    <section className="evidence-section">
-      <h4>Foto dan menu</h4>
-      <div className="media-gallery">
-        {items.map((item) => (
-          <SafeMediaImage key={item.label} alt={item.label} src={item.src} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function MerchantSourceEvidence({ merchant }: { merchant: Merchant }) {
-  const hasMenuGo = merchant.sources?.includes("MENU_GO") || merchant.source.includes("MENU_GO");
-  return (
-    <section className="evidence-section">
-      <h4>Sumber data</h4>
-      <p className="limitation-box">Sumber data: {formatMerchantSources(merchant)}</p>
-      {hasMenuGo ? (
-        <dl className="evidence-list evidence-list--compact">
-          <OptionalDetail label="Menu utama" value={merchant.menu} />
-          <OptionalDetail label="Harga observasi" value={merchant.observedPrice} />
-          <OptionalDetail label="Kondisi tempat" value={merchant.observedCondition} />
-          <OptionalDetail label="Mobilitas" value={merchant.mobility} />
-          <OptionalDetail label="Waktu pengamatan" value={merchant.observedAt} />
-        </dl>
-      ) : null}
-    </section>
-  );
-}
 
 function OptionalDetail({ label, value }: { label: string; value?: string | number | null }) {
   if (value === undefined || value === null || value === "") return null;
@@ -1035,11 +975,7 @@ export function GetraDashboard() {
   const { activeExperience, experienceReady } = useStakeholder();
 
   if (!experienceReady) {
-    return (
-      <div className="auth-loading" role="status" aria-live="polite">
-        <span>Menyiapkan pengalaman GETRA...</span>
-      </div>
-    );
+    return <GetraAppSkeleton status="BOOTSTRAPPING" />;
   }
 
   if (activeExperience === "INVESTOR") {
@@ -3156,15 +3092,29 @@ function GeneralGetraDashboard() {
     userLocation,
   ]);
 
+  useEffect(() => {
+    const triggerResize = () => {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("resize"));
+      }
+    };
+    const frameId = requestAnimationFrame(triggerResize);
+    const timerId = setTimeout(triggerResize, 150);
+    return () => {
+      cancelAnimationFrame(frameId);
+      clearTimeout(timerId);
+    };
+  }, [journeyOpen, detailOpen, sidebarCollapsed]);
+
   return (
-    <main className="workspace workspace--figma commuter-workspace">
+    <main className="workspace workspace--figma commuter-workspace" data-journey-open={journeyOpen}>
       <GetraGlobalHeader
         utilities={<CommunityNotificationsMenu />}
       />
       <div className="workspace-context-toolbar"><StakeholderModeSwitcher /></div>
 
       <StakeholderContextShell hideUmkmNotice hideGeneralNotice>
-        <section className={`workspace-grid ${journeyOpen ? routingStyles.activeWorkspace : ""}`} data-sidebar-collapsed={sidebarCollapsed} data-detail-open={detailOpen} data-routing-active={Boolean(route && route.distance_meters !== null && !journeyOpen)}>
+        <section className={`workspace-grid ${journeyOpen ? routingStyles.activeWorkspace : ""}`} data-sidebar-collapsed={sidebarCollapsed} data-detail-open={detailOpen} data-journey-open={journeyOpen} data-routing-active={Boolean(route && route.distance_meters !== null && !journeyOpen)}>
           <CommuterSidebar mode={sidebarMode} onModeChange={setSidebarMode}
             onCollapse={() => setSidebarCollapsed(true)} destination={routeDestination?.name}
             route={<>
@@ -4512,170 +4462,6 @@ function GeneralGetraDashboard() {
               fallback={accessibilityEvidence.find((evidence) => evidence.id === selectedAccessibilityEvidenceId) ?? null}
               loading={accessibilityDetailLoading}
             />
-          ) : selectedMerchant ? (
-            <>
-              <div className="detail-title">
-                <span className="source-stamp source-stamp--warning">
-                  {selectedMerchant.id.startsWith(
-                    "admin-import-",
-                  )
-                    ? "ADMIN"
-                    : selectedMerchant.id.startsWith(
-                        "mapid-food-",
-                      )
-                      ? "MAPID"
-                      : "Data GETRA"}
-                </span>
-                <h3>
-                  {selectedMerchant.name}
-                </h3>
-                <p>
-                  {selectedMerchant.brand}
-                  {" · "}
-                  {selectedMerchant.category}
-                </p>
-              </div>
-
-              <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setManualRouteDestination(null);
-                    setRouteDestinationId(selectedMerchant.id);
-                    setRouteDestinationMerchant(selectedMerchant);
-                    setDestinationSearch(selectedMerchant.name);
-                    setDestinationSearchActive(false);
-                  }}
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    backgroundColor: routeDestination?.id === selectedMerchant.id ? "#334155" : "#0284c7",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "6px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.5rem"
-                  }}
-                  disabled={routeDestination?.id === selectedMerchant.id}
-                >
-                  <Route size={16} /> {routeDestination?.id === selectedMerchant.id ? "Sudah menjadi tujuan" : routeOrigin ? "Lihat pilihan rute" : "Jadikan tujuan rute"}
-                </button>
-              </div>
-
-              <MerchantMediaGallery merchant={selectedMerchant} />
-
-              <div className="metric-grid">
-                <div className="metric">
-                  <Coffee size={18} />
-                  <span>
-                    Brand
-                  </span>
-                  <strong>
-                    {selectedMerchant.brand}
-                  </strong>
-                </div>
-                <div className="metric">
-                  <MapPinned size={18} />
-                  <span>
-                    Kecamatan
-                  </span>
-                  <strong>
-                    {selectedMerchant.district ||
-                      "Tidak tersedia"}
-                  </strong>
-                </div>
-                <div className="metric">
-                  <Layers3 size={18} />
-                  <span>
-                    Dari lokasi kamu
-                  </span>
-                  <strong>
-                    {selectedMerchant.userDistanceMeters !==
-                    undefined
-                      ? `Jarak langsung ${formatDistance(selectedMerchant.userDistanceMeters)}${
-                          selectedMerchant.networkDurationSeconds
-                            ? ` · ${Math.ceil(selectedMerchant.networkDurationSeconds / 60)} menit jaringan`
-                            : ""
-                        }`
-                      : "Aktifkan GPS"}
-                  </strong>
-                </div>
-                <div className="metric">
-                  <CalendarDays size={18} />
-                  <span>
-                    Status
-                  </span>
-                  <strong>
-                    {selectedMerchant.openingStatus === "OPEN" ||
-                    (selectedMerchant.openStatusKnown && selectedMerchant.openNow)
-                      ? "BUKA"
-                      : selectedMerchant.openingStatus === "CLOSED" ||
-                          (selectedMerchant.openStatusKnown && !selectedMerchant.openNow)
-                        ? "TUTUP"
-                        : "Jam buka tidak tersedia"}
-                  </strong>
-                </div>
-              </div>
-
-              <section className="evidence-section">
-                <h4>
-                  Rute aktif
-                </h4>
-                <p className="limitation-box">
-                  Gunakan panel Rute commuter di kiri untuk memilih titik mulai dan tujuan. Marker tujuan yang dipilih akan fokus di map, lalu garis rute tampil langsung setelah dihitung.
-                </p>
-              </section>
-
-              <section className="evidence-section">
-                <h4>
-                  Alamat
-                </h4>
-                <p className="limitation-box">
-                  {selectedMerchant.address ||
-                    "Alamat belum tersedia pada data peta ini."}
-                </p>
-              </section>
-
-              <section className="evidence-section">
-                <h4>Wilayah administrasi</h4>
-                <p className="limitation-box">
-                  {selectedMerchant.city ?? selectedMerchant.regions?.[0] ??
-                    "Wilayah belum teridentifikasi."}
-                </p>
-              </section>
-
-              <MerchantSourceEvidence merchant={selectedMerchant} />
-
-              <section className="evidence-section">
-                <h4>
-                  Detail tambahan
-                </h4>
-                <dl className="evidence-list evidence-list--compact">
-                  <OptionalDetail label="Desa" value={selectedMerchant.village} />
-                  {selectedMerchant.phone ? (
-                    <div>
-                      <dt>Telepon</dt>
-                      <dd><span className="inline-icon-value"><Phone size={12} />{selectedMerchant.phone}</span></dd>
-                    </div>
-                  ) : null}
-                  <OptionalDetail label="Koordinat" value={`${selectedMerchant.latitude.toFixed(6)}, ${selectedMerchant.longitude.toFixed(6)}`} />
-                  <OptionalDetail label="Update" value={selectedMerchant.updatedAt} />
-                </dl>
-              </section>
-
-              <section className="evidence-section">
-                <h4>
-                  Catatan
-                </h4>
-                <p className="limitation-box" style={{ color: "#cbd5e1" }}>
-                  {selectedMerchant.limitation}
-                </p>
-              </section>
-            </>
           ) : (
             <div className="empty-state">
               Pilih satu titik pada peta atau daftar hasil.

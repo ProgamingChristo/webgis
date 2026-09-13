@@ -1984,15 +1984,21 @@ export function GetraMap({
     });
     const markerElements = createMerchantMarker(true, merchant);
     markerElements.button.onclick = () => onSelect(merchant);
-    const marker = new Marker({ element: markerElements.element, anchor: "center" })
-      .setLngLat([merchant.longitude, merchant.latitude])
-      .addTo(map);
+    const existing = merchantMarkersRef.current.get(merchant.id);
+    let marker: Marker | null = null;
+    if (!existing) {
+      marker = new Marker({ element: markerElements.element, anchor: "center" })
+        .setLngLat([merchant.longitude, merchant.latitude])
+        .addTo(map);
+    } else {
+      existing.getElement().classList.add("marker--selected");
+    }
     const popup = new Popup({
       offset: 24,
       closeButton: false,
       closeOnClick: false,
       focusAfterOpen: false,
-      maxWidth: "300px",
+      maxWidth: "260px",
       className: "commuter-merchant-popup",
     })
       .setLngLat([merchant.longitude, merchant.latitude])
@@ -2000,7 +2006,11 @@ export function GetraMap({
       .addTo(map);
     return () => {
       popup.remove();
-      marker.remove();
+      if (marker) {
+        marker.remove();
+      } else if (existing) {
+        existing.getElement().classList.remove("marker--selected");
+      }
     };
   }, [selectedId, merchants, onSelect, onRequestMerchantRoute, onMerchantDetail, onClearSelection, styleRevision]);
 

@@ -54,21 +54,21 @@ export function UmkmActiveWorkspace({ summary, state }: { summary: UmkmWorkspace
           <BadgeCheck size={14} className="text-emerald-600" aria-hidden="true" />
           Usaha Terverifikasi
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Kelola dan Kembangkan Usaha Anda</h1>
-        <p className="mt-2 text-sm text-slate-400">Lihat kondisi usaha dan tentukan langkah berikutnya.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Kelola dan Kembangkan Usaha Anda</h1>
+        <p className="mt-2 text-sm text-slate-600">Lihat kondisi usaha dan tentukan langkah berikutnya.</p>
       </div>
       <MerchantSelector merchants={summary.owned_merchants} selectedMerchantId={merchant.id} onSelect={selectMerchant} />
     </header>
     <UmkmWorkspaceNavigation section={section} onChange={navigate} />
     {section === "usaha-saya" ? <section id="usaha-saya" className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><h2 className="text-lg font-semibold text-white">Usaha Saya</h2><Link className="text-sm text-emerald-300" href="/umkm/merchants/new">Daftarkan / Klaim Usaha Lain</Link></div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><h2 className="text-lg font-bold text-slate-900">Usaha Saya</h2><Link className="text-sm font-semibold text-sky-700 hover:text-sky-800" href="/umkm/merchants/new">Daftarkan / Klaim Usaha Lain</Link></div>
       <OwnedMerchantList merchants={summary.owned_merchants} selectedMerchantId={merchant.id} onSelect={(id) => { selectMerchant(id); setSection("overview"); const url = new URL(window.location.href); url.hash = "overview"; window.history.replaceState(null, "", url); }} />
     </section> : <SelectedMerchantWorkspace key={merchant.id} merchant={merchant} section={section} onNavigate={navigate} refreshToken={summary} />}
-    {summary.recent_submissions.length + summary.recent_claims.length > 0 ? <section aria-label="Status pengajuan usaha lain" className="space-y-3 border-t border-slate-800 pt-6">
-      <h2 className="text-sm font-semibold text-slate-200">Status pengajuan usaha lain</h2>
-      <p className="text-xs text-slate-400">Pengajuan lain tidak membatasi pengelolaan usaha yang sudah Anda miliki.</p>
+    {summary.recent_submissions.length + summary.recent_claims.length > 0 ? <section aria-label="Status pengajuan usaha lain" className="space-y-3 border-t border-slate-200 pt-6">
+      <h2 className="text-sm font-bold text-slate-900">Status pengajuan usaha lain</h2>
+      <p className="text-xs text-slate-600">Pengajuan lain tidak membatasi pengelolaan usaha yang sudah Anda miliki.</p>
       <SubmissionSummary submissions={summary.recent_submissions.filter((item) => item.status === "DRAFT" || item.status === "PENDING_REVIEW")} claims={summary.recent_claims.filter((item) => item.status === "PENDING")} />
-      <details className="text-sm text-slate-400"><summary className="cursor-pointer">Riwayat pengajuan</summary><div className="mt-3"><SubmissionSummary submissions={summary.recent_submissions.filter((item) => item.status !== "DRAFT" && item.status !== "PENDING_REVIEW")} claims={summary.recent_claims.filter((item) => item.status !== "PENDING")} /></div></details>
+      <details className="text-sm text-slate-600"><summary className="cursor-pointer font-medium hover:text-slate-900">Riwayat pengajuan</summary><div className="mt-3"><SubmissionSummary submissions={summary.recent_submissions.filter((item) => item.status !== "DRAFT" && item.status !== "PENDING_REVIEW")} claims={summary.recent_claims.filter((item) => item.status !== "PENDING")} /></div></details>
     </section> : null}
   </div>;
 }
@@ -80,6 +80,6 @@ function SelectedMerchantWorkspace({ merchant, section, onNavigate, refreshToken
     {section === "overview" ? <UmkmOverview merchant={merchant} intelligence={intelligence} onNavigate={onNavigate} refreshToken={refreshToken} /> : null}
     {section === "visibilitas" ? <MerchantVisibilityPanel merchantId={merchant.id} intelligence={intelligence} /> : null}
     {section === "peluang" ? <MerchantOpportunityPanel merchantId={merchant.id} intelligence={intelligence} days={days} onDaysChange={setDays} /> : null}
-    {section === "promosi" ? <div className="space-y-4"><h2 className="text-lg font-semibold text-white">Promosikan Usaha</h2><p className="text-sm text-slate-400">Periksa kesiapan {merchant.name} sebelum membuat promosi.</p><PromotionReadinessCard merchantId={merchant.id} merchantName={merchant.name} onReviewVisibility={() => onNavigate("visibilitas")} refreshToken={refreshToken} /></div> : null}
+    {section === "promosi" ? <div className="space-y-4"><h2 className="text-lg font-bold text-slate-900">Promosikan Usaha</h2><p className="text-sm text-slate-600">Periksa kesiapan {merchant.name} sebelum membuat promosi.</p><PromotionReadinessCard merchantId={merchant.id} merchantName={merchant.name} onReviewVisibility={() => onNavigate("visibilitas")} refreshToken={refreshToken} /></div> : null}
   </section>;
 }

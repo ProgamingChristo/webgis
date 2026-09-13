@@ -392,16 +392,13 @@ select:focus-visible {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  gap: 12px;
+  gap: 14px;
   align-content: center;
-  background:
-    radial-gradient(circle at 50% 36%, rgba(34, 211, 238, 0.18), transparent 26%),
-    var(--getra-canvas);
-  color: var(--getra-ink-soft);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .auth-loading__mark {
@@ -409,22 +406,421 @@ select:focus-visible {
   height: 42px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--getra-primary);
-  color: var(--getra-primary);
+  border: 1px solid #0284c7;
+  border-radius: 12px;
+  color: #0284c7;
   font-weight: 900;
-  box-shadow:
-    inset 0 0 0 4px rgba(34, 211, 238, 0.08),
-    0 0 24px rgba(34, 211, 238, 0.16);
+  background: #f0f9ff;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.12);
 }
 
 .auth-loading__logo {
-  width: min(236px, 70vw);
+  width: min(220px, 60vw);
   height: auto;
-  border: 1px solid rgba(34, 211, 238, 0.24);
-  background: rgba(3, 13, 24, 0.72);
-  box-shadow:
-    0 18px 56px rgba(0, 0, 0, 0.34),
-    0 0 36px rgba(34, 211, 238, 0.14);
+  padding: 10px 16px;
+  border: 1px solid rgba(70, 75, 113, 0.12);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(70, 75, 113, 0.08);
+}
+
+/* Modern light bootstrap and loading skeleton */
+.getra-bootstrap-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5fbfb;
+  color: #464b71;
+}
+
+.getra-bootstrap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(70, 75, 113, 0.12);
+  background: #ffffff;
+}
+
+.getra-bootstrap-header__brand {
+  display: flex;
+  align-items: center;
+}
+
+.getra-bootstrap-header__logo {
+  height: 32px;
+  width: auto;
+}
+
+.getra-bootstrap-header__nav {
+  display: flex;
+  gap: 12px;
+}
+
+.getra-bootstrap-header__user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.getra-bootstrap-workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 14px;
+  padding: 14px;
+  height: calc(100vh - 64px);
+  min-height: 600px;
+}
+
+.getra-bootstrap-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(70, 75, 113, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(70, 75, 113, 0.04);
+}
+
+.getra-bootstrap-sidebar__search {
+  margin-bottom: 4px;
+}
+
+.getra-bootstrap-sidebar__chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.getra-bootstrap-sidebar__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.getra-bootstrap-canvas {
+  position: relative;
+  border-radius: 20px;
+  border: 1px solid rgba(70, 75, 113, 0.12);
+  background: #eaf6f5;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.getra-bootstrap-canvas__grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(17, 138, 178, 0.06) 1px, transparent 1px),
+    linear-gradient(to right, rgba(17, 138, 178, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(17, 138, 178, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.getra-bootstrap-indicator {
+  position: relative;
+  z-index: 10;
+}
+
+.getra-bootstrap-loading-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(70, 75, 113, 0.14);
+  box-shadow: 0 12px 32px rgba(70, 75, 113, 0.12);
+  color: #118ab2;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.getra-bootstrap-spinner {
+  color: #118ab2;
+  animation: spin 1s linear infinite;
+}
+
+.getra-bootstrap-error-card {
+  max-width: 360px;
+  padding: 24px;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  box-shadow: 0 16px 40px rgba(70, 75, 113, 0.12);
+}
+
+.getra-bootstrap-error-icon {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 12px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #dc2626;
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.getra-bootstrap-error-card h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 750;
+  color: #0f172a;
+}
+
+.getra-bootstrap-error-card p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.getra-bootstrap-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  border-radius: 10px;
+  background: #118ab2;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.getra-bootstrap-retry-btn:hover {
+  background: #0e7490;
+}
+
+.getra-skeleton-pill {
+  width: 72px;
+  height: 28px;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.getra-skeleton-pill--active {
+  width: 96px;
+  background: #cbd5e1;
+}
+
+.getra-skeleton-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #e2e8f0;
+}
+
+.getra-skeleton-box--search {
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
+  background: #f1f5f9;
+}
+
+.getra-skeleton-chip {
+  width: 60px;
+  height: 26px;
+  border-radius: 8px;
+  background: #f1f5f9;
+}
+
+.getra-skeleton-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid rgba(70, 75, 113, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.getra-skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background: #e2e8f0;
+}
+
+.getra-skeleton-line--title {
+  width: 65%;
+  height: 14px;
+}
+
+.getra-skeleton-line--meta {
+  width: 40%;
+}
+
+.getra-skeleton-line--desc {
+  width: 85%;
+}
+
+.getra-skeleton-line--short {
+  width: 48px;
+}
+
+@keyframes getra-shimmer {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.getra-skeleton-pill,
+.getra-skeleton-circle,
+.getra-skeleton-box,
+.getra-skeleton-chip,
+.getra-skeleton-card,
+.getra-skeleton-line {
+  animation: getra-shimmer 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .getra-skeleton-pill,
+  .getra-skeleton-circle,
+  .getra-skeleton-box,
+  .getra-skeleton-chip,
+  .getra-skeleton-card,
+  .getra-skeleton-line,
+  .getra-bootstrap-spinner {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .getra-bootstrap-workspace {
+    grid-template-columns: 1fr;
+    height: auto;
+    padding: 10px;
+  }
+  .getra-bootstrap-sidebar {
+    display: none;
+  }
+  .getra-bootstrap-canvas {
+    min-height: 70vh;
+  }
+  .getra-bootstrap-header__nav {
+    display: none;
+  }
+}
+
+/* Compact Light Merchant Map Popup */
+.commuter-merchant-popup .maplibregl-popup-content {
+  padding: 0;
+  border-radius: 16px;
+  box-shadow: 0 16px 36px rgba(70, 75, 113, 0.16);
+  border: 1px solid rgba(70, 75, 113, 0.14);
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.commuter-place-popup {
+  width: 240px;
+  font-family: inherit;
+  color: #464b71;
+}
+
+.commuter-place-popup__media {
+  position: relative;
+  height: 90px;
+  background: #eaf6f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.commuter-place-popup__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.commuter-place-popup__close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 0;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  cursor: pointer;
+  color: #464b71;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.commuter-place-popup__body {
+  padding: 10px 12px;
+}
+
+.commuter-place-popup__body h3 {
+  margin: 0 0 3px;
+  font-size: 13px;
+  font-weight: 750;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.commuter-place-popup__category {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.commuter-place-popup__status {
+  font-weight: 700;
+  color: #059669;
+}
+
+.commuter-place-popup__address {
+  font-size: 11px;
+  color: #64748b;
+  margin: 3px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.commuter-popup-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.commuter-popup-actions button {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1px solid rgba(70, 75, 113, 0.16);
+  background: #f8fafc;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.commuter-popup-actions button:last-child {
+  background: #118ab2;
+  border-color: #118ab2;
+  color: #ffffff;
 }
 
 .getra-app-shell {
@@ -1448,21 +1844,22 @@ body:has(.getra-app-shell--umkm) {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
-  z-index: 30;
-  width: 230px;
+  z-index: 50;
+  width: 240px;
   padding: 8px;
-  border: 1px solid var(--getra-line);
-  border-radius: 14px;
-  background: rgba(5, 10, 16, 0.98);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 14px 34px -4px rgba(15, 23, 42, 0.18), 0 8px 12px -6px rgba(15, 23, 42, 0.1);
 }
 
 .account-menu__summary {
   margin: 2px 4px 8px;
-  padding: 10px;
-  border: 1px solid var(--getra-line);
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
-  background: rgba(34, 211, 238, 0.06);
+  background: #f8fafc;
 }
 
 .account-menu__summary strong,
@@ -1472,12 +1869,15 @@ body:has(.getra-app-shell--umkm) {
 
 .account-menu__summary strong {
   font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
 }
 
 .account-menu__summary > span {
   margin-top: 2px;
-  color: var(--getra-ink-soft);
+  color: #475569;
   font-size: 11px;
+  font-weight: 500;
 }
 
 .account-menu__badges {
@@ -1493,20 +1893,21 @@ body:has(.getra-app-shell--umkm) {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 10px;
+  padding: 0 12px;
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: var(--getra-ink-soft);
+  color: #334155;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .account-menu__panel button:hover:not(:disabled),
 .account-menu__panel button:focus-visible {
-  background: var(--getra-primary-soft);
-  color: var(--getra-primary);
+  background: #f0f9ff;
+  color: #0284c7;
 }
 
 .account-menu__panel button:disabled {
@@ -1516,45 +1917,53 @@ body:has(.getra-app-shell--umkm) {
 
 .account-menu__username {
   margin: 6px 6px 2px;
-  padding: 9px 10px 2px;
-  border-top: 1px solid var(--getra-line);
-  color: var(--getra-ink-soft);
+  padding: 9px 12px 2px;
+  border-top: 1px solid #f1f5f9;
+  color: #64748b;
   font-size: 11px;
+  font-weight: 500;
 }
 
 .account-menu__panel .account-menu__logout {
-  color: rgb(251 113 133);
+  color: #e11d48;
+  font-weight: 700;
 }
 
 .account-menu__panel .account-menu__logout:hover:not(:disabled),
 .account-menu__panel .account-menu__logout:focus-visible {
-  background: rgb(251 113 133 / 0.1);
-  color: rgb(253 164 175);
+  background: #fff1f2;
+  color: #be123c;
 }
 
 .user-type-badge {
   display: inline-flex;
   align-items: center;
-  min-height: 24px;
-  border: 1px solid rgb(148 163 184 / 0.2);
+  min-height: 22px;
+  border: 1px solid #cbd5e1;
   border-radius: 999px;
-  padding: 0 10px;
-  background: rgb(15 23 42 / 0.7);
-  color: rgb(203 213 225);
+  padding: 0 8px;
+  background: #f1f5f9;
+  color: #334155;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .user-type-badge--general {
-  border-color: rgb(154 242 74 / 0.32);
-  background: rgb(154 242 74 / 0.1);
-  color: rgb(217 249 157);
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
 }
 
 .user-type-badge--umkm {
-  border-color: rgb(34 211 238 / 0.34);
-  background: rgb(34 211 238 / 0.1);
-  color: rgb(165 243 252);
+  border-color: #bae6fd;
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+.user-type-badge--admin {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
 }
 
 .user-type-badge--investor {
@@ -1609,13 +2018,21 @@ body:has(.getra-app-shell--umkm) {
 
 .workspace-grid {
   display: grid;
-  grid-template-columns: clamp(280px, 22vw, 330px) minmax(0, 1fr) clamp(300px, 23vw, 350px);
+  grid-template-columns: clamp(280px, 22vw, 330px) minmax(0, 1fr);
   height: calc(100vh - 64px);
   min-height: 620px;
   transition: grid-template-columns 0.2s ease;
 }
 
+.workspace-grid[data-detail-open="true"] {
+  grid-template-columns: clamp(280px, 22vw, 330px) minmax(0, 1fr) clamp(300px, 23vw, 350px);
+}
+
 .workspace-grid[data-routing-active="true"] {
+  grid-template-columns: clamp(350px, 26vw, 420px) minmax(0, 1fr);
+}
+
+.workspace-grid[data-routing-active="true"][data-detail-open="true"] {
   grid-template-columns: clamp(350px, 26vw, 420px) minmax(0, 1fr) clamp(280px, 22vw, 340px);
 }
 
@@ -5482,14 +5899,12 @@ body:has(.getra-app-shell--community) {
    Keep the shared Figma mark readable there, while the dashboard scope below
    supplies the light treatment. */
 .getra-global-header .getra-app-logo__copy strong,
-.getra-app-drawer__panel .getra-app-logo__copy strong,
-.auth-loading .getra-app-logo__copy strong {
+.getra-app-drawer__panel .getra-app-logo__copy strong {
   color: #eef8fa;
 }
 
 .getra-global-header .getra-app-logo__copy small,
-.getra-app-drawer__panel .getra-app-logo__copy small,
-.auth-loading .getra-app-logo__copy small {
+.getra-app-drawer__panel .getra-app-logo__copy small {
   color: #a7bdd0;
 }
 
@@ -5693,15 +6108,56 @@ body:has(.getra-app-shell--community) {
 }
 
 .workspace--figma .workspace-grid {
-  grid-template-columns: clamp(288px, 22vw, 334px) minmax(0, 1fr) clamp(300px, 23vw, 352px);
+  grid-template-columns: clamp(288px, 22vw, 334px) minmax(0, 1fr);
   gap: 14px;
   height: calc(100dvh - 92px);
   min-height: 610px;
   padding: 14px;
+  transition: grid-template-columns 0.2s ease;
+}
+
+.workspace--figma .workspace-grid[data-detail-open="true"] {
+  grid-template-columns: clamp(288px, 22vw, 334px) minmax(0, 1fr) clamp(300px, 23vw, 352px);
 }
 
 .workspace--figma .workspace-grid[data-routing-active="true"] {
+  grid-template-columns: clamp(350px, 26vw, 420px) minmax(0, 1fr);
+}
+
+.workspace--figma .workspace-grid[data-routing-active="true"][data-detail-open="true"] {
   grid-template-columns: clamp(350px, 26vw, 420px) minmax(0, 1fr) clamp(280px, 22vw, 340px);
+}
+
+.workspace--figma .workspace-grid[data-sidebar-collapsed="true"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.workspace--figma .workspace-grid[data-sidebar-collapsed="true"][data-detail-open="true"] {
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 23vw, 352px);
+}
+
+.workspace-grid[data-journey-open="true"],
+.workspace--figma .workspace-grid[data-journey-open="true"] {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  height: calc(100dvh - 84px) !important;
+}
+
+.workspace-grid[data-journey-open="true"] > .left-panel,
+.workspace-grid[data-journey-open="true"] > .right-panel,
+.workspace--figma .workspace-grid[data-journey-open="true"] > .left-panel,
+.workspace--figma .workspace-grid[data-journey-open="true"] > .right-panel {
+  display: none !important;
+}
+
+.workspace-grid[data-journey-open="true"] > .map-panel,
+.workspace--figma .workspace-grid[data-journey-open="true"] > .map-panel {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
 }
 
 .workspace--figma .panel,

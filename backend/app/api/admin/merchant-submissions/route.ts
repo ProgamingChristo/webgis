@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSuccessResponse } from "@/src/lib/api-response";
 import { getRequestId } from "@/src/lib/request-id";
-import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
+import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
 import { requireRole } from "@/src/lib/auth";
 import { withApiLogger } from "@/src/lib/api-logger";
 import { createOptionsHandler } from "@/src/lib/api-security";
@@ -14,8 +14,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   return withApiLogger(req, reqId, async () => {
     const { userId: adminId } = await requireRole(req, "ADMIN");
-    const authHeader = req.headers.get("Authorization")!;
-    const supabase = getRequestSupabaseClient(authHeader);
+    const supabase = getServiceRoleSupabaseClient();
 
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
