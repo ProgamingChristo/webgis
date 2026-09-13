@@ -48,8 +48,25 @@ describe("commuter merchant evidence", () => {
     expect(html).toContain('data-status="SPONSORED"');
   });
   it("renders a consumer place detail without internal data tiles or invented menu text", () => {
-    const html = renderToStaticMarkup(<PlaceDetailDrawer merchant={{ ...merchant, address: "Jl. Contoh 1", photo: "https://images.example.test/place.jpg" }} onRoute={vi.fn()} />);
+    const html = renderToStaticMarkup(<PlaceDetailDrawer merchant={{
+      ...merchant,
+      address: "Jl. Contoh 1",
+      city: "Jakarta Selatan",
+      district: "Tebet",
+      menu: "Nasi ayam dan es teh",
+      observedCondition: "Tempat duduk tersedia",
+      observedAt: "2026-09-11T08:00:00.000Z",
+      photo: "https://images.example.test/place.jpg",
+      menuPhotos: ["https://images.example.test/menu.jpg"],
+    }} onRoute={vi.fn()} />);
     expect(html).toContain("Jl. Contoh 1");
+    expect(html).toContain('aria-label="Detail Merchant tanpa metadata"');
+    expect(html).toContain("Foto utama Merchant tanpa metadata");
+    expect(html).toContain("Nasi ayam dan es teh");
+    expect(html).toContain("Tempat duduk tersedia");
+    expect(html).toContain("Tebet, Jakarta Selatan");
+    expect(html).toContain("11 Sep 2026");
+    expect(html).toContain("Foto 2 Merchant tanpa metadata");
     expect(html).toContain("Rute ke sini");
     expect(html).toContain("Belum ada catatan komunitas untuk tempat ini");
     expect(html).not.toContain("Jam buka belum tersedia");

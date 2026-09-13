@@ -20,11 +20,19 @@ function safePhoto(value?: string | null) {
 function PlacePhoto({ src, alt }: { src: string; alt: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) return <span className="place-detail__photo-fallback"><Store aria-hidden="true" /></span>;
-  return <Image src={src} alt={alt} fill sizes="(max-width: 720px) 100vw, 300px" unoptimized onError={() => setFailed(true)} />;
+  return <Image src={src} alt={alt} fill sizes="(max-width: 760px) calc(100vw - 14px), (max-width: 1180px) 460px, 480px" unoptimized onError={() => setFailed(true)} />;
 }
 
 function formatPrice(amount: number) {
   return `Rp${amount.toLocaleString("id-ID")}`;
+}
+
+function formatObservedAt(value?: string) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isFinite(date.getTime())
+    ? date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+    : value;
 }
 
 export function PlaceDetailDrawer({ merchant, onRoute }: { merchant: Merchant; onRoute: (merchant: Merchant) => void }) {
@@ -48,7 +56,21 @@ export function PlaceDetailDrawer({ merchant, onRoute }: { merchant: Merchant; o
   const hasHoursOrPrice = Boolean(merchant.openingHoursLabel) || price !== null;
   const hasAccessEvidence = Boolean(merchant.referenceDistance) || routable;
 
-  return <article className="place-detail">
+  const heroPhoto = photos[0] ?? null;
+  const galleryPhotos = heroPhoto ? photos.slice(1) : photos;
+  const observedAt = formatObservedAt(merchant.observedAt);
+  const area = [merchant.village, merchant.district, merchant.city, merchant.province]
+    .filter(Boolean)
+    .filter((value, index, values) => values.indexOf(value) === index)
+    .join(", ");
+
+  return <article className="place-detail" aria-label={`Detail ${merchant.name}`}>
+    <div className="place-detail__hero">
+      {heroPhoto
+        ? <PlacePhoto src={heroPhoto} alt={`Foto utama ${merchant.name}`} />
+        : <span className="place-detail__photo-fallback"><Store aria-hidden="true" /><small>Foto belum tersedia</small></span>}
+      <span className="place-detail__category">{merchant.category || "Lokasi usaha"}</span>
+    </div>
     <div className="place-detail__content">
       <header className="place-detail__title">
         <div>
@@ -58,6 +80,11 @@ export function PlaceDetailDrawer({ merchant, onRoute }: { merchant: Merchant; o
         </div>
         {opening !== "UNKNOWN" ? <span data-status={opening}>{opening === "OPEN" ? "Buka" : "Tutup"}</span> : null}
       </header>
+
+      {merchant.menu || merchant.observedCondition ? <section className="place-detail__summary">
+        {merchant.menu ? <div><strong>Menu / produk</strong><p>{merchant.menu}</p></div> : null}
+        {merchant.observedCondition ? <div><strong>Kondisi tercatat</strong><p>{merchant.observedCondition}</p></div> : null}
+      </section> : null}
 
       {hasMetrics ? <dl className="place-detail__metrics">
         {distance !== null ? <div><dd>{formatMeters(distance)}</dd><dt>Jarak</dt></div> : null}
@@ -101,14 +128,23 @@ export function PlaceDetailDrawer({ merchant, onRoute }: { merchant: Merchant; o
 
       {merchant.phone ? <section className="place-detail__section"><h3><Phone size={15} aria-hidden="true" />Kontak</h3><a className="place-detail__phone" href={`tel:${merchant.phone}`}>{merchant.phone}</a></section> : null}
 
+      {area || merchant.mobility || observedAt ? <section className="place-detail__section">
+        <h3><MapPin size={15} aria-hidden="true" />Informasi lokasi</h3>
+        <dl className="place-detail__rows">
+          {area ? <div><dt>Wilayah</dt><dd>{area}</dd></div> : null}
+          {merchant.mobility ? <div><dt>Jenis lokasi</dt><dd>{merchant.mobility}</dd></div> : null}
+          {observedAt ? <div><dt>Data diamati</dt><dd>{observedAt}</dd></div> : null}
+        </dl>
+      </section> : null}
+
       <section className="place-detail__section">
         <h3><MessageSquareText size={15} aria-hidden="true" />Catatan Komunitas</h3>
         <p>Belum ada catatan komunitas untuk tempat ini.</p>
       </section>
 
-      {photos.length ? <section className="place-detail__gallery" aria-label="Foto dan menu">
+      {galleryPhotos.length ? <section className="place-detail__gallery" aria-label="Foto dan menu">
         <h3><Tag size={15} aria-hidden="true" />Foto &amp; Menu</h3>
-        <div>{photos.map((photo, index) => <figure key={photo}><PlacePhoto src={photo} alt={`Foto ${index + 1} ${merchant.name}`} /></figure>)}</div>
+        <div>{galleryPhotos.map((photo, index) => <figure key={photo}><PlacePhoto src={photo} alt={`Foto ${index + 2} ${merchant.name}`} /></figure>)}</div>
       </section> : null}
     </div>
   </article>;

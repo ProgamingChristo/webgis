@@ -153,10 +153,10 @@
     grid-template-columns: clamp(310px, 27vw, 380px) minmax(0, 1fr);
   }
   .workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="false"][data-detail-open="true"]:not([class*="activeWorkspace"]) {
-    grid-template-columns: clamp(300px, 24vw, 360px) minmax(0, 1fr) clamp(320px, 25vw, 380px);
+    grid-template-columns: clamp(300px, 22vw, 350px) minmax(480px, 1fr) clamp(400px, 29vw, 480px);
   }
   .workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"][data-detail-open="true"]:not([class*="activeWorkspace"]) {
-    grid-template-columns: minmax(0, 1fr) clamp(320px, 25vw, 380px);
+    grid-template-columns: minmax(480px, 1fr) clamp(400px, 29vw, 480px);
   }
 }
 @media (min-width: 761px) {
@@ -286,7 +286,7 @@
   overflow: hidden;
 }
 .workspace--figma.commuter-workspace .workspace-grid[data-detail-open="true"] {
-  grid-template-columns: clamp(300px, 24vw, 360px) minmax(0, 1fr) clamp(320px, 25vw, 380px);
+  grid-template-columns: clamp(300px, 22vw, 350px) minmax(480px, 1fr) clamp(400px, 29vw, 480px);
 }
 .workspace--figma.commuter-workspace .panel,
 .workspace--figma.commuter-workspace .map-panel {
@@ -397,38 +397,45 @@
 .commuter-sidebar .route-endpoints-summary__list { font-size: 10px; }
 .commuter-sidebar .route-endpoints-summary__btn { font-size: 9px; }
 
-.right-panel:has(.place-detail) .commuter-detail-close { top: 7px; margin: 7px; min-height: 28px; padding: 5px 8px; border-radius: 7px; box-shadow: none; }
-.place-detail__content { gap: 14px; padding: 16px 14px; }
-.place-detail__title { padding-top: 26px; }
-.place-detail__title h2 { font-size: 18px; }
-.place-detail__title p { font-size: 10px; }
-.place-detail__address { display: flex; align-items: flex-start; gap: 4px; margin-top: 5px; color: var(--commuter-muted); font-size: 9px; line-height: 1.45; }
+.right-panel:has(.place-detail) .commuter-detail-close { top: 10px; margin: 10px; min-height: 38px; padding: 8px 12px; border-radius: 10px; box-shadow: 0 4px 16px #1023571a; }
+.place-detail__hero { min-height: clamp(210px, 24vh, 280px); }
+.place-detail__category { position: absolute; left: 18px; bottom: 16px; z-index: 1; max-width: calc(100% - 36px); border: 1px solid #ffffffb8; border-radius: 999px; background: #fffffff0; color: var(--commuter-ink); padding: 7px 12px; font-size: 12px; font-weight: 750; box-shadow: 0 5px 18px #10235720; }
+.place-detail__photo-fallback small { color: var(--commuter-muted); font-size: 12px; font-weight: 650; }
+.place-detail__content { gap: 20px; padding: 22px 24px 30px; }
+.place-detail__title { padding-top: 0; }
+.place-detail__title h2 { font-size: clamp(22px, 2vw, 28px); letter-spacing: -.025em; }
+.place-detail__title p { font-size: 13px; }
+.place-detail__address { display: flex; align-items: flex-start; gap: 6px; margin-top: 8px; color: var(--commuter-muted); font-size: 12px; line-height: 1.55; }
 .place-detail__address svg { flex: 0 0 auto; margin-top: 1px; color: var(--commuter-blue); }
-.place-detail__metrics { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); margin: 0; border: 1px solid var(--commuter-line); border-radius: 8px; background: #f8fafc; }
-.place-detail__metrics > div { display: grid; gap: 3px; padding: 10px 6px; text-align: center; border-right: 1px solid var(--commuter-line); }
+.place-detail__summary { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.place-detail__summary > div { min-width: 0; border: 1px solid var(--commuter-line); border-radius: 12px; background: #f8fbfd; padding: 12px 14px; }
+.place-detail__summary strong { color: var(--commuter-ink); font-size: 11px; }
+.place-detail__summary p { margin: 5px 0 0; color: var(--commuter-muted); font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }
+.place-detail__metrics { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); margin: 0; border: 1px solid var(--commuter-line); border-radius: 12px; background: #f8fafc; overflow: hidden; }
+.place-detail__metrics > div { display: grid; gap: 4px; padding: 14px 8px; text-align: center; border-right: 1px solid var(--commuter-line); }
 .place-detail__metrics > div:last-child { border-right: 0; }
-.place-detail__metrics dd { margin: 0; color: #087f9d; font-size: 12px; font-weight: 800; }
-.place-detail__metrics dt { color: var(--commuter-muted); font-size: 8px; text-transform: uppercase; }
-.place-detail__actions { display: grid; }
-.place-detail__route { min-height: 38px; border-radius: 7px; font-size: 11px; }
+.place-detail__metrics dd { margin: 0; color: #087f9d; font-size: 15px; font-weight: 800; }
+.place-detail__metrics dt { color: var(--commuter-muted); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.place-detail__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.place-detail__route { min-height: 46px; border-radius: 11px; font-size: 13px; }
 .place-detail__ownership,
-.place-detail__claim { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; margin-top: 7px; border: 1px solid #bae6fd; border-radius: 7px; color: #0369a1; font-size: 11px; font-weight: 700; text-decoration: none; }
+.place-detail__claim { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 46px; margin-top: 0; border: 1px solid #bae6fd; border-radius: 11px; color: #0369a1; padding: 8px 11px; font-size: 12px; font-weight: 700; text-align: center; text-decoration: none; }
 .place-detail__ownership { border-color: #bbf7d0; background: #f0fdf4; color: #15803d; }
-.place-detail__section { display: grid; gap: 8px; padding-top: 13px; border-top: 1px solid var(--commuter-line); }
+.place-detail__section { display: grid; gap: 10px; padding-top: 18px; border-top: 1px solid var(--commuter-line); }
 .place-detail__section h3,
-.place-detail__gallery h3 { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--commuter-ink); font-size: 11px; }
+.place-detail__gallery h3 { display: flex; align-items: center; gap: 7px; margin: 0; color: var(--commuter-ink); font-size: 13px; }
 .place-detail__section h3 svg,
 .place-detail__gallery h3 svg { color: var(--commuter-blue); }
-.place-detail__section ul { display: grid; gap: 6px; margin: 0; padding-left: 16px; color: var(--commuter-muted); font-size: 9px; line-height: 1.45; }
-.place-detail__section p { margin: 0; color: var(--commuter-muted); font-size: 9px; line-height: 1.5; }
-.place-detail__rows { display: grid; gap: 7px; margin: 0; }
-.place-detail__rows > div { display: flex; justify-content: space-between; gap: 8px; font-size: 9px; }
+.place-detail__section ul { display: grid; gap: 7px; margin: 0; padding-left: 18px; color: var(--commuter-muted); font-size: 12px; line-height: 1.55; }
+.place-detail__section p { margin: 0; color: var(--commuter-muted); font-size: 12px; line-height: 1.6; }
+.place-detail__rows { display: grid; gap: 10px; margin: 0; }
+.place-detail__rows > div { display: flex; justify-content: space-between; gap: 16px; font-size: 12px; line-height: 1.5; }
 .place-detail__rows dt { color: var(--commuter-muted); }
 .place-detail__rows dd { margin: 0; color: var(--commuter-ink); text-align: right; }
-.place-detail__phone { color: #087f9d; font-size: 10px; }
-.place-detail__gallery { display: grid; gap: 8px; padding-top: 13px; border-top: 1px solid var(--commuter-line); }
-.place-detail__gallery > div { grid-template-columns: repeat(3, 1fr); gap: 5px; }
-.place-detail__gallery figure { min-height: 64px; border-radius: 6px; }
+.place-detail__phone { color: #087f9d; font-size: 13px; font-weight: 700; }
+.place-detail__gallery { display: grid; gap: 10px; padding-top: 18px; border-top: 1px solid var(--commuter-line); }
+.place-detail__gallery > div { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.place-detail__gallery figure { min-height: 96px; border-radius: 10px; }
 
 .map-basemap-state { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 20px; background: #eef3f5; color: var(--commuter-ink); }
 .map-basemap-state > div { display: grid; justify-items: center; gap: 8px; max-width: 280px; border: 1px solid var(--commuter-line); border-radius: 10px; background: #fff; padding: 18px; text-align: center; box-shadow: 0 8px 24px #10235714; }
@@ -450,7 +457,7 @@
 @media (max-width: 1180px) and (min-width: 761px) {
   .workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="false"]:not([data-detail-open="true"]) { grid-template-columns: minmax(240px, 270px) minmax(0, 1fr); }
   .workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="false"][data-detail-open="true"] { grid-template-columns: minmax(240px, 260px) minmax(0, 1fr); }
-  .workspace--figma.commuter-workspace .right-panel { position: absolute; z-index: 7; right: 10px; top: 10px; bottom: 10px; width: 320px; height: auto; border: 1px solid var(--commuter-line); border-radius: 10px; box-shadow: 0 12px 30px #10235720; background: #fff; }
+  .workspace--figma.commuter-workspace .right-panel { position: absolute; z-index: 7; right: 10px; top: 10px; bottom: 10px; width: min(460px, calc(100% - 28px)); height: auto; border: 1px solid var(--commuter-line); border-radius: 14px; box-shadow: 0 16px 42px #1023572b; background: #fff; }
 }
 
 @media (max-width: 760px) {
@@ -460,4 +467,23 @@
   .workspace--figma.commuter-workspace .left-panel { position: absolute; z-index: 6; left: 7px; right: 7px; bottom: 7px; width: auto; height: min(56dvh, 520px); border: 1px solid var(--commuter-line); border-radius: 12px; }
   .workspace--figma.commuter-workspace .right-panel { position: absolute; z-index: 8; inset: 7px; width: auto; height: auto; border: 1px solid var(--commuter-line); border-radius: 12px; box-shadow: 0 12px 30px #10235724; background: #fff; }
   .workspace--figma.commuter-workspace .map-panel { min-height: 100%; height: 100%; }
+  .place-detail__hero { min-height: 190px; }
+  .place-detail__content { padding: 18px 16px 28px; }
+  .place-detail__actions,
+  .place-detail__summary { grid-template-columns: 1fr; }
+}
+
+/* Tablet keeps the map useful while presenting detail as a readable overlay. */
+@media (min-width: 761px) and (max-width: 1180px) {
+  .workspace--figma.commuter-workspace .workspace-grid[data-detail-open="true"] > .right-panel {
+    position: absolute !important;
+    z-index: 12;
+    inset: 10px 10px 10px auto;
+    width: min(460px, calc(100vw - 28px)) !important;
+    height: auto;
+    border: 1px solid var(--commuter-line);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 18px 48px #10235730;
+  }
 }
