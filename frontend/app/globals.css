@@ -2132,21 +2132,35 @@ body:has(.getra-app-shell--profile) {
 }
 
 .user-type-badge--investor {
-  border-color: rgb(192 132 252 / 0.38);
-  background: rgb(168 85 247 / 0.12);
-  color: rgb(233 213 255);
+  border-color: #d8b4fe;
+  background: #faf5ff;
+  color: #6b21a8;
 }
 
 .user-type-badge--government {
-  border-color: rgb(45 212 191 / 0.34);
-  background: rgb(20 184 166 / 0.1);
-  color: rgb(153 246 228);
+  border-color: #99f6e4;
+  background: #f0fdfa;
+  color: #0f766e;
 }
 
 .user-type-badge--admin {
-  border-color: rgb(250 204 21 / 0.4);
-  background: rgb(250 204 21 / 0.12);
-  color: rgb(254 240 138);
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #854d0e;
+}
+
+.profile-trust-score {
+  color: #3f6212;
+}
+
+.getra-public-profile .user-profile-mode {
+  border-color: #dce6ef;
+  background: #f8fafc;
+  color: #0f2744;
+}
+
+.getra-public-profile .user-profile-mode p {
+  color: #475569;
 }
 
 .user-profile-mode {
