@@ -6,11 +6,17 @@
 .commuter-results-disclosure__summary { display: grid; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
 .commuter-results-disclosure__title { font-size: 14px; font-weight: 700; line-height: 1.4; }
 .commuter-results-disclosure__count { font-size: 12px; line-height: 1.5; color: var(--commuter-muted); }
-.commuter-results-disclosure__toggle > svg { flex: 0 0 auto; color: var(--commuter-blue); transition: transform 160ms ease; }
-.commuter-results-disclosure__toggle[aria-expanded="true"] > svg { transform: rotate(180deg); }
+.commuter-results-disclosure__action { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.commuter-results-disclosure__action-text { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; transition: all 140ms ease; }
+.commuter-results-disclosure__toggle:hover .commuter-results-disclosure__action-text { background: #0284c7; color: #ffffff; border-color: #0284c7; }
+.commuter-results-disclosure__toggle svg { flex: 0 0 auto; color: var(--commuter-blue); transition: transform 160ms ease; }
+.commuter-results-disclosure__toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
 .commuter-results-disclosure__description { margin: 8px 2px; color: var(--commuter-muted); font-size: 12px; line-height: 1.5; }
 .commuter-sidebar .commuter-results-disclosure__controls { margin: 8px 0 12px; flex-wrap: wrap; align-items: center; }
-@media (prefers-reduced-motion: reduce) { .commuter-results-disclosure__toggle > svg { transition: none; } }
+.commuter-results-disclosure__footer { margin: 16px 0 10px; text-align: center; }
+.commuter-results-disclosure__collapse-footer-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 8px 14px; font-size: 12px; font-weight: 600; border-radius: 10px; background: #f8fafc; color: #475569; border: 1px solid #cbd5e1; cursor: pointer; transition: all 150ms ease; }
+.commuter-results-disclosure__collapse-footer-btn:hover { background: #f1f5f9; color: #0f172a; border-color: #94a3b8; }
+@media (prefers-reduced-motion: reduce) { .commuter-results-disclosure__toggle svg { transition: none; } }
 .commuter-workspace { --commuter-ink: #102357; --commuter-muted: #52658a; --commuter-blue: #008fbe; --commuter-line: #dce8f8; }
 .workspace--figma.commuter-workspace .workspace-grid,
 .workspace--figma.commuter-workspace .workspace-grid[data-routing-active="true"] { position: relative; grid-template-columns: clamp(310px, 27vw, 380px) minmax(0, 1fr); min-height: 0; height: calc(100dvh - 122px); }

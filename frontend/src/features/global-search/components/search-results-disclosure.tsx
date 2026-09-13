@@ -33,12 +33,30 @@ export function SearchResultsDisclosure({
           <span id={titleId} className="commuter-results-disclosure__title">{title}</span>
           <span className="commuter-results-disclosure__count" aria-live="polite">{count}</span>
         </span>
-        <ChevronDown aria-hidden="true" size={20} />
+        <span className="commuter-results-disclosure__action">
+          <span className="commuter-results-disclosure__action-text">
+            {expanded ? "Tutup" : "Buka"}
+          </span>
+          <ChevronDown aria-hidden="true" size={18} />
+        </span>
       </button>
       {description ? <p className="commuter-results-disclosure__description">{description}</p> : null}
       {controls}
       <div id={contentId} hidden={!expanded}>
-        {expanded ? children : null}
+        {expanded ? (
+          <>
+            {children}
+            <div className="commuter-results-disclosure__footer">
+              <button
+                type="button"
+                className="commuter-results-disclosure__collapse-footer-btn"
+                onClick={() => onExpandedChange(false)}
+              >
+                ▲ Tutup Hasil Pencarian
+              </button>
+            </div>
+          </>
+        ) : null}
       </div>
     </section>
   );

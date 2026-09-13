@@ -16,7 +16,7 @@ export function CommuterSidebar({ mode, onModeChange, onCollapse, route, destina
   return <aside className="left-panel panel commuter-sidebar" aria-label="Kontrol pencarian dan rute">
     <header className="commuter-sidebar__header">
       <div className="commuter-brand"><span><LocateFixed size={25} /></span><div><strong>GETRA</strong><small>Peta Cerdas Kota</small></div></div>
-      <button type="button" className="commuter-icon" onClick={onCollapse} aria-label="Tutup panel, tampilkan peta"><ChevronsLeft size={20} /></button>
+      <button type="button" className="commuter-icon" onClick={onCollapse} aria-label="Tutup panel, tampilkan peta" title="Tutup sidebar (tampilkan peta penuh)"><ChevronsLeft size={20} /></button>
       <nav className="commuter-tabs" aria-label="Mode sidebar">
         <button type="button" aria-pressed={mode === "search"} onClick={() => onModeChange("search")}><Search size={18} />Cari</button>
         <button type="button" aria-pressed={mode === "route"} onClick={() => onModeChange("route")}><Route size={18} />Rute</button>
