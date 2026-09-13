@@ -1033,6 +1033,16 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     purpose: "Submit a pending merchant ownership claim for review",
   },
   {
+    method: "GET",
+    path: "/api/merchants/[id]/profile",
+    classification: "AUTHENTICATED",
+    role: "AUTHENTICATED",
+    rateLimit: "api",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_HEADERS,
+    purpose: "Verified owner retrieve merchant profile information",
+  },
+  {
     method: "PATCH",
     path: "/api/merchants/[id]/profile",
     classification: "AUTHENTICATED",

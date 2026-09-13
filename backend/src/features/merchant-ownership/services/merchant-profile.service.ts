@@ -1,9 +1,54 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ApplicationError } from "@/src/lib/errors";
+import { parseSubmissionPoint } from "@/src/features/merchant-submission/repositories/submission-point";
 import type { UpdateMerchantProfileInput } from "../schemas/merchant-profile.schema";
 
 export class MerchantProfileService {
   constructor(private readonly supabase: SupabaseClient<any>) {}
+
+  async getProfile(merchantId: string, userId: string) {
+    const { data: merchant, error: fetchError } = await this.supabase
+      .from("merchants")
+      .select("id, name, owner_id, verification_status, publish_status, price_level, description, opening_hours, metadata, address, location, created_at, updated_at")
+      .eq("id", merchantId)
+      .maybeSingle();
+
+    if (fetchError || !merchant) {
+      throw new ApplicationError("NOT_FOUND", "Merchant tidak ditemukan.");
+    }
+
+    if (merchant.owner_id !== userId) {
+      throw new ApplicationError(
+        "FORBIDDEN",
+        "Hanya pemilik terverifikasi yang dapat mengakses profil usaha ini."
+      );
+    }
+
+    let parsedLocation: { type: "Point"; coordinates: [number, number] } | null = null;
+    if (merchant.location) {
+      try {
+        parsedLocation = parseSubmissionPoint(merchant.location);
+      } catch {
+        parsedLocation = null;
+      }
+    }
+
+    return {
+      id: merchant.id,
+      name: merchant.name,
+      owner_id: merchant.owner_id,
+      verification_status: merchant.verification_status,
+      publish_status: merchant.publish_status,
+      price_level: merchant.price_level,
+      description: merchant.description,
+      opening_hours: merchant.opening_hours,
+      metadata: merchant.metadata ?? {},
+      address: merchant.address,
+      location: parsedLocation,
+      created_at: merchant.created_at,
+      updated_at: merchant.updated_at,
+    };
+  }
 
   async updateProfile(
     merchantId: string,

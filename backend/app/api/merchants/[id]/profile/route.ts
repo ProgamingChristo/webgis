@@ -16,6 +16,32 @@ const merchantIdSchema = z.string().uuid();
 
 export const maxDuration = 15;
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
+  const reqId = getRequestId(req);
+
+  return withApiLogger(req, reqId, async () => {
+    const parsedMerchantId = merchantIdSchema.safeParse((await params).id);
+    if (!parsedMerchantId.success) {
+      return createErrorResponse(
+        reqId,
+        new ApplicationError("VALIDATION_ERROR", "Merchant ID tidak valid.")
+      );
+    }
+
+    const userId = await requireAuthenticatedUser(req);
+    const authHeader = req.headers.get("Authorization")!;
+    const supabase = getRequestSupabaseClient(authHeader);
+
+    const service = new MerchantProfileService(supabase);
+    const result = await service.getProfile(parsedMerchantId.data, userId);
+
+    return createSuccessResponse(reqId, result);
+  });
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

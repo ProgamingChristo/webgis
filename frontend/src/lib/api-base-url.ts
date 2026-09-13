@@ -2,12 +2,8 @@ const CONFIGURATION_ERROR =
   "NEXT_PUBLIC_GETRA_API_URL belum dikonfigurasi dengan URL backend GETRA yang valid.";
 
 export function getGetraApiBaseUrl(): string {
-  if (typeof window !== "undefined") {
-    // If the browser is running on an isolated candidate or test port (e.g. 3100),
-    // route API calls to the same-origin Next.js BFF proxy to avoid CORS and port collisions.
-    if (window.location.port && window.location.port !== "3000") {
-      return window.location.origin;
-    }
+  if (typeof window !== "undefined" && window.location.port === "3100") {
+    return "http://localhost:8180";
   }
 
   const configured =

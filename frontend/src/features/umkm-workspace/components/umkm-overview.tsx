@@ -13,19 +13,41 @@ const ACTIONS: Record<string, string> = {
   PHONE: "Lengkapi kontak usaha", VERIFIED_STATUS: "Periksa status verifikasi", VALID_GEOMETRY: "Periksa lokasi",
 };
 
-export function UmkmOverview({ merchant, intelligence, onNavigate, refreshToken }: {
-  merchant: OwnedMerchantBrief; intelligence: ReturnType<typeof useUmkmIntelligence>; onNavigate: (section: UmkmSection) => void; refreshToken?: unknown;
+export function UmkmOverview({ merchant, intelligence, onNavigate, onOpenProfile, refreshToken }: {
+  merchant: OwnedMerchantBrief; intelligence: ReturnType<typeof useUmkmIntelligence>; onNavigate: (section: UmkmSection) => void; onOpenProfile?: () => void; refreshToken?: unknown;
 }) {
   const data = intelligence.data?.merchant.id === merchant.id ? intelligence.data : null;
-  const actions = [...new Set(data ? [...data.data_readiness.components, ...data.location_readiness.components]
-    .filter((item) => (item.status === "MISSING" || item.status === "LIMITED") && ACTIONS[item.id])
-    .map((item) => ACTIONS[item.id]!) : [])];
-  const readinessLabel = data ? ({ READY: "Profil siap", DEVELOPING: "Profil perlu dilengkapi", INCOMPLETE: "Profil belum lengkap" }[data.data_readiness.status]) : "Belum tersedia";
+  const actions = [
+    ...new Set(
+      data
+        ? [
+            ...(data.data_readiness?.components || []),
+            ...(data.location_readiness?.components || []),
+          ]
+            .filter(
+              (item) =>
+                (item.status === "MISSING" || item.status === "LIMITED") &&
+                ACTIONS[item.id]
+            )
+            .map((item) => ACTIONS[item.id]!)
+        : []
+    ),
+  ];
+  const readinessLabel = data?.data_readiness?.status
+    ? {
+        READY: "Profil siap",
+        DEVELOPING: "Profil perlu dilengkapi",
+        INCOMPLETE: "Profil belum lengkap",
+      }[data.data_readiness.status] || "Belum tersedia"
+    : "Belum tersedia";
   return <div className="space-y-5">
     <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0"><h2 className="break-words text-xl font-bold text-slate-900">{merchant.name}</h2><p className="mt-1 text-sm text-slate-600">{merchant.category}</p></div>
-        {merchant.verification_status === "VERIFIED" ? <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800"><BadgeCheck aria-hidden size={14} className="text-emerald-600" />Terverifikasi</span> : <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">Verifikasi perlu diperiksa</span>}
+        <div className="flex flex-wrap items-center gap-2">
+          {merchant.verification_status === "VERIFIED" ? <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800"><BadgeCheck aria-hidden size={14} className="text-emerald-600" />Terverifikasi</span> : <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">Verifikasi perlu diperiksa</span>}
+          <button type="button" onClick={() => onOpenProfile ? onOpenProfile() : onNavigate("usaha-saya")} className="inline-flex min-h-8 items-center gap-1 rounded-xl border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 hover:bg-sky-100 transition-colors">Kelola Profil &amp; Operasional</button>
+        </div>
       </div>
       <dl className="mt-5 grid gap-4 border-t border-slate-100 pt-5 sm:grid-cols-3">
         <div><dt className="text-xs font-medium text-slate-500">Kesiapan profil</dt><dd className="mt-1 text-sm font-semibold text-slate-900">{intelligence.loading ? "Memeriksa profil..." : readinessLabel}</dd></div>
