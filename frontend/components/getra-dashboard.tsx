@@ -54,6 +54,7 @@ import {
 } from "@/src/services/mapid-layer.service";
 import { CommuterSidebar, type SidebarMode } from "@/src/features/global-search/components/commuter-sidebar";
 import { MerchantResultRow } from "@/src/features/global-search/components/merchant-result-row";
+import { SearchResultsDisclosure } from "@/src/features/global-search/components/search-results-disclosure";
 import { PlaceDetailDrawer } from "@/src/features/global-search/components/place-detail-drawer";
 import { useSponsoredPinCandidates } from "@/src/features/umkm-advertising";
 import "@/src/features/global-search/commuter-sidebar.css";
@@ -1049,6 +1050,7 @@ function GeneralGetraDashboard() {
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>([]);
   const [searchTotal, setSearchTotal] = useState<number | null>(null);
   const [searchActive, setSearchActive] = useState(false);
+  const [searchResultsExpanded, setSearchResultsExpanded] = useState(false);
   const [canonicalViewportLoaded, setCanonicalViewportLoaded] = useState(false);
   const initialCanonicalRequestStartedRef = useRef(false);
   const [placeSearchStatus, setPlaceSearchStatus] = useState<string | null>(null);
@@ -2229,6 +2231,7 @@ function GeneralGetraDashboard() {
   }, []);
 
   const submitGlobalSearch = useCallback(() => {
+    if (query.trim()) setSearchResultsExpanded(true);
     searchRevisionRef.current++;
     const revision = searchRevisionRef.current;
     searchCriteriaRef.current = null;
@@ -2544,7 +2547,10 @@ function GeneralGetraDashboard() {
       ],
     );
 
-  const handleOpenMerchantDetail = useCallback(() => {
+  const handleOpenMerchantDetail = useCallback((merchant?: Merchant) => {
+    if (merchant) {
+      setSelectedId(merchant.id);
+    }
     setDetailOpen(true);
     setAiOpen(false);
   }, []);
@@ -3886,12 +3892,14 @@ function GeneralGetraDashboard() {
               <p>Cari tempat, pilih wilayah, gunakan lokasi Anda, atau Tanya GETRA untuk memulai.</p>
             </div>
           ) : (
-            <>
-              <div className="results-header">
+            <SearchResultsDisclosure
+              expanded={searchResultsExpanded}
+              onExpandedChange={setSearchResultsExpanded}
+              title={resultPresentation.title}
+              count={mapidLoading ? "Mencari tempat…" : mapidError ? "Tempat belum dapat dimuat" : resultPresentation.count}
+              description={searchIntent?.candidate_limited ? "Kandidat terbatas. Persempit area pencarian." : "Berdasarkan data tempat yang tersedia"}
+              controls={<div className="results-header commuter-results-disclosure__controls">
                 <div>
-                  <span className="eyebrow">{resultPresentation.title}</span>
-                  <strong>{mapidLoading ? "Mencari tempat…" : resultPresentation.count}</strong>
-                  <small>{searchIntent?.candidate_limited ? "Kandidat terbatas. Persempit area pencarian." : "Berdasarkan data tempat yang tersedia"}</small>
                   <label className="commuter-sort">Urutkan <select aria-label="Urutan hasil" value={searchIntent?.sort ?? "RELEVANCE"} onChange={(event) => {
                     const criteria: SearchCriteria = { query: query || searchIntent?.keyword || "", max_budget: maxBudget ? Number(maxBudget) : null, open_now: openOnly, max_walking_minutes: maxWalkingMinutes,
                       reference_text: searchCriteriaRef.current?.reference_text ?? null, near_user: searchCriteriaRef.current?.near_user ?? false,
@@ -3919,8 +3927,8 @@ function GeneralGetraDashboard() {
                         : "2026"}
                   </span>
                 </div>
-              </div>
-
+              </div>}
+            >
               {eligibleSponsoredMerchants.length > 0 ? <section className="commuter-sponsored" aria-label="Promosi yang sesuai pencarian">
                 <div className="commuter-sponsored__heading"><strong>Promosi</strong><small>Memenuhi filter pencarian</small></div>
                 {eligibleSponsoredMerchants.map((merchant) => <MerchantResultRow
@@ -3970,7 +3978,7 @@ function GeneralGetraDashboard() {
                   ))
                 )}
               </div>
-            </>
+            </SearchResultsDisclosure>
           )}
 
           <div className="primary-map-mode" aria-label="Mode peta utama">

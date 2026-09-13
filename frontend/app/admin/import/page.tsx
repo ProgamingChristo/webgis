@@ -89,14 +89,14 @@ export default function AdminImportPage() {
 
   if (!isAdmin) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#050a10] p-6 text-slate-100">
-        <section className="w-full max-w-md rounded-3xl border border-cyan-400/15 bg-slate-950/80 p-8 text-center shadow-2xl shadow-cyan-950/20">
-          <ShieldCheck className="mx-auto mb-5 text-cyan-300" size={34} />
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
+      <main className="grid min-h-screen place-items-center bg-slate-50 p-6 text-slate-900">
+        <section className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl shadow-slate-200/60">
+          <ShieldCheck className="mx-auto mb-5 text-sky-600" size={34} />
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-sky-700">
             Khusus admin
           </p>
           <h1 className="mt-3 text-2xl font-semibold">Akses admin dibutuhkan</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-400">
+          <p className="mt-3 text-sm leading-6 text-slate-600">
             Halaman import hanya tersedia untuk akun dengan account_role ADMIN.
           </p>
         </section>

@@ -118,8 +118,8 @@ export default function UserProfilePage() {
     context?.user.id === userId;
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#050a10] text-slate-100">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(34,211,238,0.15),transparent_30%),radial-gradient(circle_at_82%_14%,rgba(154,242,74,0.1),transparent_28%),linear-gradient(120deg,rgba(255,255,255,0.025),transparent_32%)]" />
+    <main className="getra-public-profile min-h-screen overflow-hidden bg-slate-50 text-slate-900">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(2,132,199,0.08),transparent_30%),radial-gradient(circle_at_82%_14%,rgba(20,184,166,0.07),transparent_28%)]" />
       <section className="relative mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[360px_1fr] lg:px-8">
         <aside className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-5 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-6">
           <button

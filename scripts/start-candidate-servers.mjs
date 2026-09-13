@@ -2,21 +2,24 @@ import fs from "node:fs";
 import { spawn } from "node:child_process";
 import http from "node:http";
 
-const backendCwd = "D:\\Getra_UMKM_Submission_Fix\\backend";
-const frontendCwd = "D:\\Getra_UMKM_Submission_Fix\\frontend";
+import path from "node:path";
+
+const rootDir = path.resolve(".");
+const backendCwd = path.join(rootDir, "backend");
+const frontendCwd = path.join(rootDir, "frontend");
 
 // Sync latest static assets and public assets into standalone builds
 console.log("[Candidate Runtime] Synchronizing latest static and public assets...");
-fs.cpSync("D:\\Getra_UMKM_Submission_Fix\\frontend\\.next\\static", "D:\\Getra_UMKM_Submission_Fix\\frontend\\.next\\standalone\\frontend\\.next\\static", { recursive: true, force: true });
-fs.cpSync("D:\\Getra_UMKM_Submission_Fix\\frontend\\public", "D:\\Getra_UMKM_Submission_Fix\\frontend\\.next\\standalone\\frontend\\public", { recursive: true, force: true });
-if (fs.existsSync("D:\\Getra_UMKM_Submission_Fix\\backend\\.next\\static")) {
-  fs.cpSync("D:\\Getra_UMKM_Submission_Fix\\backend\\.next\\static", "D:\\Getra_UMKM_Submission_Fix\\backend\\.next\\standalone\\backend\\.next\\static", { recursive: true, force: true });
+fs.cpSync(path.join(frontendCwd, ".next", "static"), path.join(frontendCwd, ".next", "standalone", "frontend", ".next", "static"), { recursive: true, force: true });
+fs.cpSync(path.join(frontendCwd, "public"), path.join(frontendCwd, ".next", "standalone", "frontend", "public"), { recursive: true, force: true });
+if (fs.existsSync(path.join(backendCwd, ".next", "static"))) {
+  fs.cpSync(path.join(backendCwd, ".next", "static"), path.join(backendCwd, ".next", "standalone", "backend", ".next", "static"), { recursive: true, force: true });
 }
 
 console.log("[Candidate Runtime] Starting Candidate Backend on port 8180...");
 const backendProcess = spawn(
   process.execPath,
-  ["D:\\Getra_UMKM_Submission_Fix\\backend\\.next\\standalone\\backend\\server.js"],
+  [path.join(backendCwd, ".next", "standalone", "backend", "server.js")],
   {
     cwd: backendCwd,
     env: {
@@ -26,6 +29,7 @@ const backendProcess = spawn(
       NEXT_PUBLIC_SUPABASE_URL: "https://sesakxnjaphrxqxllqjm.supabase.co",
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_XCmI_30nkk3NS1VdsQl1bg_g9xUNkW6",
       SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlc2FreG5qYXBocnhxeGxscWptIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjUzOTk0OCwiZXhwIjoyMTAyMTE1OTQ4fQ.iCkUIPqX-VcYIkIi3M4n89voeTkG0NUy7HRGz6zD80U",
+      FRONTEND_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3100,http://localhost:5173",
     },
     stdio: ["ignore", "pipe", "pipe"],
   }
@@ -37,7 +41,7 @@ backendProcess.stderr.on("data", (d) => process.stderr.write(`[BACKEND-8180-ERR]
 console.log("[Candidate Runtime] Starting Candidate Frontend on port 3100...");
 const frontendProcess = spawn(
   process.execPath,
-  ["D:\\Getra_UMKM_Submission_Fix\\frontend\\.next\\standalone\\frontend\\server.js"],
+  [path.join(frontendCwd, ".next", "standalone", "frontend", "server.js")],
   {
     cwd: frontendCwd,
     env: {

@@ -24,7 +24,12 @@ function isSameOriginRequest(req: NextRequest): boolean {
   if (!origin) return true;
 
   try {
-    return new URL(origin).origin === req.nextUrl.origin;
+    const originUrl = new URL(origin);
+    const hostHeader = req.headers.get("x-forwarded-host") || req.headers.get("host");
+    if (hostHeader && originUrl.host.toLowerCase() === hostHeader.toLowerCase()) {
+      return true;
+    }
+    return originUrl.origin === req.nextUrl.origin;
   } catch {
     return false;
   }

@@ -1977,9 +1977,13 @@ export function GetraMap({
     const map = mapRef.current;
     const merchant = merchants.find((item) => item.id === selectedId);
     if (!map || !merchant) return;
+    let popupInstance: Popup | null = null;
     const content = createMerchantMapPopup(merchant, {
       onClose: onClearSelection,
-      onDetail: onMerchantDetail,
+      onDetail: (selectedMerchant) => {
+        popupInstance?.remove();
+        onMerchantDetail?.(selectedMerchant);
+      },
       onRoute: onRequestMerchantRoute,
     });
     const markerElements = createMerchantMarker(true, merchant);
@@ -2004,6 +2008,7 @@ export function GetraMap({
       .setLngLat([merchant.longitude, merchant.latitude])
       .setDOMContent(content)
       .addTo(map);
+    popupInstance = popup;
     return () => {
       popup.remove();
       if (marker) {

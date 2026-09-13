@@ -20,7 +20,9 @@ export default function AdminUmkmPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [queueError, setQueueError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   const loadQueue = useCallback(async (showRefresh = false) => {
     if (!isAdmin) return;
@@ -32,9 +34,11 @@ export default function AdminUmkmPage() {
       ]);
       setClaims(nextClaims);
       setSubmissions(nextSubmissions);
-      setError(null);
+      setQueueError(null);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Pemeriksaan UMKM belum dapat dimuat. Coba lagi.");
+      setQueueError(
+        cause instanceof Error ? cause.message : "Pemeriksaan UMKM belum dapat dimuat. Coba lagi."
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -48,16 +52,20 @@ export default function AdminUmkmPage() {
 
   async function approveItem(item: ReviewItem) {
     setActionId(`${item.kind}:${item.id}:approve`);
-    setError(null);
+    setActionError(null);
+    setActionSuccess(null);
     try {
       if (item.kind === "CLAIM") {
         await adminUmkmReviewService.approveMerchantClaim(item.id);
       } else {
         await adminUmkmReviewService.approveMerchantSubmission(item.id);
       }
+      setActionSuccess(`"${item.merchantName}" berhasil disetujui dan diverifikasi.`);
       await loadQueue();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Approval gagal.");
+      setActionError(
+        cause instanceof Error ? cause.message : "Persetujuan usaha gagal diproses. Coba lagi."
+      );
     } finally {
       setActionId(null);
     }
@@ -68,16 +76,20 @@ export default function AdminUmkmPage() {
     if (!note?.trim()) return;
 
     setActionId(`${item.kind}:${item.id}:reject`);
-    setError(null);
+    setActionError(null);
+    setActionSuccess(null);
     try {
       if (item.kind === "CLAIM") {
         await adminUmkmReviewService.rejectMerchantClaim(item.id, note.trim());
       } else {
         await adminUmkmReviewService.rejectMerchantSubmission(item.id, note.trim());
       }
+      setActionSuccess(`"${item.merchantName}" berhasil ditolak dengan catatan.`);
       await loadQueue();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Penolakan gagal.");
+      setActionError(
+        cause instanceof Error ? cause.message : "Penolakan usaha gagal diproses. Coba lagi."
+      );
     } finally {
       setActionId(null);
     }
@@ -85,12 +97,16 @@ export default function AdminUmkmPage() {
 
   return (
     <AdminUmkmView
+      actionError={actionError}
       actionId={actionId}
+      actionSuccess={actionSuccess}
       claims={claims}
-      error={error}
+      error={queueError}
       isAdmin={isAdmin}
       loading={loading}
       onApprove={(item) => void approveItem(item)}
+      onDismissActionError={() => setActionError(null)}
+      onDismissActionSuccess={() => setActionSuccess(null)}
       onRefresh={() => void loadQueue(true)}
       onReject={(item) => void rejectItem(item)}
       refreshing={refreshing}

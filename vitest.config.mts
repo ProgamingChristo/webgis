@@ -27,6 +27,7 @@ export default defineConfig({
       "backend/tests/**/*.test.mjs",
       "frontend/tests/**/*.test.ts",
       "frontend/tests/**/*.test.mjs",
+      "frontend/tests/**/*.test.tsx",
       "frontend/src/features/**/*.test.tsx"
     ],
     restoreMocks: true,
