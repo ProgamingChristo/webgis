@@ -60,7 +60,7 @@ describe("GlobalSearchControls", () => {
     expect(html).toContain('aria-live="polite"');
   });
 
-  it("renders active-location radius controls (500m, 1km, 2km, 5km)", () => {
+  it("renders active-location radius controls (250m, 500m, 1km, 2km)", () => {
     const html = renderToStaticMarkup(
       <GlobalSearchControls
         query="kopi"
@@ -91,10 +91,11 @@ describe("GlobalSearchControls", () => {
       />,
     );
     expect(html).toContain("Lokasi saya");
+    expect(html).toContain("250 m");
     expect(html).toContain("500 m");
     expect(html).toContain("1 km");
     expect(html).toContain("2 km");
-    expect(html).toContain("5 km");
+    expect(html).not.toContain("5 km");
     expect(html).toContain('aria-pressed="true"');
   });
 });

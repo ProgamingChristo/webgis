@@ -4409,8 +4409,8 @@ body:has(.getra-app-shell--community) {
 .workspace--figma .account-menu__trigger { min-height: 38px; max-width: 210px; border-radius: 9px; padding: 3px 8px 3px 4px; }
 .workspace--figma .account-menu__avatar { width: 30px; height: 30px; }
 .workspace--figma .account-menu__identity strong { font-size: 11px; }
-.workspace--figma .account-menu__identity small { margin-top: 1px; font-size: 9px; }
-.workspace--figma .account-menu__identity em { margin-top: 0; font-size: 8px; }
+.workspace--figma .account-menu__identity small { margin-top: 1px; font-size: 10px; font-weight: 600; }
+.workspace--figma .account-menu__identity em { margin-top: 0; font-size: 9px; }
 .account-menu__chevron { flex: 0 0 auto; color: #64748b; }
 
 .workspace-context-toolbar {
@@ -5596,9 +5596,100 @@ body:has(.getra-app-shell--community) {
 }
 
 .workspace--figma .account-menu__identity small,
-.workspace--figma .account-menu__identity em,
 .workspace--figma .account-menu__summary > span {
-  color: #66708d;
+  color: var(--account-menu-meta-light, #475569);
+}
+
+.workspace--figma {
+  --account-menu-meta-light: #475569;
+  --account-menu-mode-light: #0e7490;
+}
+
+.workspace--figma .account-menu__identity em {
+  color: var(--account-menu-mode-light);
+}
+
+.workspace--figma .account-menu__summary > span,
+.workspace--figma .account-menu__username,
+.workspace--figma .account-menu__panel button {
+  color: var(--account-menu-meta-light);
+}
+
+.workspace--figma .account-menu__panel .account-menu__advertising-link,
+.getra-app-shell--community .account-menu__panel .account-menu__advertising-link {
+  color: #0e7490 !important;
+}
+
+.workspace--figma .account-menu__panel .account-menu__logout,
+.getra-app-shell--community .account-menu__panel .account-menu__logout {
+  color: #be123c;
+}
+
+.workspace--figma .account-menu__panel .account-menu__advertising-link:hover:not(:disabled),
+.workspace--figma .account-menu__panel .account-menu__advertising-link:focus-visible,
+.getra-app-shell--community .account-menu__panel .account-menu__advertising-link:hover:not(:disabled),
+.getra-app-shell--community .account-menu__panel .account-menu__advertising-link:focus-visible {
+  background: #ecfeff !important;
+  color: #0e7490 !important;
+}
+
+.workspace--figma .account-menu__panel .account-menu__logout:hover:not(:disabled),
+.workspace--figma .account-menu__panel .account-menu__logout:focus-visible,
+.getra-app-shell--community .account-menu__panel .account-menu__logout:hover:not(:disabled),
+.getra-app-shell--community .account-menu__panel .account-menu__logout:focus-visible {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.workspace--figma .user-type-badge--general,
+.getra-app-shell--community .user-type-badge--general {
+  border-color: #a3c76d;
+  background: #f7fee7;
+  color: #3f6212;
+}
+
+.workspace--figma .user-type-badge--umkm,
+.getra-app-shell--community .user-type-badge--umkm {
+  border-color: #67d4e3;
+  background: #ecfeff;
+  color: #0e7490;
+}
+
+.workspace--figma .user-type-badge--investor,
+.getra-app-shell--community .user-type-badge--investor {
+  border-color: #d8b4fe;
+  background: #faf5ff;
+  color: #6b21a8;
+}
+
+.workspace--figma .user-type-badge--government,
+.getra-app-shell--community .user-type-badge--government {
+  border-color: #82d5ca;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.workspace--figma .user-type-badge--admin,
+.getra-app-shell--community .user-type-badge--admin {
+  border-color: #e8c55b;
+  background: #fefce8;
+  color: #854d0e;
+}
+
+.getra-app-shell--community {
+  --account-menu-meta-light: #475569;
+  --account-menu-mode-light: #0e7490;
+}
+
+.getra-app-shell--community .account-menu__identity small,
+.getra-app-shell--community .account-menu__summary > span,
+.getra-app-shell--community .account-menu__username,
+.getra-app-shell--community .account-menu__panel button {
+  color: var(--account-menu-meta-light);
+}
+
+.getra-app-shell--community .account-menu__identity em {
+  color: var(--account-menu-mode-light);
 }
 
 .workspace--figma .workspace-grid {
@@ -5990,8 +6081,8 @@ body:has(.getra-app-shell--community) {
 .workspace--figma .account-menu__trigger { min-height: 38px; max-width: 210px; border-radius: 9px; padding: 3px 8px 3px 4px; }
 .workspace--figma .account-menu__avatar { width: 30px; height: 30px; }
 .workspace--figma .account-menu__identity strong { font-size: 11px; }
-.workspace--figma .account-menu__identity small { margin-top: 1px; font-size: 9px; }
-.workspace--figma .account-menu__identity em { margin-top: 0; font-size: 8px; }
+.workspace--figma .account-menu__identity small { margin-top: 1px; font-size: 10px; font-weight: 600; }
+.workspace--figma .account-menu__identity em { margin-top: 0; font-size: 9px; }
 
 @media (max-width: 760px) {
   .workspace--figma > .getra-global-header { top: 0; margin: 0; border-radius: 0; padding-inline: 8px; }

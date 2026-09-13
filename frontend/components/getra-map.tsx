@@ -101,6 +101,7 @@ type GetraMapProps = {
   onClearSelection: () => void;
   datasetBounds: DatasetBounds;
   datasetOrigin: DatasetOrigin;
+  showDatasetOrigin?: boolean;
   routeOriginPoint?: RoutePoint | null;
   routeDestinationPoint?: RoutePoint | null;
   routeGeometry?: GeoJSON.LineString | null;
@@ -624,6 +625,7 @@ export function GetraMap({
   onClearSelection,
   datasetBounds,
   datasetOrigin,
+  showDatasetOrigin = true,
   routeOriginPoint,
   routeDestinationPoint,
   routeGeometry,
@@ -660,6 +662,10 @@ export function GetraMap({
   const [basemapStatus, setBasemapStatus] = useState<"LOADING" | "READY" | "ERROR">("LOADING");
   const [basemapRetryRevision, setBasemapRetryRevision] = useState(0);
   const basemapReadyRef = useRef(false);
+  const appliedBasemapRef = useRef<{
+    id: BasemapId;
+    retryRevision: number;
+  } | null>(null);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -939,6 +945,7 @@ export function GetraMap({
       return;
     }
 
+    const initialBasemapId = getDefaultBasemapId();
     const map =
       new MapLibreMap({
         container:
@@ -946,7 +953,7 @@ export function GetraMap({
 
         style:
           getBasemapOption(
-            getDefaultBasemapId(),
+            initialBasemapId,
           ).style ||
           FALLBACK_MAP_STYLE,
 
@@ -963,6 +970,10 @@ export function GetraMap({
       });
 
     mapRef.current = map;
+    appliedBasemapRef.current = {
+      id: initialBasemapId,
+      retryRevision: 0,
+    };
     if (typeof window !== "undefined") {
       (window as unknown as { __getraMapLibreInstance?: MapLibreMap }).__getraMapLibreInstance = map;
     }
@@ -1171,6 +1182,7 @@ export function GetraMap({
       map.remove();
 
       mapRef.current = null;
+      appliedBasemapRef.current = null;
     };
   }, [markUserCameraControl, markUserCameraControlFromEvent]);
 
@@ -1198,7 +1210,19 @@ export function GetraMap({
       return;
     }
 
+    if (
+      appliedBasemapRef.current?.id === activeBasemap.id &&
+      appliedBasemapRef.current.retryRevision === basemapRetryRevision
+    ) {
+      return;
+    }
+
     basemapReadyRef.current = false;
+    setBasemapStatus("LOADING");
+    appliedBasemapRef.current = {
+      id: activeBasemap.id,
+      retryRevision: basemapRetryRevision,
+    };
     map.setStyle(
       activeBasemap.style,
     );
@@ -1309,6 +1333,11 @@ export function GetraMap({
       );
 
       datasetOriginMarkerRef.current?.remove();
+      datasetOriginMarkerRef.current = null;
+
+      if (!showDatasetOrigin) {
+        return;
+      }
 
       const originElement =
         document.createElement("div");
@@ -1394,6 +1423,7 @@ export function GetraMap({
     markSystemCameraIntent,
     routeGeometry,
     selectedId,
+    showDatasetOrigin,
   ]);
 
   /*
@@ -2061,22 +2091,6 @@ export function GetraMap({
     routeOriginPoint,
     syncEndpointLabelAnchors,
   ]);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    const merchant = merchants.find((item) => item.id === selectedId);
-    if (!map || !merchant) return;
-    const content = createMerchantMapPopup(merchant, {
-      onClose: onClearSelection, onDetail: onMerchantDetail, onRoute: onRequestMerchantRoute,
-    });
-    const markerElements = createMerchantMarker(true, merchant);
-    markerElements.button.onclick = () => onSelect(merchant);
-    const marker = new Marker({ element: markerElements.element, anchor: "center" })
-      .setLngLat([merchant.longitude, merchant.latitude]).addTo(map);
-    const popup = new Popup({ offset: 24, closeButton: false, closeOnClick: false, focusAfterOpen: false, maxWidth: "300px", className: "commuter-merchant-popup" })
-      .setLngLat([merchant.longitude, merchant.latitude]).setDOMContent(content).addTo(map);
-    return () => { popup.remove(); marker.remove(); };
-  }, [selectedId, merchants, onSelect, onRequestMerchantRoute, onMerchantDetail, onClearSelection, styleRevision]);
 
   /*
    * Focus selected merchant (One-shot)

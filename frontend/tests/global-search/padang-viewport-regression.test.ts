@@ -169,11 +169,11 @@ describe("padang viewport regression audit & reproduction", () => {
     expect(hasUnconditionalAdminImport).toBe(false);
   });
 
-  it("asserts getra-dashboard baseMerchants does not default to bare mapidMerchants on all-areas", () => {
-    const hasBareMapidMerchants = /datasetId\s*===\s*"all-areas"\s*\?\s*mapidMerchants\s*:\s*isAdminImportDataset/s.test(
-      dashboardSource,
-    );
-    expect(hasBareMapidMerchants).toBe(false);
+  it("hydrates all-areas from canonical merchants inside fixed Jakarta bounds", () => {
+    expect(dashboardSource).toContain("initialCanonicalRequestStartedRef");
+    expect(dashboardSource).toContain("bbox: DEFAULT_JAKARTA_MAP_BOUNDS");
+    expect(dashboardSource).toMatch(/datasetId\s*===\s*"all-areas"\s*\?\s*mapidMerchants/);
+    expect(dashboardSource).toContain("setCanonicalViewportLoaded(true)");
   });
 
   it("verifies canonical GETRA study area coordinates remain in Jakarta", () => {

@@ -100,11 +100,11 @@ export function GlobalSearchControls(props: GlobalSearchControlsProps) {
       <fieldset disabled={radiusDisabled}>
         <legend>Radius</legend>
         <div className="commuter-radius-options">
-          {[500, 1000, 2000, 5000].map((value) => <button type="button" key={value} aria-pressed={radius === value} onClick={() => setRadius(value)}>{formatRadius(value)}</button>)}
+          {[250, 500, 1000, 2000].map((value) => <button type="button" key={value} aria-pressed={radius === value} onClick={() => setRadius(value)}>{formatRadius(value)}</button>)}
         </div>
       </fieldset>
       {radiusDisabled ? <small>Aktifkan lokasi atau pilih acuan agar radius dapat digunakan.</small> : null}
-      {props.advanced ? <fieldset><legend>Brand</legend>{props.advanced}</fieldset> : null}
+      {props.advanced ? <fieldset><legend>Kategori dan brand</legend>{props.advanced}</fieldset> : null}
       <fieldset><legend>Kisaran harga</legend><label>Anggaran maksimal<input type="number" inputMode="numeric" min={1000} max={10000000} step={1000} value={props.maxBudget} placeholder="Contoh: 20000" onChange={(event) => props.onMaxBudgetChange(event.target.value)} /></label></fieldset>
       <label className="commuter-check"><input type="checkbox" checked={props.openNow} onChange={(event) => props.onOpenNowChange(event.target.checked)} />Buka sekarang</label>
       <label className="commuter-filter-select">Maksimum jalan kaki<select value={props.maxWalkingMinutes ?? ""} disabled={radiusDisabled} onChange={(event) => props.onMaxWalkingMinutesChange(event.target.value ? Number(event.target.value) : null)}><option value="">Tanpa batas</option>{[5, 10, 15, 20, 30].map((minutes) => <option key={minutes} value={minutes}>{minutes} menit</option>)}</select></label>

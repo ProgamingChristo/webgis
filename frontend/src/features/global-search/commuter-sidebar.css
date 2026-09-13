@@ -154,7 +154,7 @@
 .commuter-merchant { border-width: 0 0 1px; border-radius: 0; padding: 8px 2px; }
 .commuter-merchant[aria-pressed="true"] { border-radius: 9px; padding-inline: 8px; }
 .commuter-merchant__photo { width: 76px; height: 86px; }
-.commuter-workspace .commuter-map-actions { inset: 12px; max-width: none; pointer-events: none; align-items: flex-start; }
+.commuter-workspace .commuter-map-actions { z-index: 30; inset: 12px; max-width: none; pointer-events: none; align-items: flex-start; }
 .commuter-map-actions > button { pointer-events: auto; }
 .commuter-map-actions .commuter-ai-launcher { position: fixed; z-index: 20; bottom: 28px; right: 28px; color: var(--commuter-blue); font-weight: 700; min-height: 44px; }
 .commuter-map-actions .commuter-ai-launcher[aria-expanded="true"] { visibility: hidden; }
@@ -387,7 +387,7 @@
 .map-basemap-state button { min-height: 32px; border: 0; border-radius: 7px; background: var(--commuter-blue); color: #fff; padding: 0 12px; font: inherit; font-size: 10px; cursor: pointer; }
 .commuter-workspace .map-status { top: 10px; }
 
-.commuter-workspace .commuter-assistant { right: 12px; bottom: 58px; width: min(340px, calc(100% - 24px)); max-height: min(540px, calc(100% - 76px)); border-radius: 12px; }
+.commuter-workspace .commuter-assistant { z-index: 31; right: 12px; bottom: 58px; width: min(340px, calc(100% - 24px)); max-height: min(540px, calc(100% - 76px)); border-radius: 12px; }
 .commuter-assistant > .tanya-getra { padding: 14px; }
 .tanya-getra { gap: 10px; }
 .tanya-getra__header h3 { font-size: 14px; }
