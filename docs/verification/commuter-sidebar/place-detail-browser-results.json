@@ -1,0 +1,47 @@
+{
+  "fixtureOnly": true,
+  "detailClean": true,
+  "detailLayouts": [
+    {
+      "viewport": 1652,
+      "detailWidth": 417.59375,
+      "mapWidth": 917.609375,
+      "position": "static",
+      "cssWidth": "417.594px",
+      "detailOpen": "true",
+      "gridColumns": "316.797px 917.609px 417.594px",
+      "overflow": false
+    },
+    {
+      "viewport": 1440,
+      "detailWidth": 417.59375,
+      "mapWidth": 705.609375,
+      "position": "static",
+      "cssWidth": "417.594px",
+      "detailOpen": "true",
+      "gridColumns": "316.797px 705.609px 417.594px",
+      "overflow": false
+    },
+    {
+      "viewport": 1024,
+      "detailWidth": 460,
+      "mapWidth": 480,
+      "position": "absolute",
+      "cssWidth": "460px",
+      "detailOpen": "true",
+      "gridColumns": "300px 480px 400px",
+      "overflow": false
+    },
+    {
+      "viewport": 390,
+      "detailWidth": 376,
+      "mapWidth": 390,
+      "position": "absolute",
+      "cssWidth": "376px",
+      "detailOpen": "true",
+      "gridColumns": "300px minmax(480px, 1fr) 400px",
+      "overflow": false
+    }
+  ],
+  "errors": []
+}
