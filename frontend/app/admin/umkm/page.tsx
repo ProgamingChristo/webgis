@@ -21,6 +21,7 @@ export default function AdminUmkmPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
   const [queueError, setQueueError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
@@ -28,17 +29,50 @@ export default function AdminUmkmPage() {
     if (!isAdmin) return;
     if (showRefresh) setRefreshing(true);
     try {
-      const [nextClaims, nextSubmissions] = await Promise.all([
+      const [claimsResult, submissionsResult] = await Promise.allSettled([
         adminUmkmReviewService.listMerchantClaims(),
         adminUmkmReviewService.listMerchantSubmissions(),
       ]);
-      setClaims(nextClaims);
-      setSubmissions(nextSubmissions);
-      setQueueError(null);
-    } catch (cause) {
-      setQueueError(
-        cause instanceof Error ? cause.message : "Pemeriksaan UMKM belum dapat dimuat. Coba lagi."
-      );
+
+      let hasClaims = false;
+      let hasSubmissions = false;
+
+      if (claimsResult.status === "fulfilled") {
+        setClaims(claimsResult.value);
+        hasClaims = true;
+      }
+      if (submissionsResult.status === "fulfilled") {
+        setSubmissions(submissionsResult.value);
+        hasSubmissions = true;
+      }
+
+      if (!hasClaims && !hasSubmissions) {
+        // Full failure: both primary queue and claims failed
+        const primaryError =
+          submissionsResult.status === "rejected"
+            ? submissionsResult.reason
+            : claimsResult.status === "rejected"
+              ? claimsResult.reason
+              : null;
+        setQueueError(
+          primaryError instanceof Error
+            ? primaryError.message
+            : "Antrean pemeriksaan UMKM belum dapat dimuat. Coba lagi."
+        );
+        setWarning(null);
+      } else if (!hasClaims) {
+        // Non-critical secondary enrichment failure: keep main queue operational
+        setWarning("Daftar klaim kepemilikan sementara belum dapat dimuat.");
+        setQueueError(null);
+      } else if (!hasSubmissions) {
+        // Submissions failed but claims loaded
+        setWarning("Daftar pendaftaran usaha baru sementara belum dapat dimuat.");
+        setQueueError(null);
+      } else {
+        // Healthy load
+        setQueueError(null);
+        setWarning(null);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -107,10 +141,12 @@ export default function AdminUmkmPage() {
       onApprove={(item) => void approveItem(item)}
       onDismissActionError={() => setActionError(null)}
       onDismissActionSuccess={() => setActionSuccess(null)}
+      onDismissWarning={() => setWarning(null)}
       onRefresh={() => void loadQueue(true)}
       onReject={(item) => void rejectItem(item)}
       refreshing={refreshing}
       submissions={submissions}
+      warning={warning}
     />
   );
 }

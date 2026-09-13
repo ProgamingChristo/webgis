@@ -43,10 +43,17 @@ export class FairDiscoveryCompositionService {
     } = query;
 
     // 1. Fetch published merchants from database
-    const { data: rawMerchants, error } = await this.supabase
+    let merchantQuery = this.supabase
       .from("merchants")
       .select("id, name, address, description, location, publish_status, verification_status, primary_category_id, price_level, data_quality_score, opening_hours")
       .not("publish_status", "eq", "ARCHIVED");
+
+    if (searchTerm && searchTerm.trim() !== "") {
+      const q = searchTerm.trim();
+      merchantQuery = merchantQuery.or(`name.ilike.%${q}%,description.ilike.%${q}%,address.ilike.%${q}%`);
+    }
+
+    const { data: rawMerchants, error } = await merchantQuery;
 
     if (error) {
       console.error("[FairDiscoveryCompositionService] Database query error:", error);

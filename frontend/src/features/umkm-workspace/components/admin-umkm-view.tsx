@@ -60,6 +60,7 @@ export interface AdminUmkmViewProps {
   loading: boolean;
   refreshing?: boolean;
   error: string | null;
+  warning?: string | null;
   actionError?: string | null;
   actionSuccess?: string | null;
   claims: AdminMerchantClaimRecord[];
@@ -70,6 +71,7 @@ export interface AdminUmkmViewProps {
   onReject?: (item: ReviewItem) => void;
   onDismissActionError?: () => void;
   onDismissActionSuccess?: () => void;
+  onDismissWarning?: () => void;
 }
 
 export function AdminUmkmView({
@@ -77,6 +79,7 @@ export function AdminUmkmView({
   loading,
   refreshing = false,
   error,
+  warning = null,
   actionError,
   actionSuccess,
   claims,
@@ -87,6 +90,7 @@ export function AdminUmkmView({
   onReject,
   onDismissActionError,
   onDismissActionSuccess,
+  onDismissWarning,
 }: AdminUmkmViewProps) {
   const items = useMemo<ReviewItem[]>(() => {
     const claimItems: ReviewItem[] = claims.map((claim) => ({
@@ -246,6 +250,28 @@ export function AdminUmkmView({
                 type="button"
                 onClick={onDismissActionError}
                 className="rounded-lg p-1 text-rose-600 hover:bg-rose-100 transition"
+              >
+                <X size={14} />
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+
+        {/* Scoped Partial Warning Banner (non-critical enrichment failed, queue remains fully functional) */}
+        {warning ? (
+          <div
+            className="flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 shadow-sm"
+            role="status"
+          >
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={16} className="flex-shrink-0 text-amber-600" />
+              <span>{warning}</span>
+            </div>
+            {onDismissWarning ? (
+              <button
+                type="button"
+                onClick={onDismissWarning}
+                className="rounded-lg p-1 text-amber-700 hover:bg-amber-100 transition"
               >
                 <X size={14} />
               </button>

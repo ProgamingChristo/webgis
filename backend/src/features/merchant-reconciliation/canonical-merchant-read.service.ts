@@ -95,7 +95,68 @@ export class CanonicalMerchantReadService {
     const pageByMerchantId = new Map(
       (pageRows ?? []).map((row: any) => [row.merchant_id, row]),
     );
-    const total = Number(pageRows?.[0]?.total_count ?? 0);
+    let total = Number(pageRows?.[0]?.total_count ?? 0);
+
+    // Complement RPC results with published owner-submitted merchants:
+    // This ensures newly approved UMKM submissions appear in global search and on map viewports
+    // even before batch reconciliation links them to external data provider tables.
+    if (typeof this.supabase?.from === "function") {
+      if (query.keyword?.trim()) {
+        const kw = query.keyword.trim();
+        const { data: directMatches } = await this.supabase
+          .from("merchants")
+          .select("id, name, address, description, location, publish_status")
+          .eq("publish_status", "PUBLISHED")
+          .or(`name.ilike.%${kw}%,description.ilike.%${kw}%,address.ilike.%${kw}%`)
+          .limit(query.limit);
+
+        if (directMatches && directMatches.length > 0) {
+          for (const dm of directMatches) {
+            if (!merchantIds.includes(dm.id)) {
+              merchantIds.unshift(dm.id);
+              pageByMerchantId.set(dm.id, {
+                merchant_id: dm.id,
+                total_count: total + directMatches.length,
+                relevance_score: 400,
+                region_ids: [],
+                region_names: [],
+                distance_meters: null,
+              });
+              total += 1;
+            }
+          }
+        }
+      } else if (query.west != null && query.south != null && query.east != null && query.north != null) {
+        // Viewport query: check for published owner submissions within bounding box
+        const { data: ownerMerchants } = await this.supabase
+          .from("merchants")
+          .select("id, name, location, publish_status")
+          .eq("publish_status", "PUBLISHED")
+          .not("owner_id", "is", null)
+          .limit(100);
+
+        if (ownerMerchants && ownerMerchants.length > 0) {
+          for (const om of ownerMerchants) {
+            const pt = readPoint(om.location);
+            if (pt && pt[0] >= query.west! && pt[0] <= query.east! && pt[1] >= query.south! && pt[1] <= query.north!) {
+              if (!merchantIds.includes(om.id)) {
+                merchantIds.push(om.id);
+                pageByMerchantId.set(om.id, {
+                  merchant_id: om.id,
+                  total_count: total + 1,
+                  relevance_score: 100,
+                  region_ids: [],
+                  region_names: [],
+                  distance_meters: null,
+                });
+                total += 1;
+              }
+            }
+          }
+        }
+      }
+    }
+
     if (merchantIds.length === 0) return { merchants: [], total };
 
     const { data: links, error: linksError } = await this.supabase

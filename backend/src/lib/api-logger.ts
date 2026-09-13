@@ -62,6 +62,7 @@ export async function withApiLogger(
     
     return secureResponse(res, securityConfig, corsDecision);
   } catch (error: unknown) {
+    console.error("[API ERROR in withApiLogger]", error);
     const duration = Date.now() - start;
     const applicationError = toApplicationError(error);
     
