@@ -123,13 +123,25 @@ export class PaymentWebhookService {
       try {
         const { data: campaign } = await this.supabase
           .from("ad_campaigns")
-          .select("merchant_id")
+          .select("merchant_id, status, start_at, end_at")
           .eq("id", order.campaign_id)
           .single();
 
-        if (campaign?.merchant_id) {
-          const lifecycleService = new CampaignLifecycleService(this.supabase);
-          await lifecycleService.getLifecycleState(campaign.merchant_id, order.campaign_id);
+        if (campaign) {
+          const now = new Date();
+          const oneWeekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+          const startAt = campaign.start_at || now.toISOString();
+          const endAt = campaign.end_at || oneWeekLater.toISOString();
+
+          await this.supabase
+            .from("ad_campaigns")
+            .update({
+              status: "ACTIVE",
+              start_at: startAt,
+              end_at: endAt,
+              updated_at: now.toISOString(),
+            })
+            .eq("id", order.campaign_id);
         }
       } catch (lifecycleErr: any) {
         console.warn(
