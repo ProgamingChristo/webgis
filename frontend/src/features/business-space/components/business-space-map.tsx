@@ -64,9 +64,9 @@ export function BusinessSpaceMap({
           source: PROPERTY_SOURCE_ID,
           paint: {
             "circle-radius": ["case", ["get", "selected"], 12, ["get", "comparison"], 10, 7],
-            "circle-color": ["case", ["get", "selected"], "#22d3ee", ["get", "comparison"], "#a3e635", "#facc15"],
-            "circle-stroke-color": "#071318",
-            "circle-stroke-width": 2,
+            "circle-color": ["case", ["get", "selected"], "#0e7490", ["get", "comparison"], "#65a30d", "#0891b2"],
+            "circle-stroke-color": "#ffffff",
+            "circle-stroke-width": 2.5,
           },
         });
         created.on("click", PROPERTY_LAYER_ID, (event) => {

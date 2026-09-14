@@ -72,7 +72,7 @@ try {
     await page.waitForURL("**/login?returnTo=*");
     assert.equal(new URL(page.url()).searchParams.get("returnTo"), "/business-space");
     await login("/business-space");
-    await page.getByRole("heading", { name: "Temukan properti di sekitar peta" }).waitFor();
+    await page.getByRole("heading", { name: "Temukan ruang terbaik untuk usaha Anda" }).waitFor();
     await snapshot("business-direct-desktop");
   });
   await check("businessReturnComparison", async () => {

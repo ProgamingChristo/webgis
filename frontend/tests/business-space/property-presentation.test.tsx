@@ -38,7 +38,8 @@ describe("Properti Go presentation", () => {
   it("shows truthful empty-area guidance with no locked dashboard or fixed region filter", () => {
     const html = renderToStaticMarkup(<BusinessSpaceWorkspace />);
     expect(html).toContain("Belum ada properti di area ini");
-    expect(html).toContain("Geser atau perbesar peta");
+    expect(html).toContain("Jelajahi properti di area peta");
+    expect(html).toContain("Temukan ruang terbaik untuk usaha Anda");
     expect(html).toContain("Jenis properti");
     expect(html).not.toMatch(/jakarta-selatan|Trade-off Matrix|AI Location Insight/);
   });

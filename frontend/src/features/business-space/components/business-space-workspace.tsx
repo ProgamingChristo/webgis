@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Building2, LoaderCircle, MapPin, RefreshCcw, Search } from "lucide-react";
+import { Building2, LoaderCircle, MapPin, RefreshCcw, Search, Sparkles } from "lucide-react";
 import type { BusinessCategorySlug, BusinessSpaceCandidate } from "../types/business-space.types";
 import { usePropertyCandidates } from "../hooks/use-property-candidates";
 import { usePropertyComparison, usePropertyDetail } from "../hooks/use-property-analysis";
@@ -37,8 +37,9 @@ export function BusinessSpaceWorkspace() {
   }
 
   return <main className="business-space" data-category={category} data-days={days}>
-    <header className="business-space__top"><div><span className="bs-eyebrow">Properti Go</span><h1>Temukan properti di sekitar peta</h1><p>Geser atau perbesar peta. Properti yang tersedia dalam data Properti Go akan muncul otomatis di area yang terlihat.</p></div>
-      <button className="bs-button" type="button" onClick={refresh} disabled={loading || !viewport || viewportTooWide}><RefreshCcw size={16} />Muat ulang</button>
+    <header className="business-space__top">
+      <div className="business-space__hero-copy"><span className="bs-eyebrow"><Sparkles size={13} />Properti Go</span><h1>Temukan ruang terbaik untuk usaha Anda</h1><p>Jelajahi properti di area peta, pelajari akses transportasi, lalu bandingkan konteks usahanya dalam satu tempat.</p></div>
+      <div className="business-space__hero-action"><span><MapPin size={15} />Data mengikuti area peta</span><button className="bs-button" type="button" onClick={refresh} disabled={loading || !viewport || viewportTooWide}><RefreshCcw size={16} />Muat ulang</button></div>
     </header>
     <section className="business-space__controls" aria-label="Filter Properti Go">
       <label className="bs-search-field"><span>Cari dalam area peta</span><span className="bs-search-input"><Search size={16} /><input className="bs-field" type="search" placeholder="Alamat atau kata kunci properti" value={query} onChange={(event) => setQuery(event.target.value)} /></span></label>

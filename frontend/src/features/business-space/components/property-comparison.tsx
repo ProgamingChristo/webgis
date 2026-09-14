@@ -12,12 +12,12 @@ export function PropertyComparison({ candidates, analysis, onRemove }: {
   const { comparison, compareLoading, compareError, insight, insightLoading, insightError, runCompare, askInsight } = analysis;
   const option = useMemo<EChartsOption>(() => ({
     backgroundColor: "transparent", tooltip: { trigger: "axis" },
-    legend: { top: 0, textStyle: { color: "#bdd5dd" } }, grid: { left: 40, right: 18, top: 40, bottom: 35 },
-    xAxis: { type: "category", data: comparison?.candidates.map((_, i) => `Pilihan ${i + 1}`), axisLabel: { color: "#9fb6bf" } },
-    yAxis: { type: "value", min: 0, max: 100, axisLabel: { color: "#9fb6bf" }, splitLine: { lineStyle: { color: "#23383e" } } },
+    legend: { top: 0, textStyle: { color: "#475569" } }, grid: { left: 40, right: 18, top: 40, bottom: 35 },
+    xAxis: { type: "category", data: comparison?.candidates.map((_, i) => `Pilihan ${i + 1}`), axisLabel: { color: "#64748b" }, axisLine: { lineStyle: { color: "#cbd5e1" } } },
+    yAxis: { type: "value", min: 0, max: 100, axisLabel: { color: "#64748b" }, splitLine: { lineStyle: { color: "#e2e8f0" } } },
     series: [
-      { name: "Permintaan", type: "bar", data: comparison?.candidates.map((item) => item.market_context.status === "AVAILABLE" ? item.market_context.demand_score : null), itemStyle: { color: "#22d3ee" } },
-      { name: "Pasokan", type: "bar", data: comparison?.candidates.map((item) => item.market_context.status === "AVAILABLE" ? item.market_context.supply_score : null), itemStyle: { color: "#34d399" } },
+      { name: "Permintaan", type: "bar", data: comparison?.candidates.map((item) => item.market_context.status === "AVAILABLE" ? item.market_context.demand_score : null), itemStyle: { color: "#0891b2", borderRadius: [5, 5, 0, 0] } },
+      { name: "Pasokan", type: "bar", data: comparison?.candidates.map((item) => item.market_context.status === "AVAILABLE" ? item.market_context.supply_score : null), itemStyle: { color: "#22c55e", borderRadius: [5, 5, 0, 0] } },
     ],
   }), [comparison]);
   return <section className="business-space__comparison" aria-label="Perbandingan properti">
