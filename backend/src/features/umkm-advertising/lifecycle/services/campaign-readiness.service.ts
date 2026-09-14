@@ -100,12 +100,27 @@ export class CampaignReadinessService {
       }
     }
 
+    // 5. Payment gate: only a server-verified PAID order can make a campaign ready.
+    const { data: paymentOrder } = await this.supabase
+      .from("ad_payment_orders")
+      .select("id, status")
+      .eq("campaign_id", campaignId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const isPaymentVerified = paymentOrder?.status === "PAID";
+    if (!isPaymentVerified) {
+      blockers.push("PAYMENT_NOT_VERIFIED");
+    }
+
     const ready =
       isMerchantEligible &&
       hasReadyCreative &&
       isTargetingConfigured &&
       isScheduleValid &&
-      scheduleConfigured;
+      scheduleConfigured &&
+      isPaymentVerified;
 
     return {
       ready,
@@ -114,6 +129,7 @@ export class CampaignReadinessService {
         creative: hasReadyCreative,
         targeting: isTargetingConfigured,
         schedule: isScheduleValid && scheduleConfigured,
+        payment: isPaymentVerified,
       },
       blockers,
     };

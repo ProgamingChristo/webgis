@@ -118,30 +118,20 @@ export class PaymentWebhookService {
       paid_at: newStatus === "PAID" ? new Date().toISOString() : order.paid_at,
     });
 
-    // 7. Authoritative Campaign Activation on Successful Settlement
+    // 7. Authoritative lifecycle reconciliation on successful settlement.
+    // Payment never writes ACTIVE directly: readiness, schedule, and ownership
+    // remain governed by the canonical campaign lifecycle service.
     if (newStatus === "PAID") {
       try {
         const { data: campaign } = await this.supabase
           .from("ad_campaigns")
-          .select("merchant_id, status, start_at, end_at")
+          .select("merchant_id")
           .eq("id", order.campaign_id)
           .single();
 
         if (campaign) {
-          const now = new Date();
-          const oneWeekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-          const startAt = campaign.start_at || now.toISOString();
-          const endAt = campaign.end_at || oneWeekLater.toISOString();
-
-          await this.supabase
-            .from("ad_campaigns")
-            .update({
-              status: "ACTIVE",
-              start_at: startAt,
-              end_at: endAt,
-              updated_at: now.toISOString(),
-            })
-            .eq("id", order.campaign_id);
+          const lifecycleService = new CampaignLifecycleService(this.supabase);
+          await lifecycleService.getLifecycleState(campaign.merchant_id, order.campaign_id);
         }
       } catch (lifecycleErr: any) {
         console.warn(

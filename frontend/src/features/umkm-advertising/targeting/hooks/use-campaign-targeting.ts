@@ -65,7 +65,7 @@ export function useCampaignTargeting(merchantId: string, campaignId: string) {
 
       const updated = await TargetingService.saveCampaignTarget(merchantId, campaignId, payload);
       setTarget(updated);
-      setSuccessMessage("Target kampanye berhasil disimpan.");
+      setSuccessMessage("Wilayah sasaran berhasil disimpan.");
       return updated;
     } catch (err: unknown) {
       setError("Wilayah sasaran belum dapat disimpan. Coba lagi.");

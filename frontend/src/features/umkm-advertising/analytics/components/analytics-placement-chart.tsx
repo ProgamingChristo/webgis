@@ -31,17 +31,17 @@ export function AnalyticsPlacementChart({ breakdown }: PlacementChartProps) {
         return {
           label: "Poster profil",
           icon: FileText,
-          color: "text-purple-400",
-          bgColor: "bg-purple-500/10 border-purple-500/20",
+          color: "text-cyan-600",
+          bgColor: "bg-cyan-50 border-cyan-200",
           desc: "Poster khusus pada profil usaha",
         };
     }
   };
 
   return (
-    <div className="p-5 sm:p-6 rounded-2xl border border-slate-700/60 bg-slate-800/50 backdrop-blur space-y-4">
-      <div className="border-b border-slate-700/50 pb-4">
-        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+    <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="border-b border-slate-200 pb-4">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
           <LayoutGrid size={16} className="text-blue-400" />
           Rincian Berdasarkan Placement Iklan
         </h3>
@@ -59,24 +59,24 @@ export function AnalyticsPlacementChart({ breakdown }: PlacementChartProps) {
           return (
             <div
               key={item.placement}
-              className="p-4 rounded-xl border border-slate-700/60 bg-slate-900/60 space-y-3"
+              className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4"
             >
               <div className="flex items-center gap-3">
                 <div className={`w-9 h-9 rounded-lg border flex items-center justify-center ${meta.bgColor} ${meta.color}`}>
                   <Icon size={18} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-semibold text-white">{meta.label}</h4>
+                  <h4 className="text-xs font-semibold text-slate-900">{meta.label}</h4>
                   <p className="text-[10px] text-slate-400 line-clamp-1">{meta.desc}</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 text-xs">
-                <div className="p-2 rounded-lg bg-slate-950/40">
+              <div className="grid grid-cols-2 gap-2 border-t border-slate-200 pt-2 text-xs">
+                <div className="rounded-lg bg-white p-2">
                   <span className="text-[10px] text-slate-400 block">Tayangan</span>
-                  <span className="text-sm font-bold text-white mt-0.5 block">{item.impressions}</span>
+                  <span className="mt-0.5 block text-sm font-bold text-slate-900">{item.impressions}</span>
                 </div>
-                <div className="p-2 rounded-lg bg-slate-950/40">
+                <div className="rounded-lg bg-white p-2">
                   <span className="text-[10px] text-slate-400 block">Total Interaksi</span>
                   <span className="text-sm font-bold text-emerald-400 mt-0.5 block">{totalInteractions}</span>
                 </div>
@@ -86,16 +86,16 @@ export function AnalyticsPlacementChart({ breakdown }: PlacementChartProps) {
                 {item.placement === "SPONSORED_PIN" ? (
                   <div className="flex justify-between">
                     <span>Klik Pin:</span>
-                    <strong className="text-slate-200">{item.clicks}</strong>
+                    <strong className="text-slate-800">{item.clicks}</strong>
                   </div>
                 ) : null}
                 <div className="flex justify-between">
                   <span>Buka Profil:</span>
-                  <strong className="text-slate-200">{item.profile_opens}</strong>
+                  <strong className="text-slate-800">{item.profile_opens}</strong>
                 </div>
                 <div className="flex justify-between">
                   <span>Petunjuk Rute:</span>
-                  <strong className="text-slate-200">{item.route_requests}</strong>
+                  <strong className="text-slate-800">{item.route_requests}</strong>
                 </div>
               </div>
             </div>

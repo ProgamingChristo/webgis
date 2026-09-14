@@ -31,6 +31,7 @@ export function CampaignCreateForm({ merchantId, onSuccess }: { merchantId: stri
       <button 
         type="submit" 
         disabled={loading || !name.trim()}
+        style={{ color: loading || !name.trim() ? "#64748b" : "#ffffff" }}
         className="min-h-10 rounded-xl bg-sky-600 px-5 text-xs font-bold text-white shadow-xs transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? "Menyimpan..." : "Simpan draf"}

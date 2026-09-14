@@ -75,7 +75,7 @@ export function CampaignLifecycleActions({
       data-campaign-status={status}
     >
       {actionError && (
-        <div className="p-2.5 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-lg dark:bg-rose-950/40 dark:border-rose-900/50 dark:text-rose-300 flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-700">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{actionError}</span>
         </div>
@@ -87,7 +87,8 @@ export function CampaignLifecycleActions({
             type="button"
             disabled={isUpdating}
             onClick={handlePause}
-            className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-300 dark:hover:bg-amber-900/60 disabled:opacity-50 transition-colors shadow-sm sm:flex-none"
+            style={{ color: "#92400e" }}
+            className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors hover:bg-amber-100 disabled:opacity-50 sm:flex-none"
           >
             {isUpdating ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -103,7 +104,8 @@ export function CampaignLifecycleActions({
             type="button"
             disabled={isUpdating}
             onClick={handleResume}
-            className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/60 disabled:opacity-50 transition-colors shadow-sm sm:flex-none"
+            style={{ color: "#065f46" }}
+            className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors hover:bg-emerald-100 disabled:opacity-50 sm:flex-none"
           >
             {isUpdating ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -119,7 +121,8 @@ export function CampaignLifecycleActions({
             type="button"
             disabled={isUpdating}
             onClick={() => setShowCancelModal(true)}
-            className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 dark:border-rose-900/60 dark:bg-slate-900 dark:text-rose-400 dark:hover:bg-rose-950/40 disabled:opacity-50 transition-colors shadow-sm sm:ml-auto sm:flex-none"
+            style={{ color: "#e11d48" }}
+            className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors hover:bg-rose-50 disabled:opacity-50 sm:ml-auto sm:flex-none"
           >
             <Trash2 className="w-3.5 h-3.5" />
             Batalkan promosi
@@ -130,17 +133,17 @@ export function CampaignLifecycleActions({
       {/* Cancel Confirmation Modal */}
       {showCancelModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:p-6">
-            <div className="mb-3 flex items-start gap-3 text-rose-600 dark:text-rose-400">
-              <div className="p-2 rounded-full bg-rose-100 dark:bg-rose-950/60">
+          <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-4 shadow-2xl sm:p-6">
+            <div className="mb-3 flex items-start gap-3 text-rose-600">
+              <div className="rounded-full bg-rose-100 p-2">
                 <AlertTriangle className="w-6 h-6" />
               </div>
-              <h3 className="break-words text-base font-bold leading-6 text-slate-900 dark:text-white">
+              <h3 className="break-words text-base font-bold leading-6 text-slate-900">
                 Konfirmasi pembatalan promosi
               </h3>
             </div>
 
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
+            <p className="mb-6 text-xs leading-relaxed text-slate-600">
               Yakin ingin membatalkan promosi ini? Promosi akan langsung berhenti dan tidak dapat diaktifkan kembali.
             </p>
 
@@ -149,7 +152,8 @@ export function CampaignLifecycleActions({
                 type="button"
                 disabled={isUpdating}
                 onClick={() => setShowCancelModal(false)}
-                className="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors"
+                style={{ color: "#334155" }}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold transition-colors hover:bg-slate-50"
               >
                 Kembali
               </button>
@@ -157,7 +161,8 @@ export function CampaignLifecycleActions({
                 type="button"
                 disabled={isUpdating}
                 onClick={handleConfirmCancel}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50 transition-colors shadow-sm"
+                style={{ color: "#ffffff" }}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold shadow-sm transition-colors hover:bg-rose-700 disabled:opacity-50"
               >
                 {isUpdating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 Ya, batalkan promosi

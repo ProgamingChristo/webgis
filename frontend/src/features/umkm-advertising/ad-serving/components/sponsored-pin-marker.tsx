@@ -37,7 +37,7 @@ export function SponsoredPinMarker({
       className={`group relative flex flex-col items-center cursor-pointer select-none transition-transform duration-200 hover:scale-110 active:scale-95 ${className}`}
     >
       {/* Sponsored Pill Tag */}
-      <span className="mb-1 inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-500/90 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-md backdrop-blur-sm dark:border-amber-400 dark:bg-amber-600">
+      <span className="mb-1 inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-500/90 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-md backdrop-blur-sm">
         <Sparkles className="w-2.5 h-2.5" />
         Promosi
       </span>

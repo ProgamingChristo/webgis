@@ -15,7 +15,7 @@ export function CampaignPaymentStatusBadge({
     case "PAID":
       return (
         <span
-          className={`inline-flex items-center gap-1.5 font-medium rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 ${
+          className={`inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 font-medium text-emerald-800 ${
             isSm ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs"
           }`}
         >
@@ -27,7 +27,7 @@ export function CampaignPaymentStatusBadge({
     case "PENDING":
       return (
         <span
-          className={`inline-flex items-center gap-1.5 font-medium rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 ${
+          className={`inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 font-medium text-amber-800 ${
             isSm ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs"
           }`}
         >
@@ -40,7 +40,7 @@ export function CampaignPaymentStatusBadge({
     case "CREATED":
       return (
         <span
-          className={`inline-flex items-center gap-1.5 font-medium rounded-full bg-slate-700/40 border border-slate-600 text-slate-300 ${
+          className={`inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white font-medium text-slate-700 ${
             isSm ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs"
           }`}
         >
@@ -52,7 +52,7 @@ export function CampaignPaymentStatusBadge({
     case "FAILED":
       return (
         <span
-          className={`inline-flex items-center gap-1.5 font-medium rounded-full bg-red-500/10 border border-red-500/30 text-red-300 ${
+          className={`inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 font-medium text-red-700 ${
             isSm ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs"
           }`}
         >
@@ -64,7 +64,7 @@ export function CampaignPaymentStatusBadge({
     case "EXPIRED":
       return (
         <span
-          className={`inline-flex items-center gap-1.5 font-medium rounded-full bg-slate-800 border border-slate-700 text-slate-400 ${
+          className={`inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-slate-100 font-medium text-slate-600 ${
             isSm ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs"
           }`}
         >
@@ -76,7 +76,7 @@ export function CampaignPaymentStatusBadge({
     case "CANCELLED":
       return (
         <span
-          className={`inline-flex items-center gap-1.5 font-medium rounded-full bg-slate-800 border border-slate-700 text-slate-400 ${
+          className={`inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-slate-100 font-medium text-slate-600 ${
             isSm ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs"
           }`}
         >
@@ -88,18 +88,18 @@ export function CampaignPaymentStatusBadge({
     case "REFUNDED":
       return (
         <span
-          className={`inline-flex items-center gap-1.5 font-medium rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 ${
+          className={`inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 font-medium text-sky-700 ${
             isSm ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs"
           }`}
         >
-          <RefreshCw className={isSm ? "w-3 h-3 text-purple-400" : "w-3.5 h-3.5 text-purple-400"} />
+          <RefreshCw className={isSm ? "w-3 h-3 text-cyan-600" : "w-3.5 h-3.5 text-cyan-600"} />
           <span>Dikembalikan (Refund)</span>
         </span>
       );
 
     default:
       return (
-        <span className="inline-flex items-center px-2 py-0.5 text-xs text-slate-400 bg-slate-800 rounded">
+        <span className="inline-flex items-center rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
           {status}
         </span>
       );

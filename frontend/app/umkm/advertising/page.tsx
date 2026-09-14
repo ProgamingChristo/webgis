@@ -51,7 +51,7 @@ function MerchantAdvertising() {
   );
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 text-slate-900">
+    <div className="mx-auto max-w-7xl space-y-6 text-slate-900">
       <Link
         href={activeMerchant ? `/umkm?merchantId=${encodeURIComponent(activeMerchant.id)}#promosi` : "/umkm"}
         className="inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-sky-600 hover:text-sky-700 transition"

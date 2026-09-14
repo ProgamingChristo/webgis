@@ -16,18 +16,52 @@ export function CreativeEditor({ creative, onSaveDraft, onMarkReady, onUploadIma
   const [description, setDescription] = useState(creative?.description || "");
   const [ctaType, setCtaType] = useState<CtaType>(creative?.ctaType || "VIEW_PROFILE");
   const [creativeType, setCreativeType] = useState<CreativeType>(creative?.creativeType || "SPONSORED_PIN");
+  const [actionState, setActionState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   const handleSave = async () => {
-    if (creative) {
-      await onSaveDraft({ headline, description, cta_type: ctaType });
-    } else {
-      await onSaveDraft({ creative_type: creativeType, headline, description, cta_type: ctaType });
+    setActionState("saving");
+    setActionMessage("Menyimpan materi…");
+    try {
+      if (creative) {
+        await onSaveDraft({ headline, description, cta_type: ctaType });
+      } else {
+        await onSaveDraft({ creative_type: creativeType, headline, description, cta_type: ctaType });
+      }
+      setActionState("saved");
+      setActionMessage("Materi berhasil disimpan.");
+    } catch {
+      setActionState("error");
+      setActionMessage("Materi belum dapat disimpan. Coba lagi.");
     }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0] && creative) {
-      await onUploadImage(creative.id, e.target.files[0]);
+      setActionState("saving");
+      setActionMessage("Mengunggah gambar…");
+      try {
+        await onUploadImage(creative.id, e.target.files[0]);
+        setActionState("saved");
+        setActionMessage("Gambar berhasil diunggah.");
+      } catch {
+        setActionState("error");
+        setActionMessage("Gambar belum dapat diunggah. Coba lagi.");
+      }
+    }
+  };
+
+  const handleMarkReady = async () => {
+    if (!creative) return;
+    setActionState("saving");
+    setActionMessage("Memeriksa kesiapan materi…");
+    try {
+      await onMarkReady(creative.id);
+      setActionState("saved");
+      setActionMessage("Materi ditandai siap.");
+    } catch {
+      setActionState("error");
+      setActionMessage("Materi belum dapat ditandai siap. Coba lagi.");
     }
   };
 
@@ -41,9 +75,9 @@ export function CreativeEditor({ creative, onSaveDraft, onMarkReady, onUploadIma
             <label className="block text-sm font-medium mb-1">Jenis materi</label>
             <select 
               value={creativeType} 
-              onChange={e => setCreativeType(e.target.value as CreativeType)}
-              className="w-full border rounded p-2 text-sm"
-              disabled={loading}
+              onChange={e => { setCreativeType(e.target.value as CreativeType); setActionState("idle"); }}
+              className="min-h-11 w-full rounded-xl border border-slate-300 bg-white p-2 text-sm outline-hidden focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+              disabled={loading || actionState === "saving"}
             >
               <option value="SPONSORED_PIN">Penanda promosi</option>
               <option value="CONTEXTUAL_BANNER">Banner sesuai lokasi</option>
@@ -57,8 +91,8 @@ export function CreativeEditor({ creative, onSaveDraft, onMarkReady, onUploadIma
           <input 
             type="text" 
             value={headline}
-            onChange={e => setHeadline(e.target.value)}
-            className="w-full border rounded p-2 text-sm"
+            onChange={e => { setHeadline(e.target.value); setActionState("idle"); }}
+            className="min-h-11 w-full rounded-xl border border-slate-300 bg-white p-2 text-sm outline-hidden focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
             placeholder="Misal: Paket Mahasiswa Rp18.000"
             maxLength={50}
             disabled={loading || creative?.status === "READY"}
@@ -70,8 +104,8 @@ export function CreativeEditor({ creative, onSaveDraft, onMarkReady, onUploadIma
           <label className="block text-sm font-medium mb-1">Deskripsi (opsional)</label>
           <textarea 
             value={description}
-            onChange={e => setDescription(e.target.value)}
-            className="w-full border rounded p-2 text-sm"
+            onChange={e => { setDescription(e.target.value); setActionState("idle"); }}
+            className="w-full rounded-xl border border-slate-300 bg-white p-2 text-sm outline-hidden focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
             placeholder="Nasi + Lauk + Minum"
             maxLength={100}
             rows={3}
@@ -84,8 +118,8 @@ export function CreativeEditor({ creative, onSaveDraft, onMarkReady, onUploadIma
           <label className="block text-sm font-medium mb-1">Tombol tindakan</label>
           <select 
             value={ctaType} 
-            onChange={e => setCtaType(e.target.value as CtaType)}
-            className="w-full border rounded p-2 text-sm"
+            onChange={e => { setCtaType(e.target.value as CtaType); setActionState("idle"); }}
+            className="min-h-11 w-full rounded-xl border border-slate-300 bg-white p-2 text-sm outline-hidden focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
             disabled={loading || creative?.status === "READY"}
           >
             <option value="VIEW_PROFILE">Lihat Profil</option>
@@ -107,23 +141,26 @@ export function CreativeEditor({ creative, onSaveDraft, onMarkReady, onUploadIma
           </div>
         )}
 
-        <div className="flex gap-2 mt-6">
+        {actionMessage && <p role={actionState === "error" ? "alert" : "status"} className={`mb-3 rounded-xl border p-3 text-xs font-medium ${actionState === "error" ? "border-red-200 bg-red-50 text-red-700" : actionState === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-sky-200 bg-sky-50 text-sky-700"}`}>{actionMessage}</p>}
+
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row">
           {(!creative || creative.status === "DRAFT") && (
             <button 
               onClick={handleSave} 
-              disabled={loading || !headline.trim()}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded text-sm font-medium transition-colors disabled:opacity-50"
+              disabled={loading || actionState === "saving" || !headline.trim()}
+              className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
             >
-              Simpan draf
+              {actionState === "saving" ? "Menyimpan…" : "Simpan draf"}
             </button>
           )}
           {creative && creative.status === "DRAFT" && (
             <button 
-              onClick={() => onMarkReady(creative.id)} 
-              disabled={loading || !headline.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors disabled:opacity-50"
+              onClick={handleMarkReady}
+              disabled={loading || actionState === "saving" || !headline.trim()}
+              style={{ color: "#ffffff" }}
+              className="min-h-11 rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold transition-colors hover:bg-sky-700 disabled:opacity-50"
             >
-              Tandai siap
+              {actionState === "saving" ? "Memproses…" : "Tandai siap"}
             </button>
           )}
           {creative && creative.status === "READY" && (

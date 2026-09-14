@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { CampaignTarget, TargetType, GeoJSONFeature, StudyAreaSummary } from "../types/targeting.types";
 import { TargetingTypeSelector } from "./targeting-type-selector";
@@ -94,7 +94,7 @@ export function TargetingEditor({
         study_area_id: selectedType === "STUDY_AREA" ? selectedStudyAreaId : undefined,
       });
 
-      setFeedbackSuccess("Target kampanye berhasil disimpan.");
+      setFeedbackSuccess("Wilayah sasaran berhasil disimpan.");
     } catch {
       setFeedbackError("Wilayah sasaran belum dapat disimpan. Coba lagi.");
     }
@@ -157,15 +157,16 @@ export function TargetingEditor({
               type="button"
               disabled={disabled || saving}
               onClick={handleSave}
-              className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold text-sm rounded-lg shadow-sm transition-colors flex items-center justify-center space-x-2"
+              style={{ color: "#ffffff" }}
+              className="flex min-h-11 w-full items-center justify-center space-x-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-700 disabled:opacity-50"
             >
               {saving ? (
                 <>
                   <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                  <span>Menyimpan Target...</span>
+                  <span>Menyimpan wilayah…</span>
                 </>
               ) : (
-                <span>Simpan Target Area</span>
+                <span>Simpan Wilayah Sasaran</span>
               )}
             </button>
             <p className="text-[11px] text-gray-400 text-center mt-2">

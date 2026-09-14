@@ -5,7 +5,7 @@ import { CreateCreativeInput, UpdateCreativeInput } from "../schemas/creative.sc
 
 export function useCreatives(merchantId: string, campaignId: string) {
   const [creatives, setCreatives] = useState<CreativeDTO[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchCreatives = useCallback(async () => {

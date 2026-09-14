@@ -13,6 +13,7 @@ export type CampaignReadinessBlocker =
   | "TARGETING_NOT_CONFIGURED"
   | "SCHEDULE_NOT_CONFIGURED"
   | "SCHEDULE_INVALID"
+  | "PAYMENT_NOT_VERIFIED"
   | "CAMPAIGN_TERMINAL";
 
 export interface CampaignReadinessChecks {
@@ -20,6 +21,7 @@ export interface CampaignReadinessChecks {
   creative: boolean;
   targeting: boolean;
   schedule: boolean;
+  payment: boolean;
 }
 
 export interface CampaignReadinessResult {

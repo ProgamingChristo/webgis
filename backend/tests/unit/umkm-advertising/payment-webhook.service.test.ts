@@ -58,6 +58,11 @@ describe("PaymentWebhookService", () => {
 
     expect(result.processed).toBe(true);
     expect(result.status).toBe("PAID");
+    const updatePayloads = mockSupabase.from.mock.results
+      .map((result: any) => result.value.update?.mock?.calls || [])
+      .flat()
+      .map((call: any[]) => call[0]);
+    expect(updatePayloads).not.toContainEqual(expect.objectContaining({ status: "ACTIVE" }));
   });
 
   it("rejects invalid signature with UNAUTHORIZED error", async () => {

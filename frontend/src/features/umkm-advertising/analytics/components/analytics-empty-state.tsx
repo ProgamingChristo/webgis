@@ -11,11 +11,11 @@ interface EmptyStateProps {
 export function AnalyticsEmptyState({ type }: EmptyStateProps) {
   if (type === "NO_MERCHANT") {
     return (
-      <div className="p-8 rounded-2xl border border-slate-700/60 bg-slate-800/40 text-center max-w-md mx-auto py-12">
-        <div className="w-12 h-12 rounded-full bg-slate-700/50 flex items-center justify-center text-slate-400 mx-auto mb-3">
+      <div className="mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-8 py-12 text-center shadow-sm">
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
           <Store size={24} />
         </div>
-        <h3 className="text-sm font-semibold text-white">Belum ada usaha yang Anda kelola.</h3>
+        <h3 className="text-sm font-semibold text-slate-900">Belum ada usaha yang Anda kelola.</h3>
         <p className="text-xs text-slate-400 mt-1 mb-5">
           Daftarkan usaha baru atau klaim usaha yang tersedia sebelum melihat statistik promosi.
         </p>
@@ -31,11 +31,11 @@ export function AnalyticsEmptyState({ type }: EmptyStateProps) {
 
   if (type === "NO_CAMPAIGN") {
     return (
-      <div className="p-8 rounded-2xl border border-slate-700/60 bg-slate-800/40 text-center max-w-md mx-auto py-12">
+      <div className="mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-8 py-12 text-center shadow-sm">
         <div className="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 mx-auto mb-3">
           <Megaphone size={24} />
         </div>
-        <h3 className="text-sm font-semibold text-white">Belum Ada Promosi Spasial</h3>
+        <h3 className="text-sm font-semibold text-slate-900">Belum Ada Promosi Spasial</h3>
         <p className="text-xs text-slate-400 mt-1 mb-5">
           Buat promosi untuk menjangkau orang yang berada di area yang sesuai.
         </p>
@@ -50,11 +50,11 @@ export function AnalyticsEmptyState({ type }: EmptyStateProps) {
   }
 
   return (
-    <div className="p-8 rounded-2xl border border-slate-700/60 bg-slate-800/40 text-center py-10">
-      <div className="w-10 h-10 rounded-full bg-slate-700/40 flex items-center justify-center text-slate-400 mx-auto mb-2">
+    <div className="rounded-2xl border border-slate-200 bg-white p-8 py-10 text-center shadow-sm">
+      <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500">
         <BarChart2 size={20} />
       </div>
-      <h3 className="text-xs font-semibold text-slate-200">Belum Ada Data Interaksi</h3>
+      <h3 className="text-xs font-semibold text-slate-800">Belum Ada Data Interaksi</h3>
       <p className="text-xs text-slate-400 mt-0.5 max-w-sm mx-auto">
         Belum ada interaksi tercatat untuk filter dan periode waktu yang dipilih.
       </p>

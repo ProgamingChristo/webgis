@@ -199,7 +199,7 @@ export function CampaignPaymentPanel({
 
       const refreshed = await PaymentService.refreshPaymentStatus(campaignId);
       setPaymentInfo(refreshed);
-      setNoticeMessage("Pembayaran Sandbox terverifikasi secara real-time. Promosi kini aktif.");
+      setNoticeMessage("Pembayaran Sandbox terverifikasi. Status promosi telah diminta ulang dari server.");
       if (onPaymentUpdated) onPaymentUpdated();
     } catch (err: any) {
       console.error("[handleSimulateSettlement error]", err);
@@ -211,8 +211,8 @@ export function CampaignPaymentPanel({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8 bg-slate-950/60 rounded-xl border border-slate-800 text-slate-400 text-xs">
-        <RefreshCw className="w-4 h-4 animate-spin mr-2 text-purple-400" />
+      <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 text-xs text-slate-600 shadow-sm">
+        <RefreshCw className="mr-2 h-4 w-4 animate-spin text-sky-600" />
         Memuat status pembayaran...
       </div>
     );
@@ -223,12 +223,12 @@ export function CampaignPaymentPanel({
   const currentOrderId = paymentInfo?.order_id || activeCheckout?.order_id || "GETRA-AD-SANDBOX";
 
   return (
-    <div className="min-w-0 space-y-4 rounded-xl border border-slate-700 bg-slate-950/80 p-4 shadow-xl sm:p-5">
+    <div className="min-w-0 space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      <div className="flex flex-col justify-between gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center">
         <div className="flex min-w-0 items-start gap-2">
-          <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-purple-400" />
-          <h4 className="min-w-0 break-words text-sm font-bold leading-5 text-slate-100">
+          <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+          <h4 className="min-w-0 break-words text-sm font-bold leading-5 text-slate-900">
             Pembayaran promosi: {campaignName}
           </h4>
         </div>
@@ -237,41 +237,41 @@ export function CampaignPaymentPanel({
 
       {/* Notice & Error Alerts */}
       {noticeMessage && (
-        <div className="flex items-center gap-2 p-3 text-xs bg-purple-950/40 border border-purple-800/60 text-purple-200 rounded-lg">
-          <CheckCircle className="w-4 h-4 text-purple-400 flex-shrink-0" />
+        <div className="flex items-center gap-2 rounded-xl border border-sky-200 bg-sky-50 p-3 text-xs text-sky-800">
+          <CheckCircle className="h-4 w-4 flex-shrink-0 text-sky-600" />
           <span>{noticeMessage}</span>
         </div>
       )}
 
       {errorMessage && (
-        <div className="flex items-center gap-2 p-3 text-xs bg-red-950/40 border border-red-800/60 text-red-200 rounded-lg">
-          <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+          <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-600" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {/* Payment Details Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="p-3 bg-slate-900/90 rounded-lg border border-slate-800">
-          <span className="text-[11px] text-slate-400 block mb-1">Status Pembayaran</span>
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <span className="mb-1 block text-[11px] text-slate-500">Status Pembayaran</span>
           <CampaignPaymentStatusBadge status={paymentInfo?.status || "UNPAID"} />
         </div>
 
-        <div className="p-3 bg-slate-900/90 rounded-lg border border-slate-800">
-          <span className="text-[11px] text-slate-400 block mb-1">Nominal Promosi (Sandbox)</span>
-          <div className="text-base font-bold text-slate-100">
-            Rp {displayAmount.toLocaleString("id-ID")}
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <span className="mb-1 block text-[11px] text-slate-500">Nominal Promosi (Sandbox)</span>
+          <div className="text-base font-bold text-slate-900">
+            {paymentInfo?.amount || activeCheckout?.amount ? `Rp ${displayAmount.toLocaleString("id-ID")}` : "Belum ditentukan"}
           </div>
           <span className="text-[10px] text-slate-500">Uji Coba Teknis</span>
         </div>
 
-        <div className="p-3 bg-slate-900/90 rounded-lg border border-slate-800">
-          <span className="text-[11px] text-slate-400 block mb-1">Order ID GETRA</span>
-          <div className="break-all text-xs font-mono leading-5 text-slate-300" title={paymentInfo?.order_id || "-"}>
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <span className="mb-1 block text-[11px] text-slate-500">Order ID GETRA</span>
+          <div className="break-all font-mono text-xs leading-5 text-slate-700" title={paymentInfo?.order_id || "-"}>
             {paymentInfo?.order_id || "Belum Dibuat"}
           </div>
           {paymentInfo?.paid_at && (
-            <span className="text-[10px] text-emerald-400 block mt-0.5">
+            <span className="mt-0.5 block text-[10px] text-emerald-700">
               Lunas: {new Date(paymentInfo.paid_at).toLocaleString("id-ID")}
             </span>
           )}
@@ -279,11 +279,11 @@ export function CampaignPaymentPanel({
       </div>
 
       {/* Sandbox Disclaimer Box */}
-      <div className="flex items-start gap-2.5 p-3.5 bg-amber-950/20 border border-amber-900/40 rounded-lg text-xs text-amber-300/90">
-        <HelpCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+      <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-900">
+        <HelpCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
         <div className="space-y-1">
-          <p className="font-semibold text-amber-200">Simulasi Pembayaran Midtrans Sandbox</p>
-          <p className="text-slate-300 text-[11px] leading-relaxed">
+          <p className="font-semibold text-amber-900">Simulasi Pembayaran Midtrans Sandbox</p>
+          <p className="text-[11px] leading-relaxed text-amber-800">
             Pembayaran ini menggunakan gateway <strong>Midtrans Sandbox</strong>. Gunakan nomor kartu tes simulator resmi Midtrans untuk menyelesaikan pembayaran tanpa memotong biaya riil.
           </p>
         </div>
@@ -297,22 +297,24 @@ export function CampaignPaymentPanel({
               type="button"
               onClick={handlePay}
               disabled={isProcessing}
-              className="inline-flex min-h-10 items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-lg shadow-purple-900/40 transition"
+              style={{ color: "#ffffff" }}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-sky-700 disabled:opacity-50"
             >
               <CreditCard className="w-4 h-4" />
               {isProcessing ? "Menghubungkan Midtrans..." : "Bayar dengan Midtrans (Sandbox)"}
             </button>
           ) : (
             <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex min-h-10 items-center justify-center gap-2 px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold rounded-lg">
-                <CheckCircle className="w-4 h-4 text-emerald-400" />
+              <div className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800">
+                <CheckCircle className="h-4 w-4 text-emerald-600" />
                 Pembayaran Sandbox Terverifikasi
               </div>
               <button
                 type="button"
                 onClick={handleViewReceipt}
                 disabled={isLoadingReceipt}
-                className="inline-flex min-h-10 items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-lg shadow-purple-900/40 transition"
+                style={{ color: "#ffffff" }}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-sky-700 disabled:opacity-50"
               >
                 <FileText className="w-4 h-4" />
                 {isLoadingReceipt ? "Memuat Bukti..." : "Lihat Bukti Pembayaran"}
@@ -324,9 +326,9 @@ export function CampaignPaymentPanel({
             type="button"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="inline-flex min-h-10 items-center justify-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 text-xs font-medium rounded-lg border border-slate-700 transition"
+            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-purple-400" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-sky-600" : ""}`} />
             {isRefreshing ? "Memverifikasi..." : "Cek Status"}
           </button>
         </div>
@@ -335,7 +337,7 @@ export function CampaignPaymentPanel({
           href="https://docs.midtrans.com/reference/testing-payments-in-sandbox"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 self-start break-words text-[11px] leading-5 text-slate-400 transition hover:text-purple-300 sm:self-auto"
+          className="inline-flex items-center gap-1 self-start break-words text-[11px] leading-5 text-slate-500 transition hover:text-sky-700 sm:self-auto"
         >
           <span>Panduan Kartu Tes Sandbox</span>
           <ExternalLink className="w-3 h-3" />
@@ -345,51 +347,51 @@ export function CampaignPaymentPanel({
       {/* MIDTRANS SANDBOX PAYMENT POPUP MODAL */}
       {showSimulatorModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="relative max-h-[calc(100vh-2rem)] w-full max-w-lg space-y-5 overflow-y-auto rounded-2xl border border-slate-700 bg-[#0c121e] p-4 text-slate-100 shadow-2xl shadow-purple-950/50 sm:p-6">
+          <div className="relative max-h-[calc(100vh-2rem)] w-full max-w-lg space-y-5 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 shadow-2xl sm:p-6">
             {/* Modal Top Bar */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
                 <div className="size-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="font-mono text-[11px] font-black uppercase tracking-wider text-purple-300">
+                <span className="font-mono text-[11px] font-black uppercase tracking-wider text-amber-700">
                   MIDTRANS SANDBOX POPUP
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setShowSimulatorModal(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition"
+                className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
               >
                 <X className="size-4" />
               </button>
             </div>
 
             {/* Order Brief */}
-            <div className="flex flex-col gap-3 rounded-xl border border-purple-500/20 bg-purple-950/30 p-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-col gap-3 rounded-xl border border-sky-200 bg-sky-50 p-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <p className="text-[10px] font-mono text-purple-300 uppercase">Order ID</p>
-                <p className="break-all text-xs font-mono font-bold leading-5 text-slate-200">{currentOrderId}</p>
-                <p className="mt-1 break-words text-xs leading-5 text-slate-400">{campaignName}</p>
+                <p className="font-mono text-[10px] uppercase text-sky-700">Order ID</p>
+                <p className="break-all font-mono text-xs font-bold leading-5 text-slate-900">{currentOrderId}</p>
+                <p className="mt-1 break-words text-xs leading-5 text-slate-600">{campaignName}</p>
               </div>
               <div className="shrink-0 text-left sm:text-right">
-                <p className="text-[10px] font-mono text-purple-300 uppercase">Total Tagihan</p>
-                <p className="text-base font-bold text-emerald-400">Rp {displayAmount.toLocaleString("id-ID")}</p>
+                <p className="font-mono text-[10px] uppercase text-sky-700">Total Tagihan</p>
+                <p className="text-base font-bold text-emerald-700">Rp {displayAmount.toLocaleString("id-ID")}</p>
               </div>
             </div>
 
             {/* Payment Method Selector Tabs */}
             <div>
-              <p className="text-xs font-bold text-slate-300 mb-2">Pilih Metode Pembayaran Sandbox:</p>
+              <p className="mb-2 text-xs font-bold text-slate-700">Pilih Metode Pembayaran Sandbox:</p>
               <div className="grid grid-cols-1 gap-2 min-[440px]:grid-cols-3">
                 <button
                   type="button"
                   onClick={() => setSelectedMethod("qris")}
                   className={`flex flex-col items-center gap-1 p-3 rounded-xl border text-xs font-semibold transition ${
                     selectedMethod === "qris"
-                      ? "border-purple-400 bg-purple-600/20 text-purple-200 shadow-md shadow-purple-950"
-                      : "border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700"
+                      ? "border-sky-400 bg-sky-50 text-sky-800 shadow-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-sky-300"
                   }`}
                 >
-                  <QrCode className="size-5 text-purple-400" />
+                  <QrCode className="size-5 text-sky-600" />
                   <span>QRIS / GoPay</span>
                 </button>
 
@@ -398,11 +400,11 @@ export function CampaignPaymentPanel({
                   onClick={() => setSelectedMethod("va")}
                   className={`flex flex-col items-center gap-1 p-3 rounded-xl border text-xs font-semibold transition ${
                     selectedMethod === "va"
-                      ? "border-purple-400 bg-purple-600/20 text-purple-200 shadow-md shadow-purple-950"
-                      : "border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700"
+                      ? "border-sky-400 bg-sky-50 text-sky-800 shadow-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-sky-300"
                   }`}
                 >
-                  <Building2 className="size-5 text-indigo-400" />
+                  <Building2 className="size-5 text-sky-600" />
                   <span>Virtual Account</span>
                 </button>
 
@@ -411,18 +413,18 @@ export function CampaignPaymentPanel({
                   onClick={() => setSelectedMethod("cc")}
                   className={`flex flex-col items-center gap-1 p-3 rounded-xl border text-xs font-semibold transition ${
                     selectedMethod === "cc"
-                      ? "border-purple-400 bg-purple-600/20 text-purple-200 shadow-md shadow-purple-950"
-                      : "border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700"
+                      ? "border-sky-400 bg-sky-50 text-sky-800 shadow-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-sky-300"
                   }`}
                 >
-                  <CreditCard className="size-5 text-cyan-400" />
+                  <CreditCard className="size-5 text-sky-600" />
                   <span>Kartu Kredit</span>
                 </button>
               </div>
             </div>
 
             {/* Method Details Box */}
-            <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               {selectedMethod === "qris" && (
                 <div className="flex flex-col items-center text-center space-y-2">
                   <div className="p-3 bg-white rounded-xl shadow-inner inline-block">
@@ -430,7 +432,7 @@ export function CampaignPaymentPanel({
                       [QRIS SANDBOX]
                     </div>
                   </div>
-                  <p className="text-xs text-slate-300 font-medium">Pindai kode QR dengan aplikasi pembayaran (mode uji)</p>
+                  <p className="text-xs font-medium text-slate-700">Pindai kode QR dengan aplikasi pembayaran (mode uji)</p>
                   <p className="text-[11px] text-slate-500">Pembayaran ini hanya untuk simulasi.</p>
                 </div>
               )}
@@ -439,11 +441,11 @@ export function CampaignPaymentPanel({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-400">Bank Transfer</span>
-                    <span className="font-bold text-slate-200">BCA Virtual Account</span>
+                    <span className="font-bold text-slate-800">BCA Virtual Account</span>
                   </div>
-                  <div className="p-3 bg-slate-900 rounded-lg border border-slate-800 flex justify-between items-center font-mono">
-                    <span className="text-sm font-bold text-indigo-300">8801 2345 6789 0001</span>
-                    <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded">Salin VA</span>
+                  <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 font-mono">
+                    <span className="text-sm font-bold text-sky-700">8801 2345 6789 0001</span>
+                    <span className="rounded bg-sky-100 px-2 py-0.5 text-[10px] text-sky-700">Salin VA</span>
                   </div>
                   <p className="text-[11px] text-slate-400">ATM / Mobile Banking simulator siap menerima pembayaran uji.</p>
                 </div>
@@ -456,7 +458,7 @@ export function CampaignPaymentPanel({
                     <input
                       readOnly
                       value="4811 1111 1111 1114"
-                      className="w-full mt-1 p-2 bg-slate-900 border border-slate-800 rounded-lg font-mono text-xs text-cyan-300"
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white p-2 font-mono text-xs text-slate-800"
                     />
                   </div>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -465,7 +467,7 @@ export function CampaignPaymentPanel({
                       <input
                         readOnly
                         value="12/28"
-                        className="w-full mt-1 p-2 bg-slate-900 border border-slate-800 rounded-lg font-mono text-xs text-slate-300"
+                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white p-2 font-mono text-xs text-slate-800"
                       />
                     </div>
                     <div>
@@ -473,7 +475,7 @@ export function CampaignPaymentPanel({
                       <input
                         readOnly
                         value="123 (OTP: 112233)"
-                        className="w-full mt-1 p-2 bg-slate-900 border border-slate-800 rounded-lg font-mono text-xs text-slate-300"
+                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white p-2 font-mono text-xs text-slate-800"
                       />
                     </div>
                   </div>
@@ -487,7 +489,8 @@ export function CampaignPaymentPanel({
                 type="button"
                 onClick={handleSimulateSettlement}
                 disabled={isProcessing}
-                className="flex min-h-10 flex-1 items-center justify-center gap-2 whitespace-nowrap py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-emerald-950/40 transition active:scale-[0.99]"
+                style={{ color: "#ffffff" }}
+                className="flex min-h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.99]"
               >
                 <ShieldCheck className="size-4" />
                 {isProcessing ? "Memproses..." : "Selesaikan Pembayaran (Sandbox)"}
@@ -495,7 +498,7 @@ export function CampaignPaymentPanel({
               <button
                 type="button"
                 onClick={() => setShowSimulatorModal(false)}
-                className="min-h-10 whitespace-nowrap py-2.5 px-4 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800 text-xs font-semibold transition"
+                className="min-h-11 whitespace-nowrap rounded-xl border border-slate-300 px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Batal
               </button>

@@ -4,9 +4,9 @@ import { useCreatives } from "../hooks/use-creatives";
 import { CreativeEditor } from "./creative-editor";
 import { CreativePreview } from "./creative-preview";
 
-export function CampaignCreativeManager({ merchantId, campaignId, merchantName }: { merchantId: string, campaignId: string, merchantName: string }) {
+export function CampaignCreativeManager({ merchantId, campaignId, merchantName, onUpdated }: { merchantId: string, campaignId: string, merchantName: string, onUpdated?: () => void | Promise<void> }) {
   const { 
-    creatives, loading, fetchCreatives, 
+    creatives, loading, error, fetchCreatives,
     createCreative, updateCreative, markReady, uploadMedia 
   } = useCreatives(merchantId, campaignId);
 
@@ -18,11 +18,13 @@ export function CampaignCreativeManager({ merchantId, campaignId, merchantName }
   const pinCreative = creatives.find(c => c.creativeType === "SPONSORED_PIN") || null;
 
   return (
-    <div className="mt-4 pt-4 border-t border-gray-200">
-      <h4 className="font-bold text-gray-800 mb-4">Materi promosi</h4>
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+      <h4 className="mb-4 font-bold text-slate-900">Materi promosi</h4>
+      {error && <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">Materi promosi belum dapat dimuat. Coba buka bagian ini kembali.</div>}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <CreativeEditor
+            key={pinCreative?.id || "new-creative"}
             creative={pinCreative}
             loading={loading}
             onSaveDraft={async (data) => {
@@ -31,12 +33,15 @@ export function CampaignCreativeManager({ merchantId, campaignId, merchantName }
               } else {
                 await createCreative(data as any);
               }
+              await onUpdated?.();
             }}
             onMarkReady={async (id) => {
               await markReady(id);
+              await onUpdated?.();
             }}
             onUploadImage={async (id, file) => {
               await uploadMedia(id, file);
+              await onUpdated?.();
             }}
           />
         </div>

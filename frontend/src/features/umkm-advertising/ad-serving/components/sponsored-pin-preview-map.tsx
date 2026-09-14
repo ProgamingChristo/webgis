@@ -8,7 +8,7 @@ import { buildSponsoredPopupContent } from "@/src/lib/maplibre-popup";
 
 interface SponsoredPinPreviewMapProps {
   merchantLocation: { longitude: number; latitude: number } | null;
-  contextLocation: SponsoredPinServingContext;
+  contextLocation: SponsoredPinServingContext | null;
   targetGeoJSON: any | null;
   placement: SponsoredPinDTO | null;
   onContextChange: (ctx: SponsoredPinServingContext) => void;
@@ -44,7 +44,9 @@ export function SponsoredPinPreviewMap({
 
       const defaultCenter: [number, number] = merchantLocation
         ? [merchantLocation.longitude, merchantLocation.latitude]
-        : [contextLocation.longitude, contextLocation.latitude];
+        : contextLocation
+          ? [contextLocation.longitude, contextLocation.latitude]
+          : [107.609, -6.9175];
 
       const map = new maplibre.Map({
         container: containerRef.current,
@@ -75,7 +77,7 @@ export function SponsoredPinPreviewMap({
           type: "fill",
           source: "serving-target-source",
           paint: {
-            "fill-color": "#8b5cf6",
+            "fill-color": "#0ea5e9",
             "fill-opacity": 0.18,
           },
         });
@@ -85,7 +87,7 @@ export function SponsoredPinPreviewMap({
           type: "line",
           source: "serving-target-source",
           paint: {
-            "line-color": "#7c3aed",
+            "line-color": "#0284c7",
             "line-width": 2,
             "line-dasharray": [3, 2],
           },
@@ -162,7 +164,11 @@ export function SponsoredPinPreviewMap({
   // 4. Update Context Test Marker (Draggable)
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    if (!map || !contextLocation) {
+      contextMarkerRef.current?.remove();
+      contextMarkerRef.current = null;
+      return;
+    }
 
     import("maplibre-gl").then((maplibre) => {
       if (contextMarkerRef.current) {
@@ -195,7 +201,7 @@ export function SponsoredPinPreviewMap({
     });
     // Drag handler reads the latest callback through this render path; avoid recreating the marker on each parent callback identity change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contextLocation.longitude, contextLocation.latitude]);
+  }, [contextLocation?.longitude, contextLocation?.latitude]);
 
   // 5. Update Sponsored Pin Marker & Popup (rendered when placement is servable)
   useEffect(() => {
@@ -247,28 +253,32 @@ export function SponsoredPinPreviewMap({
   }, [placement]);
 
   return (
-    <div className={`relative h-80 w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-950 ${className}`}>
-      <div ref={containerRef} className="h-full w-full" />
+    <div
+      className={`relative h-[22rem] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-inner sm:h-[26rem] ${className}`}
+      role="region"
+      aria-label="Peta pemilihan titik uji penayangan"
+    >
+      <div ref={containerRef} className="h-full w-full" aria-hidden="true" />
 
       {/* Map Legend Overlay */}
-      <div className="absolute bottom-2 left-2 z-10 flex flex-wrap items-center gap-1.5 rounded-lg bg-slate-900/85 p-2 text-[10px] text-slate-300 shadow-md backdrop-blur-sm border border-slate-700">
+      <div className="absolute bottom-2 left-2 right-2 z-10 flex flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-white/95 p-2 text-[10px] font-medium text-slate-600 shadow-md backdrop-blur-sm sm:right-auto">
         <span className="flex items-center gap-1">
           <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
           Toko UMKM
         </span>
-        <span className="text-slate-600">|</span>
+        <span className="text-slate-300">|</span>
         <span className="flex items-center gap-1">
-          <span className="inline-block h-2 w-2 rounded-full bg-purple-500" />
-          Area Target
+          <span className="inline-block h-2 w-2 rounded-full bg-sky-500" />
+          Wilayah sasaran
         </span>
-        <span className="text-slate-600">|</span>
+        <span className="text-slate-300">|</span>
         <span className="flex items-center gap-1">
           <span className="inline-block h-2 w-2 rounded-full bg-blue-500" />
           Titik Uji (Klik/Geser)
         </span>
         {placement && (
           <>
-            <span className="text-slate-600">|</span>
+            <span className="text-slate-300">|</span>
             <span className="flex items-center gap-1 text-amber-400 font-bold">
               <span>📣</span>
               Penanda promosi aktif

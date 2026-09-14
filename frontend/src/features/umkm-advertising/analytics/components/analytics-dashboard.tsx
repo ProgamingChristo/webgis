@@ -135,7 +135,7 @@ function MerchantAnalyticsDashboard({ authLoading, merchantId, urlCampaignId }: 
         <div className="flex items-center gap-2 mb-4">
           <Link
             href={backHref}
-            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-slate-600 transition-colors hover:text-sky-700"
           >
             <ArrowLeft size={13} />
             Kembali ke Promosi
@@ -148,10 +148,10 @@ function MerchantAnalyticsDashboard({ authLoading, merchantId, urlCampaignId }: 
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 py-3 sm:py-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
         <Link
           href={backHref}
-          className="inline-flex min-w-0 items-center gap-1.5 text-xs font-semibold text-slate-400 transition-colors hover:text-slate-200"
+          className="inline-flex min-w-0 items-center gap-1.5 text-xs font-semibold text-slate-600 transition-colors hover:text-sky-700"
         >
           <ArrowLeft className="shrink-0" size={13} />
           <span className="break-words">Kembali ke Promosi</span>
@@ -162,7 +162,7 @@ function MerchantAnalyticsDashboard({ authLoading, merchantId, urlCampaignId }: 
             type="button"
             onClick={loadAnalytics}
             disabled={loadingAnalytics}
-            className="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs flex items-center gap-1.5 transition-colors disabled:opacity-50"
+            className="flex min-h-10 items-center gap-1.5 rounded-xl border border-slate-300 bg-white p-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
             title="Segarkan data"
           >
             <RefreshCw size={14} className={loadingAnalytics ? "animate-spin" : ""} />
@@ -188,7 +188,7 @@ function MerchantAnalyticsDashboard({ authLoading, merchantId, urlCampaignId }: 
       {loadingAnalytics ? <p role="status" className="text-sm text-slate-400">Memuat analitik untuk pilihan ini...</p> : null}
 
       {error ? (
-        <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">
+        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">
           <AlertTriangle size={16} className="shrink-0" />
           <span>{error}</span>
         </div>

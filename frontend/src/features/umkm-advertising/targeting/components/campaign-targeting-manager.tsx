@@ -9,12 +9,14 @@ interface CampaignTargetingManagerProps {
   merchantId: string;
   campaignId: string;
   campaignStatus: string;
+  onUpdated?: () => void | Promise<void>;
 }
 
 export function CampaignTargetingManager({
   merchantId,
   campaignId,
   campaignStatus,
+  onUpdated,
 }: CampaignTargetingManagerProps) {
   const {
     target,
@@ -30,7 +32,7 @@ export function CampaignTargetingManager({
 
   if (loadingTarget) {
     return (
-      <div className="mt-4 pt-4 border-t border-gray-200 text-sm text-gray-500 flex items-center space-x-2">
+      <div className="flex items-center space-x-2 rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm" role="status">
         <span className="animate-spin inline-block w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full" />
         <span>Memuat wilayah sasaran...</span>
       </div>
@@ -38,8 +40,8 @@ export function CampaignTargetingManager({
   }
 
   return (
-    <div className="mt-4 pt-4 border-t border-gray-200">
-      <div className="flex justify-between items-center mb-4">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+      <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <div>
           <h4 className="font-bold text-gray-800 text-base">Wilayah sasaran promosi</h4>
           <p className="text-xs text-gray-500">
@@ -60,6 +62,7 @@ export function CampaignTargetingManager({
       )}
 
       <TargetingEditor
+        key={target?.id || "new-target"}
         target={target}
         studyAreas={studyAreas}
         loadingStudyAreas={loadingStudyAreas}
@@ -67,6 +70,7 @@ export function CampaignTargetingManager({
         disabled={!isEditable}
         onSave={async (payload) => {
           await saveTargeting(payload as any);
+          await onUpdated?.();
         }}
       />
     </div>

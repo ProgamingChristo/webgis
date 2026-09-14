@@ -55,6 +55,13 @@ export class CreativeService {
   ): Promise<CreativeDTO> {
     await this.verifyCampaignOwnershipAndStatus(merchantId, campaignId);
 
+    // Keep one canonical creative per placement type even when an older
+    // environment has not applied the database uniqueness constraint yet.
+    const existingCreatives = await this.repository.findByCampaignId(campaignId);
+    if (existingCreatives.some((creative) => creative.creative_type === input.creative_type)) {
+      throw new Error("Creative dengan tipe ini sudah ada untuk campaign tersebut.");
+    }
+
     const row = await this.repository.createCreative({
       campaign_id: campaignId,
       creative_type: input.creative_type,

@@ -10,7 +10,7 @@ export function SandboxPaymentBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-medium rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 ${
+      className={`inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 font-medium text-amber-800 ${
         isSm ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs"
       }`}
       title="Mode Uji Coba: Pembayaran disimulasikan menggunakan Midtrans Sandbox dan tidak menarik dana riil."

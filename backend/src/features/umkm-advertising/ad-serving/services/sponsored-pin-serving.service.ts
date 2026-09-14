@@ -74,6 +74,7 @@ export class SponsoredPinServingService {
       merchant: false,
       creative: false,
       targeting: false,
+      payment: false,
     };
 
     // 3.1. Evaluate Campaign Readiness and Effective Lifecycle Status
@@ -100,6 +101,11 @@ export class SponsoredPinServingService {
       checks.lifecycle = true;
     } else {
       blockers.push("CAMPAIGN_NOT_ACTIVE");
+    }
+
+    checks.payment = readiness.checks.payment;
+    if (!checks.payment) {
+      blockers.push("PAYMENT_NOT_VERIFIED");
     }
 
     // 3.2. Evaluate Merchant Eligibility and Coordinates

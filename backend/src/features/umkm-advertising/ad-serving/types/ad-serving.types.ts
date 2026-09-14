@@ -32,6 +32,7 @@ export interface SponsoredPinDTO {
 
 export type ServingBlockerCode =
   | "CAMPAIGN_NOT_ACTIVE"
+  | "PAYMENT_NOT_VERIFIED"
   | "MERCHANT_NOT_ELIGIBLE"
   | "MERCHANT_GEOMETRY_INVALID"
   | "CREATIVE_NOT_FOUND"
@@ -46,6 +47,7 @@ export interface ServingChecklist {
   merchant: boolean;
   creative: boolean;
   targeting: boolean;
+  payment: boolean;
 }
 
 export interface ServingPreviewResult {

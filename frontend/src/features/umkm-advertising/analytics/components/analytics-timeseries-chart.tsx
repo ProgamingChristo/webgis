@@ -13,7 +13,7 @@ export function AnalyticsTimeseriesChart({ timeseries }: TimeseriesChartProps) {
 
   if (timeseries.length === 0) {
     return (
-      <div className="p-6 rounded-2xl border border-slate-700/60 bg-slate-800/40 text-center py-10">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 py-10 text-center shadow-sm">
         <p className="text-xs text-slate-400">Belum ada riwayat aktivitas interaksi pada rentang waktu ini.</p>
       </div>
     );
@@ -30,10 +30,10 @@ export function AnalyticsTimeseriesChart({ timeseries }: TimeseriesChartProps) {
   const selectedPoint = timeseries.find((d) => d.date === activeDate) || timeseries[timeseries.length - 1];
 
   return (
-    <div className="p-5 sm:p-6 rounded-2xl border border-slate-700/60 bg-slate-800/50 backdrop-blur space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/50 pb-4">
+    <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="flex flex-col justify-between gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center">
         <div>
-          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
             <TrendingUp size={16} className="text-emerald-400" />
             Tren Interaksi Harian
           </h3>
@@ -43,7 +43,7 @@ export function AnalyticsTimeseriesChart({ timeseries }: TimeseriesChartProps) {
         </div>
 
         {/* Legend */}
-        <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-300">
+        <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-600">
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
             Tayangan
@@ -53,7 +53,7 @@ export function AnalyticsTimeseriesChart({ timeseries }: TimeseriesChartProps) {
             Klik Pin
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
             Buka Profil
           </span>
           <span className="flex items-center gap-1.5">
@@ -79,7 +79,7 @@ export function AnalyticsTimeseriesChart({ timeseries }: TimeseriesChartProps) {
                 key={pt.date}
                 onClick={() => setActiveDate(pt.date)}
                 className={`flex-1 min-w-[36px] flex flex-col items-center justify-end h-full cursor-pointer group p-1 rounded-lg transition-colors ${
-                  isSelected ? "bg-slate-700/60" : "hover:bg-slate-700/30"
+                  isSelected ? "bg-sky-50" : "hover:bg-slate-50"
                 }`}
               >
                 <div className="w-full flex items-end justify-center gap-0.5 h-full">
@@ -98,7 +98,7 @@ export function AnalyticsTimeseriesChart({ timeseries }: TimeseriesChartProps) {
                   {/* Profile opens bar */}
                   <div
                     style={{ height: `${profHeight}%` }}
-                    className="w-1.5 sm:w-2 bg-purple-500 rounded-t-sm transition-all group-hover:brightness-125"
+                    className="w-1.5 sm:w-2 bg-cyan-500 rounded-t-sm transition-all group-hover:brightness-125"
                     title={`Buka Profil: ${pt.profile_opens}`}
                   />
                   {/* Route requests bar */}
@@ -119,15 +119,15 @@ export function AnalyticsTimeseriesChart({ timeseries }: TimeseriesChartProps) {
 
       {/* Selected Day Breakdown */}
       {selectedPoint ? (
-        <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-700/60 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-1.5 text-slate-300 font-medium">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-slate-700">
             <Calendar size={13} className="text-slate-400" />
             <span>Tanggal: {selectedPoint.date}</span>
           </div>
           <div className="flex items-center gap-4 text-xs font-semibold">
             <span className="text-blue-400">Tayangan: {selectedPoint.impressions}</span>
             <span className="text-amber-400">Klik Pin: {selectedPoint.sponsored_pin_clicks}</span>
-            <span className="text-purple-400">Buka Profil: {selectedPoint.profile_opens}</span>
+            <span className="text-cyan-600">Buka Profil: {selectedPoint.profile_opens}</span>
             <span className="text-emerald-400">Rute: {selectedPoint.route_requests}</span>
           </div>
         </div>

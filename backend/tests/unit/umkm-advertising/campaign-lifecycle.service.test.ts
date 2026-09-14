@@ -13,6 +13,7 @@ describe("CampaignLifecycleService Unit Tests", () => {
       creative: true,
       targeting: true,
       schedule: true,
+      payment: true,
     },
     blockers: [],
   };
@@ -24,8 +25,21 @@ describe("CampaignLifecycleService Unit Tests", () => {
       creative: false,
       targeting: true,
       schedule: true,
+      payment: true,
     },
     blockers: ["CREATIVE_NOT_READY"],
+  };
+
+  const mockUnpaidResult: CampaignReadinessResult = {
+    ready: false,
+    checks: {
+      merchant: true,
+      creative: true,
+      targeting: true,
+      schedule: true,
+      payment: false,
+    },
+    blockers: ["PAYMENT_NOT_VERIFIED"],
   };
 
   beforeEach(() => {
@@ -92,6 +106,18 @@ describe("CampaignLifecycleService Unit Tests", () => {
       const status = service.getEffectiveCampaignStatus(
         "DRAFT",
         mockNotReadyResult,
+        startAt,
+        endAt,
+        now
+      );
+      expect(status).toBe("DRAFT");
+    });
+
+    it("should return DRAFT when payment is not server verified", () => {
+      const now = new Date("2026-09-05T10:00:00.000Z");
+      const status = service.getEffectiveCampaignStatus(
+        "READY",
+        mockUnpaidResult,
         startAt,
         endAt,
         now
