@@ -32,6 +32,8 @@ services:
         GETRA_RELEASE_SHA: ${GETRA_RELEASE_SHA}
       secrets:
         - frontend_public_env
+    environment:
+      GETRA_BACKEND_INTERNAL_URL: "http://getra-backend-full:3000"
     ports:
       - "127.0.0.1:${GETRA_FRONTEND_PORT:-3013}:3000"
     restart: unless-stopped
