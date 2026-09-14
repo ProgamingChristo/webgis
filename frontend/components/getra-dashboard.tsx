@@ -3105,10 +3105,14 @@ function GeneralGetraDashboard() {
       }
     };
     const frameId = requestAnimationFrame(triggerResize);
-    const timerId = setTimeout(triggerResize, 150);
+    const timer1 = setTimeout(triggerResize, 80);
+    const timer2 = setTimeout(triggerResize, 200);
+    const timer3 = setTimeout(triggerResize, 380);
     return () => {
       cancelAnimationFrame(frameId);
-      clearTimeout(timerId);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
     };
   }, [journeyOpen, detailOpen, sidebarCollapsed]);
 
@@ -4235,7 +4239,18 @@ function GeneralGetraDashboard() {
           style={{ position: "relative" }}
         >
           <div className="commuter-map-actions">
-             {sidebarCollapsed ? <button type="button" onClick={() => setSidebarCollapsed(false)}><Search size={16} />Cari / Rute</button> : null}
+             {sidebarCollapsed ? (
+               <button
+                 type="button"
+                 className="commuter-sidebar-reopen-btn"
+                 onClick={() => setSidebarCollapsed(false)}
+                 aria-label="Buka panel pencarian dan rute"
+                 title="Buka sidebar pencarian & rute"
+               >
+                 <Search size={16} />
+                 <span>Cari / Rute</span>
+               </button>
+             ) : null}
              <button className="commuter-ai-launcher" type="button" aria-expanded={aiOpen} aria-controls="commuter-assistant" onClick={() => { setAiOpen(!aiOpen); setDetailOpen(false); if (!aiOpen && window.innerWidth <= 760) setSidebarCollapsed(true); }}><Bot size={16} />Tanya GETRA</button>
            </div>
           <div

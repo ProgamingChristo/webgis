@@ -6307,12 +6307,32 @@ body:has(.getra-app-shell--community) {
   grid-template-columns: clamp(350px, 26vw, 420px) minmax(0, 1fr) clamp(280px, 22vw, 340px);
 }
 
-.workspace--figma .workspace-grid[data-sidebar-collapsed="true"] {
-  grid-template-columns: minmax(0, 1fr);
+.workspace--figma .workspace-grid[data-sidebar-collapsed="true"],
+.workspace--figma .workspace-grid[data-sidebar-collapsed="true"][data-routing-active="true"] {
+  grid-template-columns: minmax(0, 1fr) !important;
 }
 
-.workspace--figma .workspace-grid[data-sidebar-collapsed="true"][data-detail-open="true"] {
-  grid-template-columns: minmax(0, 1fr) clamp(300px, 23vw, 352px);
+.workspace--figma .workspace-grid[data-sidebar-collapsed="true"] > .left-panel {
+  display: none !important;
+}
+
+.workspace--figma .workspace-grid[data-sidebar-collapsed="true"] > .map-panel {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}
+
+.workspace--figma .workspace-grid[data-sidebar-collapsed="true"][data-detail-open="true"],
+.workspace--figma .workspace-grid[data-sidebar-collapsed="true"][data-routing-active="true"][data-detail-open="true"] {
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 23vw, 352px) !important;
+}
+
+.workspace--figma .workspace-grid[data-sidebar-collapsed="true"][data-detail-open="true"] > .map-panel {
+  grid-column: 1 !important;
+  width: 100% !important;
+}
+
+.workspace--figma .workspace-grid[data-sidebar-collapsed="true"][data-detail-open="true"] > .right-panel {
+  grid-column: 2 !important;
 }
 
 .workspace-grid[data-journey-open="true"],

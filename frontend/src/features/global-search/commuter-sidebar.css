@@ -20,8 +20,10 @@
 .commuter-workspace { --commuter-ink: #102357; --commuter-muted: #52658a; --commuter-blue: #008fbe; --commuter-line: #dce8f8; }
 .workspace--figma.commuter-workspace .workspace-grid,
 .workspace--figma.commuter-workspace .workspace-grid[data-routing-active="true"] { position: relative; grid-template-columns: clamp(310px, 27vw, 380px) minmax(0, 1fr); min-height: 0; height: calc(100dvh - 122px); }
-.workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"] { grid-template-columns: minmax(0, 1fr); }
-.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"] > .left-panel { display: none; }
+.workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"],
+.workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"][data-routing-active="true"] { grid-template-columns: minmax(0, 1fr) !important; }
+.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"] > .left-panel,
+.workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"] > .left-panel { display: none !important; }
 .workspace--figma.commuter-workspace .left-panel { padding: 0; overflow: hidden; display: flex; flex-direction: column; color: var(--commuter-ink); border-radius: 18px; }
 .commuter-sidebar [hidden], .commuter-workspace [hidden] { display: none !important; }
 .commuter-sidebar__header { flex: 0 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; padding: 18px 16px 12px; background: #fff; border-bottom: 1px solid var(--commuter-line); }
@@ -104,6 +106,8 @@
 .commuter-loading > span { height: 88px; border-radius: 10px; background: linear-gradient(90deg,#f0f5fb,#f8fbff,#f0f5fb); }
 .commuter-map-actions { position: absolute; z-index: 5; top: 12px; left: 12px; display: flex; flex-wrap: wrap; gap: 6px; max-width: calc(100% - 68px); }
 .commuter-map-actions > button { display: inline-flex; gap: 6px; align-items: center; min-height: 36px; padding: 8px 11px; border: 1px solid var(--commuter-line); border-radius: 10px; background: #fff; color: var(--commuter-ink); font-size: 12px; box-shadow: 0 3px 12px #16315312; cursor: pointer; }
+.commuter-sidebar-reopen-btn { display: inline-flex !important; align-items: center; gap: 7px; min-height: 38px; padding: 8px 14px; font-weight: 600; font-size: 13px; color: var(--commuter-ink); background: #ffffff !important; border: 1px solid var(--commuter-line) !important; border-radius: 10px; box-shadow: 0 4px 14px rgba(16, 35, 87, 0.12); cursor: pointer; pointer-events: auto !important; transition: all 150ms ease; }
+.commuter-sidebar-reopen-btn:hover { background: var(--commuter-soft) !important; border-color: var(--commuter-blue) !important; color: var(--commuter-blue); transform: translateY(-1px); }
 .commuter-assistant { position: absolute; z-index: 6; top: 58px; left: 12px; width: min(390px, calc(100% - 24px)); max-height: calc(100% - 76px); overflow-y: auto; border-radius: 14px; box-shadow: 0 12px 32px #10235729; background: #fff; }
 .commuter-assistant__close { position: sticky; top: 8px; float: right; z-index: 2; margin: 8px; display: grid; place-items: center; width: 30px; height: 30px; background: #fff; border: 1px solid var(--commuter-line); border-radius: 50%; color: var(--commuter-ink); cursor: pointer; }
 .workspace--figma.commuter-workspace .right-panel { position: absolute; z-index: 7; right: 24px; top: 64px; bottom: 24px; width: min(340px, calc(100% - 48px)); max-height: none; display: block; box-shadow: 0 12px 36px #10235726; }
@@ -260,8 +264,9 @@
 .commuter-idle p { margin: 0; font-size: 11px; line-height: 1.6; }
 @media (max-width: 1024px) and (min-width: 761px) {
   .workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="false"]:not([class*="activeWorkspace"]) { grid-template-columns: minmax(0, 1fr); }
-  .workspace--figma.commuter-workspace .left-panel { position: absolute; z-index: 6; left: 14px; top: 14px; bottom: 14px; width: 310px; box-shadow: 0 8px 24px #10235720; }
-  .commuter-map-actions > button:not(.commuter-ai-launcher) { margin-left: 320px; }
+  .workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="false"] .left-panel { position: absolute; z-index: 6; left: 14px; top: 14px; bottom: 14px; width: 310px; box-shadow: 0 8px 24px #10235720; }
+  .workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="false"] .commuter-map-actions > button:not(.commuter-ai-launcher) { margin-left: 320px; }
+  .workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"] .commuter-map-actions > button:not(.commuter-ai-launcher) { margin-left: 0; }
 }
 @media (max-width: 760px) {
   .commuter-workspace .commuter-assistant { z-index: 8; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: min(72dvh, calc(100% - 62px)); }
@@ -285,8 +290,16 @@
   position: relative;
   overflow: hidden;
 }
+.workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"],
+.workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"][data-routing-active="true"] {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
 .workspace--figma.commuter-workspace .workspace-grid[data-detail-open="true"] {
   grid-template-columns: clamp(300px, 22vw, 350px) minmax(480px, 1fr) clamp(400px, 29vw, 480px);
+}
+.workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"][data-detail-open="true"],
+.workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"][data-routing-active="true"][data-detail-open="true"] {
+  grid-template-columns: minmax(480px, 1fr) clamp(400px, 29vw, 480px) !important;
 }
 .workspace--figma.commuter-workspace .panel,
 .workspace--figma.commuter-workspace .map-panel {
@@ -303,6 +316,9 @@
   overflow-y: auto;
   border-right: 1px solid var(--commuter-line);
 }
+.workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"] .left-panel {
+  display: none !important;
+}
 .workspace--figma.commuter-workspace .map-panel {
   grid-row: 1;
   grid-column: 2;
@@ -310,7 +326,12 @@
   background: #eef3f5;
 }
 .workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"] .map-panel {
-  grid-column: 1;
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}
+.workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"][data-detail-open="true"] .map-panel {
+  grid-column: 1 !important;
+  width: 100% !important;
 }
 .workspace--figma.commuter-workspace .right-panel {
   grid-row: 1;

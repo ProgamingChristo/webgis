@@ -977,8 +977,18 @@ export function GetraMap({
     if (typeof window !== "undefined") {
       (window as unknown as { __getraMapLibreInstance?: MapLibreMap }).__getraMapLibreInstance = map;
     }
+    const handleWindowResize = () => {
+      map.resize();
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", handleWindowResize);
+    }
     const resizeObserver = new ResizeObserver(() => map.resize());
     resizeObserver.observe(map.getContainer());
+    const parentShell = map.getContainer().closest(".map-shell") ?? map.getContainer().parentElement;
+    if (parentShell) {
+      resizeObserver.observe(parentShell);
+    }
 
     /*
      * Track basemap panel width for safe-area calculations.
@@ -1177,6 +1187,9 @@ export function GetraMap({
       routeLabelMarkers.forEach((marker) => marker.remove());
       routeLabelMarkers.clear();
 
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resize", handleWindowResize);
+      }
       basemapPanelObserver.disconnect();
       resizeObserver.disconnect();
       map.remove();
