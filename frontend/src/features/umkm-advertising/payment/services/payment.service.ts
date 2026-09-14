@@ -1,5 +1,5 @@
 import { apiClient } from "@/src/lib/api-client";
-import { CreateCheckoutDTO, PaymentStatusDTO } from "../types/payment.types";
+import { CreateCheckoutDTO, PaymentStatusDTO, GetraPaymentReceiptDTO } from "../types/payment.types";
 
 export class PaymentService {
   static async getPaymentStatus(campaignId: string): Promise<PaymentStatusDTO> {
@@ -24,4 +24,11 @@ export class PaymentService {
       {}
     );
   }
+
+  static async getReceipt(campaignId: string): Promise<GetraPaymentReceiptDTO> {
+    return apiClient.get<GetraPaymentReceiptDTO>(
+      `/api/umkm/advertising/campaigns/${encodeURIComponent(campaignId)}/payment/receipt`
+    );
+  }
 }
+

@@ -11,3 +11,5 @@ export * from "./services/payment-checkout.service";
 export * from "./services/payment-status.service";
 export * from "./services/payment-webhook.service";
 export * from "./services/campaign-payment-eligibility.service";
+export * from "./types/payment-receipt.types";
+export * from "./services/payment-receipt.service";

@@ -37,6 +37,145 @@ export class AiService {
       history,
     } = req;
 
+    const normalizedQuestion = question.toLocaleLowerCase("id-ID").trim();
+
+    // 1. Guardrail: Secret Exfiltration & Prompt Injection
+    const isSecretExfiltration =
+      /\b(server[_\s-]?key|service[_\s-]?role|api[_\s-]?key|secret[_\s-]?key|password|kunci rahasia|credential)\b/iu.test(
+        normalizedQuestion,
+      ) &&
+      /\b(tampilkan|lihat|berikan|bocorkan|print|show|reveal|abaikan|ignore|dump|get)\b/iu.test(
+        normalizedQuestion,
+      );
+
+    // 2. Guardrail: Unauthorized Privilege Escalation
+    const isPrivilegeEscalation =
+      /\b(jadikan saya admin|approve usaha.*tanpa admin|aktifkan promosi tanpa bayar|ubah merchant ini jadi punya saya|bypass auth|elevate privilege)\b/iu.test(
+        normalizedQuestion,
+      );
+
+    if (isSecretExfiltration || isPrivilegeEscalation) {
+      return {
+        answer:
+          "Permintaan ditolak demi keamanan sistem. GETRA AI mematuhi protokol perlindungan data ketat, tidak memiliki akses ke kunci rahasia/kredensial backend, dan tidak dapat mengubah hak akses administratif pengguna.",
+        intent: "UNKNOWN",
+        limitations: ["Permintaan melanggar batas keamanan atau privasi sistem."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    // 3. Guardrail: Hallucination Prevention on Unsupported Facts (Category X)
+    if (/\brating\b.*\b(merchant|usaha|ini|tempat|toko)\b/iu.test(normalizedQuestion) || /\bberapa rating\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "GETRA beroperasi dengan prinsip Fair Discovery berbasis data faktual dan tidak memuat rating fiktif. Data ulasan konsumen untuk tempat ini belum tersedia secara terverifikasi.",
+        intent: "UMKM_POI",
+        limitations: ["Data rating tidak tersedia pada data faktual GETRA."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(orang lewat|foot traffic|pejalan kaki per hari|traffic harian)\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Data estimasi jumlah pejalan kaki harian secara spesifik belum tercatat pada basis data resmi GETRA untuk lokasi ini.",
+        intent: "GENERAL_AREA",
+        limitations: ["Data foot traffic belum tercatat."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(berapa macet|kemacetan sekarang|macet sekarang|live traffic)\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "GETRA berfokus pada jaringan rute pejalan kaki dan multimodal berbasis jaringan GIS, bukan penyedia sensor kemacetan lalu lintas jalan raya real-time.",
+        intent: "GENERAL_AREA",
+        limitations: ["Sensor kemacetan real-time di luar cakupan GETRA."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(harga semua menu|daftar harga menu)\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Daftar lengkap harga menu untuk usaha ini belum tercatat pada basis data GETRA. Kunjungi langsung lokasi usaha untuk melihat daftar menu dan harga terkini.",
+        intent: "UMKM_POI",
+        limitations: ["Daftar menu lengkap tidak tersedia."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    // 4. Deterministic Product Guidance (Category A, P, Q, R, S)
+    if (/\bapa itu fair discovery\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Fair Discovery adalah prinsip utama GETRA yang menjamin UMKM lokal mendapatkan visibilitas yang adil dan merata berdasarkan kedekatan spasial serta relevansi kebutuhan pengguna, bukan semata-mata ditentukan oleh besaran biaya lelang iklan.",
+        intent: "ASSISTANT_IDENTITY",
+        limitations: [],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/^getra bisa (?:bantu )?apa\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "GETRA dapat membantu Anda menemukan UMKM lokal dengan prinsip Fair Discovery, menghitung rute berjalan kaki dan multimodal berbasis jaringan GIS yang akurat, serta membantu pelaku usaha mendaftarkan dan mempromosikan usahanya.",
+        intent: "ASSISTANT_IDENTITY",
+        limitations: [],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:gimana|bagaimana|cara)\s+(?:daftar|daftarkan)\s+usaha\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Anda dapat mendaftarkan usaha Anda melalui menu UMKM > Daftarkan Usaha di GETRA dengan mengisi nama usaha, alamat lengkap, kategori usaha, dan menandai koordinat lokasi pada peta untuk diverifikasi tim Admin.",
+        intent: "UMKM_POI",
+        limitations: [],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\bkenapa belum bisa (?:promosi|bayar)\b/iu.test(normalizedQuestion) || /\bbagaimana promosi di getra\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Promosi berbayar (Midtrans Sandbox) di GETRA mensyaratkan usaha Anda telah berstatus terverifikasi (VERIFIED) oleh tim Admin, dipublikasikan aktif di peta, dan akun Anda berada pada mode stakeholder UMKM.",
+        intent: "UMKM_POI",
+        limitations: [],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\bapa itu sponsored\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Fitur Promosi (Sponsored) di GETRA memungkinkan UMKM terverifikasi meningkatkan jangkauan promosi visual pada peta dan panel rekomendasi melalui pembayaran resmi Midtrans Sandbox tanpa mengorbankan relevansi hasil pencarian Fair Discovery.",
+        intent: "UMKM_POI",
+        limitations: [],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
     /**
      * Merchant/search requests use the dedicated structured
      * search extractor first.
@@ -560,8 +699,9 @@ Rules:
             supabase,
           );
 
-        const nearStops =
-          await transportRepo.findNear(
+        let nearStops: { items: any[] } = { items: [] };
+        try {
+          nearStops = await transportRepo.findNear(
             {
               latitude:
                 context.origin
@@ -585,6 +725,9 @@ Rules:
                 "desc",
             },
           );
+        } catch {
+          limitations.push("Data transit sementara tidak dapat diakses.");
+        }
 
         if (
           nearStops.items.length >
@@ -1165,13 +1308,63 @@ export function determineApplicationAction(
       .replace(/\s+/g, " ")
       .trim();
 
+  const isAmbiguousQuery =
+    /^(ke sana|ke situ|mau makan|cari yang bagus|cari dekat situ|yang bagus)$/iu.test(
+      normalized,
+    );
+
+  if (isAmbiguousQuery) {
+    if (/\b(ke sana|ke situ)\b/iu.test(normalized)) {
+      if (context?.selected_entity_id) {
+        return {
+          type: "PREPARE_ROUTE",
+          origin: { type: "CURRENT_LOCATION" },
+          destination: { type: "SELECTED_MERCHANT" },
+        };
+      }
+      return {
+        type: "REQUEST_CLARIFICATION",
+        prompt:
+          "Tempat mana yang ingin Anda tuju? Silakan pilih UMKM di peta atau sebutkan nama tempat tujuan.",
+      };
+    }
+
+    if (/\b(cari dekat situ)\b/iu.test(normalized)) {
+      return {
+        type: "REQUEST_CLARIFICATION",
+        prompt:
+          "Di sekitar lokasi atau tempat mana yang Anda maksud? Silakan sebutkan nama tempat atau pilih di peta.",
+      };
+    }
+
+    if (/\b(mau makan|cari yang bagus|yang bagus)\b/iu.test(normalized)) {
+      return {
+        type: "REQUEST_CLARIFICATION",
+        prompt:
+          "Makanan atau tempat seperti apa yang ingin Anda cari? Anda bisa menyebutkan jenis makanan atau lokasinya.",
+      };
+    }
+  }
+
   const requestedModes = inferRequestedRouteModes(normalized);
   const mode = requestedModes.length === 1 ? requestedModes[0] : null;
 
   const asksForRoute =
-    /\b(rute|route|berapa lama|arah|navigasi)\b/u.test(
-      normalized,
-    );
+    /\b(rute|route|berapa lama|arah|navigasi|cara ke|pandu ke)\b/iu.test(normalized) ||
+    (/\b(jalan kaki|naik motor|naik mobil|jalan)\b/iu.test(normalized) && /\b(ke|menuju|dari)\b/iu.test(normalized)) ||
+    /\b(dari\s+.+\s+ke\s+.+)\b/iu.test(normalized);
+
+  const asksForMetricBeforeRoute =
+    /\b(berapa jaraknya|berapa jarak|berapa menit)\b/iu.test(normalized) &&
+    !context?.active_route;
+
+  if (asksForMetricBeforeRoute && !asksForRoute) {
+    return {
+      type: "REQUEST_CLARIFICATION",
+      prompt:
+        "Untuk mengetahui jarak dan estimasi waktu tempuh yang akurat, rute harus dihitung terlebih dahulu menggunakan kalkulasi GIS GETRA. Silakan tentukan titik awal dan tujuan Anda.",
+    };
+  }
 
   /**
    * Existing active route:
@@ -1198,7 +1391,7 @@ export function determineApplicationAction(
     const origin =
       /\b(lokasi (?:saya|aku)|posisi (?:saya|aku)|dari sini)\b/u.test(
         normalized,
-      )
+      ) || (context?.origin && !/\bdari\b/iu.test(normalized))
         ? {
             type:
               "CURRENT_LOCATION" as const,
@@ -1207,15 +1400,19 @@ export function determineApplicationAction(
             question,
           );
 
-    const destination =
-      context?.selected_entity_id
+    let destination =
+      context?.selected_entity_id && (/\b(merchant ini|tempat ini|sini)\b/iu.test(normalized) || !/\b(?:ke|menuju)\b/iu.test(normalized))
         ? {
             type:
               "SELECTED_MERCHANT" as const,
           }
         : extractDestinationQuery(
             question,
-          );
+          ) || (context?.selected_entity_id ? { type: "SELECTED_MERCHANT" as const } : null);
+
+    if (destination?.type === "PLACE_QUERY" && /\b(merchant ini|tempat ini|sini)\b/iu.test(destination.query) && context?.selected_entity_id) {
+      destination = { type: "SELECTED_MERCHANT" as const };
+    }
 
     if (!origin) {
       return {

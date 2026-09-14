@@ -42,7 +42,7 @@ export function parseDeterministicCommuterText(input: string): ParsedCommuterTex
   const openNow = OPEN_NOW_PATTERN.test(keywordText);
   keywordText = keywordText.replace(OPEN_NOW_PATTERN, " ");
   keywordText = keywordText
-    .replace(/\b(?:makan|tempat\s+makan|yang|dan|dengan|jalan\s+kaki)\b/gi, " ")
+    .replace(/(?<!\b(?:warung|rumah)\s+)\bmakan\b|tempat\s+makan|\b(?:yang|dan|dengan|jalan\s+kaki)\b/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
 

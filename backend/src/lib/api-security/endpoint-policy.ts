@@ -1561,6 +1561,16 @@ export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
     purpose: "Refresh and verify authoritative payment status from Midtrans for campaign",
   },
   {
+    method: "GET",
+    path: "/api/umkm/advertising/campaigns/[id]/payment/receipt",
+    classification: "AUTHENTICATED",
+    role: "AUTHENTICATED",
+    rateLimit: "api",
+    cors: "allowlist",
+    allowedRequestHeaders: AUTH_HEADERS,
+    purpose: "Get verified payment receipt for advertising campaign",
+  },
+  {
     method: "POST",
     path: "/api/payments/midtrans/notification",
     classification: "PUBLIC",

@@ -28,6 +28,27 @@ const ADMIN_REGION_HINTS = [
   { canonical: "Jakarta Utara", aliases: ["jakarta utara", "jakut"] },
 ] as const;
 
+const SLANG_TYPO_DICTIONARY: Record<string, string> = {
+  basko: "bakso",
+  ngopi: "kopi",
+  dket: "dekat",
+  tmpt: "tempat",
+  mkn: "makan",
+  coffee: "kopi",
+  find: "cari",
+  nearest: "terdekat",
+  "open now": "buka sekarang",
+};
+
+export function normalizeSlangAndTypos(text: string): string {
+  let normalized = text;
+  for (const [typo, fix] of Object.entries(SLANG_TYPO_DICTIONARY)) {
+    const reg = new RegExp(`\\b${escapeRegExp(typo)}\\b`, "giu");
+    normalized = normalized.replace(reg, fix);
+  }
+  return normalized;
+}
+
 function normalizeRegionText(value: string) {
   return value
     .toLocaleLowerCase("id-ID")
@@ -80,7 +101,8 @@ function escapeRegExp(value: string) {
 }
 
 function extractDeterministicSearchAction(request: AiAskRequest) {
-  const normalized = normalizeRegionText(request.question);
+  const normalizedRaw = normalizeSlangAndTypos(request.question);
+  const normalized = normalizeRegionText(normalizedRaw);
   if (!normalized) return null;
 
   // Routing, explanations, and ordinary questions continue through the main
@@ -93,15 +115,16 @@ function extractDeterministicSearchAction(request: AiAskRequest) {
     return null;
   }
 
-  const region = findAdministrativeRegionMention(request.question);
-  const nearUser = /\b(dekat saya|sekitar saya|di sekitar saya|sekitar sini|dekat sini)\b/u.test(normalized);
-  const parsed = parseDeterministicCommuterText(request.question);
+  const region = findAdministrativeRegionMention(normalizedRaw);
+  const nearUser = /\b(dekat saya|sekitar saya|di sekitar saya|sekitar sini|dekat sini|terdekat|paling dekat|dket sini)\b/u.test(normalizedRaw);
+  const parsed = parseDeterministicCommuterText(normalizedRaw);
   const hasConstraint = Boolean(
     parsed.constraints.budget
       || parsed.constraints.opening
       || parsed.constraints.walking,
   );
-  const hasSearchCue = /\b(cari|carikan|temukan|rekomendasikan|rekomendasi|mau makan|tempat makan)\b/u.test(normalized);
+  const hasFoodOrCategoryCue = /\b(bakso|kopi|coffee|cafe|kafe|makan|warung|mie|nasi|soto|sate|ayam|bebek|seafood|roti|martabak|jus|tea|teh|dimsum|snack|gudeg|padang|pempek|toko|kuliner|restoran)\b/iu.test(normalizedRaw);
+  const hasSearchCue = /\b(cari|carikan|temukan|rekomendasikan|rekomendasi|mau makan|tempat makan|tempat ngopi|tmpt ngopi)\b/u.test(normalizedRaw) || hasFoodOrCategoryCue;
 
   // A short noun phrase such as "bakso di jakarta pusat" is a valid search
   // even without an explicit verb. Long conversational text remains untouched.
@@ -110,7 +133,8 @@ function extractDeterministicSearchAction(request: AiAskRequest) {
   let keyword = parsed.keyword_text
     .replace(/\b(?:tolong\s+)?(?:cari|carikan|temukan|rekomendasikan|rekomendasi)\b/giu, " ")
     .replace(/\b(?:mau|ingin)\s+(?:makan|cari)\b/giu, " ")
-    .replace(/\b(?:dekat|di sekitar|sekitar)\s+(?:saya|aku|sini)\b/giu, " ");
+    .replace(/\b(?:dekat|di sekitar|sekitar)\s+(?:saya|aku|sini)\b/giu, " ")
+    .replace(/\b(?:terdekat|paling dekat)\b/giu, " ");
 
   if (region) {
     for (const alias of [...region.aliases, region.canonical]) {

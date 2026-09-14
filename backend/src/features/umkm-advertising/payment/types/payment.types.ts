@@ -32,6 +32,7 @@ export interface CreateCheckoutDTO {
   currency: string;
   status: PaymentStatus;
   sandbox: boolean;
+  client_key?: string;
 }
 
 export interface PaymentStatusDTO {

@@ -77,6 +77,11 @@ export class PaymentCheckoutService {
 
     // 3. Check if already PAID
     const latestOrder = await this.repo.getLatestPaymentOrderByCampaignId(campaignId);
+    const clientKey =
+      process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ||
+      process.env.MIDTRANS_CLIENT_KEY ||
+      undefined;
+
     if (latestOrder && latestOrder.status === "PAID") {
       return {
         payment_order_id: latestOrder.id,
@@ -87,6 +92,7 @@ export class PaymentCheckoutService {
         currency: latestOrder.currency,
         status: "PAID",
         sandbox: true,
+        client_key: clientKey,
       };
     }
 
@@ -106,6 +112,7 @@ export class PaymentCheckoutService {
         currency: latestOrder.currency,
         status: "PENDING",
         sandbox: true,
+        client_key: clientKey,
       };
     }
 
@@ -149,6 +156,7 @@ export class PaymentCheckoutService {
       currency: "IDR",
       status: "PENDING",
       sandbox: true,
+      client_key: clientKey,
     };
   }
 }

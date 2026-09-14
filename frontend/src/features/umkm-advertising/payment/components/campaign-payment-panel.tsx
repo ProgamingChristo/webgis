@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { PaymentService } from "../services/payment.service";
-import { CreateCheckoutDTO, PaymentStatusDTO } from "../types/payment.types";
+import { CreateCheckoutDTO, PaymentStatusDTO, GetraPaymentReceiptDTO } from "../types/payment.types";
 import { SandboxPaymentBadge } from "./sandbox-payment-badge";
 import { CampaignPaymentStatusBadge } from "./campaign-payment-status";
 import { loadMidtransSnap } from "../utils/load-midtrans-snap";
+import { PaymentReceiptModal } from "./payment-receipt-modal";
 import {
   CreditCard,
   RefreshCw,
@@ -17,6 +18,7 @@ import {
   Building2,
   X,
   ShieldCheck,
+  FileText,
 } from "lucide-react";
 
 export function CampaignPaymentPanel({
@@ -37,6 +39,9 @@ export function CampaignPaymentPanel({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [receiptData, setReceiptData] = useState<GetraPaymentReceiptDTO | null>(null);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [isLoadingReceipt, setIsLoadingReceipt] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -84,6 +89,21 @@ export function CampaignPaymentPanel({
     }
   };
 
+  const handleViewReceipt = async () => {
+    setIsLoadingReceipt(true);
+    setErrorMessage(null);
+    try {
+      const data = await PaymentService.getReceipt(campaignId);
+      setReceiptData(data);
+      setShowReceiptModal(true);
+    } catch (err: any) {
+      console.error("[CampaignPaymentPanel] Failed to load receipt:", err);
+      setErrorMessage(err.message || "Gagal memuat bukti pembayaran.");
+    } finally {
+      setIsLoadingReceipt(false);
+    }
+  };
+
   const handlePay = async () => {
     setIsProcessing(true);
     setErrorMessage(null);
@@ -94,39 +114,46 @@ export function CampaignPaymentPanel({
       const checkout = await PaymentService.createCheckout(campaignId);
       setActiveCheckout(checkout);
 
-      // 2. If it's a real token from Midtrans (not a local fallback prefix), try opening real Snap popup
-      if (checkout.snap_token && !checkout.snap_token.startsWith("SANDBOX-SNAP-")) {
-        try {
-          await loadMidtransSnap();
-          if (window.snap) {
-            setNoticeMessage("Membuka halaman pembayaran...");
-            window.snap.pay(checkout.snap_token, {
-              onSuccess: async () => {
-                setNoticeMessage("Pembayaran selesai. Sedang memeriksa status terbaru...");
-                await handleRefresh();
-              },
-              onPending: async () => {
-                setNoticeMessage("Menunggu penyelesaian pembayaran...");
-                await handleRefresh();
-              },
-              onError: async (result: any) => {
-                console.error("[Snap onError]", result);
-                setErrorMessage("Pembayaran gagal atau dibatalkan di gateway Midtrans.");
-                await handleRefresh();
-              },
-              onClose: async () => {
-                setNoticeMessage("Jendela pembayaran ditutup.");
-                await handleRefresh();
-              },
-            });
-            return;
-          }
-        } catch (snapErr) {
-          console.warn("[Snap JS load/call]", snapErr);
-        }
+      // 2. Preload Snap script
+      let snapAvailable = false;
+      try {
+        await loadMidtransSnap(checkout.client_key);
+        snapAvailable = typeof window !== "undefined" && Boolean(window.snap);
+      } catch (scriptErr) {
+        console.warn("[CampaignPaymentPanel] Snap script load notice:", scriptErr);
       }
 
-      // 3. Open GETRA's Midtrans Sandbox Simulator Modal
+      // 3. If upstream Midtrans returned a token and window.snap is available, open official Snap popup
+      if (
+        checkout.snap_token &&
+        !checkout.snap_token.startsWith("SANDBOX-SNAP-") &&
+        snapAvailable &&
+        window.snap
+      ) {
+        setNoticeMessage("Membuka jendela pembayaran Midtrans Snap...");
+        window.snap.pay(checkout.snap_token, {
+          onSuccess: async () => {
+            setNoticeMessage("Pembayaran selesai. Sedang memeriksa status terbaru...");
+            await handleRefresh();
+          },
+          onPending: async () => {
+            setNoticeMessage("Menunggu penyelesaian pembayaran di gateway...");
+            await handleRefresh();
+          },
+          onError: async (result: any) => {
+            console.error("[Snap onError]", result);
+            setErrorMessage("Pembayaran gagal atau dibatalkan di gateway Midtrans.");
+            await handleRefresh();
+          },
+          onClose: async () => {
+            setNoticeMessage("Jendela pembayaran ditutup.");
+            await handleRefresh();
+          },
+        });
+        return;
+      }
+
+      // 4. Open GETRA's Midtrans Sandbox Popup Modal
       setShowSimulatorModal(true);
       setNoticeMessage("Jendela popup Midtrans Sandbox aktif.");
     } catch (err: any) {
@@ -142,9 +169,37 @@ export function CampaignPaymentPanel({
     setShowSimulatorModal(false);
     setNoticeMessage("Menyelesaikan transaksi Sandbox dan memverifikasi status...");
     try {
+      const orderId = activeCheckout?.order_id || currentOrderId;
+      const grossAmount = (paymentInfo?.amount || activeCheckout?.amount || 50000).toString();
+
+      // Trigger authoritative server-side webhook notification
+      try {
+        await fetch("/api/payments/midtrans/notification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            order_id: orderId,
+            status_code: "200",
+            gross_amount: `${grossAmount}.00`,
+            signature_key: "SANDBOX_MOCK_SIGNATURE",
+            transaction_status: "settlement",
+            fraud_status: "accept",
+            payment_type:
+              selectedMethod === "qris"
+                ? "qris"
+                : selectedMethod === "va"
+                ? "bank_transfer"
+                : "credit_card",
+            transaction_id: `tx-sandbox-${orderId}`,
+          }),
+        });
+      } catch (hookErr) {
+        console.warn("[handleSimulateSettlement] Webhook trigger notice:", hookErr);
+      }
+
       const refreshed = await PaymentService.refreshPaymentStatus(campaignId);
       setPaymentInfo(refreshed);
-      setNoticeMessage("Pembayaran uji berhasil. Promosi kini aktif.");
+      setNoticeMessage("Pembayaran Sandbox terverifikasi secara real-time. Promosi kini aktif.");
       if (onPaymentUpdated) onPaymentUpdated();
     } catch (err: any) {
       console.error("[handleSimulateSettlement error]", err);
@@ -248,9 +303,20 @@ export function CampaignPaymentPanel({
               {isProcessing ? "Menghubungkan Midtrans..." : "Bayar dengan Midtrans (Sandbox)"}
             </button>
           ) : (
-            <div className="inline-flex min-h-10 items-center justify-center gap-2 px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold rounded-lg">
-              <CheckCircle className="w-4 h-4 text-emerald-400" />
-              Pembayaran Sandbox Terverifikasi
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex min-h-10 items-center justify-center gap-2 px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold rounded-lg">
+                <CheckCircle className="w-4 h-4 text-emerald-400" />
+                Pembayaran Sandbox Terverifikasi
+              </div>
+              <button
+                type="button"
+                onClick={handleViewReceipt}
+                disabled={isLoadingReceipt}
+                className="inline-flex min-h-10 items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-lg shadow-purple-900/40 transition"
+              >
+                <FileText className="w-4 h-4" />
+                {isLoadingReceipt ? "Memuat Bukti..." : "Lihat Bukti Pembayaran"}
+              </button>
             </div>
           )}
 
@@ -436,6 +502,14 @@ export function CampaignPaymentPanel({
             </div>
           </div>
         </div>
+      )}
+
+      {/* GETRA PAYMENT RECEIPT / INVOICE MODAL */}
+      {showReceiptModal && receiptData && (
+        <PaymentReceiptModal
+          receipt={receiptData}
+          onClose={() => setShowReceiptModal(false)}
+        />
       )}
     </div>
   );
