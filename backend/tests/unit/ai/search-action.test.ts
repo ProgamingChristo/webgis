@@ -49,6 +49,48 @@ describe("AI search actions", () => {
     });
   });
 
+  it("searches a short category and region phrase when the model provider is disabled", async () => {
+    mocks.generate.mockReset().mockResolvedValue(null);
+
+    const response = await new AiService("Bearer fixture").handleAskRequest({
+      question: "bakso di jakarta pusat",
+      active_experience: "GENERAL",
+      context: { enable_search: true },
+    });
+
+    expect(response).toMatchObject({
+      intent: "MERCHANT_SEARCH",
+      provider: "deterministic",
+      action: {
+        type: "APPLY_SEARCH_CRITERIA",
+        criteria: {
+          query: "bakso Jakarta Pusat",
+          max_budget: null,
+          near_user: false,
+          sort: "RELEVANCE",
+        },
+      },
+    });
+  });
+
+  it("keeps a grounded search usable when the configured model provider is unavailable", async () => {
+    mocks.generate.mockReset().mockRejectedValue(new Error("provider unavailable"));
+
+    const response = await new AiService("Bearer fixture").handleAskRequest({
+      question: "bakso di jakarta pusat",
+      active_experience: "GENERAL",
+      context: { enable_search: true },
+    });
+
+    expect(response).toMatchObject({
+      provider: "deterministic",
+      action: {
+        type: "APPLY_SEARCH_CRITERIA",
+        criteria: { query: "bakso Jakarta Pusat" },
+      },
+    });
+  });
+
   it("asks for location instead of applying near-me without GPS", async () => {
     mocks.generate.mockReset().mockResolvedValue({ source: "openai", data: { action: "SEARCH", criteria: { ...criteria, reference_text: null, near_user: true }, clarification: "" } });
     const response = await new AiService("Bearer fixture").handleAskRequest({ question: "Bakso dekat saya", active_experience: "GENERAL", context: { enable_search: true } });

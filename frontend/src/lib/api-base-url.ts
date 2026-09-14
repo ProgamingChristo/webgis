@@ -8,6 +8,8 @@ export function getGetraApiBaseUrl(): string {
 
   const configured =
     process.env.NEXT_PUBLIC_GETRA_API_URL ??
+    // Compatibility alias used by the shared GETRA routing deployment.
+    process.env.NEXT_PUBLIC_GETRA_API_BASE_URL ??
     // Deprecated compatibility alias. Remove after every deployment uses the canonical name.
     process.env.NEXT_PUBLIC_API_URL;
 

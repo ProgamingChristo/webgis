@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { generateStructured } from "@/lib/ai/provider";
 import type { AiAskRequest } from "./ai.schema";
+import { parseDeterministicCommuterText } from "@/src/features/commuter/commuter-intent";
 
 export const SearchCriteriaSchema = z.object({
   query: z.string().trim().min(1).max(120),
@@ -74,15 +75,93 @@ function ensureRegionInCriteriaQuery(
   return parsed.success ? parsed.data : criteria;
 }
 
-export async function extractSearchAction(request: AiAskRequest) {
-  const result = await generateStructured({
-    schema: ExtractionSchema, schemaName: "commuter_search_intent", maxTokens: 420,
-    instructions: `Extract GETRA merchant search intent. Return CHAT for explanations about a selected place, routes, greetings, or non-search questions. Return SEARCH for finding food/businesses and changes to active search criteria. For follow-ups use current search_context, changing only requested fields. For a new search reset prior constraints. query is only the food/business keyword, no budget/location/request filler. Expand common Indonesian food aliases when unambiguous. reference_text is an explicitly NAMED transit station/stop only, copied from the request; never invent a station or coordinates. For unnamed "dekat stasiun/halte" return CLARIFY asking for its name, rather than picking one. Set near_user for "dekat saya/sekitar sini". radius_meters is the requested radius, or 1000 for near_user/named transit without an explicit radius. If location is an administrative region retain its name in query for the canonical region parser. "Enak" is not evidence; remove taste adjectives from query. Do not return merchant data, taste claims, ratings, scores, distances, prices of merchants, or execution-success claims. If request is ambiguous or unsupported return CLARIFY with a brief Indonesian question. All nullable criteria fields must be explicit null. Default sort RELEVANCE, open_now false, near_user false.`,
-    input: JSON.stringify({ question: request.question, search_context: request.context?.search_context ?? null,
-      history: request.history?.slice(-4) ?? [] }),
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function extractDeterministicSearchAction(request: AiAskRequest) {
+  const normalized = normalizeRegionText(request.question);
+  if (!normalized) return null;
+
+  // Routing, explanations, and ordinary questions continue through the main
+  // AI orchestration path. This fallback only creates executable searches.
+  if (
+    /\b(rute|route|navigasi|berapa lama|jalan kaki dari|menuju)\b/u.test(normalized)
+    || /^(apa|apakah|bagaimana|kenapa|mengapa|siapa|kapan)\b/u.test(normalized)
+    || /^(halo|hai|hi|hello|pagi|siang|sore|malam)\b/u.test(normalized)
+  ) {
+    return null;
+  }
+
+  const region = findAdministrativeRegionMention(request.question);
+  const nearUser = /\b(dekat saya|sekitar saya|di sekitar saya|sekitar sini|dekat sini)\b/u.test(normalized);
+  const parsed = parseDeterministicCommuterText(request.question);
+  const hasConstraint = Boolean(
+    parsed.constraints.budget
+      || parsed.constraints.opening
+      || parsed.constraints.walking,
+  );
+  const hasSearchCue = /\b(cari|carikan|temukan|rekomendasikan|rekomendasi|mau makan|tempat makan)\b/u.test(normalized);
+
+  // A short noun phrase such as "bakso di jakarta pusat" is a valid search
+  // even without an explicit verb. Long conversational text remains untouched.
+  if (!hasSearchCue && !region && !nearUser && !hasConstraint) return null;
+
+  let keyword = parsed.keyword_text
+    .replace(/\b(?:tolong\s+)?(?:cari|carikan|temukan|rekomendasikan|rekomendasi)\b/giu, " ")
+    .replace(/\b(?:mau|ingin)\s+(?:makan|cari)\b/giu, " ")
+    .replace(/\b(?:dekat|di sekitar|sekitar)\s+(?:saya|aku|sini)\b/giu, " ");
+
+  if (region) {
+    for (const alias of [...region.aliases, region.canonical]) {
+      keyword = keyword.replace(new RegExp(`\\b${escapeRegExp(alias)}\\b`, "giu"), " ");
+    }
+  }
+
+  keyword = keyword
+    .replace(/\b(?:di|daerah|wilayah|area)\s*$/iu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!keyword) return null;
+
+  const criteria = SearchCriteriaSchema.parse({
+    query: region ? `${keyword} ${region.canonical}` : keyword,
+    max_budget: parsed.constraints.budget?.max_idr ?? null,
+    open_now: Boolean(parsed.constraints.opening?.open_now),
+    max_walking_minutes: parsed.constraints.walking?.max_minutes ?? null,
+    reference_text: null,
+    near_user: nearUser,
+    radius_meters: nearUser ? 1000 : null,
+    sort: nearUser ? "NEAREST" : "RELEVANCE",
   });
 
-  if (!result || result.data.action !== "SEARCH" || !result.data.criteria) {
+  return {
+    source: "deterministic" as const,
+    data: { action: "SEARCH" as const, criteria, clarification: "" },
+  };
+}
+
+export async function extractSearchAction(request: AiAskRequest) {
+  let result;
+  try {
+    result = await generateStructured({
+      schema: ExtractionSchema, schemaName: "commuter_search_intent", maxTokens: 420,
+      instructions: `Extract GETRA merchant search intent. Return CHAT for explanations about a selected place, routes, greetings, or non-search questions. Return SEARCH for finding food/businesses and changes to active search criteria. For follow-ups use current search_context, changing only requested fields. For a new search reset prior constraints. query is only the food/business keyword, no budget/location/request filler. Expand common Indonesian food aliases when unambiguous. reference_text is an explicitly NAMED transit station/stop only, copied from the request; never invent a station or coordinates. For unnamed "dekat stasiun/halte" return CLARIFY asking for its name, rather than picking one. Set near_user for "dekat saya/sekitar sini". radius_meters is the requested radius, or 1000 for near_user/named transit without an explicit radius. If location is an administrative region retain its name in query for the canonical region parser. "Enak" is not evidence; remove taste adjectives from query. Do not return merchant data, taste claims, ratings, scores, distances, prices of merchants, or execution-success claims. If request is ambiguous or unsupported return CLARIFY with a brief Indonesian question. All nullable criteria fields must be explicit null. Default sort RELEVANCE, open_now false, near_user false.`,
+      input: JSON.stringify({ question: request.question, search_context: request.context?.search_context ?? null,
+        history: request.history?.slice(-4) ?? [] }),
+    });
+  } catch (error) {
+    const deterministic = extractDeterministicSearchAction(request);
+    if (deterministic) return deterministic;
+    throw error;
+  }
+
+  if (!result) {
+    return extractDeterministicSearchAction(request);
+  }
+
+  if (result.data.action !== "SEARCH" || !result.data.criteria) {
     return result;
   }
 

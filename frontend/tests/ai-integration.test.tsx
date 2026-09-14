@@ -19,6 +19,7 @@ import { getGetraApiBaseUrl, getGetraApiUrl } from "@/src/lib/api-base-url";
 import { AiService } from "@/src/services/ai.service";
 
 const originalCanonicalUrl = process.env.NEXT_PUBLIC_GETRA_API_URL;
+const originalBaseUrl = process.env.NEXT_PUBLIC_GETRA_API_BASE_URL;
 const originalDeprecatedUrl = process.env.NEXT_PUBLIC_API_URL;
 
 function hookState(overrides: Record<string, unknown> = {}) {
@@ -37,6 +38,7 @@ describe("GETRA AI frontend integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.NEXT_PUBLIC_GETRA_API_URL = "https://backend.example.test///";
+    delete process.env.NEXT_PUBLIC_GETRA_API_BASE_URL;
     process.env.NEXT_PUBLIC_API_URL = "https://deprecated.example.test";
     mocks.hookState = hookState();
   });
@@ -44,6 +46,8 @@ describe("GETRA AI frontend integration", () => {
   afterEach(() => {
     if (originalCanonicalUrl === undefined) delete process.env.NEXT_PUBLIC_GETRA_API_URL;
     else process.env.NEXT_PUBLIC_GETRA_API_URL = originalCanonicalUrl;
+    if (originalBaseUrl === undefined) delete process.env.NEXT_PUBLIC_GETRA_API_BASE_URL;
+    else process.env.NEXT_PUBLIC_GETRA_API_BASE_URL = originalBaseUrl;
     if (originalDeprecatedUrl === undefined) delete process.env.NEXT_PUBLIC_API_URL;
     else process.env.NEXT_PUBLIC_API_URL = originalDeprecatedUrl;
   });
@@ -54,8 +58,16 @@ describe("GETRA AI frontend integration", () => {
     expect(getGetraApiUrl("api/ai/ask")).not.toContain("//api/ai/ask");
   });
 
+  it("accepts NEXT_PUBLIC_GETRA_API_BASE_URL as a compatibility alias", () => {
+    delete process.env.NEXT_PUBLIC_GETRA_API_URL;
+    process.env.NEXT_PUBLIC_GETRA_API_BASE_URL = "https://getra-routing-api.example.test/";
+
+    expect(getGetraApiBaseUrl()).toBe("https://getra-routing-api.example.test");
+  });
+
   it("fails clearly when neither frontend backend-URL variable is configured", () => {
     delete process.env.NEXT_PUBLIC_GETRA_API_URL;
+    delete process.env.NEXT_PUBLIC_GETRA_API_BASE_URL;
     delete process.env.NEXT_PUBLIC_API_URL;
     expect(() => getGetraApiBaseUrl()).toThrow("NEXT_PUBLIC_GETRA_API_URL belum dikonfigurasi");
   });

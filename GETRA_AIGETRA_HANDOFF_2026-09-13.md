@@ -244,3 +244,87 @@ git diff --check                   PASS
 - Jangan mengarang merchant, koordinat, harga, jam, jarak, waktu, route, accessibility, atau Community evidence.
 - Jangan mengekspos key server-side atau commit `.env.local`.
 - Jangan menyimpulkan proxy 502 sebagai kegagalan UI sebelum backend eksternal pulih.
+
+## 11. Update runtime, login, dan OpenAI — 2026-09-14
+
+Kondisi Git saat patch ini dikerjakan:
+
+```text
+Branch aktif: Getra_Deploy
+HEAD: 85e1ad6
+Status awal: clean
+```
+
+Tidak ada checkout, pull, push, atau pengambilan source dari `finalmerge`.
+
+### Login dan API frontend
+
+- `frontend/.env.local` memuat `NEXT_PUBLIC_GETRA_API_BASE_URL=https://getra-routing-api.tail0ed517.ts.net`.
+- Resolver frontend kini menerima `NEXT_PUBLIC_GETRA_API_BASE_URL` sebagai alias kompatibel.
+- Arsitektur runtime lokal tetap memakai same-origin BFF: browser ke `http://localhost:3000`, lalu `GETRA_BACKEND_INTERNAL_URL` ke backend lokal `8080`.
+- Empat variabel proxy frontend juga disalin ke `.env.local` root karena launcher `npm run dev` mewariskan env root ke kedua workspace.
+- Frontend lama direstart agar `.env.local` dimuat ulang.
+- Login admin development melalui frontend proxy berhasil dengan HTTP 200.
+
+### Provider ChatGPT/OpenAI
+
+- Provider aktif: `AI_PROVIDER=openai`.
+- API key hanya berada pada env server-side dan tidak dipindahkan ke frontend.
+- Ditemukan dua key lokal berbeda: key di env root kehabisan kredit (HTTP 429), sedangkan key di `backend/.env.local` valid (HTTP 200).
+- Env root diselaraskan ke konfigurasi OpenAI backend yang valid agar launcher `npm run dev` tidak menimpa key backend.
+- Setelah restart, `/api/ai/ask` mengembalikan `provider: openai` dan aksi pencarian terstruktur.
+
+### Perbaikan intent AI
+
+Kalimat singkat seperti `bakso di jakarta pusat` sebelumnya dapat jatuh ke jawaban bantuan umum ketika provider tidak tersedia. Sekarang extractor:
+
+- mengenali kategori + wilayah tanpa wajib kata `cari`;
+- mempertahankan Jakarta Pusat pada query pencarian;
+- menghasilkan `APPLY_SEARCH_CRITERIA`;
+- memakai parser deterministik sebagai fallback aman bila provider eksternal gagal;
+- tetap menyerahkan pertanyaan rute, percakapan, dan pertanyaan umum ke orkestrasi AI utama.
+
+### Verifikasi Playwright CLI
+
+Playwright 1.63.0 dan Chromium dijalankan secara sementara, tanpa menambah dependency repository.
+
+```text
+Login /login -> /app            PASS
+Tanya GETRA terbuka             PASS
+Kirim "bakso di jakarta pusat" PASS
+APPLY_SEARCH_CRITERIA berjalan  PASS
+Query UI: bakso Jakarta Pusat   PASS
+Hasil dan marker tampil         PASS
+Browser console/page errors     0
+```
+
+Screenshot verifikasi sementara:
+
+```text
+%TEMP%\getra-playwright-runtime\getra-login-ai-pass.png
+```
+
+### Validasi patch
+
+```text
+Backend AI tests          PASS, 13 tests
+Frontend tests            PASS, 71 files / 438 tests
+Backend typecheck         PASS
+Frontend typecheck        PASS
+git diff --check          PASS
+OpenAI Responses API      PASS, HTTP 200
+Playwright browser test   PASS, 1 test
+```
+
+File source yang berubah:
+
+- `backend/src/modules/ai/search-action.ts`
+- `backend/tests/unit/ai/search-action.test.ts`
+- `frontend/src/lib/api-base-url.ts`
+- `frontend/tests/ai-integration.test.tsx`
+
+File env lokal yang diselaraskan tetap diabaikan Git dan tidak boleh di-commit:
+
+- `.env.local`
+
+`frontend/.env.local` telah divalidasi dan sudah memuat URL yang diminta.
