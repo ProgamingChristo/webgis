@@ -57,8 +57,9 @@ export function PlaceDetailDrawer({ merchant, onRoute }: { merchant: Merchant; o
   const price = typeof merchant.observedPriceAmount === "number" && Number.isFinite(merchant.observedPriceAmount) && merchant.observedPriceAmount > 0
     ? merchant.observedPriceAmount
     : null;
+  const priceDisplay = price !== null ? formatPrice(price) : merchant.priceLabel ?? null;
   const hasMetrics = distance !== null || walkingMinutes !== null || price !== null;
-  const hasHoursOrPrice = Boolean(merchant.openingHoursLabel) || price !== null;
+  const hasHoursOrPrice = Boolean(merchant.openingHoursLabel) || priceDisplay !== null;
   const hasAccessEvidence = Boolean(merchant.referenceDistance) || routable;
   const instagram = merchant.socialMedia?.instagram;
 
@@ -134,7 +135,7 @@ export function PlaceDetailDrawer({ merchant, onRoute }: { merchant: Merchant; o
         <h3><Clock3 size={15} aria-hidden="true" />Jam &amp; Harga</h3>
         <dl className="place-detail__rows">
           {merchant.openingHoursLabel ? <div><dt>Jam operasional</dt><dd>{merchant.openingHoursLabel}</dd></div> : null}
-          {price !== null ? <div><dt>Kisaran harga</dt><dd>{formatPrice(price)}</dd></div> : null}
+          {priceDisplay ? <div><dt>{price !== null ? "Harga tercatat" : "Kisaran harga"}</dt><dd>{priceDisplay}</dd></div> : null}
         </dl>
       </section> : null}
 

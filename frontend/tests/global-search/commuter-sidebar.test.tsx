@@ -17,9 +17,9 @@ const merchant: Merchant = {
 };
 
 describe("commuter merchant evidence", () => {
-  it("does not treat legacy estimates, price classes or an unknown opening status as facts", () => {
+  it("shows an explicit merchant price category without treating legacy route estimates as facts", () => {
     const html = renderToStaticMarkup(<MerchantResultRow merchant={merchant} selected={false} onSelect={vi.fn()} budget={15000} />);
-    expect(merchantPrice(merchant)).toBe("Harga belum tersedia");
+    expect(merchantPrice(merchant)).toBe("Kisaran harga Hemat");
     expect(merchantDistance(merchant)).toBeNull();
     expect(html).not.toContain("Buka sekarang");
     expect(html).not.toContain("Masuk anggaran");
@@ -39,8 +39,9 @@ describe("commuter merchant evidence", () => {
   });
   it("rejects non-finite and zero numeric price evidence", () => {
     for (const observedPriceAmount of [NaN, Infinity, -1, 0]) {
-      expect(merchantPrice({ ...merchant, observedPriceAmount })).toBe("Harga belum tersedia");
+      expect(merchantPrice({ ...merchant, observedPriceAmount })).toBe("Kisaran harga Hemat");
     }
+    expect(merchantPrice({ ...merchant, priceLabel: undefined })).toBe("Harga belum tersedia");
   });
   it("keeps sponsored disclosure separate from merchant evidence", () => {
     const html = renderToStaticMarkup(<MerchantResultRow merchant={merchant} selected={false} sponsored onSelect={vi.fn()} />);
@@ -85,6 +86,9 @@ describe("commuter merchant evidence", () => {
     expect(html).toContain("Belum ada catatan komunitas untuk tempat ini");
     expect(html).not.toContain("Jam buka belum tersedia");
     expect(html).not.toContain("Harga belum tersedia");
+    expect(html).toContain("Jam &amp; Harga");
+    expect(html).toContain("Kisaran harga");
+    expect(html).toContain("Hemat");
     expect(html).not.toContain("Data GETRA");
     expect(html).not.toContain("Koordinat");
     expect(html).not.toContain("Menu utama");

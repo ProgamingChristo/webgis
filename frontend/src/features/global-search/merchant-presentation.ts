@@ -3,7 +3,8 @@ import type { Merchant } from "@/types/getra";
 export function merchantPrice(merchant: Merchant) {
   const amount = merchant.observedPriceAmount;
   return typeof amount === "number" && Number.isFinite(amount) && amount > 0
-    ? `Harga tercatat Rp${amount.toLocaleString("id-ID")}` : "Harga belum tersedia";
+    ? `Harga tercatat Rp${amount.toLocaleString("id-ID")}`
+    : merchant.priceLabel ? `Kisaran harga ${merchant.priceLabel}` : "Harga belum tersedia";
 }
 
 export function merchantDistance(merchant: Merchant) {

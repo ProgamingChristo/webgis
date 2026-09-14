@@ -12,7 +12,7 @@ export interface CanonicalMerchantMapItem {
   walkingMinutes: number | null;
   distanceMeters: number | null;
   accessibilityScore: number;
-  priceLabel: "Hemat" | "Sedang" | "Premium";
+  priceLabel?: "Hemat" | "Sedang" | "Premium";
   openNow: boolean;
   source: string;
   sources: Array<"PREMIUM" | "MENU_GO" | "OWNER_SUBMITTED">;
@@ -287,7 +287,7 @@ export function mapCanonicalMerchantRow(
       String(left.observed_at ?? ""),
     ))[0];
   const observed = asObject(latestObservation?.normalized_properties);
-  const openingStatus = evaluateOpeningHours(merchant.opening_hours);
+  const scheduledOpeningStatus = evaluateOpeningHours(merchant.opening_hours);
   const observedPriceAmount = parseObservedPrice(observed.harga_rata_rata);
   const isOwnerSubmitted = ownerSubmission != null;
   const sources = [
@@ -301,6 +301,21 @@ export function mapCanonicalMerchantRow(
   // Requiring the original approval timestamps made later owner edits invisible.
   const hasAuthoritativeOwnerProfile = merchant.publish_status === "PUBLISHED" && Boolean(merchant.owner_id);
   const ownerMetadata = hasAuthoritativeOwnerProfile ? metadata : {};
+  const legacyOpenNow = hasAuthoritativeOwnerProfile
+    ? optionalBoolean(asObject(merchant.opening_hours).open_now)
+    : undefined;
+  const openingStatus = scheduledOpeningStatus !== "UNKNOWN"
+    ? scheduledOpeningStatus
+    : legacyOpenNow === undefined
+      ? "UNKNOWN"
+      : legacyOpenNow ? "OPEN" : "CLOSED";
+  const hoursLabel = openingHoursLabel(merchant.opening_hours) ?? (
+    legacyOpenNow === undefined
+      ? undefined
+      : legacyOpenNow
+        ? "Buka sekarang · jadwal rinci belum diatur"
+        : "Tutup sekarang · jadwal rinci belum diatur"
+  );
   const ownerMedia = asObject(ownerMetadata.public_media);
   const ownerPhoto = safePublicImage(ownerMedia.storefront_url);
   const ownerMenuItems = readPublicMenuItems(ownerMetadata.menu_items);
@@ -327,7 +342,7 @@ export function mapCanonicalMerchantRow(
     openNow: openingStatus === "OPEN",
     openStatusKnown: openingStatus !== "UNKNOWN",
     openingStatus,
-    openingHoursLabel: openingHoursLabel(merchant.opening_hours),
+    openingHoursLabel: hoursLabel,
     searchRelevance: Number(searchRow?.relevance_score ?? 0),
     source: sources.join(" + "),
     sources,
@@ -408,6 +423,10 @@ function optionalString(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
+function optionalBoolean(value: unknown) {
+  return typeof value === "boolean" ? value : undefined;
+}
+
 function readStringList(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) return undefined;
   const items = value.map(optionalString).filter((item): item is string => item !== undefined);
@@ -441,10 +460,11 @@ function readPublicMenuItems(value: unknown): PublicMenuItem[] {
   });
 }
 
-function toPriceLabel(value: string | null) {
+function toPriceLabel(value: string | null | undefined) {
   if (value?.toLowerCase() === "hemat") return "Hemat" as const;
+  if (value?.toLowerCase() === "sedang") return "Sedang" as const;
   if (value?.toLowerCase() === "premium") return "Premium" as const;
-  return "Sedang" as const;
+  return undefined;
 }
 
 function safePublicImage(value: unknown): string | undefined {

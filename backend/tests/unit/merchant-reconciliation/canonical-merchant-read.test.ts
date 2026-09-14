@@ -100,6 +100,28 @@ describe("canonical merchant attribute resolution", () => {
     expect(result?.observedPrice).toBeUndefined();
   });
 
+  it("uses owned legacy open-now evidence and a real price level in public details", () => {
+    const result = mapCanonicalMerchantRow({
+      ...merchant,
+      owner_id: "owner-1",
+      publish_status: "PUBLISHED",
+      price_level: "sedang",
+      opening_hours: { open_now: true },
+    }, [], new Map());
+
+    expect(result).toMatchObject({
+      openingStatus: "OPEN",
+      openNow: true,
+      openingHoursLabel: "Buka sekarang · jadwal rinci belum diatur",
+      priceLabel: "Sedang",
+    });
+  });
+
+  it("does not fabricate a price category when price level is empty", () => {
+    const result = mapCanonicalMerchantRow({ ...merchant, price_level: null }, [], new Map());
+    expect(result?.priceLabel).toBeUndefined();
+  });
+
   it("publishes the latest verified owner profile details and menu catalog", () => {
     const result = mapCanonicalMerchantRow({
       ...merchant,
