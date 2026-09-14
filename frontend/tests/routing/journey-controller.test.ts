@@ -135,6 +135,24 @@ describe("active journey lifecycle (controlled provider fixtures, not live accep
     expect(controller.getSnapshot().route?.distance_meters).toBe(600);
     expect(controller.getSnapshot().position).toMatchObject(p2);
   });
+  it("does not starve a slow route request with frequent stationary GPS fixes", async () => {
+    const initialRoute = deferred<RoutingResult>();
+    route.mockImplementationOnce(() => initialRoute.promise);
+    await controller.start();
+    fix();
+    for (let i = 0; i < 20; i++) {
+      await vi.advanceTimersByTimeAsync(1_000);
+      fix(p1, 5, Date.now());
+    }
+    expect(route).toHaveBeenCalledTimes(1);
+    expect(route.mock.calls[0][2].aborted).toBe(false);
+    initialRoute.resolve(payload());
+    await flush();
+    expect(controller.getSnapshot()).toMatchObject({
+      state: "ACTIVE",
+      route: { distance_meters: 600 },
+    });
+  });
   it.each(["walking", "motorcycle", "car"] as const)("preserves %s and routes immediate mode changes from latest GPS", async (mode) => {
     await controller.start(); fix(); await flush(); fix(p2);
     controller.configure({ destination, mode: mode === "walking" ? "car" : "walking" });

@@ -58,6 +58,7 @@ export class JourneyController {
   private lastProgressOrigin: JourneyFix | null = null;
   private lastRequestAt = -Infinity;
   private pending = false;
+  private pendingRouteOrigin: JourneyFix | null = null;
   private locationValid = false;
   private needsProgress = false;
   private recentFixes: JourneyFix[] = [];
@@ -172,7 +173,18 @@ export class JourneyController {
     const recovered = !this.locationValid || this.snapshot.gpsState !== "GPS_GOOD";
     this.locationValid = true;
     this.emit({ position: acceptedFix, gpsState: "GPS_GOOD", gpsAccuracyMeters: acceptedFix.accuracyMeters, routeStale: false, error: null });
-    if (!this.activeRoute) this.requestRoute(true);
+    if (!this.activeRoute) {
+      const requestOrigin = this.pendingRouteOrigin;
+      const uncertainty = requestOrigin
+        ? Math.max(acceptedFix.accuracyMeters, requestOrigin.accuracyMeters)
+        : 0;
+      const materiallyMoved = Boolean(requestOrigin &&
+        proximityMeters(acceptedFix, requestOrigin) >=
+          policy.progressMovementMeters[this.config.mode] + uncertainty);
+      // Frequent stationary GPS fixes must not abort a slower route request.
+      // A genuinely newer origin can still supersede the in-flight request.
+      if (!this.pending || materiallyMoved) this.requestRoute(true);
+    }
     else if (recovered) this.requestProgress(false);
     else this.tick();
   }
@@ -224,6 +236,7 @@ export class JourneyController {
     const controller = new AbortController();
     this.controller = controller;
     this.pending = true;
+    this.pendingRouteOrigin = origin;
     this.lastRequestAt = this.now();
     const rerouting = this.activeRoute !== null;
     this.emit({ ...(rerouting ? {} : { route: null, updatedAt: null }), error: null, routeStale: false, state: rerouting ? "REROUTING" : "STARTING" });
@@ -236,6 +249,7 @@ export class JourneyController {
       if (generation !== this.generation || controller.signal.aborted) return;
       const route = parseRoutingResult(value, mode);
       this.pending = false;
+      this.pendingRouteOrigin = null;
       if (route.route_status !== "ROUTABLE") {
         this.handleRouteFailure(previousRoute, route.reason_code === "ROUTING_TIMEOUT"
           ? "Layanan rute tidak merespons tepat waktu. Coba lagi."
@@ -258,6 +272,7 @@ export class JourneyController {
     }).catch((error: unknown) => {
       if (generation !== this.generation || controller.signal.aborted) return;
       this.pending = false;
+      this.pendingRouteOrigin = null;
       if (error instanceof RoutingClientError && error.kind === "AUTH") { this.sessionLost(); return; }
       this.handleRouteFailure(previousRoute, error instanceof RoutingClientError && error.kind === "TIMEOUT"
         ? "Layanan rute tidak merespons tepat waktu. Coba lagi." : "Layanan rute sementara tidak tersedia.");
@@ -336,7 +351,13 @@ export class JourneyController {
     const destination = this.config.destination!;
     return JSON.stringify([destination.latitude, destination.longitude, this.config.mode, this.config.preference ?? "FASTEST"]);
   }
-  private cancelRequest() { this.generation += 1; this.controller?.abort(); this.controller = null; this.pending = false; }
+  private cancelRequest() {
+    this.generation += 1;
+    this.controller?.abort();
+    this.controller = null;
+    this.pending = false;
+    this.pendingRouteOrigin = null;
+  }
   private cleanup() {
     this.needsProgress = false; this.locationValid = false; this.recentFixes = []; this.latestObservedFix = null;
     this.lastObservedTimestamp = -Infinity; this.poorAccuracySamples = 0; this.consecutiveOffRouteSamples = 0;

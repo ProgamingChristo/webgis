@@ -149,6 +149,7 @@ function routeSummary(response) {
 
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 const routingResponses = [];
+const progressResponses = [];
 
 try {
   const user = approvedAccountFixture("USER");
@@ -159,14 +160,18 @@ try {
   attachErrorCollection(page);
   page.on("response", async (response) => {
     const url = new URL(response.url());
-    if (url.pathname !== "/api/routing" || response.request().method() !== "POST") return;
+    if (response.request().method() !== "POST" ||
+      !["/api/routing", "/api/routing/progress"].includes(url.pathname)) return;
     try {
       const body = await response.json();
-      if (body?.data) routingResponses.push({
+      if (!body?.data) return;
+      const entry = {
         data: body.data,
         request: response.request().postDataJSON(),
         status: response.status(),
-      });
+      };
+      if (url.pathname === "/api/routing/progress") progressResponses.push(entry);
+      else routingResponses.push(entry);
     } catch {
       // An aborted superseded request may have no readable body.
     }
@@ -340,16 +345,16 @@ try {
   await page.screenshot({ path: resolve(output, "06_active_temporary_degradation.png") });
   evidence.screenshots.push("06_active_temporary_degradation.png");
 
-  const beforeRecovery = routingResponses.length;
+  const beforeRecovery = progressResponses.length;
   await setGps(page, moved, 20);
-  await waitUntil(() => routingResponses.length > beforeRecovery, 25_000);
+  await waitUntil(() => progressResponses.length > beforeRecovery, 25_000);
   await page.waitForFunction(() => {
     const region = document.querySelector("[data-gps-state]");
     return region?.getAttribute("data-gps-state") === "GPS_GOOD" && region?.getAttribute("data-journey-state") === "ACTIVE";
   });
-  const recoveryRequest = routingResponses.at(-1).request;
-  assert(Math.abs(recoveryRequest.origin.latitude - moved.latitude) < 0.000001);
-  assert(Math.abs(recoveryRequest.origin.longitude - moved.longitude) < 0.000001);
+  const recoveryRequest = progressResponses.at(-1).request;
+  assert(Math.abs(recoveryRequest.current_position.latitude - moved.latitude) < 0.000001);
+  assert(Math.abs(recoveryRequest.current_position.longitude - moved.longitude) < 0.000001);
   evidence.checks.automaticGpsRecovery = "PASS";
   evidence.checks.recoveryUsesAcceptedRealFix = "PASS";
 
@@ -388,12 +393,12 @@ try {
   await setCoordinate(mobilePlanner, "Asal", a);
   await setCoordinate(mobilePlanner, "Tujuan", b);
   await mobilePage.waitForFunction(() => document.querySelector("[data-routing-state]")?.dataset.routingState === "ROUTABLE");
-  await mobilePlanner.getByRole("button", { name: "Motor", exact: true }).click();
-  await mobilePage.waitForFunction(() => document.querySelector("[data-routing-state]")?.dataset.routingState === "ROUTABLE");
   const openSheet = mobilePage.locator("button[aria-controls='route-choice-sheet']");
   await openSheet.click();
   const mobileSheet = mobilePage.locator("#route-choice-sheet");
   await mobileSheet.waitFor();
+  await mobileSheet.getByRole("button", { name: "Motor", exact: true }).click();
+  await mobilePage.waitForFunction(() => document.querySelector("[data-routing-state]")?.dataset.routingState === "ROUTABLE");
   assert(await mobileSheet.getByRole("button", { name: "Mulai Perjalanan", exact: true }).isVisible());
   await mobilePage.screenshot({ path: resolve(output, "07_mobile_route_sheet.png") });
   evidence.screenshots.push("07_mobile_route_sheet.png");
