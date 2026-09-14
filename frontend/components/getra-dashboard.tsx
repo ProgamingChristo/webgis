@@ -1781,7 +1781,11 @@ function GeneralGetraDashboard() {
     preference: routePreference,
   });
   const { clearRoute } = preview;
-  const route = journeyOpen ? journey.route : preview.route;
+  // Preserve the already-rendered preview while GPS/auth starts. Clearing it
+  // synchronously made the navigation workspace look like an empty map before
+  // the first position and recalculated route arrived.
+  const route = journeyOpen ? journey.route ?? preview.route : preview.route;
+  const navigationMapActive = journey.engaged && Boolean(journey.position);
   const routingState = journeyOpen ? route ? "ROUTABLE" : journey.state === "ERROR" ? "ERROR" : "LOADING" : preview.state;
   const routingError = journeyOpen ? journey.error : preview.error;
   const authRequired = journeyOpen ? journey.authRequired : preview.authRequired;
@@ -4360,27 +4364,27 @@ function GeneralGetraDashboard() {
             </div>
           ) : null}
           <GetraMap
-            transportNodes={journey.engaged ? [] : canonical.data.transportNodes}
+            transportNodes={navigationMapActive ? [] : canonical.data.transportNodes}
             datasetKey={datasetId}
             focusBounds={searchFocusBounds}
             focusKey={searchFocusKey}
-            merchants={journey.engaged
+            merchants={navigationMapActive
               ? journey.nearbyUmkmVisible
                 ? journeyNearbyMerchants.filter((merchant) => merchant.id !== routeDestination?.id)
                 : []
               : primaryMode === "merchant" ? mapMerchants : []}
-            selectedId={journey.engaged ? null : primaryMode === "merchant" ? selectedId : null}
-            propertyCandidates={journey.engaged ? [] : primaryMode === "business-space" ? propertyCandidates : []}
-            selectedPropertyId={journey.engaged ? null : primaryMode === "business-space" ? selectedPropertyId : null}
-            accessibilityEvidence={journey.engaged ? [] : primaryMode === "accessibility" ? accessibilityEvidence : []}
-            selectedAccessibilityEvidenceId={journey.engaged ? null : primaryMode === "accessibility" ? selectedAccessibilityEvidenceId : null}
+            selectedId={navigationMapActive ? null : primaryMode === "merchant" ? selectedId : null}
+            propertyCandidates={navigationMapActive ? [] : primaryMode === "business-space" ? propertyCandidates : []}
+            selectedPropertyId={navigationMapActive ? null : primaryMode === "business-space" ? selectedPropertyId : null}
+            accessibilityEvidence={navigationMapActive ? [] : primaryMode === "accessibility" ? accessibilityEvidence : []}
+            selectedAccessibilityEvidenceId={navigationMapActive ? null : primaryMode === "accessibility" ? selectedAccessibilityEvidenceId : null}
             userLocation={journeyOpen ? journeyPosition : userLocation}
-            journeyActive={journey.engaged}
+            journeyActive={journeyOpen}
             journeyFollowing={journey.following}
             journeyFocusKey={journey.focusKey}
             journeyHeadingDegrees={journey.position?.headingDegrees ?? null}
             journeySpeedMps={journey.position?.speedMps ?? null}
-            navigationLayerState={journey.engaged
+            navigationLayerState={navigationMapActive
               ? journey.nearbyUmkmVisible ? "ACTIVE_NAVIGATION_WITH_UMKM" : "ACTIVE_NAVIGATION"
               : "EXPLORATION"}
             onJourneyCameraOverride={journey.controller.suspendFollow}
@@ -4392,7 +4396,7 @@ function GeneralGetraDashboard() {
             onClearSelection={handleClearSelection}
             onViewportChange={handleViewportChange}
             contextualLayerData={contextualLayerData}
-            contextualLayerVisibility={journey.engaged
+            contextualLayerVisibility={navigationMapActive
               ? journey.nearbyUmkmVisible
                 ? ACTIVE_NAVIGATION_WITH_UMKM_LAYER_VISIBILITY
                 : ACTIVE_NAVIGATION_LAYER_VISIBILITY
@@ -4410,17 +4414,17 @@ function GeneralGetraDashboard() {
               const candidate = route?.route_candidates?.find((item) => item.route_id === routeId);
               if (candidate && !journeyOpen) preview.selectCandidate(candidate);
             }}
-            serviceAreaGeometry={journey.engaged ? null : serviceArea?.geometry ?? null}
+            serviceAreaGeometry={navigationMapActive ? null : serviceArea?.geometry ?? null}
             importBoundaries={
               visibleImportBoundaries
             }
             administrativeBoundaries={visibleAdministrativeBoundaries}
-            sponsoredPlacements={journey.engaged ? [] : viewMode === "fair-discovery" ? fairDiscoveryResult?.sponsored : eligibleSponsoredPlacements}
+            sponsoredPlacements={navigationMapActive ? [] : viewMode === "fair-discovery" ? fairDiscoveryResult?.sponsored : eligibleSponsoredPlacements}
             onSelectSponsored={(placement) => {
               const merchant = merchants.find((item) => item.id === placement.merchant_id);
               handleSelect(merchant ?? discoveryMerchant(placement));
             }}
-            analyticsCollection={journey.engaged ? null : analyticsCollection}
+            analyticsCollection={navigationMapActive ? null : analyticsCollection}
             analyticsMode={analyticsMode}
             onSelectAnalyticsRegion={setSelectedAnalyticsRegionId}
             mapPickMode={mapPickMode}

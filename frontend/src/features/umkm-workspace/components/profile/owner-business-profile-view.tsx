@@ -26,7 +26,8 @@ import { ProfileLocationCard } from "./profile-location-card";
 import { ProfileFacilitiesCard } from "./profile-facilities-card";
 import { ProfileLegalityCard } from "./profile-legality-card";
 import {
-  getDefaultOperatingHours,
+  hasCompleteOperatingHours,
+  normalizeOperatingHours,
   type WeekSchedule,
 } from "../../utils/profile-hours-helper";
 
@@ -76,9 +77,7 @@ export function OwnerBusinessProfileView({
         ""
     );
     setInstagram(data.metadata.social_media?.instagram || "");
-    setOperatingHours(
-      (data.opening_hours as WeekSchedule) || getDefaultOperatingHours()
-    );
+    setOperatingHours(normalizeOperatingHours(data.opening_hours));
     setFacilities(data.metadata.facilities || ["Tempat Duduk", "Take Away"]);
     setMenuItems(data.metadata.menu_items || []);
     setCoverPhotoUrl(
@@ -138,7 +137,8 @@ export function OwnerBusinessProfileView({
           "") ||
       instagram !== (profile.metadata.social_media?.instagram || "") ||
       JSON.stringify(operatingHours) !==
-        JSON.stringify(profile.opening_hours || getDefaultOperatingHours()) ||
+        JSON.stringify(normalizeOperatingHours(profile.opening_hours)) ||
+      !hasCompleteOperatingHours(profile.opening_hours) ||
       JSON.stringify(facilities) !==
         JSON.stringify(profile.metadata.facilities || ["Tempat Duduk", "Take Away"]) ||
       JSON.stringify(menuItems) !==
@@ -156,9 +156,7 @@ export function OwnerBusinessProfileView({
         ""
     );
     setInstagram(profile.metadata.social_media?.instagram || "");
-    setOperatingHours(
-      (profile.opening_hours as WeekSchedule) || getDefaultOperatingHours()
-    );
+    setOperatingHours(normalizeOperatingHours(profile.opening_hours));
     setFacilities(profile.metadata.facilities || ["Tempat Duduk", "Take Away"]);
     setMenuItems(profile.metadata.menu_items || []);
     setCoverPhotoUrl(profile.metadata.public_media?.storefront_url || null);
@@ -215,12 +213,13 @@ export function OwnerBusinessProfileView({
         },
       };
 
-      const updated = await OwnerMerchantProfileService.updateProfile(
+      await OwnerMerchantProfileService.updateProfile(
         profile.id,
         payload
       );
+      const updated = await OwnerMerchantProfileService.getProfile(profile.id);
 
-      setProfile(updated);
+      applyProfileData(updated);
       setSaveSuccess(true);
       onProfileUpdated?.();
 

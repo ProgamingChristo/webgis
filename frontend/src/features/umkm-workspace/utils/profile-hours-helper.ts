@@ -16,6 +16,8 @@ const DAY_KEYS = [
   "saturday",
 ] as const;
 
+const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
 export const DAY_LABELS_ID: Record<string, string> = {
   monday: "Senin",
   tuesday: "Selasa",
@@ -36,6 +38,44 @@ export function getDefaultOperatingHours(): WeekSchedule {
     saturday: { is_closed: false, opens_at: "08:00", closes_at: "21:00" },
     sunday: { is_closed: true, opens_at: null, closes_at: null },
   };
+}
+
+function isDaySchedule(value: unknown): value is DaySchedule {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const day = value as DaySchedule;
+  if (day.is_closed === true) return true;
+  return typeof day.opens_at === "string" && TIME_PATTERN.test(day.opens_at) &&
+    typeof day.closes_at === "string" && TIME_PATTERN.test(day.closes_at);
+}
+
+/**
+ * Materialises all seven days before the profile is edited or persisted.
+ * Older merchant rows may only contain `{ open_now: true }`; the editor used
+ * to render fallback values without putting them in state, so Save could not
+ * publish the hours that the owner saw on screen.
+ */
+export function normalizeOperatingHours(value: unknown): WeekSchedule {
+  const defaults = getDefaultOperatingHours();
+  const source = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+
+  return Object.fromEntries(DAY_KEYS.map((dayKey) => {
+    const configured = source[dayKey];
+    return [dayKey, isDaySchedule(configured)
+      ? {
+          is_closed: Boolean(configured.is_closed),
+          opens_at: configured.is_closed ? null : configured.opens_at,
+          closes_at: configured.is_closed ? null : configured.closes_at,
+        }
+      : { ...defaults[dayKey] }];
+  }));
+}
+
+export function hasCompleteOperatingHours(value: unknown): boolean {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const source = value as Record<string, unknown>;
+  return DAY_KEYS.every((dayKey) => isDaySchedule(source[dayKey]));
 }
 
 export function evaluateStoreStatus(hours: WeekSchedule | null | undefined): {

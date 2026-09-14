@@ -1200,6 +1200,31 @@ export function GetraMap({
   }, [markUserCameraControl, markUserCameraControlFromEvent]);
 
   /*
+   * Starting navigation changes the dashboard from a multi-column grid to a
+   * full-width map. ResizeObserver can fire before that layout settles, which
+   * leaves MapLibre's canvas at its old size (or visually blank). Re-measure
+   * on the next frames and once more after the CSS layout transition.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    let frame = 0;
+    const resizeMap = () => {
+      if (!mapRef.current) return;
+      map.resize();
+      map.triggerRepaint();
+    };
+    frame = window.requestAnimationFrame(resizeMap);
+    const settledTimer = window.setTimeout(resizeMap, 250);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(settledTimer);
+    };
+  }, [journeyActive]);
+
+  /*
    * Basemap switcher
    */
   useEffect(() => {
@@ -2011,11 +2036,11 @@ export function GetraMap({
       existing.getElement().classList.add("marker--selected");
     }
     const popup = new Popup({
-      offset: 24,
+      offset: 18,
       closeButton: false,
       closeOnClick: false,
       focusAfterOpen: false,
-      maxWidth: "260px",
+      maxWidth: "224px",
       className: "commuter-merchant-popup",
     })
       .setLngLat([merchant.longitude, merchant.latitude])
