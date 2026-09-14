@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { AdminMissionSyncService } from "@/src/integrations/mapid/mission-admin.service";
+import { MapidError } from "@/src/integrations/mapid/mapid.errors";
 import { MapidMissionRepository } from "@/src/integrations/mapid/mission.repository";
 import { mapidMissionSourceSchema } from "@/src/integrations/mapid/mission.schema";
 import { MapidMissionSyncService } from "@/src/integrations/mapid/mission.service";

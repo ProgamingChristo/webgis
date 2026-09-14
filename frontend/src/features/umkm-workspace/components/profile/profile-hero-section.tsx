@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import {
   BadgeCheck,
@@ -43,16 +43,8 @@ export function ProfileHeroSection({
 }: ProfileHeroSectionProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
-  const [imgError, setImgError] = useState(false);
-  const [logoError, setLogoError] = useState(false);
-
-  useEffect(() => {
-    setImgError(false);
-  }, [coverPhotoUrl]);
-
-  useEffect(() => {
-    setLogoError(false);
-  }, [logoPhotoUrl]);
+  const [failedCoverUrl, setFailedCoverUrl] = useState<string | null>(null);
+  const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(null);
 
   const intelData = intelligence.data;
   const storeStatus = evaluateStoreStatus(profile.opening_hours);
@@ -92,7 +84,6 @@ export function ProfileHeroSection({
     const file = e.target.files?.[0];
     if (file) {
       await onUploadCoverPhoto(file);
-      setImgError(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -101,7 +92,7 @@ export function ProfileHeroSection({
     <div className="overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-sm transition-all">
       {/* Cover / Storefront Banner */}
       <div className="relative h-48 w-full bg-gradient-to-r from-slate-800 via-slate-900 to-sky-950 sm:h-64 md:h-72">
-        {coverPhotoUrl && !imgError ? (
+        {coverPhotoUrl && failedCoverUrl !== coverPhotoUrl ? (
           <Image
             src={coverPhotoUrl}
             alt={`Foto gerai ${profile.name}`}
@@ -109,7 +100,7 @@ export function ProfileHeroSection({
             unoptimized
             className="object-cover"
             priority
-            onError={() => setImgError(true)}
+            onError={() => setFailedCoverUrl(coverPhotoUrl)}
             sizes="(max-width: 1200px) 100vw, 1200px"
           />
         ) : (
@@ -160,14 +151,14 @@ export function ProfileHeroSection({
           <div className="flex items-start gap-4">
             {/* Avatar Pill */}
             <div className="-mt-14 group relative flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-sky-600 text-white shadow-md sm:h-24 sm:w-24 overflow-hidden">
-              {logoPhotoUrl && !logoError ? (
+              {logoPhotoUrl && failedLogoUrl !== logoPhotoUrl ? (
                 <Image
                   src={logoPhotoUrl}
                   alt={`Logo ${profile.name}`}
                   fill
                   unoptimized
                   className="object-cover"
-                  onError={() => setLogoError(true)}
+                  onError={() => setFailedLogoUrl(logoPhotoUrl)}
                 />
               ) : (
                 <Store size={36} />
@@ -184,7 +175,6 @@ export function ProfileHeroSection({
                       const file = e.target.files?.[0];
                       if (file) {
                         await onUploadLogoPhoto(file);
-                        setLogoError(false);
                         if (logoInputRef.current) logoInputRef.current.value = "";
                       }
                     }}

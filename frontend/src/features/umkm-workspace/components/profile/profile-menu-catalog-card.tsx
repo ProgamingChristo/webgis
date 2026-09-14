@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import Image from "next/image";
 import {
   Camera,
   Loader2,
@@ -19,13 +20,9 @@ function MenuItemImage({
   src: string;
   alt: string;
 }) {
-  const [error, setError] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
-  useEffect(() => {
-    setError(false);
-  }, [src]);
-
-  if (error) {
+  if (failedSrc === src) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-slate-100 text-slate-300">
         <UtensilsCrossed size={32} />
@@ -41,19 +38,15 @@ function MenuItemImage({
       unoptimized
       className="object-cover"
       sizes="(max-width: 768px) 100vw, 400px"
-      onError={() => setError(true)}
+      onError={() => setFailedSrc(src)}
     />
   );
 }
 
 function MenuPreviewThumb({ src }: { src: string }) {
-  const [error, setError] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
-  useEffect(() => {
-    setError(false);
-  }, [src]);
-
-  if (!src || error) {
+  if (!src || failedSrc === src) {
     return <UtensilsCrossed size={20} className="text-slate-400" />;
   }
 
@@ -64,7 +57,7 @@ function MenuPreviewThumb({ src }: { src: string }) {
       fill
       unoptimized
       className="object-cover"
-      onError={() => setError(true)}
+      onError={() => setFailedSrc(src)}
     />
   );
 }

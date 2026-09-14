@@ -29,6 +29,7 @@ export interface AuthoritativeMerchantProfile {
     };
     public_media?: {
       storefront_url?: string | null;
+      logo_url?: string | null;
       menu_urls?: string[];
       product_urls?: string[];
     };

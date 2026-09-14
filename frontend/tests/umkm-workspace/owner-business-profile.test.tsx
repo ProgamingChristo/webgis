@@ -162,6 +162,7 @@ describe("Owner Business Profile - Target Design (IMAGE 1 Parity)", () => {
     expect(html).toContain("FOUR LEAVES");
     expect(html).toContain("TERVERIFIKASI GETRA");
     expect(html).toContain("Ganti Sampul");
+    expect(html).toContain("https://example.com/store.jpg");
     expect(html).toContain("Kesiapan Usaha");
     expect(html).toContain("Profil Siap");
     expect(html).toContain("Visibilitas Peta");
@@ -276,6 +277,7 @@ describe("Owner Business Profile - Target Design (IMAGE 1 Parity)", () => {
         name: "Roti Cokelat Keju",
         price: 18000,
         description: "Roti lembut gurih manis",
+        photo_url: "https://example.com/menu.jpg",
         is_available: true,
         tag: "Terlaris",
       },
@@ -292,6 +294,7 @@ describe("Owner Business Profile - Target Design (IMAGE 1 Parity)", () => {
     expect(html).toContain("Rp 18.000");
     expect(html).toContain("Terlaris");
     expect(html).toContain("Status Persediaan");
+    expect(html).toContain("https://example.com/menu.jpg");
   });
 
   it("8. Legality Card displays masked registration code, partnership status, and preserves private documents", () => {

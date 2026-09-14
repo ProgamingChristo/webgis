@@ -85,7 +85,7 @@ export function OwnerBusinessProfileView({
       data.metadata.public_media?.storefront_url || null
     );
     setLogoPhotoUrl(
-      (data.metadata.public_media as any)?.logo_url || null
+      data.metadata.public_media?.logo_url || null
     );
   }, []);
 
@@ -144,7 +144,7 @@ export function OwnerBusinessProfileView({
       JSON.stringify(menuItems) !==
         JSON.stringify(profile.metadata.menu_items || []) ||
       coverPhotoUrl !== (profile.metadata.public_media?.storefront_url || null) ||
-      logoPhotoUrl !== ((profile.metadata.public_media as any)?.logo_url || null)
+      logoPhotoUrl !== (profile.metadata.public_media?.logo_url || null)
     : false;
 
   const handleResetChanges = () => {
@@ -162,7 +162,7 @@ export function OwnerBusinessProfileView({
     setFacilities(profile.metadata.facilities || ["Tempat Duduk", "Take Away"]);
     setMenuItems(profile.metadata.menu_items || []);
     setCoverPhotoUrl(profile.metadata.public_media?.storefront_url || null);
-    setLogoPhotoUrl((profile.metadata.public_media as any)?.logo_url || null);
+    setLogoPhotoUrl(profile.metadata.public_media?.logo_url || null);
     setSaveError(null);
   };
 
