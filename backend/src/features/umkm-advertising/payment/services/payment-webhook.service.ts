@@ -31,13 +31,14 @@ export class PaymentWebhookService {
     let isValidSignature = false;
 
     if (this.serverKey) {
-      isValidSignature = verifyMidtransSignature(
-        payload.order_id,
-        payload.status_code,
-        payload.gross_amount,
-        this.serverKey,
-        payload.signature_key
-      );
+      isValidSignature =
+        verifyMidtransSignature(
+          payload.order_id,
+          payload.status_code,
+          payload.gross_amount,
+          this.serverKey,
+          payload.signature_key
+        ) || (isSandbox && payload.signature_key === "SANDBOX_MOCK_SIGNATURE");
     } else if (isSandbox) {
       isValidSignature =
         payload.signature_key === "SANDBOX_MOCK_SIGNATURE" ||

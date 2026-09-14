@@ -25,19 +25,17 @@ export function verifyMidtransSignature(
     return false;
   }
 
-  const expectedSignature = computeMidtransSignature(
-    orderId,
-    statusCode,
-    grossAmount,
-    serverKey
-  );
-
-  const expectedBuffer = Buffer.from(expectedSignature, "utf8");
-  const providedBuffer = Buffer.from(providedSignature, "utf8");
-
-  if (expectedBuffer.length !== providedBuffer.length) {
-    return false;
+  const variations = [grossAmount];
+  if (grossAmount.includes(".")) {
+    variations.push(grossAmount.split(".")[0]);
+  } else {
+    variations.push(`${grossAmount}.00`);
   }
 
-  return timingSafeEqual(expectedBuffer, providedBuffer);
+  return variations.some((variant) => {
+    const expected = computeMidtransSignature(orderId, statusCode, variant, serverKey);
+    const expectedBuf = Buffer.from(expected, "utf8");
+    const providedBuf = Buffer.from(providedSignature, "utf8");
+    return expectedBuf.length === providedBuf.length && timingSafeEqual(expectedBuf, providedBuf);
+  });
 }
