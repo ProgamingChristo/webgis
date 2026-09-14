@@ -13,16 +13,19 @@ export function AdvertisingEligibilityGate({ merchantId, children }: {
 }) {
   const { eligibility, loading, error, refetch } = useAdvertisingEligibility(merchantId);
 
-  if (loading) return <p className="rounded-2xl border border-slate-700 p-5 text-sm text-slate-300" role="status">Memeriksa kesiapan promosi…</p>;
+  if (loading) return <p className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600 shadow-xs" role="status">Memeriksa kesiapan promosi…</p>;
   if (error || !eligibility) return (
-    <section className="rounded-2xl border border-slate-700 p-5 text-slate-300">
-      <p role="alert">{error || "Kesiapan promosi belum tersedia."}</p>
-      <button type="button" onClick={() => void refetch()} className="mt-3 min-h-10 font-semibold text-cyan-300">Coba lagi</button>
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600 shadow-xs">
+      <p role="alert" className="text-red-600 font-semibold">{error || "Kesiapan promosi belum tersedia."}</p>
+      <button type="button" onClick={() => void refetch()} className="mt-3 min-h-10 font-bold text-sky-600 hover:text-sky-700">Coba lagi</button>
     </section>
   );
   if (eligibility.eligible) return (
-    <section className="rounded-2xl border border-emerald-400/20 bg-slate-950/80 p-5 sm:p-6">
-      <p className="mb-5 flex items-center gap-2 font-semibold text-emerald-200"><Check size={18} aria-hidden="true" />Siap dipromosikan</p>
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+      <div className="mb-6 inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-xs font-bold text-emerald-800">
+        <Check size={16} className="text-emerald-600" aria-hidden="true" />
+        Siap dipromosikan
+      </div>
       {children}
     </section>
   );
@@ -33,11 +36,10 @@ export function AdvertisingEligibilityGate({ merchantId, children }: {
     : "Belum memenuhi syarat promosi";
 
   return (
-    <section className="rounded-2xl border border-slate-700 bg-slate-950/80 p-5 sm:p-6">
-      <h2 className="font-bold text-slate-100">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-400">{requirement.detail}</p>
-      <Link href={promotionRequirementHref(requirement.destination, merchantId)} className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-cyan-400/30 px-4 text-sm font-semibold text-cyan-200">{requirement.action}</Link>
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+      <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{requirement.detail}</p>
+      <Link href={promotionRequirementHref(requirement.destination, merchantId)} className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-sky-600 px-4 text-sm font-bold text-white shadow-xs hover:bg-sky-700 transition">{requirement.action}</Link>
     </section>
   );
 }
-

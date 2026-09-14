@@ -84,20 +84,20 @@ export function CampaignCard({
   };
 
   return (
-    <article className="flex min-w-0 flex-col space-y-4 rounded-xl border border-slate-700 bg-slate-900/60 p-4 shadow-lg shadow-black/20 transition hover:border-purple-400/40 sm:p-5">
+    <article className="flex min-w-0 flex-col space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-sky-300 sm:p-6 text-slate-900">
       <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:items-center">
-            <h4 className="min-w-0 break-words text-lg font-bold leading-6 text-slate-100">{campaign.name}</h4>
+            <h4 className="min-w-0 break-words text-base font-bold leading-6 text-slate-900">{campaign.name}</h4>
             <CampaignStatusBadge status={effectiveStatus} size="sm" />
           </div>
           {campaign.description && (
-            <p className="mt-1 break-words text-xs leading-5 text-slate-400 line-clamp-2">{campaign.description}</p>
+            <p className="mt-1 break-words text-xs leading-5 text-slate-600 line-clamp-2">{campaign.description}</p>
           )}
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
             <span>Dibuat: {new Date(campaign.createdAt).toLocaleDateString("id-ID")}</span>
             {lifecycle?.startAt && lifecycle?.endAt && (
-              <span className="flex min-w-0 items-center gap-1 text-purple-400">
+              <span className="flex min-w-0 items-center gap-1 text-sky-600 font-semibold">
                 <Clock className="h-3 w-3 shrink-0" />
                 {new Date(lifecycle.startAt).toLocaleDateString("id-ID")} –{" "}
                 {new Date(lifecycle.endAt).toLocaleDateString("id-ID")}
@@ -121,14 +121,14 @@ export function CampaignCard({
       </div>
 
       {/* Tabs */}
-      <div className="grid grid-cols-1 gap-2 border-t border-slate-800 pt-3 min-[480px]:grid-cols-2 lg:flex lg:flex-wrap lg:items-center">
+      <div className="grid grid-cols-1 gap-2 border-t border-slate-100 pt-3 min-[480px]:grid-cols-2 lg:flex lg:flex-wrap lg:items-center">
         <button
           type="button"
           onClick={() => setActiveTab(activeTab === "creative" ? "none" : "creative")}
-          className={`inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap text-xs px-3 py-1.5 font-medium rounded-lg border transition-colors ${
+          className={`inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap text-xs px-3 py-1.5 font-bold rounded-xl border transition-colors ${
             activeTab === "creative"
-              ? "border-cyan-400 bg-cyan-400/10 text-cyan-200"
-              : "border-slate-700 text-slate-300 hover:border-cyan-400/50 hover:text-cyan-200"
+              ? "border-sky-500 bg-sky-50 text-sky-700"
+              : "border-slate-300 text-slate-700 hover:border-sky-400 hover:text-sky-600"
           }`}
         >
           <Palette className="w-3.5 h-3.5" />
@@ -138,10 +138,10 @@ export function CampaignCard({
         <button
           type="button"
           onClick={() => setActiveTab(activeTab === "targeting" ? "none" : "targeting")}
-          className={`inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap text-xs px-3 py-1.5 font-medium rounded-lg border transition-colors ${
+          className={`inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap text-xs px-3 py-1.5 font-bold rounded-xl border transition-colors ${
             activeTab === "targeting"
-              ? "border-emerald-400 bg-emerald-400/10 text-emerald-200"
-              : "border-slate-700 text-slate-300 hover:border-emerald-400/50 hover:text-emerald-200"
+              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+              : "border-slate-300 text-slate-700 hover:border-emerald-400 hover:text-emerald-600"
           }`}
         >
           <MapPin className="w-3.5 h-3.5" />
@@ -151,10 +151,10 @@ export function CampaignCard({
         <button
           type="button"
           onClick={() => setActiveTab(activeTab === "schedule" ? "none" : "schedule")}
-          className={`inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap text-xs px-3 py-1.5 font-medium rounded-lg border transition-colors ${
+          className={`inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap text-xs px-3 py-1.5 font-bold rounded-xl border transition-colors ${
             activeTab === "schedule"
-              ? "border-purple-400 bg-purple-400/10 text-purple-200"
-              : "border-slate-700 text-slate-300 hover:border-purple-400/50 hover:text-purple-200"
+              ? "border-purple-500 bg-purple-50 text-purple-700"
+              : "border-slate-300 text-slate-700 hover:border-purple-400 hover:text-purple-600"
           }`}
         >
           <Calendar className="w-3.5 h-3.5" />
@@ -164,10 +164,10 @@ export function CampaignCard({
         <button
           type="button"
           onClick={() => setActiveTab(activeTab === "preview" ? "none" : "preview")}
-          className={`inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap text-xs px-3 py-1.5 font-medium rounded-lg border transition-colors ${
+          className={`inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap text-xs px-3 py-1.5 font-bold rounded-xl border transition-colors ${
             activeTab === "preview"
-              ? "border-amber-400 bg-amber-400/10 text-amber-200"
-              : "border-slate-700 text-slate-300 hover:border-amber-400/50 hover:text-amber-200"
+              ? "border-amber-500 bg-amber-50 text-amber-800"
+              : "border-slate-300 text-slate-700 hover:border-amber-400 hover:text-amber-700"
           }`}
         >
           <Sparkles className="w-3.5 h-3.5" />
@@ -177,10 +177,10 @@ export function CampaignCard({
         <button
           type="button"
           onClick={() => setActiveTab(activeTab === "payment" ? "none" : "payment")}
-          className={`inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap text-xs px-3 py-1.5 font-medium rounded-lg border transition-colors ${
+          className={`inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap text-xs px-3 py-1.5 font-bold rounded-xl border transition-colors ${
             activeTab === "payment"
-              ? "border-emerald-400 bg-emerald-400/10 text-emerald-200"
-              : "border-slate-700 text-slate-300 hover:border-emerald-400/50 hover:text-emerald-200"
+              ? "border-emerald-500 bg-emerald-50 text-emerald-800"
+              : "border-slate-300 text-slate-700 hover:border-emerald-400 hover:text-emerald-700"
           }`}
         >
           <CreditCard className="w-3.5 h-3.5" />
@@ -189,9 +189,9 @@ export function CampaignCard({
 
         <a
           href={`/umkm/advertising/analytics?merchantId=${encodeURIComponent(merchantId)}&campaignId=${campaign.id}`}
-          className="inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-blue-500/50 bg-blue-500/10 px-3 py-1.5 text-xs font-medium text-blue-200 transition-colors hover:bg-blue-500/20 lg:ml-auto"
+          className="inline-flex min-h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100 lg:ml-auto"
         >
-          <BarChart2 className="w-3.5 h-3.5 text-blue-400" />
+          <BarChart2 className="w-3.5 h-3.5 text-sky-600" />
           Lihat Analitik
         </a>
       </div>

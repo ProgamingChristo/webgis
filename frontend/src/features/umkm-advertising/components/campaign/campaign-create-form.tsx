@@ -12,26 +12,26 @@ export function CampaignCreateForm({ merchantId, onSuccess }: { merchantId: stri
   };
 
   return (
-    <form id="buat-promosi" onSubmit={handleSubmit} className="scroll-mt-6 space-y-4 rounded-xl border border-slate-700 bg-slate-900/55 p-5">
-      <h3 className="text-lg font-bold text-slate-100">Buat Draf Promosi</h3>
-      <p className="text-sm leading-6 text-slate-400">Mulai dengan nama promosi. Selanjutnya, lengkapi materi, sasaran, dan jadwal sebelum mengaktifkannya.</p>
-      {error && <p className="text-sm text-red-300">{error}</p>}
+    <form id="buat-promosi" onSubmit={handleSubmit} className="scroll-mt-6 space-y-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-6">
+      <h3 className="text-base font-bold text-slate-900">Buat Draf Promosi</h3>
+      <p className="text-xs leading-5 text-slate-600">Mulai dengan nama promosi. Selanjutnya, lengkapi materi, sasaran, dan jadwal sebelum mengaktifkannya.</p>
+      {error && <p className="text-xs font-semibold text-red-600">{error}</p>}
       <div className="flex flex-col space-y-2">
-        <label htmlFor="name" className="text-sm font-bold text-slate-300">Nama promosi</label>
+        <label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-slate-700">Nama promosi</label>
         <input 
           id="name"
           type="text" 
           placeholder="Promo Paket Mahasiswa" 
           value={name} 
           onChange={(e) => setName(e.target.value)}
-          className="min-h-11 rounded-xl border border-slate-700 bg-slate-950/70 px-4 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/15"
+          className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-hidden placeholder:text-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 transition"
           required
         />
       </div>
       <button 
         type="submit" 
         disabled={loading || !name.trim()}
-        className="min-h-10 rounded-xl bg-gradient-to-r from-lime-400 to-cyan-400 px-5 text-sm font-black text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+        className="min-h-10 rounded-xl bg-sky-600 px-5 text-xs font-bold text-white shadow-xs transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? "Menyimpan..." : "Simpan draf"}
       </button>

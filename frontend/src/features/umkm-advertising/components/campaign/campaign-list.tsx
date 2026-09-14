@@ -6,15 +6,15 @@ import { CampaignCreateForm } from "./campaign-create-form";
 export function CampaignList({ merchantId, merchantName = "Usaha Anda" }: { merchantId: string; merchantName?: string }) {
   const { campaigns, loading, error, refetch } = useCampaigns(merchantId);
 
-  if (loading) return <div className="rounded-xl border border-slate-800 p-4 text-sm text-slate-400">Memuat daftar promosi…</div>;
-  if (error) return <div className="rounded-xl border border-red-400/25 bg-red-400/[0.06] p-4 text-sm text-red-200">{error}</div>;
+  if (loading) return <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500 shadow-xs">Memuat daftar promosi…</div>;
+  if (error) return <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-700 shadow-xs">{error}</div>;
 
   return (
     <div className="space-y-6">
       <CampaignCreateForm merchantId={merchantId} onSuccess={refetch} />
       
       <div>
-        <h3 className="mb-4 text-lg font-bold text-slate-100">Promosi Saya</h3>
+        <h3 className="mb-4 text-base font-bold text-slate-900">Promosi Saya</h3>
         {campaigns.length === 0 ? (
           <CampaignEmptyState />
         ) : (

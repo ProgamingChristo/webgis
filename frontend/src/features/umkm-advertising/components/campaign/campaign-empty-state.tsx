@@ -1,8 +1,8 @@
 export function CampaignEmptyState() {
   return (
-    <div className="rounded-xl border border-dashed border-slate-700 bg-slate-900/35 p-8 text-center">
-      <h3 className="font-semibold text-slate-200">Belum ada promosi</h3>
-      <p className="mt-2 text-sm text-slate-500">Buat draf promosi pertama Anda untuk mulai menjangkau pelanggan.</p>
+    <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center">
+      <h3 className="font-bold text-slate-800 text-sm">Belum ada promosi</h3>
+      <p className="mt-1.5 text-xs text-slate-500">Buat draf promosi pertama Anda untuk mulai menjangkau pelanggan.</p>
     </div>
   );
 }
