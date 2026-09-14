@@ -981,9 +981,9 @@ export function GetraDashboard() {
 
   if (activeExperience === "INVESTOR") {
     return (
-      <div className="workspace" data-active-experience="INVESTOR">
+      <div className="workspace workspace--figma workspace--investor" data-active-experience="INVESTOR">
         <GetraGlobalHeader
-          utilities={<CommunityNotificationsMenu />}
+          utilities={<CommunityNotificationsMenu variant="light" />}
         />
         <div className="workspace-context-toolbar"><StakeholderModeSwitcher /></div>
         <StakeholderContextShell>

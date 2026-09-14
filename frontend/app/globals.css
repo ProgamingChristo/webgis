@@ -1756,14 +1756,15 @@ body:has(.getra-app-shell--profile) {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--getra-line);
-  border-radius: 14px;
-  background: rgba(9, 19, 29, 0.86);
-  color: var(--getra-ink-soft);
-  font-size: 12px;
+  margin: 10px 14px;
+  padding: 10px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 13px;
   line-height: 1.55;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 .stakeholder-notice svg {
@@ -1771,43 +1772,52 @@ body:has(.getra-app-shell--profile) {
 }
 
 .stakeholder-notice strong {
-  color: var(--getra-ink);
+  color: #0f172a;
 }
 
 .stakeholder-notice--general {
-  border-color: rgb(154 242 74 / 0.22);
-  background: linear-gradient(135deg, rgb(154 242 74 / 0.08), rgb(9 19 29 / 0.86));
+  border-color: #bbf7d0;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+  color: #166534;
 }
 
 .stakeholder-notice--general svg {
-  color: var(--getra-action);
+  color: #16a34a;
 }
 
 .stakeholder-notice--umkm {
-  border-color: rgb(34 211 238 / 0.28);
-  background: linear-gradient(135deg, rgb(34 211 238 / 0.1), rgb(9 19 29 / 0.88));
+  border-color: #bae6fd;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+  color: #0369a1;
 }
 
 .stakeholder-notice--umkm svg {
-  color: var(--getra-primary);
+  color: #0284c7;
 }
 
 .stakeholder-notice--investor {
-  border-color: rgb(192 132 252 / 0.3);
-  background: linear-gradient(135deg, rgb(168 85 247 / 0.1), rgb(9 19 29 / 0.88));
+  border-color: #e9d5ff;
+  background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+  color: #475569;
+}
+
+.stakeholder-notice--investor strong {
+  color: #581c87;
+  font-weight: 700;
 }
 
 .stakeholder-notice--investor svg {
-  color: rgb(216 180 254);
+  color: #7c3aed;
 }
 
 .stakeholder-notice--government {
-  border-color: rgb(45 212 191 / 0.26);
-  background: linear-gradient(135deg, rgb(20 184 166 / 0.1), rgb(9 19 29 / 0.88));
+  border-color: #99f6e4;
+  background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%);
+  color: #115e59;
 }
 
 .stakeholder-notice--government svg {
-  color: rgb(94 234 212);
+  color: #0d9488;
 }
 
 .stakeholder-notice__action {
@@ -7310,4 +7320,176 @@ body:has(.getra-app-shell--community) {
   .workspace--figma .account-menu__identity,
   .workspace--figma .account-menu__chevron,
   .workspace--figma .getra-utility-menu { display: none; }
+}
+
+/* ==========================================================================
+   GETRA INVESTOR EXPERIENCE (LIGHT THEME HARMONIZATION)
+   ========================================================================== */
+
+.workspace--investor,
+[data-active-experience="INVESTOR"] {
+  --account-menu-mode-light: #7c3aed;
+  background: #f8fafc;
+}
+
+.workspace--investor > .getra-global-header,
+[data-active-experience="INVESTOR"] > .getra-global-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  backdrop-filter: none !important;
+}
+
+.workspace--investor .getra-global-header .getra-app-logo__copy strong,
+[data-active-experience="INVESTOR"] .getra-global-header .getra-app-logo__copy strong {
+  color: #0f172a !important;
+}
+
+.workspace--investor .getra-global-header .getra-app-logo__copy small,
+[data-active-experience="INVESTOR"] .getra-global-header .getra-app-logo__copy small {
+  color: #64748b !important;
+}
+
+.workspace--investor .getra-global-nav__item,
+[data-active-experience="INVESTOR"] .getra-global-nav__item {
+  color: #475569 !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.workspace--investor .getra-global-nav__item:hover,
+[data-active-experience="INVESTOR"] .getra-global-nav__item:hover {
+  color: #0f172a !important;
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+.workspace--investor .getra-global-nav__item--active,
+[data-active-experience="INVESTOR"] .getra-global-nav__item--active {
+  color: #0284c7 !important;
+  background: #f0f9ff !important;
+  border-color: #e0f2fe !important;
+}
+
+.workspace--investor .getra-utility-menu__trigger,
+[data-active-experience="INVESTOR"] .getra-utility-menu__trigger,
+.workspace--investor .getra-global-header__menu,
+[data-active-experience="INVESTOR"] .getra-global-header__menu {
+  border-color: #e2e8f0 !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.workspace--investor .getra-utility-menu__trigger:hover,
+[data-active-experience="INVESTOR"] .getra-utility-menu__trigger:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.workspace--investor .getra-utility-menu__panel,
+[data-active-experience="INVESTOR"] .getra-utility-menu__panel {
+  border-color: #e2e8f0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+.workspace--investor .getra-utility-menu__panel a,
+[data-active-experience="INVESTOR"] .getra-utility-menu__panel a {
+  color: #334155 !important;
+}
+
+.workspace--investor .getra-utility-menu__panel a:hover,
+[data-active-experience="INVESTOR"] .getra-utility-menu__panel a:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.workspace--investor .getra-utility-menu__logout,
+[data-active-experience="INVESTOR"] .getra-utility-menu__logout {
+  color: #e11d48 !important;
+}
+
+.workspace--investor .getra-utility-menu__logout:hover,
+[data-active-experience="INVESTOR"] .getra-utility-menu__logout:hover {
+  background: #fff1f2 !important;
+  color: #be123c !important;
+}
+
+.workspace--investor .account-menu__trigger,
+[data-active-experience="INVESTOR"] .account-menu__trigger {
+  border-color: #e2e8f0 !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.workspace--investor .account-menu__trigger:hover,
+[data-active-experience="INVESTOR"] .account-menu__trigger:hover {
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+}
+
+.workspace--investor .account-menu__identity strong,
+[data-active-experience="INVESTOR"] .account-menu__identity strong {
+  color: #0f172a !important;
+}
+
+.workspace--investor .account-menu__identity small,
+[data-active-experience="INVESTOR"] .account-menu__identity small {
+  color: #64748b !important;
+}
+
+.workspace--investor .account-menu__identity em,
+[data-active-experience="INVESTOR"] .account-menu__identity em {
+  color: #7c3aed !important;
+  font-weight: 700 !important;
+}
+
+.workspace--investor .account-menu__chevron,
+[data-active-experience="INVESTOR"] .account-menu__chevron {
+  color: #64748b !important;
+}
+
+.workspace--investor .account-menu__panel,
+[data-active-experience="INVESTOR"] .account-menu__panel {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08) !important;
+}
+
+.workspace--investor .account-menu__summary strong,
+[data-active-experience="INVESTOR"] .account-menu__summary strong {
+  color: #0f172a !important;
+}
+
+.workspace--investor .account-menu__summary > span,
+[data-active-experience="INVESTOR"] .account-menu__summary > span {
+  color: #64748b !important;
+}
+
+.workspace--investor .account-menu__panel button,
+[data-active-experience="INVESTOR"] .account-menu__panel button {
+  color: #334155 !important;
+}
+
+.workspace--investor .account-menu__panel button:hover,
+[data-active-experience="INVESTOR"] .account-menu__panel button:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.workspace--investor .workspace-context-toolbar,
+[data-active-experience="INVESTOR"] .workspace-context-toolbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.workspace--investor .workspace-context-toolbar .stakeholder-button--active,
+[data-active-experience="INVESTOR"] .workspace-context-toolbar .stakeholder-button--active {
+  background: #faf5ff !important;
+  border-color: #e9d5ff !important;
+  color: #7c3aed !important;
+  font-weight: 800 !important;
 }
