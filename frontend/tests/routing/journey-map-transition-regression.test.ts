@@ -26,4 +26,22 @@ describe("active journey map regression", () => {
     expect(css).toContain("width: min(220px, calc(100vw - 42px))");
     expect(css).toContain("height: 82px");
   });
+
+  it("places the active navigation map in the only visible grid column", () => {
+    const css = readFileSync(
+      `${frontendRoot}src/features/global-search/commuter-sidebar.css`,
+      "utf8",
+    );
+    const activeOverride = css.lastIndexOf(
+      '.workspace-grid[class*="activeWorkspace"] > .map-panel',
+    );
+    const defaultMapRule = css.lastIndexOf(
+      ".workspace--figma.commuter-workspace .map-panel {",
+      activeOverride,
+    );
+    expect(activeOverride).toBeGreaterThan(defaultMapRule);
+    expect(css.slice(activeOverride, activeOverride + 180)).toContain(
+      "grid-column: 1 / -1 !important",
+    );
+  });
 });

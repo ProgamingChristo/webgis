@@ -325,6 +325,10 @@
   height: 100%;
   background: #eef3f5;
 }
+.workspace--figma.commuter-workspace .workspace-grid[class*="activeWorkspace"] > .map-panel {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}
 .workspace--figma.commuter-workspace .workspace-grid[data-sidebar-collapsed="true"] .map-panel {
   grid-column: 1 / -1 !important;
   width: 100% !important;

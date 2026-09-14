@@ -102,14 +102,19 @@ async function waitUntil(check, timeout = 30_000) {
 async function login(page, user) {
   await page.goto(`${origin}/login`, { waitUntil: "domcontentloaded" });
   await page.getByLabel("Email", { exact: true }).fill(user.email);
-  await page.getByLabel("Password", { exact: true }).fill(user.password);
+  await page.getByLabel(/^(Password|Kata sandi)$/).fill(user.password);
   await page.getByRole("button", { name: "Masuk", exact: true }).click();
   await page.waitForURL("**/app");
 }
 
 async function setCoordinate(planner, label, point) {
   const summary = planner.locator("summary").filter({ hasText: `Koordinat ${label.toLowerCase()}` });
-  if (!(await summary.evaluate((element) => element.parentElement.open))) await summary.click();
+  await summary.evaluate((element) => {
+    const coordinateDetails = element.parentElement;
+    const advancedDetails = coordinateDetails?.parentElement?.closest("details");
+    if (advancedDetails) advancedDetails.open = true;
+    if (coordinateDetails) coordinateDetails.open = true;
+  });
   await planner.getByLabel(`Latitude ${label}`, { exact: true }).fill(String(point.latitude));
   await planner.getByLabel(`Longitude ${label}`, { exact: true }).fill(String(point.longitude));
   await planner.getByRole("button", { name: `Terapkan koordinat ${label.toLowerCase()}` }).click();
@@ -169,6 +174,7 @@ try {
 
   await login(page, user);
   evidence.checks.login = "PASS";
+  await page.getByRole("button", { name: "Rute", exact: true }).click();
 
   const runOffset = (Date.now() % 3) * 0.00002;
   const a = { latitude: -6.2414 + runOffset, longitude: 106.6281 + runOffset };
@@ -377,6 +383,7 @@ try {
   mobilePage.setDefaultTimeout(45_000);
   attachErrorCollection(mobilePage);
   await login(mobilePage, user);
+  await mobilePage.getByRole("button", { name: "Rute", exact: true }).click();
   const mobilePlanner = mobilePage.getByRole("region", { name: "Perencana rute" });
   await setCoordinate(mobilePlanner, "Asal", a);
   await setCoordinate(mobilePlanner, "Tujuan", b);
