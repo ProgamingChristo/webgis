@@ -9,6 +9,7 @@ The platform uses **Next.js** for both the frontend (App Router) and the backend
 An AI Interpretation layer provides conversational assistance strictly grounded in verified database facts.
 
 ## Architecture & Paths
+- **Primary Default Branch**: `Getra_Deploy` (Single Source of Truth) — See [Branch Governance Guide](docs/GETRA_BRANCH_GOVERNANCE.md)
 - **Frontend**: `frontend/` - Contains the Next.js React application, MapLibre UI, and client data hooks. Runs on `http://localhost:3000`.
 - **Backend**: `backend/` - Contains the secure Next.js API layer acting as a traditional server. Houses all API routes, spatial services, RLS interactions, AI orchestration, and automated tests. Runs on `http://localhost:8080`.
 - **Database**: PostgreSQL (via Supabase). The schema and migrations are located in `backend/supabase/`.
