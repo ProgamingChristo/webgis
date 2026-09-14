@@ -99,4 +99,63 @@ describe("canonical merchant attribute resolution", () => {
     expect(result?.menu).toBeUndefined();
     expect(result?.observedPrice).toBeUndefined();
   });
+
+  it("publishes the latest verified owner profile details and menu catalog", () => {
+    const result = mapCanonicalMerchantRow({
+      ...merchant,
+      owner_id: "owner-1",
+      verification_status: "VERIFIED",
+      description: "Roti rumahan yang dipanggang setiap pagi.",
+      metadata: {
+        category_label: "Roti dan Kue",
+        phone: "+628123456789",
+        facilities: ["Tempat Duduk", "Wi-Fi"],
+        payment_methods: ["QRIS", "Tunai"],
+        social_media: { instagram: "@bakso.test" },
+        public_media: {
+          storefront_url: "https://example.test/storefront.jpg",
+          logo_url: "https://example.test/logo.jpg",
+        },
+        menu_items: [{
+          id: "menu-1",
+          name: "Roti Susu",
+          price: 12_000,
+          description: "Lembut dan hangat",
+          photo_url: "https://example.test/roti.jpg",
+          is_available: true,
+          tag: "Terlaris",
+        }],
+      },
+    }, [], new Map());
+
+    expect(result).toMatchObject({
+      category: "Roti dan Kue",
+      description: "Roti rumahan yang dipanggang setiap pagi.",
+      phone: "+628123456789",
+      photo: "https://example.test/storefront.jpg",
+      logo: "https://example.test/logo.jpg",
+      facilities: ["Tempat Duduk", "Wi-Fi"],
+      paymentMethods: ["QRIS", "Tunai"],
+      socialMedia: { instagram: "@bakso.test" },
+      menuItems: [expect.objectContaining({ name: "Roti Susu", price: 12_000 })],
+      menuPhotos: ["https://example.test/roti.jpg"],
+    });
+  });
+
+  it("does not expose editable profile metadata when no owner controls the merchant", () => {
+    const result = mapCanonicalMerchantRow({
+      ...merchant,
+      owner_id: null,
+      verification_status: "UNVERIFIED",
+      metadata: {
+        facilities: ["Private draft"],
+        public_media: { storefront_url: "https://example.test/draft.jpg" },
+        menu_items: [{ id: "draft", name: "Draft", price: 1, is_available: true }],
+      },
+    }, [], new Map());
+
+    expect(result?.photo).toBeUndefined();
+    expect(result?.facilities).toBeUndefined();
+    expect(result?.menuItems).toBeUndefined();
+  });
 });

@@ -20,8 +20,14 @@ export interface CanonicalMerchantMapItem {
   updatedAt: string;
   limitation: string;
   address?: string;
+  description?: string;
   phone?: string;
   photo?: string;
+  logo?: string;
+  facilities?: string[];
+  paymentMethods?: string[];
+  socialMedia?: { instagram?: string };
+  menuItems?: PublicMenuItem[];
   openingHoursLabel?: string;
   referenceDistance?: { meters: number; label: string; kind: "STRAIGHT_LINE" };
   searchRelevance?: number;
@@ -47,6 +53,17 @@ export interface CanonicalMerchantMapItem {
   publish_status: string;
   submitted_by: string | null;
   submission_id: string | null;
+}
+
+export interface PublicMenuItem {
+  id: string;
+  name: string;
+  price: number;
+  category?: string;
+  description?: string;
+  photo_url?: string;
+  is_available: boolean;
+  tag?: string;
 }
 
 export interface CanonicalMerchantPage {
@@ -280,20 +297,26 @@ export function mapCanonicalMerchantRow(
     menuLinks.length > 0 ? "MENU_GO" as const : null,
     isOwnerSubmitted ? "OWNER_SUBMITTED" as const : null,
   ].filter((source): source is "PREMIUM" | "MENU_GO" | "OWNER_SUBMITTED" => source !== null);
-  const approvedOwnerMedia = merchant.verification_status === "VERIFIED" && metadata.approved_by && metadata.approved_at
-    ? asObject(metadata.public_media) : {};
-  const ownerPhoto = safePublicImage(approvedOwnerMedia.storefront_url);
+  // Ownership on a published merchant is authoritative for its editable public profile.
+  // Requiring the original approval timestamps made later owner edits invisible.
+  const hasAuthoritativeOwnerProfile = merchant.publish_status === "PUBLISHED" && Boolean(merchant.owner_id);
+  const ownerMetadata = hasAuthoritativeOwnerProfile ? metadata : {};
+  const ownerMedia = asObject(ownerMetadata.public_media);
+  const ownerPhoto = safePublicImage(ownerMedia.storefront_url);
+  const ownerMenuItems = readPublicMenuItems(ownerMetadata.menu_items);
   const photo = ownerPhoto ?? safePublicImage(observed.foto_tempat);
-  const menuPhotos = [observed.foto_menu_1, observed.foto_menu_2]
-    .map(optionalString)
-    .filter((value): value is string => value !== undefined);
+  const menuPhotos = [
+    ...ownerMenuItems.map((item) => item.photo_url),
+    observed.foto_menu_1,
+    observed.foto_menu_2,
+  ].map(safePublicImage).filter((value): value is string => value !== undefined)
+    .filter((value, index, values) => values.indexOf(value) === index);
 
   return {
     id: merchant.id,
     name: merchant.name,
     category: optionalString(metadata.category_label) ?? optionalString(metadata.category) ??
-      optionalString(observed.jenis_tempat) ??
-      merchant.description ?? "Makanan dan Minuman",
+      optionalString(observed.jenis_tempat) ?? "Makanan dan Minuman",
     brand: optionalString(metadata.brand) ?? "Makanan dan Minuman",
     longitude: point[0],
     latitude: point[1],
@@ -316,8 +339,14 @@ export function mapCanonicalMerchantRow(
         ? "Canonical merchant created from an owner-verified submission."
         : "Canonical merchant with auditable Premium and Menu Go source evidence.",
     address: merchant.address ?? undefined,
-    phone: optionalString(metadata.phone),
+    description: optionalString(merchant.description),
+    phone: optionalString(ownerMetadata.phone) ?? optionalString(metadata.phone),
     photo,
+    logo: safePublicImage(ownerMedia.logo_url),
+    facilities: readStringList(ownerMetadata.facilities),
+    paymentMethods: readStringList(ownerMetadata.payment_methods),
+    socialMedia: readSocialMedia(ownerMetadata.social_media),
+    menuItems: ownerMenuItems.length > 0 ? ownerMenuItems : undefined,
     menuPhotos: menuPhotos.length > 0 ? menuPhotos : undefined,
     menu: optionalString(observed.menu_utama),
     observedPrice: optionalString(observed.harga_rata_rata),
@@ -377,6 +406,39 @@ function readPoint(value: unknown): [number, number] | null {
 
 function optionalString(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function readStringList(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const items = value.map(optionalString).filter((item): item is string => item !== undefined);
+  return items.length > 0 ? items : undefined;
+}
+
+function readSocialMedia(value: unknown): { instagram?: string } | undefined {
+  const instagram = optionalString(asObject(value).instagram);
+  return instagram ? { instagram } : undefined;
+}
+
+function readPublicMenuItems(value: unknown): PublicMenuItem[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((raw): PublicMenuItem[] => {
+    const item = asObject(raw);
+    const id = optionalString(item.id);
+    const name = optionalString(item.name);
+    const price = typeof item.price === "number" && Number.isFinite(item.price) && item.price >= 0 ? item.price : null;
+    if (!id || !name || price === null || typeof item.is_available !== "boolean") return [];
+    const photoUrl = safePublicImage(item.photo_url);
+    return [{
+      id,
+      name,
+      price,
+      ...(optionalString(item.category) ? { category: optionalString(item.category) } : {}),
+      ...(optionalString(item.description) ? { description: optionalString(item.description) } : {}),
+      ...(photoUrl ? { photo_url: photoUrl } : {}),
+      is_available: item.is_available,
+      ...(optionalString(item.tag) ? { tag: optionalString(item.tag) } : {}),
+    }];
+  });
 }
 
 function toPriceLabel(value: string | null) {

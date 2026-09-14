@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { evaluateOpeningHours } from "@/src/features/commuter";
+import { evaluateOpeningHours, openingHoursLabel } from "@/src/features/commuter";
 
 const emptyWeek = () => ({
   sunday: [], monday: [], tuesday: [], wednesday: [],
@@ -38,6 +38,18 @@ describe("Asia/Jakarta opening hours", () => {
       schedule("monday", [{ open: "09:00", close: "17:00" }]),
       new Date("2026-08-31T12:00:00Z"),
     )).toBe("CLOSED");
+  });
+
+  it("supports the owner profile weekday format used by Profil & Operasional Usaha", () => {
+    const profileHours = Object.fromEntries(Object.keys(emptyWeek()).map((day) => [day, {
+      is_closed: day === "sunday",
+      opens_at: day === "sunday" ? null : "08:00",
+      closes_at: day === "sunday" ? null : "21:00",
+    }]));
+
+    const mondayNoonWib = new Date("2026-08-31T05:00:00Z");
+    expect(evaluateOpeningHours(profileHours, mondayNoonWib)).toBe("OPEN");
+    expect(openingHoursLabel(profileHours, mondayNoonWib)).toBe("08:00-21:00 WIB");
   });
 
   it.each([

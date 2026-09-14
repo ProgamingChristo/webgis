@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { BadgeCheck, Clock3, Footprints, MapPin, MessageSquareText, Phone, Route, ShieldCheck, Store, Tag } from "lucide-react";
+import { AtSign, BadgeCheck, Clock3, CreditCard, Footprints, MapPin, MessageSquareText, Phone, Route, ShieldCheck, Sparkles, Store, Tag, UtensilsCrossed } from "lucide-react";
 import { useState } from "react";
 import type { Merchant } from "@/types/getra";
 import { formatMeters, merchantOpening, merchantPhoto } from "../merchant-presentation";
@@ -25,6 +25,11 @@ function PlacePhoto({ src, alt }: { src: string; alt: string }) {
 
 function formatPrice(amount: number) {
   return `Rp${amount.toLocaleString("id-ID")}`;
+}
+
+function instagramHref(value: string) {
+  const handle = value.trim().replace(/^https?:\/\/(?:www\.)?instagram\.com\//i, "").replace(/^@/, "").split(/[/?#]/)[0];
+  return handle ? `https://www.instagram.com/${encodeURIComponent(handle)}` : null;
 }
 
 function formatObservedAt(value?: string) {
@@ -55,6 +60,7 @@ export function PlaceDetailDrawer({ merchant, onRoute }: { merchant: Merchant; o
   const hasMetrics = distance !== null || walkingMinutes !== null || price !== null;
   const hasHoursOrPrice = Boolean(merchant.openingHoursLabel) || price !== null;
   const hasAccessEvidence = Boolean(merchant.referenceDistance) || routable;
+  const instagram = merchant.socialMedia?.instagram;
 
   const heroPhoto = photos[0] ?? null;
   const galleryPhotos = heroPhoto ? photos.slice(1) : photos;
@@ -80,6 +86,12 @@ export function PlaceDetailDrawer({ merchant, onRoute }: { merchant: Merchant; o
         </div>
         {opening !== "UNKNOWN" ? <span data-status={opening}>{opening === "OPEN" ? "Buka" : "Tutup"}</span> : null}
       </header>
+
+
+      {merchant.description ? <section className="place-detail__description" aria-label="Tentang usaha">
+        <strong>Tentang usaha</strong>
+        <p>{merchant.description}</p>
+      </section> : null}
 
       {merchant.menu || merchant.observedCondition ? <section className="place-detail__summary">
         {merchant.menu ? <div><strong>Menu / produk</strong><p>{merchant.menu}</p></div> : null}
@@ -127,6 +139,29 @@ export function PlaceDetailDrawer({ merchant, onRoute }: { merchant: Merchant; o
       </section> : null}
 
       {merchant.phone ? <section className="place-detail__section"><h3><Phone size={15} aria-hidden="true" />Kontak</h3><a className="place-detail__phone" href={`tel:${merchant.phone}`}>{merchant.phone}</a></section> : null}
+
+      {instagram && instagramHref(instagram) ? <section className="place-detail__section">
+        <h3><AtSign size={15} aria-hidden="true" />Media sosial</h3>
+        <a className="place-detail__phone" href={instagramHref(instagram)!} target="_blank" rel="noreferrer">{instagram}</a>
+      </section> : null}
+
+      {merchant.facilities?.length ? <section className="place-detail__section">
+        <h3><Sparkles size={15} aria-hidden="true" />Fasilitas</h3>
+        <div className="place-detail__chips">{merchant.facilities.map((facility) => <span key={facility}>{facility}</span>)}</div>
+      </section> : null}
+
+      {merchant.paymentMethods?.length ? <section className="place-detail__section">
+        <h3><CreditCard size={15} aria-hidden="true" />Metode pembayaran</h3>
+        <div className="place-detail__chips">{merchant.paymentMethods.map((method) => <span key={method}>{method}</span>)}</div>
+      </section> : null}
+
+      {merchant.menuItems?.length ? <section className="place-detail__menu" aria-label="Katalog menu">
+        <h3><UtensilsCrossed size={15} aria-hidden="true" />Katalog menu</h3>
+        <div>{merchant.menuItems.map((item) => <article key={item.id} className="place-detail__menu-item">
+          {item.photo_url ? <figure><PlacePhoto src={item.photo_url} alt={`Foto menu ${item.name}`} /></figure> : null}
+          <div><span>{item.category || item.tag || "Menu"}</span><strong>{item.name}</strong>{item.description ? <p>{item.description}</p> : null}<b>{formatPrice(item.price)}</b><small data-available={item.is_available}>{item.is_available ? "Tersedia" : "Sedang habis"}</small></div>
+        </article>)}</div>
+      </section> : null}
 
       {area || merchant.mobility || observedAt ? <section className="place-detail__section">
         <h3><MapPin size={15} aria-hidden="true" />Informasi lokasi</h3>

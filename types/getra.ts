@@ -20,8 +20,23 @@ export type Merchant = {
   updatedAt?: string;
   limitation: string;
   address?: string;
+  description?: string;
   phone?: string;
   photo?: string;
+  logo?: string;
+  facilities?: string[];
+  paymentMethods?: string[];
+  socialMedia?: { instagram?: string };
+  menuItems?: Array<{
+    id: string;
+    name: string;
+    price: number;
+    category?: string;
+    description?: string;
+    photo_url?: string;
+    is_available: boolean;
+    tag?: string;
+  }>;
   openingHoursLabel?: string;
   referenceDistance?: { meters: number; label: string; kind: "STRAIGHT_LINE" };
   recommendation?: {

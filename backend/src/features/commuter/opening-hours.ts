@@ -7,15 +7,25 @@ const DAY_KEYS = [
 
 interface Interval { open: string; close: string }
 
+function readDayIntervals(schedule: Record<string, unknown>, dayKey: string): Interval[] | null {
+  if (schedule.timezone === JAKARTA_TIMEZONE) {
+    return readIntervals(asObject(schedule.weekly)[dayKey]);
+  }
+
+  const day = asObject(schedule[dayKey]);
+  if (Object.keys(day).length === 0) return null;
+  if (day.is_closed === true) return [];
+  if (day.is_closed !== false || typeof day.opens_at !== "string" || typeof day.closes_at !== "string") {
+    return null;
+  }
+  return [{ open: day.opens_at, close: day.closes_at }];
+}
+
 export function evaluateOpeningHours(value: unknown, now = new Date()): OpeningStatus {
   const schedule = asObject(value);
-  const timezone = schedule.timezone;
-  if (timezone !== JAKARTA_TIMEZONE) return "UNKNOWN";
-
   const local = localParts(now);
-  const weekly = asObject(schedule.weekly);
-  const today = readIntervals(weekly[DAY_KEYS[local.dayIndex]]);
-  const yesterday = readIntervals(weekly[DAY_KEYS[(local.dayIndex + 6) % 7]!]);
+  const today = readDayIntervals(schedule, DAY_KEYS[local.dayIndex]!);
+  const yesterday = readDayIntervals(schedule, DAY_KEYS[(local.dayIndex + 6) % 7]!);
   if (!today || !yesterday) return "UNKNOWN";
 
   const minute = local.hour * 60 + local.minute;
@@ -73,8 +83,7 @@ function asObject(value: unknown): Record<string, unknown> {
 /** Today's validated schedule in Jakarta; unknown schedules stay unknown. */
 export function openingHoursLabel(value: unknown, now = new Date()): string | undefined {
   const schedule = asObject(value);
-  if (schedule.timezone !== JAKARTA_TIMEZONE) return undefined;
-  const intervals = readIntervals(asObject(schedule.weekly)[DAY_KEYS[localParts(now).dayIndex]]);
+  const intervals = readDayIntervals(schedule, DAY_KEYS[localParts(now).dayIndex]!);
   if (!intervals || intervals.some(item => parseClock(item.open) === null || parseClock(item.close) === null)) return undefined;
   return intervals.length ? `${intervals.map(item => `${item.open}-${item.close}`).join(", ")} WIB` : "Tutup hari ini";
 }

@@ -58,6 +58,11 @@ describe("commuter merchant evidence", () => {
       observedAt: "2026-09-11T08:00:00.000Z",
       photo: "https://images.example.test/place.jpg",
       menuPhotos: ["https://images.example.test/menu.jpg"],
+      description: "Kedai lokal dengan roti segar setiap pagi.",
+      facilities: ["Tempat Duduk", "Wi-Fi"],
+      paymentMethods: ["QRIS", "Tunai"],
+      socialMedia: { instagram: "@merchant.test" },
+      menuItems: [{ id: "roti", name: "Roti Susu", price: 10000, description: "Lembut", photo_url: "https://images.example.test/roti.jpg", is_available: true, tag: "Favorit" }],
     }} onRoute={vi.fn()} />);
     expect(html).toContain("Jl. Contoh 1");
     expect(html).toContain('aria-label="Detail Merchant tanpa metadata"');
@@ -67,6 +72,15 @@ describe("commuter merchant evidence", () => {
     expect(html).toContain("Tebet, Jakarta Selatan");
     expect(html).toContain("11 Sep 2026");
     expect(html).toContain("Foto 2 Merchant tanpa metadata");
+    expect(html).toContain("Tentang usaha");
+    expect(html).toContain("Kedai lokal dengan roti segar setiap pagi.");
+    expect(html).toContain("Tempat Duduk");
+    expect(html).toContain("Metode pembayaran");
+    expect(html).toContain("@merchant.test");
+    expect(html).toContain("Katalog menu");
+    expect(html).toContain("Roti Susu");
+    expect(html).toContain("Rp10.000");
+    expect(html).toContain("Foto menu Roti Susu");
     expect(html).toContain("Rute ke sini");
     expect(html).toContain("Belum ada catatan komunitas untuk tempat ini");
     expect(html).not.toContain("Jam buka belum tersedia");
