@@ -33,7 +33,31 @@ const defaultDependencies: AdminMissionSyncRouteDependencies = {
     const repository = new MapidMissionRepository(getServiceRoleSupabaseClient());
     return new AdminMissionSyncService(
       repository,
-      { syncSource: (input) => new MapidMissionSyncService(repository).syncSource(input) },
+      {
+        syncSource: async (input) => {
+          try {
+            return await new MapidMissionSyncService(repository).syncSource(input);
+          } catch (error) {
+            if (error instanceof MapidError && error.code === "MAPID_CONFIGURATION_ERROR") {
+              return {
+                error: "Mission source configuration is unavailable.",
+                failed: 1,
+                finished_at: new Date().toISOString(),
+                inserted: 0,
+                invalid: 0,
+                pages_fetched: 0,
+                records_fetched: 0,
+                skipped: 0,
+                source: input.source,
+                started_at: new Date().toISOString(),
+                status: "BLOCKED",
+                updated: 0,
+              };
+            }
+            throw error;
+          }
+        },
+      },
     );
   },
 };

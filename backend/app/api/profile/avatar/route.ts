@@ -32,7 +32,7 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 const AVATAR_BUCKET = "avatars";
-const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 const ALLOWED_AVATAR_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -79,7 +79,7 @@ export async function POST(
       ) {
         throw new ApplicationError(
           "REQUEST_TOO_LARGE",
-          "Ukuran foto profil maksimal 2 MB.",
+          "Ukuran foto profil maksimal 5 MB.",
         );
       }
 
@@ -101,7 +101,7 @@ export async function POST(
       ) {
         throw new ApplicationError(
           "REQUEST_TOO_LARGE",
-          "Ukuran foto profil maksimal 2 MB.",
+          "Ukuran foto profil maksimal 5 MB.",
         );
       }
 

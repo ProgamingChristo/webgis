@@ -55,9 +55,11 @@ export function OwnerBusinessProfileView({
   const [facilities, setFacilities] = useState<string[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [coverPhotoUrl, setCoverPhotoUrl] = useState<string | null>(null);
+  const [logoPhotoUrl, setLogoPhotoUrl] = useState<string | null>(null);
 
   // Status & Feedback
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -81,6 +83,9 @@ export function OwnerBusinessProfileView({
     setMenuItems(data.metadata.menu_items || []);
     setCoverPhotoUrl(
       data.metadata.public_media?.storefront_url || null
+    );
+    setLogoPhotoUrl(
+      (data.metadata.public_media as any)?.logo_url || null
     );
   }, []);
 
@@ -138,7 +143,8 @@ export function OwnerBusinessProfileView({
         JSON.stringify(profile.metadata.facilities || ["Tempat Duduk", "Take Away"]) ||
       JSON.stringify(menuItems) !==
         JSON.stringify(profile.metadata.menu_items || []) ||
-      coverPhotoUrl !== (profile.metadata.public_media?.storefront_url || null)
+      coverPhotoUrl !== (profile.metadata.public_media?.storefront_url || null) ||
+      logoPhotoUrl !== ((profile.metadata.public_media as any)?.logo_url || null)
     : false;
 
   const handleResetChanges = () => {
@@ -156,6 +162,7 @@ export function OwnerBusinessProfileView({
     setFacilities(profile.metadata.facilities || ["Tempat Duduk", "Take Away"]);
     setMenuItems(profile.metadata.menu_items || []);
     setCoverPhotoUrl(profile.metadata.public_media?.storefront_url || null);
+    setLogoPhotoUrl((profile.metadata.public_media as any)?.logo_url || null);
     setSaveError(null);
   };
 
@@ -169,6 +176,19 @@ export function OwnerBusinessProfileView({
       setSaveError(err.message || "Gagal mengunggah foto sampul.");
     } finally {
       setUploadingCover(false);
+    }
+  };
+
+  const handleUploadLogoPhoto = async (file: File) => {
+    setUploadingLogo(true);
+    setSaveError(null);
+    try {
+      const res = await OwnerMerchantProfileService.uploadPhoto(file);
+      setLogoPhotoUrl(res.image_url);
+    } catch (err: any) {
+      setSaveError(err.message || "Gagal mengunggah foto profil usaha.");
+    } finally {
+      setUploadingLogo(false);
     }
   };
 
@@ -189,6 +209,7 @@ export function OwnerBusinessProfileView({
           public_media: {
             ...(profile.metadata.public_media || {}),
             storefront_url: coverPhotoUrl,
+            logo_url: logoPhotoUrl,
           },
           menu_items: menuItems,
         },
@@ -362,6 +383,9 @@ export function OwnerBusinessProfileView({
           coverPhotoUrl={coverPhotoUrl}
           onUploadCoverPhoto={handleUploadCoverPhoto}
           uploadingCover={uploadingCover}
+          logoPhotoUrl={logoPhotoUrl}
+          onUploadLogoPhoto={handleUploadLogoPhoto}
+          uploadingLogo={uploadingLogo}
           intelligence={intelligence}
           campaignsCount={merchantBrief.campaigns_count || 0}
         />

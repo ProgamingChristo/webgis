@@ -44,11 +44,11 @@ export const profileService = {
     }
 
     const maxBytes =
-      2 * 1024 * 1024;
+      5 * 1024 * 1024;
 
     if (file.size > maxBytes) {
       throw new Error(
-        "Ukuran foto profil maksimal 2 MB.",
+        "Ukuran foto profil maksimal 5 MB.",
       );
     }
 

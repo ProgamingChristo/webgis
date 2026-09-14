@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   BadgeCheck,
@@ -25,6 +25,9 @@ export interface ProfileHeroSectionProps {
   uploadingCover: boolean;
   intelligence: ReturnType<typeof useUmkmIntelligence>;
   campaignsCount: number;
+  logoPhotoUrl?: string | null;
+  onUploadLogoPhoto?: (file: File) => Promise<void>;
+  uploadingLogo?: boolean;
 }
 
 export function ProfileHeroSection({
@@ -34,9 +37,22 @@ export function ProfileHeroSection({
   uploadingCover,
   intelligence,
   campaignsCount,
+  logoPhotoUrl,
+  onUploadLogoPhoto,
+  uploadingLogo = false,
 }: ProfileHeroSectionProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
   const [imgError, setImgError] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [coverPhotoUrl]);
+
+  useEffect(() => {
+    setLogoError(false);
+  }, [logoPhotoUrl]);
 
   const intelData = intelligence.data;
   const storeStatus = evaluateStoreStatus(profile.opening_hours);
@@ -90,6 +106,7 @@ export function ProfileHeroSection({
             src={coverPhotoUrl}
             alt={`Foto gerai ${profile.name}`}
             fill
+            unoptimized
             className="object-cover"
             priority
             onError={() => setImgError(true)}
@@ -142,8 +159,53 @@ export function ProfileHeroSection({
           {/* Avatar + Main Title Info */}
           <div className="flex items-start gap-4">
             {/* Avatar Pill */}
-            <div className="-mt-14 relative flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-sky-600 text-white shadow-md sm:h-24 sm:w-24">
-              <Store size={36} />
+            <div className="-mt-14 group relative flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-sky-600 text-white shadow-md sm:h-24 sm:w-24 overflow-hidden">
+              {logoPhotoUrl && !logoError ? (
+                <Image
+                  src={logoPhotoUrl}
+                  alt={`Logo ${profile.name}`}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <Store size={36} />
+              )}
+
+              {onUploadLogoPhoto ? (
+                <>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        await onUploadLogoPhoto(file);
+                        setLogoError(false);
+                        if (logoInputRef.current) logoInputRef.current.value = "";
+                      }
+                    }}
+                    disabled={uploadingLogo}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={uploadingLogo}
+                    title="Ganti logo / foto profil usaha"
+                    aria-label="Ganti logo / foto profil usaha"
+                    className="absolute inset-0 flex items-center justify-center bg-black/55 opacity-0 transition group-hover:opacity-100 disabled:opacity-50 cursor-pointer"
+                  >
+                    {uploadingLogo ? (
+                      <Loader2 size={16} className="animate-spin text-white" />
+                    ) : (
+                      <Camera size={16} className="text-white" />
+                    )}
+                  </button>
+                </>
+              ) : null}
             </div>
 
             <div className="min-w-0 flex-1 pt-1">

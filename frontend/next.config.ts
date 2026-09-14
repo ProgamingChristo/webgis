@@ -32,6 +32,13 @@ const nextConfig: NextConfig = {
         hostname: "mapid-app-chat.cdn.mapid.io",
         protocol: "https",
       },
+      {
+        // Supabase storage — digunakan untuk avatar profil, foto sampul usaha, dan foto menu.
+        // Format: https://<project-ref>.supabase.co/storage/v1/object/public/**
+        hostname: "*.supabase.co",
+        protocol: "https",
+        pathname: "/storage/v1/object/public/**",
+      },
     ],
   },
 

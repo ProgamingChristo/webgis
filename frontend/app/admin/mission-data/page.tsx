@@ -129,6 +129,11 @@ export default function AdminMissionDataPage() {
           ...current,
           [source]: result.error_summary ?? "Sinkronisasi tidak dapat diselesaikan.",
         }));
+      } else {
+        setSourceErrors((current) => ({
+          ...current,
+          [source]: undefined,
+        }));
       }
       await loadLatest();
     } catch (error) {
@@ -246,7 +251,8 @@ export default function AdminMissionDataPage() {
 
                 {sourceErrors[source] ? (
                   <div className={styles.sourceError} role="alert">
-                    {sourceErrors[source]}
+                    <TriangleAlert className={styles.errorIcon} size={15} />
+                    <span>{sourceErrors[source]}</span>
                   </div>
                 ) : null}
 
@@ -314,6 +320,14 @@ function formatDuration(milliseconds: number): string {
 }
 
 function getSafeUiError(error: unknown, fallback: string): string {
-  void error;
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof (error as { message: unknown }).message === "string"
+  ) {
+    const msg = (error as { message: string }).message.trim();
+    if (msg) return msg;
+  }
   return fallback;
 }

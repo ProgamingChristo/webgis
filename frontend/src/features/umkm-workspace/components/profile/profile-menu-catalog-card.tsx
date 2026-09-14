@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
-import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import {
   Camera,
   Loader2,
@@ -12,6 +11,63 @@ import {
 } from "lucide-react";
 import type { MenuItem } from "../../types/merchant-profile.types";
 import { OwnerMerchantProfileService } from "../../services/merchant-profile.service";
+
+function MenuItemImage({
+  src,
+  alt,
+}: {
+  src: string;
+  alt: string;
+}) {
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    setError(false);
+  }, [src]);
+
+  if (error) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-slate-100 text-slate-300">
+        <UtensilsCrossed size={32} />
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      unoptimized
+      className="object-cover"
+      sizes="(max-width: 768px) 100vw, 400px"
+      onError={() => setError(true)}
+    />
+  );
+}
+
+function MenuPreviewThumb({ src }: { src: string }) {
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    setError(false);
+  }, [src]);
+
+  if (!src || error) {
+    return <UtensilsCrossed size={20} className="text-slate-400" />;
+  }
+
+  return (
+    <Image
+      src={src}
+      alt="Preview menu"
+      fill
+      unoptimized
+      className="object-cover"
+      onError={() => setError(true)}
+    />
+  );
+}
 
 export interface ProfileMenuCatalogCardProps {
   items: MenuItem[];
@@ -194,13 +250,7 @@ export function ProfileMenuCatalogCard({
                 {/* Image & Price Header */}
                 <div className="relative h-32 w-full bg-slate-100">
                   {item.photo_url ? (
-                    <Image
-                      src={item.photo_url}
-                      alt={item.name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 400px"
-                    />
+                    <MenuItemImage src={item.photo_url} alt={item.name} />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-slate-100 text-slate-300">
                       <UtensilsCrossed size={32} />
@@ -323,12 +373,7 @@ export function ProfileMenuCatalogCard({
                 <div className="mt-1.5 flex items-center gap-3">
                   <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 overflow-hidden">
                     {itemPhotoUrl ? (
-                      <Image
-                        src={itemPhotoUrl}
-                        alt="Preview menu"
-                        fill
-                        className="object-cover"
-                      />
+                      <MenuPreviewThumb src={itemPhotoUrl} />
                     ) : (
                       <UtensilsCrossed size={20} className="text-slate-400" />
                     )}

@@ -213,9 +213,22 @@
 }
 
 .sourceError {
-  color: #ffc3ca;
-  font-size: 0.8rem;
+  align-items: center;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #b91c1c;
+  display: flex;
+  font-size: 0.82rem;
+  font-weight: 600;
+  gap: 7px;
   line-height: 1.45;
+  padding: 8px 12px;
+}
+
+.errorIcon {
+  flex-shrink: 0;
+  color: #dc2626;
 }
 
 .syncButton {
