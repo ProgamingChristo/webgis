@@ -21,15 +21,23 @@ async function buildPdf() {
 
   // Read all images and map them to base64
   const imageMap = {};
-  if (fs.existsSync(IMAGES_DIR)) {
-    const files = fs.readdirSync(IMAGES_DIR);
-    for (const file of files) {
-      if (file.toLowerCase().endsWith(".png") || file.toLowerCase().endsWith(".jpg")) {
-        const fullPath = path.join(IMAGES_DIR, file);
-        const ext = file.toLowerCase().endsWith(".png") ? "png" : "jpeg";
-        const b64 = fs.readFileSync(fullPath).toString("base64");
-        imageMap[`images/${file}`] = `data:image/${ext};base64,${b64}`;
-        imageMap[file] = `data:image/${ext};base64,${b64}`;
+  const imageDirs = [
+    path.join(DOCS_DIR, "Final_Documentation_Getra_assets"),
+    path.join(DOCS_DIR, "images"),
+  ];
+
+  for (const dir of imageDirs) {
+    if (fs.existsSync(dir)) {
+      const dirName = path.basename(dir);
+      const files = fs.readdirSync(dir);
+      for (const file of files) {
+        if (file.toLowerCase().endsWith(".png") || file.toLowerCase().endsWith(".jpg") || file.toLowerCase().endsWith(".jpeg")) {
+          const fullPath = path.join(dir, file);
+          const ext = file.toLowerCase().endsWith(".png") ? "png" : "jpeg";
+          const b64 = fs.readFileSync(fullPath).toString("base64");
+          imageMap[`${dirName}/${file}`] = `data:image/${ext};base64,${b64}`;
+          imageMap[file] = `data:image/${ext};base64,${b64}`;
+        }
       }
     }
   }
