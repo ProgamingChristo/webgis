@@ -48,11 +48,34 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 
   async headers() {
+    const cspDirectives = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://app.sandbox.midtrans.com https://app.midtrans.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "img-src 'self' data: blob: https: *.supabase.co *.mapid.io mapidstorage.cdn.mapid.io mapid-app-chat.cdn.mapid.io",
+      "connect-src 'self' https: wss: http://localhost:8080 http://localhost:8180 https://getra-routing-api.tail0ed517.ts.net https://*.supabase.co https://app.sandbox.midtrans.com https://app.midtrans.com",
+      "frame-src 'self' https://app.sandbox.midtrans.com https://app.midtrans.com",
+      "worker-src 'self' blob:",
+      "frame-ancestors 'none'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ");
+
     return [
       // Global security headers untuk seluruh GETRA
       {
         source: "/(.*)",
         headers: [
+          {
+            key: "Content-Security-Policy",
+            value: cspDirectives,
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
+          },
           {
             key: "X-Content-Type-Options",
             value: "nosniff",

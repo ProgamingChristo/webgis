@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  MIN_PASSWORD_LENGTH,
+  MAX_PASSWORD_LENGTH,
+  isCommonPassword,
+} from "@/src/lib/password-policy";
 
 export const registerSchema = z
   .object({
@@ -9,8 +14,11 @@ export const registerSchema = z
 
     password: z
       .string()
-      .min(8, "Password minimal 8 karakter.")
-      .max(128),
+      .min(MIN_PASSWORD_LENGTH, `Password minimal ${MIN_PASSWORD_LENGTH} karakter.`)
+      .max(MAX_PASSWORD_LENGTH)
+      .refine((val) => !isCommonPassword(val), {
+        message: "Password terlalu mudah ditebak.",
+      }),
 
     display_name: z
       .string()
