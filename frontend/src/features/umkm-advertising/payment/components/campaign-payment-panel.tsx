@@ -490,10 +490,10 @@ export function CampaignPaymentPanel({
                 onClick={handleSimulateSettlement}
                 disabled={isProcessing}
                 style={{ color: "#ffffff" }}
-                className="flex min-h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.99]"
+                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3 py-2.5 text-center text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.99]"
               >
-                <ShieldCheck className="size-4" />
-                {isProcessing ? "Memproses..." : "Selesaikan Pembayaran (Sandbox)"}
+                <ShieldCheck className="size-4 shrink-0" />
+                <span>{isProcessing ? "Memproses..." : "Selesaikan Pembayaran (Sandbox)"}</span>
               </button>
               <button
                 type="button"
