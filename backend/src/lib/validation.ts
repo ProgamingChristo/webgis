@@ -17,7 +17,16 @@ export async function validateBody<T>(
   const parseResult = schema.safeParse(body);
   
   if (!parseResult.success) {
-    console.error("[ZOD ERROR]", parseResult.error.issues);
+    const sanitizedIssues = parseResult.error.issues.map((issue) => {
+      const isSensitive = issue.path.some(
+        (p) => typeof p === "string" && /password|token|secret|key|authorization/i.test(p),
+      );
+      if (isSensitive) {
+        return { code: issue.code, path: issue.path, message: issue.message };
+      }
+      return issue;
+    });
+    console.error("[ZOD ERROR]", sanitizedIssues);
     const errorMsg = parseResult.error.issues[0]?.message || "Validation failed";
     throw new ApplicationError("VALIDATION_ERROR", errorMsg);
   }
