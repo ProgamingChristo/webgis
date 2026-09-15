@@ -248,6 +248,92 @@ function createAccessibilityEvidenceMarker(
   return { element, button };
 }
 
+function createAccessibilityPopupContent(
+  evidence: AccessibilityEvidence,
+  onOpenDetail?: () => void,
+) {
+  const container = document.createElement("div");
+  container.className = "accessibility-popup";
+
+  const badgeRow = document.createElement("div");
+  badgeRow.className = "accessibility-popup__badge-row";
+
+  const subcatBadge = document.createElement("span");
+  subcatBadge.className = "accessibility-popup__badge accessibility-popup__badge--subcat";
+  subcatBadge.textContent =
+    evidence.subcategory === "CROSSING"
+      ? "Penyeberangan"
+      : evidence.subcategory === "GUIDING_BLOCK"
+        ? "Jalur Pemandu"
+        : evidence.subcategory === "TRANSIT_ACCESS"
+          ? "Akses Transit"
+          : evidence.subcategory === "WHEELCHAIR_ACCESS"
+            ? "Akses Kursi Roda"
+            : evidence.subcategory === "OBSTRUCTION"
+              ? "Hambatan"
+              : evidence.subcategory === "SIDEWALK"
+                ? "Trotoar"
+                : "Aksesibilitas";
+  badgeRow.append(subcatBadge);
+
+  const statusBadge = document.createElement("span");
+  statusBadge.className = `accessibility-popup__badge accessibility-popup__badge--status accessibility-popup__badge--status-${evidence.validation_status.toLowerCase()}`;
+  statusBadge.textContent =
+    evidence.validation_status === "CONFIRMED"
+      ? "Terkonfirmasi"
+      : evidence.validation_status === "NEEDS_REVIEW"
+        ? "Perlu Verifikasi"
+        : "Observasi Lapangan";
+  badgeRow.append(statusBadge);
+  container.append(badgeRow);
+
+  const heading = document.createElement("h4");
+  heading.className = "accessibility-popup__title";
+  heading.textContent = evidence.title ?? "Observasi Aksesibilitas";
+  container.append(heading);
+
+  if (evidence.description) {
+    const desc = document.createElement("p");
+    desc.className = "accessibility-popup__desc";
+    desc.textContent =
+      evidence.description.length > 110
+        ? `${evidence.description.slice(0, 107)}...`
+        : evidence.description;
+    container.append(desc);
+  }
+
+  const metaRow = document.createElement("div");
+  metaRow.className = "accessibility-popup__meta";
+
+  const photoIndicator = document.createElement("span");
+  if (evidence.media_urls && evidence.media_urls.length > 0) {
+    photoIndicator.className = "accessibility-popup__media-indicator";
+    photoIndicator.textContent = `📷 ${evidence.media_urls.length} Foto`;
+  } else {
+    photoIndicator.className =
+      "accessibility-popup__media-indicator accessibility-popup__media-indicator--none";
+    photoIndicator.textContent = "📷 Foto belum tersedia";
+  }
+  metaRow.append(photoIndicator);
+
+  const sourceSpan = document.createElement("span");
+  sourceSpan.textContent = `• ${evidence.source_type === "GETRA_COMMUNITY" ? "Komunitas" : "MAPID"}`;
+  metaRow.append(sourceSpan);
+  container.append(metaRow);
+
+  const detailBtn = document.createElement("button");
+  detailBtn.type = "button";
+  detailBtn.className = "accessibility-popup__cta";
+  detailBtn.textContent = "Lihat Detail Lengkap →";
+  detailBtn.onclick = (e) => {
+    e.stopPropagation();
+    onOpenDetail?.();
+  };
+  container.append(detailBtn);
+
+  return container;
+}
+
 function createPopupContent(
   title: string,
   detail: string,
@@ -1731,20 +1817,13 @@ export function GetraMap({
       markerElements.button.onclick = () => {
         onSelectAccessibilityEvidence?.(evidence);
       };
-      const detail = [
-        evidence.validation_status === "CONFIRMED"
-          ? "Terkonfirmasi"
-          : evidence.validation_status === "NEEDS_REVIEW"
-            ? "Perlu verifikasi"
-            : "Observasi lapangan",
-        evidence.freshness_status,
-        `Sumber: ${evidence.source_type === "GETRA_COMMUNITY" ? "Komunitas GETRA" : "Catatan lapangan"}`,
-      ].join(" - ");
       const marker = new Marker({ element: markerElements.element, anchor: "center" })
         .setLngLat(evidence.geometry.coordinates)
         .setPopup(
-          new Popup({ offset: 16 }).setDOMContent(
-            createPopupContent(evidence.title ?? "Observasi aksesibilitas", detail),
+          new Popup({ offset: 16, maxWidth: "290px" }).setDOMContent(
+            createAccessibilityPopupContent(evidence, () => {
+              onSelectAccessibilityEvidence?.(evidence);
+            }),
           ),
         )
         .addTo(map);

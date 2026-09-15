@@ -9,6 +9,9 @@ export const AiIntentEnum = z.enum([
   "WALKING_ROUTE",
   "UMKM_POI",
   "MERCHANT_SEARCH",
+  "ACCESSIBILITY",
+  "DEMAND_SUPPLY",
+  "COMMUNITY_OBSERVATION",
   "UNKNOWN",
 ]);
 
@@ -186,6 +189,14 @@ export const AiApplicationActionSchema = z.discriminatedUnion("type", [
   }),
 
   /**
+   * Switch the active primary map mode (e.g. to accessibility or analytics).
+   */
+  z.object({
+    type: z.literal("SWITCH_MAP_MODE"),
+    mode: z.enum(["merchant", "accessibility", "business-space", "analytics"]),
+  }),
+
+  /**
    * Used when the user's request is not sufficiently specific
    * to safely execute an application action.
    */
@@ -277,6 +288,47 @@ export const UmkmFactsSchema = AiFactBaseSchema.extend({
 });
 
 export type UmkmFacts = z.infer<typeof UmkmFactsSchema>;
+
+export const AccessibilityFactsSchema = AiFactBaseSchema.extend({
+  intent: z.literal("ACCESSIBILITY"),
+
+  facts: z.object({
+    observation_count: z.number().default(0),
+    confirmed_count: z.number().default(0),
+    needs_review_count: z.number().default(0),
+    has_photos: z.boolean().default(false),
+    subcategories: z.array(z.string()).default([]),
+    sample_title: z.string().nullable().default(null),
+    disclaimer: z.string(),
+  }),
+});
+
+export type AccessibilityFacts = z.infer<typeof AccessibilityFactsSchema>;
+
+export const DemandSupplyFactsSchema = AiFactBaseSchema.extend({
+  intent: z.literal("DEMAND_SUPPLY"),
+
+  facts: z.object({
+    observations: z.string(),
+    inferences: z.string(),
+    recommendations: z.string(),
+    limitations: z.array(z.string()).default([]),
+  }),
+});
+
+export type DemandSupplyFacts = z.infer<typeof DemandSupplyFactsSchema>;
+
+export const CommunityFactsSchema = AiFactBaseSchema.extend({
+  intent: z.literal("COMMUNITY_OBSERVATION"),
+
+  facts: z.object({
+    reports_count: z.number().default(0),
+    summary: z.string().nullable(),
+    disclaimer: z.string(),
+  }),
+});
+
+export type CommunityFacts = z.infer<typeof CommunityFactsSchema>;
 
 /**
  * Canonical Tanya GETRA response contract.

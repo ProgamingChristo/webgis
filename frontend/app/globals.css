@@ -3822,8 +3822,8 @@ body:has(.getra-app-shell--profile) {
 
 .accessibility-marker-anchor {
   z-index: 18 !important;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
 }
@@ -3873,6 +3873,205 @@ body:has(.getra-app-shell--profile) {
   box-shadow:
     0 5px 16px rgba(0, 0, 0, 0.5),
     0 0 0 5px rgba(59, 130, 246, 0.28);
+}
+
+.accessibility-row-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 2px 0 3px;
+}
+
+.accessibility-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.accessibility-chip--subcat {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.accessibility-chip--status {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.accessibility-chip--status-confirmed {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.accessibility-chip--status-needs_review {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.accessibility-chip--status-observed {
+  background: #f0f9ff;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+
+.accessibility-chip--photo {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.accessibility-chip--no-photo {
+  background: #f8fafc;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+}
+
+.accessibility-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 2px;
+  font-family: inherit;
+  color: #0f172a;
+}
+
+.accessibility-popup__badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.accessibility-popup__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.accessibility-popup__badge--subcat {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.accessibility-popup__badge--status {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.accessibility-popup__badge--status-confirmed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.accessibility-popup__badge--status-needs_review {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.accessibility-popup__badge--status-observed {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.accessibility-popup__title {
+  margin: 2px 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #0f172a;
+}
+
+.accessibility-popup__desc {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #475569;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.accessibility-popup__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: #64748b;
+}
+
+.accessibility-popup__media-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0284c7;
+}
+
+.accessibility-popup__media-indicator--none {
+  color: #94a3b8;
+}
+
+.accessibility-popup__cta {
+  margin-top: 4px;
+  padding: 6px 10px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s ease;
+}
+
+.accessibility-popup__cta:hover {
+  background: #1d4ed8;
+}
+
+.accessibility-media-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(241, 245, 249, 0.7);
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #64748b;
+}
+
+.accessibility-media-placeholder__icon {
+  font-size: 24px;
+  opacity: 0.7;
+}
+
+.accessibility-media-placeholder__text strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.accessibility-media-placeholder__text p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #64748b;
 }
 
 .transit-marker {

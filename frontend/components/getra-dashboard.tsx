@@ -595,6 +595,25 @@ function PropertyObservationDetail({
   );
 }
 
+function formatObservationDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    return (
+      d.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Jakarta",
+      }) + " WIB"
+    );
+  } catch {
+    return dateStr;
+  }
+}
+
 function AccessibilityEvidenceResultRow({
   evidence,
   index,
@@ -606,19 +625,29 @@ function AccessibilityEvidenceResultRow({
   selected: boolean;
   onSelect: (evidence: AccessibilityEvidence) => void;
 }) {
+  const hasPhotos = evidence.media_urls && evidence.media_urls.length > 0;
   return (
     <button
       className={selected ? "result-row result-row--selected accessibility-result-row" : "result-row accessibility-result-row"}
       onClick={() => onSelect(evidence)}
       type="button"
+      aria-label={`Observasi ${evidence.title ?? accessibilityCategoryLabel(evidence.category)}, ${accessibilitySubcategoryLabel(evidence.subcategory)}`}
     >
       <span className="result-rank">A{index + 1}</span>
       <span className="result-main">
         <strong>{evidence.title ?? accessibilityCategoryLabel(evidence.category)}</strong>
-        <span>{accessibilitySubcategoryLabel(evidence.subcategory)} - {accessibilityStatusLabel(evidence.validation_status)}</span>
+        <span className="accessibility-row-badges">
+          <span className="accessibility-chip accessibility-chip--subcat">{accessibilitySubcategoryLabel(evidence.subcategory)}</span>
+          <span className={`accessibility-chip accessibility-chip--status accessibility-chip--status-${evidence.validation_status.toLowerCase()}`}>{accessibilityStatusLabel(evidence.validation_status)}</span>
+          {hasPhotos ? (
+            <span className="accessibility-chip accessibility-chip--photo">📷 {evidence.media_urls.length} foto</span>
+          ) : (
+            <span className="accessibility-chip accessibility-chip--no-photo">Foto belum tersedia</span>
+          )}
+        </span>
         <span className="result-meta">
           <ShieldCheck size={13} />
-          {accessibilitySourceLabel(evidence.source_type)} - {freshnessLabel(evidence.freshness_status)}
+          {accessibilitySourceLabel(evidence.source_type)} • {freshnessLabel(evidence.freshness_status)}
         </span>
       </span>
       <span className="score-box">
@@ -642,6 +671,7 @@ function AccessibilityEvidenceDetailPanel({
   if (!evidence) {
     return <div className="empty-state">Pilih catatan aksesibilitas pada peta atau daftar hasil.</div>;
   }
+  const hasPhotos = evidence.media_urls && evidence.media_urls.length > 0;
   return (
     <>
       <div className="detail-title">
@@ -651,9 +681,10 @@ function AccessibilityEvidenceDetailPanel({
         <h3>{evidence.title ?? accessibilityCategoryLabel(evidence.category)}</h3>
         <p>{accessibilitySubcategoryLabel(evidence.subcategory)} - {accessibilityStatusLabel(evidence.validation_status)}</p>
       </div>
-      {evidence.media_urls.length > 0 ? (
-        <section className="evidence-section">
-          <h4>Foto observasi</h4>
+
+      <section className="evidence-section">
+        <h4>Foto observasi</h4>
+        {hasPhotos ? (
           <div className="media-gallery">
             {evidence.media_urls.map((url, index) => (
               <SafeMediaImage
@@ -663,20 +694,41 @@ function AccessibilityEvidenceDetailPanel({
               />
             ))}
           </div>
-        </section>
-      ) : null}
+        ) : (
+          <div className="accessibility-media-placeholder" role="status">
+            <span className="accessibility-media-placeholder__icon" aria-hidden="true">📷</span>
+            <div className="accessibility-media-placeholder__text">
+              <strong>Foto belum tersedia</strong>
+              <p>Belum ada dokumentasi visual yang diunggah untuk titik observasi ini. Informasi fasilitas tetap tercatat secara faktual dari data lapangan.</p>
+            </div>
+          </div>
+        )}
+      </section>
+
       <section className="evidence-section">
         <h4>Observasi aksesibilitas</h4>
         <dl className="evidence-list evidence-list--compact">
           <OptionalDetail label="Kategori" value={accessibilityCategoryLabel(evidence.category)} />
           <OptionalDetail label="Subkategori" value={accessibilitySubcategoryLabel(evidence.subcategory)} />
-          <OptionalDetail label="Status" value={accessibilityStatusLabel(evidence.validation_status)} />
+          <OptionalDetail label="Status verifikasi" value={accessibilityStatusLabel(evidence.validation_status)} />
           <OptionalDetail label="Pembaruan data" value={freshnessLabel(evidence.freshness_status)} />
-          <OptionalDetail label="Waktu pengamatan" value={evidence.observed_at} />
-          <OptionalDetail label="Sumber" value={accessibilitySourceLabel(evidence.source_type)} />
-          <OptionalDetail label="Deskripsi" value={evidence.description} />
+          <OptionalDetail label="Waktu pengamatan" value={formatObservationDate(evidence.observed_at)} />
+          <OptionalDetail
+            label="Sumber data"
+            value={
+              evidence.source_type === "GETRA_COMMUNITY"
+                ? "Kontribusi Komunitas GETRA (Telah dimoderasi)"
+                : "Aktivitas Lapangan MAPID (Observasi Tim MAPID)"
+            }
+          />
+          <OptionalDetail
+            label="Koordinat"
+            value={`${evidence.geometry.coordinates[1].toFixed(6)}, ${evidence.geometry.coordinates[0].toFixed(6)}`}
+          />
+          <OptionalDetail label="Keterangan / Temuan" value={evidence.description} />
         </dl>
       </section>
+
       <section className="evidence-section">
         <h4>Keterkaitan dengan jalur pejalan kaki</h4>
         {loading ? (
@@ -692,6 +744,7 @@ function AccessibilityEvidenceDetailPanel({
           <p className="limitation-box">Belum ada jalur yang cukup dekat dengan catatan ini. Catatan tersebut tidak mengubah rute.</p>
         )}
       </section>
+
       <section className="evidence-section">
         <h4>Batas klaim</h4>
         <p className="limitation-box">
@@ -2174,6 +2227,11 @@ function GeneralGetraDashboard() {
     accessibilityDetailRequestRef.current = controller;
     setSelectedAccessibilityEvidenceId(evidence.id);
     setAccessibilityDetailLoading(true);
+    setDetailOpen(true);
+    setAiOpen(false);
+    if (typeof window !== "undefined" && window.innerWidth <= 760) {
+      setSidebarCollapsed(true);
+    }
     try {
       const detail = await accessibilityEvidenceService.detail(evidence.id, controller.signal);
       if (!controller.signal.aborted) setSelectedAccessibilityEvidenceDetail(detail);
@@ -2891,6 +2949,20 @@ function GeneralGetraDashboard() {
       setDetailOpen(false);
 
       return { status: "ROUTE_PENDING" };
+    }
+
+    if (action.type === "SWITCH_MAP_MODE") {
+      if (action.mode === "analytics") {
+        setViewMode("analytics");
+      } else {
+        setPrimaryMode(action.mode);
+        setViewMode("dataset");
+      }
+      setSidebarCollapsed(false);
+      return {
+        status: "COMPLETED",
+        message: `Tampilan peta dialihkan ke mode ${action.mode}.`,
+      };
     }
 
     if (action.type === "FOCUS_PLACE") {

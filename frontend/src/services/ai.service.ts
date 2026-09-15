@@ -100,6 +100,10 @@ export type AiApplicationAction =
       mode: AiRouteMode;
     }
   | {
+      type: "SWITCH_MAP_MODE";
+      mode: "merchant" | "accessibility" | "business-space" | "analytics";
+    }
+  | {
       type: "FOCUS_PLACE";
       query: string;
     }

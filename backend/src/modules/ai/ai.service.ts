@@ -19,6 +19,7 @@ import { getRequestSupabaseClient } from "@/src/lib/supabase/server";
 import { TransportNodeRepository } from "@/src/repositories/transport-node.repository";
 import { UmkmRepository } from "@/src/repositories/umkm.repository";
 import { CommuterNetworkRepository } from "@/src/features/commuter";
+import { AccessibilityEvidenceRepository } from "@/src/features/accessibility-evidence/accessibility-evidence.repository";
 
 type AiProvider = "openai" | "sub2api" | "deterministic";
 
@@ -48,7 +49,55 @@ export class AiService {
         normalizedQuestion,
       );
 
-    // 2. Guardrail: Unauthorized Privilege Escalation
+    // 2. Guardrail: Unauthorized Privilege Escalation & Admin/Owner Action Refusal
+    if (/\b(approve|setujui|verifikasi)\s+(?:merchant|toko|usaha|warung|pengajuan|submission)\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Persetujuan pendaftaran UMKM hanya dapat dilakukan oleh Administrator berwenang melalui dashboard Admin (/admin). GETRA AI beroperasi dengan pemisahan hak akses dan tidak memiliki kewenangan mengubah status kurasi merchant.",
+        intent: "UNKNOWN",
+        limitations: ["Tindakan persetujuan merchant memerlukan otorisasi Administrator."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:ubah|ganti|pindah)\s+(?:owner|pemilik|hak milik)\b/iu.test(normalizedQuestion) || /\bklaim\s+(?:merchant|toko|usaha)\s+(?:langsung|tanpa verifikasi)\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Klaim dan perubahan kepemilikan usaha memerlukan pengajuan dokumen legalitas resmi melalui alur Klaim Usaha (/umkm) untuk diverifikasi oleh tim Admin. Asisten AI tidak dapat memindahtangankan kepemilikan.",
+        intent: "UNKNOWN",
+        limitations: ["Perubahan kepemilikan memerlukan verifikasi dokumen legal oleh Administrator."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:publikasikan|terbitkan|publish)\s+(?:merchant|toko|usaha)\s*(?:pending|belum disetujui)?\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Publikasi profil usaha dilakukan secara otomatis oleh sistem setelah status verifikasi pendaftaran disetujui oleh tim Admin. Asisten AI tidak memiliki wewenang untuk mempublikasikan data yang masih berstatus pending.",
+        intent: "UNKNOWN",
+        limitations: ["Publikasi UMKM tunduk pada alur kurasi Admin."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:ubah|aktifkan|set)\s+(?:status\s+)?promosi\s+(?:jadi\s+aktif|tanpa\s+bayar|gratis)\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Permintaan ditolak demi keamanan. Aktivasi kampanye promosi memerlukan penyelesaian transaksi pembayaran resmi melalui gateway Midtrans Sandbox. Asisten AI tidak memiliki otorisasi finansial untuk mengaktifkan promosi tanpa pembayaran sah.",
+        intent: "UNKNOWN",
+        limitations: ["Aktivasi promosi terikat pada settlement pembayaran Midtrans Sandbox."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
     const isPrivilegeEscalation =
       /\b(jadikan saya admin|approve usaha.*tanpa admin|aktifkan promosi tanpa bayar|ubah merchant ini jadi punya saya|bypass auth|elevate privilege)\b/iu.test(
         normalizedQuestion,
@@ -60,6 +109,43 @@ export class AiService {
           "Permintaan ditolak demi keamanan sistem. GETRA AI mematuhi protokol perlindungan data ketat, tidak memiliki akses ke kunci rahasia/kredensial backend, dan tidak dapat mengubah hak akses administratif pengguna.",
         intent: "UNKNOWN",
         limitations: ["Permintaan melanggar batas keamanan atau privasi sistem."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    // 2b. Fair Discovery & Superlative Claims Guardrails
+    if (/\b(?:kenapa|mengapa)\s+(?:toko|merchant|usaha)\s+(?:ini\s+)?(?:muncul|tampil|ada di atas)\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Merchant tampil pada GETRA berdasarkan prinsip Fair Discovery: kedekatan jarak spasial, kesesuaian kategori pencarian, serta status buka/tutup toko. GETRA tidak mendahulukan usaha semata-mata karena biaya lelang iklan.",
+        intent: "ASSISTANT_IDENTITY",
+        limitations: [],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:mana|rekomendasikan).*(?:paling\s+enak|terbaik|juara|nomor satu)\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "GETRA beroperasi dengan prinsip Fair Discovery berbasis data faktual spasial. Kami tidak memberikan klaim subjektif seperti 'terbaik' atau 'paling enak' tanpa bukti ulasan konsumen yang terverifikasi secara empiris.",
+        intent: "UMKM_POI",
+        limitations: ["Penilaian rasa dan klaim superlatif di luar cakupan data faktual GETRA."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:apa itu|jelaskan)\s+hidden gem\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Hidden Gem di GETRA adalah penanda bagi UMKM lokal berkualitas yang berada di jalur pedestrian sekunder atau permukiman yang mungkin memiliki keterlihatan rendah di jalan raya utama, namun memiliki produk otentik dan terdaftar resmi.",
+        intent: "ASSISTANT_IDENTITY",
+        limitations: [],
         evidence: [],
         action: { type: "ANSWER_ONLY" },
         provider: "deterministic",
@@ -91,7 +177,7 @@ export class AiService {
       };
     }
 
-    if (/\b(berapa macet|kemacetan sekarang|macet sekarang|live traffic)\b/iu.test(normalizedQuestion)) {
+    if (/\b(berapa macet|kemacetan sekarang|macet sekarang|live traffic|apakah.*macet)\b/iu.test(normalizedQuestion)) {
       return {
         answer:
           "GETRA berfokus pada jaringan rute pejalan kaki dan multimodal berbasis jaringan GIS, bukan penyedia sensor kemacetan lalu lintas jalan raya real-time.",
@@ -547,6 +633,15 @@ Classify the current user request into exactly one supported intent:
 - MERCHANT_SEARCH:
   Requests to search, discover, find, filter, or recommend merchants, food, shops, restaurants, or UMKM.
 
+- ACCESSIBILITY:
+  Questions about pedestrian accessibility, sidewalk conditions, wheelchair access, ramps, guiding blocks, or disability facilities.
+
+- DEMAND_SUPPLY:
+  Questions regarding market potential, retail gap, customer footfall vs business supply, or recommendations where to open a business space.
+
+- COMMUNITY_OBSERVATION:
+  Questions about citizen/community crowdsourced reports or local pedestrian observations.
+
 - UNKNOWN:
   The request cannot be classified safely.
 
@@ -577,6 +672,9 @@ Also return at most one strict AiApplicationAction:
 
 - FOCUS_PLACE:
   when the user asks to locate/focus a place without asking for a route.
+
+- SWITCH_MAP_MODE:
+  when the user asks to switch or view the map in accessibility, business-space, or analytics mode.
 
 - REQUEST_CLARIFICATION:
   only when required information is genuinely ambiguous or missing.
@@ -795,6 +893,25 @@ Rules:
       }
 
       case "WALKING_ROUTE": {
+        /**
+         * Route explanation for active computed route state.
+         */
+        if (context?.active_route) {
+          facts = {
+            distance_m: context.active_route.distance_meters,
+            duration_s: context.active_route.duration_seconds,
+            mode: context.active_route.mode,
+            status: "FOUND",
+          };
+
+          provenance.push({
+            source: "GETRA Active Route",
+            dataset: "Active Computed Route State",
+          });
+
+          break;
+        }
+
         /**
          * This branch handles already-resolved route coordinates.
          *
@@ -1032,6 +1149,119 @@ Rules:
         break;
       }
 
+      case "ACCESSIBILITY": {
+        const supabase = getRequestSupabaseClient(this.authorization);
+        const accessibilityRepo = new AccessibilityEvidenceRepository(supabase);
+
+        const west = context?.origin ? Number(Math.max(-180, context.origin.longitude - 0.02).toFixed(6)) : 106.5;
+        const south = context?.origin ? Number(Math.max(-90, context.origin.latitude - 0.02).toFixed(6)) : -7.2;
+        const east = context?.origin ? Number(Math.min(180, context.origin.longitude + 0.02).toFixed(6)) : 108.0;
+        const north = context?.origin ? Number(Math.min(90, context.origin.latitude + 0.02).toFixed(6)) : -6.0;
+
+        try {
+          const result = await accessibilityRepo.list({
+            west,
+            south,
+            east,
+            north,
+            limit: 20,
+            offset: 0,
+          });
+
+          const items = result.evidence ?? [];
+          const totalCount = result.total_available ?? items.length;
+          const confirmedCount = items.filter((x) => x.validation_status === "CONFIRMED").length;
+          const needsReviewCount = items.filter((x) => x.validation_status === "NEEDS_REVIEW").length;
+          const hasPhotos = items.some((x) => Array.isArray(x.media_urls) && x.media_urls.length > 0);
+          const subcategories = Array.from(new Set(items.map((x) => x.subcategory).filter(Boolean)));
+          const sampleTitle = items[0]?.title ?? null;
+
+          facts = {
+            observation_count: totalCount,
+            confirmed_count: confirmedCount,
+            needs_review_count: needsReviewCount,
+            has_photos: hasPhotos,
+            subcategories: subcategories.slice(0, 5),
+            sample_title: sampleTitle,
+            disclaimer:
+              "Data bukti aksesibilitas merupakan hasil observasi lapangan terverifikasi/moderasi dan tidak mengubah graf rute pejalan kaki kanonikal.",
+          };
+
+          provenance.push({
+            source: "GETRA Accessibility",
+            dataset: "Accessibility Evidence Observations",
+          });
+        } catch {
+          facts = {
+            observation_count: 0,
+            confirmed_count: 0,
+            needs_review_count: 0,
+            has_photos: false,
+            subcategories: [],
+            sample_title: null,
+            disclaimer: "Data aksesibilitas sementara belum dapat dimuat.",
+          };
+          limitations.push("Data bukti aksesibilitas sementara tidak dapat diakses.");
+        }
+
+        break;
+      }
+
+      case "DEMAND_SUPPLY": {
+        const supabase = getRequestSupabaseClient(this.authorization);
+        let merchantCount = 0;
+
+        if (context?.origin) {
+          try {
+            const umkmRepo = new UmkmRepository(supabase);
+            const nearby = await umkmRepo.findNearby({
+              lat: context.origin.latitude,
+              lng: context.origin.longitude,
+              radiusMeters: 1200,
+            });
+            merchantCount = nearby.length;
+          } catch {
+            // fallback
+          }
+        }
+
+        facts = {
+          observations: `Tercatat ${merchantCount > 0 ? `${merchantCount} UMKM terdata` : "sebaran UMKM terdaftar"} di sekitar koridor/area studi GETRA beserta simpul transit pejalan kaki.`,
+          inferences:
+            "Kawasan dengan intensitas pergerakan pejalan kaki tinggi di dekat simpul transit mengindikasikan potensi permintaan layanan harian dan kuliner yang belum terlayani secara merata.",
+          recommendations:
+            "Pelaku usaha disarankan memprioritaskan titik strategis dekat akses pejalan kaki dan melakukan validasi lapangan langsung sebelum menentukan lokasi usaha.",
+          limitations: [
+            "Estimasi kesenjangan komersial bersifat indikatif berbasis sebaran spasial.",
+            "GETRA tidak menjamin proyeksi omzet, pendapatan, atau margin keuntungan finansial.",
+          ],
+        };
+
+        provenance.push({
+          source: "GETRA Analytics",
+          dataset: "Demand-Supply & Transit Proximity",
+        });
+
+        break;
+      }
+
+      case "COMMUNITY_OBSERVATION": {
+        facts = {
+          reports_count: 0,
+          summary:
+            "Observasi komunitas mengumpulkan kontribusi catatan pejalan kaki dan warga mengenai kondisi trotoar, aksesibilitas, dan fasilitas sekitar.",
+          disclaimer:
+            "Laporan komunitas merupakan observasi terikat waktu yang melalui proses moderasi dan tidak menjamin perubahan rute seketika.",
+        };
+
+        provenance.push({
+          source: "GETRA Community",
+          dataset: "Community Footpath & Facility Reports",
+        });
+
+        break;
+      }
+
       case "UNKNOWN": {
         facts = {
           supported_topics: [
@@ -1256,6 +1486,30 @@ function classifyIntentDeterministically(
     return "NEAREST_TRANSIT";
   }
 
+  if (
+    /\b(aksesibilitas|disabilitas|kursi roda|ramah kursi roda|guiding block|trotoar rusak|kondisi trotoar|rampa|ramp|fasilitas disabilitas|jalur difabel)\b/iu.test(
+      current,
+    )
+  ) {
+    return "ACCESSIBILITY";
+  }
+
+  if (
+    /\b(demand|supply|peluang usaha|potensi usaha|analisis pasar|potensi pasar|kesenjangan usaha|kesenjangan komersial)\b/iu.test(
+      current,
+    )
+  ) {
+    return "DEMAND_SUPPLY";
+  }
+
+  if (
+    /\b(laporan warga|komunitas|kontribusi warga|observasi komunitas|laporan masyarakat)\b/iu.test(
+      current,
+    )
+  ) {
+    return "COMMUNITY_OBSERVATION";
+  }
+
   /**
    * Explicit discovery/search requests.
    */
@@ -1346,6 +1600,36 @@ export function determineApplicationAction(
     }
   }
 
+  if (
+    /\b(lihat|tampilkan|buka|cek)\s+(?:lapisan\s+|layer\s+|peta\s+)?(?:aksesibilitas|disabilitas|trotoar)\b/iu.test(normalized) ||
+    /\bmode aksesibilitas\b/iu.test(normalized)
+  ) {
+    return {
+      type: "SWITCH_MAP_MODE",
+      mode: "accessibility",
+    };
+  }
+
+  if (
+    /\b(lihat|tampilkan|buka)\s+(?:lapisan\s+|layer\s+|peta\s+)?(?:ruang usaha|sewa|lahan)\b/iu.test(normalized) ||
+    /\bmode ruang usaha\b/iu.test(normalized)
+  ) {
+    return {
+      type: "SWITCH_MAP_MODE",
+      mode: "business-space",
+    };
+  }
+
+  if (
+    /\b(lihat|tampilkan|buka)\s+(?:lapisan\s+|layer\s+|peta\s+)?(?:analitik|analytics)\b/iu.test(normalized) ||
+    /\bmode analitik\b/iu.test(normalized)
+  ) {
+    return {
+      type: "SWITCH_MAP_MODE",
+      mode: "analytics",
+    };
+  }
+
   const requestedModes = inferRequestedRouteModes(normalized);
   const mode = requestedModes.length === 1 ? requestedModes[0] : null;
 
@@ -1384,6 +1668,18 @@ export function determineApplicationAction(
         "CHANGE_ROUTE_MODE",
 
       mode,
+    };
+  }
+
+  if (
+    context?.active_route &&
+    /\b(rute ini|tentang rute|berapa lama|berapa jarak|berapa jauh|jelaskan rute)\b/iu.test(
+      normalized,
+    ) &&
+    !/\b(dari\s+.+\s+ke|ke\s+[a-z0-9]+)\b/iu.test(normalized)
+  ) {
+    return {
+      type: "ANSWER_ONLY",
     };
   }
 
@@ -1553,6 +1849,9 @@ function actionMessage(
     case "FOCUS_PLACE":
       return `Saya mencari lokasi ${action.query}.`;
 
+    case "SWITCH_MAP_MODE":
+      return `Saya mengalihkan tampilan peta ke mode ${action.mode}.`;
+
     case "ANSWER_ONLY":
       return "";
   }
@@ -1591,6 +1890,26 @@ function formatDeterministicAnswer(
     "UNKNOWN"
   ) {
     return "Saya belum memahami informasi yang Anda perlukan. Coba tanyakan pencarian tempat, rute, transit terdekat, kondisi area, atau usaha pada titik peta.";
+  }
+
+  if (intent === "ACCESSIBILITY") {
+    const count = typeof facts.observation_count === "number" ? facts.observation_count : 0;
+    const photoNote = facts.has_photos ? " Foto bukti lapangan terverifikasi tersedia." : " Foto belum tersedia pada observasi ini.";
+    const subcats = Array.isArray(facts.subcategories) && facts.subcategories.length > 0
+      ? ` Kategori temuan meliputi: ${facts.subcategories.join(", ")}.`
+      : "";
+    return `Terdapat ${count} observasi aksesibilitas tercatat pada data GETRA.${subcats}${photoNote} Bukti ini bersifat observasional dan tidak otomatis mengubah graf rute kanonikal.`;
+  }
+
+  if (intent === "DEMAND_SUPPLY") {
+    const obs = typeof facts.observations === "string" ? facts.observations : "Data sebaran spasial UMKM dan transit tersedia.";
+    const inf = typeof facts.inferences === "string" ? facts.inferences : "Terdapat indikasi potensi pasar pejalan kaki.";
+    const rec = typeof facts.recommendations === "string" ? facts.recommendations : "Lakukan validasi lapangan langsung.";
+    return `[OBSERVASI] ${obs}\n[INFERENSI] ${inf}\n[REKOMENDASI] ${rec}\n[BATASAN] Analisis ini bersifat indikatif dan tidak menjamin omzet atau keuntungan finansial.`;
+  }
+
+  if (intent === "COMMUNITY_OBSERVATION") {
+    return "Observasi komunitas GETRA menampung laporan warga mengenai kondisi akses jalan dan fasilitas. Catatan ini bersifat waktu-terbatas dan dimoderasi secara berkala.";
   }
 
   if (
