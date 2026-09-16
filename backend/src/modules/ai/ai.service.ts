@@ -44,13 +44,10 @@ export class AiService {
     const isSecretExfiltration =
       /\b(server[_\s-]?key|service[_\s-]?role|api[_\s-]?key|secret[_\s-]?key|password|kunci rahasia|credential)\b/iu.test(
         normalizedQuestion,
-      ) &&
-      /\b(tampilkan|lihat|berikan|bocorkan|print|show|reveal|abaikan|ignore|dump|get)\b/iu.test(
-        normalizedQuestion,
       );
 
     // 2. Guardrail: Unauthorized Privilege Escalation & Admin/Owner Action Refusal
-    if (/\b(approve|setujui|verifikasi)\s+(?:merchant|toko|usaha|warung|pengajuan|submission)\b/iu.test(normalizedQuestion)) {
+    if (/\b(approve|setujui|verifikasi)\s+(?:merchant|toko|usaha|warung|pengajuan|submission|umkm)\b/iu.test(normalizedQuestion)) {
       return {
         answer:
           "Persetujuan pendaftaran UMKM hanya dapat dilakukan oleh Administrator berwenang melalui dashboard Admin (/admin). GETRA AI beroperasi dengan pemisahan hak akses dan tidak memiliki kewenangan mengubah status kurasi merchant.",

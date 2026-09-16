@@ -6,8 +6,8 @@ $pullCmd = "cd /home/getra/getra-full-product-10e && git fetch origin Getra_Depl
 $rPull = Invoke-GetraSsh $ip $pullCmd
 Write-Host ($rPull.Output -join "`n")
 
-Write-Host "Updating release.env with current SHA 2736d9f..."
-$setShaCmd = "sed -i 's/GETRA_RELEASE_SHA=.*/GETRA_RELEASE_SHA=2736d9f/' /home/getra/phase10d-qa/release.env && cat /home/getra/phase10d-qa/release.env"
+Write-Host "Updating release.env with current repo SHA..."
+$setShaCmd = "cd /home/getra/getra-full-product-10e && CURRENT_SHA=`$(git rev-parse --short HEAD) && sed -i ""s/GETRA_RELEASE_SHA=.*/GETRA_RELEASE_SHA=`$CURRENT_SHA/"" /home/getra/phase10d-qa/release.env && cat /home/getra/phase10d-qa/release.env"
 $r = Invoke-GetraSsh $ip $setShaCmd
 Write-Host ($r.Output -join "`n")
 
