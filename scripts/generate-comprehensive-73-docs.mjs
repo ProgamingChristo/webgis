@@ -7,6 +7,7 @@ const CHROME_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 const OUTPUT_DIRS = [
   "D:\\getra docs\\Production docs",
   "D:\\getra docs\\Production docs\\final",
+  "D:\\getra docs\\Production docs\\final\\AI FINAL",
 ];
 
 const SHA = "bee20aa";
