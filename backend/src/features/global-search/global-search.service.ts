@@ -799,8 +799,9 @@ export function resolveGlobalSearchIntent(
      * "bakso"
      */
     keyword:
-      queryResolution.canonical ||
-      null,
+      ((query.reference_text || query.radius_meters) && /^(?:umkm|usaha|toko|tempat)?$/iu.test(queryResolution.canonical))
+        ? null
+        : (queryResolution.canonical || null),
 
     location_text:
       locationRegion?.name ??

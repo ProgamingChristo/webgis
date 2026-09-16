@@ -4,7 +4,7 @@ import type { AiAskRequest } from "./ai.schema";
 import { parseDeterministicCommuterText } from "@/src/features/commuter/commuter-intent";
 
 export const SearchCriteriaSchema = z.object({
-  query: z.string().trim().min(1).max(120),
+  query: z.string().trim().max(120),
   max_budget: z.number().int().min(1000).max(10000000).nullable(),
   open_now: z.boolean(),
   max_walking_minutes: z.number().int().min(5).max(30).nullable(),
@@ -105,7 +105,46 @@ function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function extractDeterministicSearchAction(request: AiAskRequest) {
+const KNOWN_TRANSIT_STATION_PATTERNS = [
+  { label: "Stasiun Manggarai", patterns: [/\bstasiun\s+manggarai\b/iu, /\bst\.\s*manggarai\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?manggarai\b/iu] },
+  { label: "Stasiun Tanah Abang", patterns: [/\bstasiun\s+tanah\s+abang\b/iu, /\bst\.\s*tanah\s+abang\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?tanah\s+abang\b/iu] },
+  { label: "Stasiun Sudirman", patterns: [/\bstasiun\s+sudirman\b/iu, /\bst\.\s*sudirman\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?sudirman\b/iu] },
+  { label: "Stasiun Tebet", patterns: [/\bstasiun\s+tebet\b/iu, /\bst\.\s*tebet\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?tebet\b/iu] },
+  { label: "Stasiun Gambir", patterns: [/\bstasiun\s+gambir\b/iu, /\bst\.\s*gambir\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?gambir\b/iu] },
+  { label: "Stasiun Juanda", patterns: [/\bstasiun\s+juanda\b/iu, /\bst\.\s*juanda\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?juanda\b/iu] },
+  { label: "Stasiun Cikini", patterns: [/\bstasiun\s+cikini\b/iu, /\bst\.\s*cikini\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?cikini\b/iu] },
+  { label: "Stasiun Gondangdia", patterns: [/\bstasiun\s+gondangdia\b/iu, /\bst\.\s*gondangdia\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?gondangdia\b/iu] },
+  { label: "Stasiun Jakarta Kota", patterns: [/\bstasiun\s+jakarta\s+kota\b/iu, /\bst\.\s*jakarta\s+kota\b/iu, /\bstasiun\s+kota\b/iu] },
+  { label: "Stasiun Pasar Minggu", patterns: [/\bstasiun\s+pasar\s+minggu\b/iu, /\bst\.\s*pasar\s+minggu\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?pasar\s+minggu\b/iu] },
+  { label: "Stasiun Palmerah", patterns: [/\bstasiun\s+palmerah\b/iu, /\bst\.\s*palmerah\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?palmerah\b/iu] },
+  { label: "Stasiun Karet", patterns: [/\bstasiun\s+karet\b/iu, /\bst\.\s*karet\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?karet\b/iu] },
+  { label: "Stasiun Duren Kalibata", patterns: [/\bstasiun\s+duren\s+kalibata\b/iu, /\bst\.\s*duren\s+kalibata\b/iu, /\bstasiun\s+kalibata\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?kalibata\b/iu] },
+  { label: "Stasiun Pasar Senen", patterns: [/\bstasiun\s+pasar\s+senen\b/iu, /\bst\.\s*pasar\s+senen\b/iu, /\bstasiun\s+senen\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?senen\b/iu] },
+  { label: "Stasiun Jatinegara", patterns: [/\bstasiun\s+jatinegara\b/iu, /\bst\.\s*jatinegara\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?jatinegara\b/iu] },
+  { label: "Stasiun Cakung", patterns: [/\bstasiun\s+cakung\b/iu, /\bst\.\s*cakung\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?cakung\b/iu] },
+  { label: "Stasiun Klender", patterns: [/\bstasiun\s+klender\b/iu, /\bst\.\s*klender\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?klender\b/iu] },
+  { label: "Stasiun Buaran", patterns: [/\bstasiun\s+buaran\b/iu, /\bst\.\s*buaran\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?buaran\b/iu] },
+  { label: "Stasiun Cawang", patterns: [/\bstasiun\s+cawang\b/iu, /\bst\.\s*cawang\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?cawang\b/iu] },
+];
+
+function findTransitMention(text: string): { label: string; rawMatch: string } | null {
+  for (const station of KNOWN_TRANSIT_STATION_PATTERNS) {
+    for (const pat of station.patterns) {
+      const m = pat.exec(text);
+      if (m) return { label: station.label, rawMatch: m[0] };
+    }
+  }
+  const genericMatch = /\b(?:stasiun|halte)\s+([a-z0-9\s]{3,30})\b/iu.exec(text);
+  if (genericMatch) {
+    const rawPlace = genericMatch[1].trim();
+    if (!/^(dekat|sekitar|di|yang|buka|ini|itu)$/iu.test(rawPlace)) {
+      return { label: genericMatch[0].trim(), rawMatch: genericMatch[0] };
+    }
+  }
+  return null;
+}
+
+export function extractDeterministicSearchAction(request: AiAskRequest) {
   const normalizedRaw = normalizeSlangAndTypos(request.question);
   const normalized = normalizeRegionText(normalizedRaw);
   if (!normalized) return null;
@@ -114,16 +153,57 @@ function extractDeterministicSearchAction(request: AiAskRequest) {
   // AI orchestration path. This fallback only creates executable searches.
   if (
     /\b(rute|route|navigasi|berapa lama|jalan kaki dari|menuju)\b/u.test(normalized)
-    || /^(apa|apakah|bagaimana|kenapa|mengapa|siapa|kapan|cara|gimana|gmn)\b/u.test(normalized)
-    || /\b(cara buat|cara bikin|cara daftar|cara daftarin|cara promosi|cara pasang|cara klaim|cara claim|buat umkm|daftar umkm|bikin umkm|daftr umk|gmn bikin)\b/u.test(normalized)
+    || (/^(apa|apakah|bagaimana|kenapa|mengapa|siapa|kapan|cara|gimana|gmn)\b/u.test(normalized) && !/^(?:apa|apakah)\s+ada\b/iu.test(normalized))
+    || /\b(cara buat|cara bikin|cara daftar|cara daftarin|cara promosi|cara pasang|cara klaim|cara claim|buat umkm|daftar umkm|bikin umkm|daftr umk|gmn bikin|iklan|iklanin|promosi|promo)\b/u.test(normalized)
     || /\b(aksesibilitas|accessibility|disabilitas|kursi roda|wheelchair)\b/u.test(normalized)
+    || /\b(?:stasiun|halte|transit)\b.*\b(?:paling dekat|terdekat|nearest)\b/iu.test(normalized)
+    || /\b(?:paling dekat|terdekat|nearest)\b.*\b(?:stasiun|halte|transit)\b/iu.test(normalized)
+    || /\b(?:jelaskan|tentang)\s+(?:usaha|toko|merchant|ini)\b/iu.test(normalized)
     || /^(halo|hai|hi|hello|pagi|siang|sore|malam)\b/u.test(normalized)
   ) {
     return null;
   }
 
-  const region = findAdministrativeRegionMention(normalizedRaw);
+  // Check for unnamed transit station/halte query
+  const isUnnamedTransit = /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun|halte|terminal)\s*$/iu.test(normalizedRaw)
+    || /^(?:cari|temukan)?\s*(?:kuliner|tempat\s+makan|makanan|kopi|umkm)\s+(?:di\s+)?(?:dekat|sekitar)\s+(?:stasiun|halte|terminal)\s*$/iu.test(normalizedRaw);
+
+  if (isUnnamedTransit) {
+    return {
+      source: "deterministic" as const,
+      data: {
+        action: "CLARIFY" as const,
+        criteria: null,
+        clarification: "Sebutkan nama stasiun atau halte yang ingin dicari.",
+      },
+    };
+  }
+
+  let transit = findTransitMention(normalizedRaw);
+  let region = findAdministrativeRegionMention(normalizedRaw);
+
+  const searchCtx = request.context?.search_context;
+  const lastRefText = (searchCtx as any)?.last_reference_text ?? searchCtx?.reference_text;
+  if (!transit && lastRefText) {
+    transit = { label: lastRefText, rawMatch: lastRefText };
+  } else if (!transit && request.history && request.history.length > 0) {
+    const prevText = request.history.map((h) => h.content).join(" ");
+    const prevTransit = findTransitMention(prevText);
+    if (prevTransit) {
+      transit = prevTransit;
+    }
+  }
+
+  if (!region && request.history && request.history.length > 0) {
+    const prevText = request.history.map((h) => h.content).join(" ");
+    const prevRegion = findAdministrativeRegionMention(prevText);
+    if (prevRegion) {
+      region = prevRegion;
+    }
+  }
+
   const nearUser = /\b(dekat saya|sekitar saya|di sekitar saya|sekitar sini|dekat sini|terdekat|paling dekat|dket sini)\b/u.test(normalizedRaw);
+  const isRadiusExpansion = /\b(perluas|perluasan)\s+(?:radius|jangkauan|area)\b/iu.test(normalizedRaw);
   const parsed = parseDeterministicCommuterText(normalizedRaw);
   const hasConstraint = Boolean(
     parsed.constraints.budget
@@ -135,13 +215,19 @@ function extractDeterministicSearchAction(request: AiAskRequest) {
 
   // A short noun phrase such as "bakso di jakarta pusat" is a valid search
   // even without an explicit verb. Long conversational text remains untouched.
-  if (!hasSearchCue && !region && !nearUser && !hasConstraint) return null;
+  if (!hasSearchCue && !region && !nearUser && !hasConstraint && !transit && !isRadiusExpansion) return null;
 
   let keyword = parsed.keyword_text
     .replace(/\b(?:tolong\s+)?(?:cari|carikan|temukan|rekomendasikan|rekomendasi)\b/giu, " ")
+    .replace(/\b(?:apa|apakah)\s+ada\b/giu, " ")
     .replace(/\b(?:mau|ingin)\s+(?:makan|cari)\b/giu, " ")
     .replace(/\b(?:dekat|di sekitar|sekitar)\s+(?:saya|aku|sini)\b/giu, " ")
     .replace(/\b(?:terdekat|paling dekat)\b/giu, " ");
+
+  if (transit) {
+    keyword = keyword.replace(new RegExp(`\\b(?:dekat|sekitar|di dekat|di sekitar)?\\s*${escapeRegExp(transit.rawMatch)}\\b`, "giu"), " ");
+    keyword = keyword.replace(new RegExp(`\\b${escapeRegExp(transit.label)}\\b`, "giu"), " ");
+  }
 
   if (region) {
     for (const alias of [...region.aliases, region.canonical]) {
@@ -150,21 +236,43 @@ function extractDeterministicSearchAction(request: AiAskRequest) {
   }
 
   keyword = keyword
-    .replace(/\b(?:di|daerah|wilayah|area)\s*$/iu, " ")
+    .replace(/\b(?:di|daerah|wilayah|area|dekat|sekitar)\s*$/iu, " ")
+    .replace(/\b^(?:di|dekat|sekitar)\s+/iu, " ")
     .replace(/\s+/g, " ")
     .trim();
 
-  if (!keyword) return null;
+  // If keyword only refers to general domain ("umkm", "toko", "usaha", "tempat")
+  // and we have a transit reference or region or nearUser, clean query to broad search
+  const isGenericMerchantDiscovery = /^(?:umkm|usaha|toko|tempat|gerai|pedagang)?$/iu.test(keyword);
+  let finalQuery = keyword;
+  const lastQuery = (searchCtx as any)?.last_query ?? searchCtx?.query;
+  const lastRadius = (searchCtx as any)?.last_radius_meters ?? searchCtx?.radius_meters;
+  const lastSort = (searchCtx as any)?.last_sort ?? searchCtx?.sort;
+  const lastBudget = (searchCtx as any)?.last_max_budget ?? searchCtx?.max_budget;
+  const lastOpen = (searchCtx as any)?.last_open_now ?? searchCtx?.open_now;
+  const lastWalking = (searchCtx as any)?.last_max_walking_minutes ?? searchCtx?.max_walking_minutes;
+
+  if (isGenericMerchantDiscovery) {
+    finalQuery = region ? region.canonical : (lastQuery ?? "");
+  } else if (region) {
+    finalQuery = `${keyword} ${region.canonical}`.trim();
+  }
+
+  const radiusMeters = isRadiusExpansion
+    ? 2500
+    : (lastRadius ?? ((nearUser || transit) ? 1000 : null));
+
+  const sort = (nearUser || transit || lastSort === "NEAREST") ? "NEAREST" : "RELEVANCE";
 
   const criteria = SearchCriteriaSchema.parse({
-    query: region ? `${keyword} ${region.canonical}` : keyword,
-    max_budget: parsed.constraints.budget?.max_idr ?? null,
-    open_now: Boolean(parsed.constraints.opening?.open_now),
-    max_walking_minutes: parsed.constraints.walking?.max_minutes ?? null,
-    reference_text: null,
+    query: finalQuery,
+    max_budget: parsed.constraints.budget?.max_idr ?? lastBudget ?? null,
+    open_now: Boolean(parsed.constraints.opening?.open_now ?? lastOpen),
+    max_walking_minutes: parsed.constraints.walking?.max_minutes ?? lastWalking ?? null,
+    reference_text: transit ? transit.label : null,
     near_user: nearUser,
-    radius_meters: nearUser ? 1000 : null,
-    sort: nearUser ? "NEAREST" : "RELEVANCE",
+    radius_meters: radiusMeters,
+    sort,
   });
 
   return {

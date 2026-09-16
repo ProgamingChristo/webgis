@@ -5,12 +5,16 @@ const WALKING_PATTERNS = [
   /(?:jalan kaki|berjalan kaki|dijangkau)\s*(?:maksimal|max(?:imum)?|dalam)?\s*(\d{1,2})\s*menit/i,
 ];
 
+const GENERIC_WALKING_PATTERN = /\b(?:yang\s+)?(?:bisa\s+(?:saya\s+)?(?:jalan|berjalan)\s+kaki|dapat\s+dijangkau\s+berjalan\s+kaki|ramah\s+pejalan\s+kaki)\b/i;
+
 const BUDGET_PATTERNS = [
   /(?:di\s*bawah|dibawah|maksimal|max(?:imum)?|budget|harga)\s*(?:rp\.?\s*)?(\d[\d.]*)\s*(ribu(?:an)?|rb|k)?/i,
   /\brp\.?\s*(\d[\d.]*)\s*(ribu(?:an)?|rb|k)?\b/i,
   /\b(\d[\d.]*)\s*(ribu(?:an)?|rb|k)\b/i,
 ];
-const OPEN_NOW_PATTERN = /\b(?:yang\s+)?buka\s+sekarang\b/i;
+
+const GENERIC_CHEAP_PATTERN = /\b(?:yang\s+)?(?:murah|terjangkau|hemat)\b/i;
+const OPEN_NOW_PATTERN = /\b(?:yang\s+)?(?:sedang\s+)?buka(?:\s+sekarang)?\b/i;
 
 export interface ParsedCommuterText {
   keyword_text: string;
@@ -31,13 +35,23 @@ export function parseDeterministicCommuterText(input: string): ParsedCommuterTex
     break;
   }
 
+  if (maxWalkingMinutes === null && GENERIC_WALKING_PATTERN.test(keywordText)) {
+    maxWalkingMinutes = 15;
+    keywordText = keywordText.replace(GENERIC_WALKING_PATTERN, " ");
+  }
+
   const budgetMatch = BUDGET_PATTERNS
     .map((pattern) => pattern.exec(keywordText))
     .find(Boolean);
-  const maxBudget = budgetMatch?.[1]
+  let maxBudget = budgetMatch?.[1]
     ? normalizeIdrAmount(budgetMatch[1], budgetMatch[2])
     : null;
-  if (budgetMatch) keywordText = keywordText.replace(budgetMatch[0], " ");
+  if (budgetMatch) {
+    keywordText = keywordText.replace(budgetMatch[0], " ");
+  } else if (GENERIC_CHEAP_PATTERN.test(keywordText)) {
+    maxBudget = 30_000;
+    keywordText = keywordText.replace(GENERIC_CHEAP_PATTERN, " ");
+  }
 
   const openNow = OPEN_NOW_PATTERN.test(keywordText);
   keywordText = keywordText.replace(OPEN_NOW_PATTERN, " ");

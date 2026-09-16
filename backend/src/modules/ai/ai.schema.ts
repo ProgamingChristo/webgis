@@ -48,10 +48,23 @@ export const AiIntentEnum = z.enum([
   // Community, Accessibility, Stakeholder & Admin
   "COMMUNITY",
   "COMMUNITY_OBSERVATION",
+  "COMMUNITY_REPORT",
   "ACCESSIBILITY",
   "DEMAND_SUPPLY",
+  "BUSINESS_SPACE",
+  "INVESTOR_MODE",
+  "ACTIVITY_FEED",
+  "NOTIFICATION_HELP",
   "PROFILE",
   "ADMIN",
+
+  // Knowledge, Discovery, Governance & Safety
+  "FAIR_DISCOVERY",
+  "SAFETY_GUARDRAIL",
+  "FILTER_DIAGNOSIS",
+  "PROMOTION_INVOICE",
+  "UMKM_LOCATION",
+  "UMKM_EDIT",
 ]);
 
 export type AiIntent = z.infer<typeof AiIntentEnum>;

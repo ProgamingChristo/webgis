@@ -102,4 +102,81 @@ describe("AI search actions", () => {
     expect(SearchCriteriaSchema.safeParse({ ...criteria, max_budget: -1 }).success).toBe(false);
     expect(SearchCriteriaSchema.safeParse({ ...criteria, latitude: -6 }).success).toBe(false);
   });
+
+  it("deterministically extracts transit reference for 'umkm di dekat stasiun manggarai'", async () => {
+    mocks.generate.mockReset().mockResolvedValue(null);
+    const response = await new AiService("Bearer fixture").handleAskRequest({
+      question: "umkm di dekat stasiun manggarai",
+      active_experience: "GENERAL",
+      context: { enable_search: true },
+    });
+    expect(response).toMatchObject({
+      intent: "MERCHANT_SEARCH",
+      provider: "deterministic",
+      action: {
+        type: "APPLY_SEARCH_CRITERIA",
+        criteria: {
+          query: "",
+          reference_text: "Stasiun Manggarai",
+          radius_meters: 1000,
+          sort: "NEAREST",
+        },
+      },
+    });
+  });
+
+  it("deterministically extracts transit reference for 'umkm dekat stasiun tanah abang'", async () => {
+    mocks.generate.mockReset().mockResolvedValue(null);
+    const response = await new AiService("Bearer fixture").handleAskRequest({
+      question: "umkm dekat stasiun tanah abang",
+      active_experience: "GENERAL",
+      context: { enable_search: true },
+    });
+    expect(response).toMatchObject({
+      intent: "MERCHANT_SEARCH",
+      provider: "deterministic",
+      action: {
+        type: "APPLY_SEARCH_CRITERIA",
+        criteria: {
+          query: "",
+          reference_text: "Stasiun Tanah Abang",
+          radius_meters: 1000,
+          sort: "NEAREST",
+        },
+      },
+    });
+  });
+
+  it("extracts food keyword and transit reference for 'cari kopi dekat manggarai'", async () => {
+    mocks.generate.mockReset().mockResolvedValue(null);
+    const response = await new AiService("Bearer fixture").handleAskRequest({
+      question: "cari kopi dekat manggarai",
+      active_experience: "GENERAL",
+      context: { enable_search: true },
+    });
+    expect(response).toMatchObject({
+      intent: "MERCHANT_SEARCH",
+      provider: "deterministic",
+      action: {
+        type: "APPLY_SEARCH_CRITERIA",
+        criteria: {
+          query: "kopi",
+          reference_text: "Stasiun Manggarai",
+          radius_meters: 1000,
+          sort: "NEAREST",
+        },
+      },
+    });
+  });
+
+  it("requests clarification for unnamed transit like 'cari kuliner dekat stasiun'", async () => {
+    mocks.generate.mockReset().mockResolvedValue(null);
+    const response = await new AiService("Bearer fixture").handleAskRequest({
+      question: "cari kuliner dekat stasiun",
+      active_experience: "GENERAL",
+      context: { enable_search: true },
+    });
+    expect(response.action?.type).toBe("REQUEST_CLARIFICATION");
+    expect(response.answer).toContain("Sebutkan nama stasiun atau halte");
+  });
 });

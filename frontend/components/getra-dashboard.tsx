@@ -2087,8 +2087,14 @@ function GeneralGetraDashboard() {
     if (searchRevision !== searchRevisionRef.current) return "";
     if (!layer) return "Tempat belum dapat dimuat. Coba lagi atau periksa nama acuan lokasi.";
     const count = layer.merchants.length;
-    return count ? `Saya sudah menampilkan ${count} tempat di sidebar dan menandainya di peta.${layer.intent.candidate_limited ? " Hasil terbatas pada kandidat yang tersedia; persempit area untuk hasil lebih lengkap." : ""} Penilaian rasa belum dapat dipastikan tanpa ulasan.`
-      : "Belum ada tempat yang ditemukan dengan kebutuhan ini. Coba perluas radius atau ubah anggaran.";
+    const refLabel = layer.intent.reference?.label ? ` di sekitar ${layer.intent.reference.label}` : "";
+    if (count > 0) {
+      return `Menemukan ${count} UMKM${refLabel}. Data sudah ditampilkan di sidebar dan ditandai pada peta.${layer.intent.candidate_limited ? " Hasil terbatas pada kandidat yang tersedia; persempit area untuk hasil lebih lengkap." : ""}`;
+    }
+    if (layer.commuter && layer.commuter.candidate_count > 0) {
+      return `Ditemukan tempat${refLabel}, namun terfilter oleh kriteria aktif (anggaran, status buka, atau batas jalan kaki). Longgarkan filter untuk menampilkan hasil.`;
+    }
+    return `Belum ada UMKM yang cocok berdasarkan data GETRA${refLabel || " untuk area tersebut"}. Anda dapat memperluas radius pencarian.`;
   }, [executeCanonicalSearch, datasetBounds, selectedRegionIds]);
 
   const executePropertySearch = useCallback(async ({
@@ -3860,18 +3866,27 @@ function GeneralGetraDashboard() {
 
           {primaryMode === "merchant" && searchActive && searchTotal === 0 ? (
             <section className="commuter-no-results" aria-live="polite">
-              <strong>Belum ada tempat yang sesuai dengan semua filter.</strong>
-              <span>GETRA tidak mengubah filter Anda secara otomatis. Ubah anggaran, status buka, atau batas waktu berjalan untuk memperluas hasil.</span>
-              <div>
-                {maxBudget ? <button type="button" onClick={() => setMaxBudget("")}>Hapus batas anggaran</button> : null}
-                {openOnly ? <button type="button" onClick={() => setOpenOnly(false)}>Abaikan status buka</button> : null}
-                {maxWalkingMinutes ? (
-                  <button type="button" onClick={() => {
-                    setMaxWalkingMinutes(null);
-                    setServiceArea(null);
-                  }}>Hapus batas berjalan</button>
-                ) : null}
-              </div>
+              {Boolean(maxBudget || openOnly || maxWalkingMinutes) ? (
+                <>
+                  <strong>Belum ada tempat yang sesuai dengan semua filter.</strong>
+                  <span>GETRA tidak mengubah filter Anda secara otomatis. Ubah anggaran, status buka, atau batas waktu berjalan untuk memperluas hasil.</span>
+                  <div>
+                    {maxBudget ? <button type="button" onClick={() => setMaxBudget("")}>Hapus batas anggaran</button> : null}
+                    {openOnly ? <button type="button" onClick={() => setOpenOnly(false)}>Abaikan status buka</button> : null}
+                    {maxWalkingMinutes ? (
+                      <button type="button" onClick={() => {
+                        setMaxWalkingMinutes(null);
+                        setServiceArea(null);
+                      }}>Hapus batas berjalan</button>
+                    ) : null}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <strong>Belum ada UMKM yang cocok berdasarkan data GETRA untuk area tersebut.</strong>
+                  <span>Anda dapat memperluas radius pencarian atau menggeser peta ke area lain untuk menemukan tempat usaha.</span>
+                </>
+              )}
             </section>
           ) : null}
 
