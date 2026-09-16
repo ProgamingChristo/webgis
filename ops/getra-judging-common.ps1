@@ -36,7 +36,7 @@ function Resolve-GetraVmAddress{
   if($match.Success){$mac=$match.Groups['mac'].Value.Replace(':','-').ToUpperInvariant();foreach($neighbor in @(Get-NetNeighbor -InterfaceAlias 'VMware Network Adapter VMnet8' -AddressFamily IPv4 -ErrorAction SilentlyContinue)){if($neighbor.LinkLayerAddress -and $neighbor.LinkLayerAddress.Replace(':','-').ToUpperInvariant() -eq $mac -and -not $seen[$neighbor.IPAddress]){$seen[$neighbor.IPAddress]=$true;$candidates.Add([string]$neighbor.IPAddress)}}}
   foreach($candidate in $candidates){if(Test-GetraSsh $candidate){return $candidate}};return $null
 }
-function Test-GetraUrl([string]$Url,[int]$TimeoutSeconds=8){
+function Test-GetraUrl([string]$Url,[int]$TimeoutSeconds=15){
   try {
     $p = Start-Process -FilePath $script:GetraCurl -ArgumentList @('-4','--fail','--silent','--output','NUL','--max-time',"$TimeoutSeconds",$Url) -NoNewWindow -Wait -PassThru
     return $p.ExitCode -eq 0
