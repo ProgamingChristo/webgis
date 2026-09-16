@@ -1,6 +1,6 @@
 @echo off
 setlocal
-title GETRA RECOVERY
+title GETRA EMERGENCY RECOVERY
 powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "D:\Getra_Production\ops\recover-getra-runtime.ps1"
 set "GETRA_EXIT=%ERRORLEVEL%"
 echo.

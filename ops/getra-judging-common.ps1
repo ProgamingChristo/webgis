@@ -16,8 +16,19 @@ function Write-GetraLog([string]$Kind,[string]$Component,[string]$Action,[string
   Add-Content -LiteralPath $path -Encoding UTF8 -Value ('{0} kind={1} component={2} action="{3}" result={4} duration_seconds={5}' -f (Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'),$Kind,$Component,$safe,$Result,[Math]::Round($DurationSeconds,1))
 }
 function Get-GetraSshOptions([string]$Address){@('-F','NUL','-T','-o','BatchMode=yes','-o','ConnectionAttempts=1','-o','ConnectTimeout=5','-o','ServerAliveInterval=5','-o','ServerAliveCountMax=2','-o','StrictHostKeyChecking=yes','-o',("UserKnownHostsFile=$script:GetraKnownHosts"),'-o','GlobalKnownHostsFile=NUL','-o','HostKeyAlias=getra-routing-runtime','-o','CheckHostIP=no','-o','ControlMaster=no','-o','LogLevel=ERROR',("getra@$Address"))}
-function Invoke-GetraSsh([string]$Address,[string]$Command){$encoded=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(($Command -replace "`r`n","`n")));$options=@(Get-GetraSshOptions $Address);$output=& $script:GetraSsh @options "echo '$encoded' | base64 -d | bash" 2>$null;[pscustomobject]@{ExitCode=$LASTEXITCODE;Output=@($output)}}
-function Test-GetraSsh([string]$Address){if(-not $Address){return $false};$options=@(Get-GetraSshOptions $Address);& $script:GetraSsh @options true 2>$null;return $LASTEXITCODE -eq 0}
+function Invoke-GetraSsh([string]$Address,[string]$Command){
+  $encoded=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(($Command -replace "`r`n","`n")))
+  $options=@(Get-GetraSshOptions $Address)
+  $prev = $ErrorActionPreference
+  $ErrorActionPreference = 'SilentlyContinue'
+  try {
+    $output = & $script:GetraSsh @options "echo '$encoded' | base64 -d | bash 2>/dev/null" 2>$null
+    return [pscustomobject]@{ExitCode=$LASTEXITCODE;Output=@($output)}
+  } finally {
+    $ErrorActionPreference = $prev
+  }
+}
+function Test-GetraSsh([string]$Address){if(-not $Address){return $false};$options=@(Get-GetraSshOptions $Address);$prev=$ErrorActionPreference;$ErrorActionPreference='SilentlyContinue';try{& $script:GetraSsh @options true 2>$null;return $LASTEXITCODE -eq 0}finally{$ErrorActionPreference=$prev}}
 function Resolve-GetraVmAddress{
   $candidates=[Collections.Generic.List[string]]::new();$seen=@{}
   foreach($value in @(& $script:GetraVmrun getGuestIPAddress $script:GetraVmPath 2>$null)){$ip=([string]$value).Trim();if($ip -match '^192\.168\.47\.[0-9]{1,3}$' -and -not $seen[$ip]){$seen[$ip]=$true;$candidates.Add($ip)}}
@@ -25,7 +36,12 @@ function Resolve-GetraVmAddress{
   if($match.Success){$mac=$match.Groups['mac'].Value.Replace(':','-').ToUpperInvariant();foreach($neighbor in @(Get-NetNeighbor -InterfaceAlias 'VMware Network Adapter VMnet8' -AddressFamily IPv4 -ErrorAction SilentlyContinue)){if($neighbor.LinkLayerAddress -and $neighbor.LinkLayerAddress.Replace(':','-').ToUpperInvariant() -eq $mac -and -not $seen[$neighbor.IPAddress]){$seen[$neighbor.IPAddress]=$true;$candidates.Add([string]$neighbor.IPAddress)}}}
   foreach($candidate in $candidates){if(Test-GetraSsh $candidate){return $candidate}};return $null
 }
-function Test-GetraUrl([string]$Url,[int]$TimeoutSeconds=8){& $script:GetraCurl --fail --silent --output NUL --max-time $TimeoutSeconds $Url 2>$null;return $LASTEXITCODE -eq 0}
+function Test-GetraUrl([string]$Url,[int]$TimeoutSeconds=8){
+  try {
+    $p = Start-Process -FilePath $script:GetraCurl -ArgumentList @('-4','--fail','--silent','--output','NUL','--max-time',"$TimeoutSeconds",$Url) -NoNewWindow -Wait -PassThru
+    return $p.ExitCode -eq 0
+  } catch { return $false }
+}
 function Test-GetraDns{try{return @(Resolve-DnsName -Name $script:GetraHostName -Type A -ErrorAction Stop).Count -gt 0}catch{return $false}}
 function Get-GetraGuestStatus([string]$Address){
   $command=@'
@@ -36,10 +52,10 @@ echo "tailscale_enabled=$(systemctl is-enabled tailscaled 2>/dev/null || true)"
 echo "node=$(tailscale status --json 2>/dev/null | python3 -c 'import json,sys;print(json.load(sys.stdin).get("Self",{}).get("DNSName",""))' 2>/dev/null || true)"
 echo "tailnet=$(tailscale status --json 2>/dev/null | python3 -c 'import json,sys;print(json.load(sys.stdin).get("BackendState",""))' 2>/dev/null || true)"
 for pair in valhalla:getra-valhalla-1 backend:getra-full-product-10e-getra-backend-full-1 frontend:getra-full-product-10e-getra-frontend-full-1; do key=${pair%%:*}; c=${pair#*:}; echo "$key=$(docker inspect $c --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' 2>/dev/null || true)"; echo "${key}_restart=$(docker inspect $c --format '{{.HostConfig.RestartPolicy.Name}}' 2>/dev/null || true)"; done
-echo "valhalla_http=$(curl -fsS --max-time 6 http://127.0.0.1:8002/status >/dev/null && echo pass || echo fail)"
-health=$(curl -fsS --max-time 8 http://127.0.0.1:3002/api/health 2>/dev/null || true); echo "backend_http=$(test -n "$health" && echo pass || echo fail)"; echo "$health"|grep -q connected && echo database=pass || echo database=fail
+echo "valhalla_http=$(curl -s --max-time 6 http://127.0.0.1:8002/status >/dev/null 2>&1 && echo pass || echo fail)"
+health=$(curl -s --max-time 8 http://127.0.0.1:3002/api/health 2>/dev/null || true); echo "backend_http=$(test -n "$health" && echo pass || echo fail)"; echo "$health"|grep -q connected && echo database=pass || echo database=fail
 probe=$(printf '%s' 'fetch("http://valhalla:8002/status").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))'|base64 -w0); docker exec getra-full-product-10e-getra-backend-full-1 sh -lc "echo $probe|base64 -d|node" >/dev/null 2>&1 && echo backend_valhalla=pass || echo backend_valhalla=fail
-echo "frontend_http=$(curl -fsS --max-time 8 http://127.0.0.1:3003/login >/dev/null && echo pass || echo fail)"
+echo "frontend_http=$(curl -s --max-time 8 http://127.0.0.1:3003/login >/dev/null 2>&1 && echo pass || echo fail)"
 funnel=$(tailscale funnel status 2>/dev/null || true); echo "$funnel"|grep -q 'https://getra-routing-api.tail0ed517.ts.net ' && echo funnel443=pass || echo funnel443=fail; echo "$funnel"|grep -q 'https://getra-routing-api.tail0ed517.ts.net:8443' && echo funnel8443=pass || echo funnel8443=fail
 ss -lnt|grep -q '127.0.0.1:8002 ' && echo private8002=pass || echo private8002=fail
 '@
@@ -71,5 +87,16 @@ function Wait-GetraReady([int]$Seconds=120){$deadline=(Get-Date).AddSeconds($Sec
 function Write-GetraStatusTable($Status,[string]$Routing='NOT_RUN',[string]$AI='NOT_RUN'){
   function Mark([bool]$v){if($v){'PASS'}else{'FAIL'}}
   Write-Output 'GETRA RECOVERY'
-  Write-Output ('Network ........ {0}' -f (Mark $Status.Network));Write-Output ('Tailscale ...... {0}' -f (Mark $Status.Tailscale));Write-Output ('DNS ............ {0}' -f (Mark $Status.DNS));Write-Output ('Funnel ......... {0}' -f (Mark $Status.Funnel));Write-Output ('VM ............. {0}' -f (Mark $Status.VM));Write-Output ('Valhalla ....... {0}' -f (Mark $Status.Valhalla));Write-Output ('Backend ........ {0}' -f (Mark ($Status.BackendGuest -and $Status.LocalBackend)));Write-Output ('Frontend ....... {0}' -f (Mark ($Status.FrontendGuest -and $Status.LocalFrontend)));Write-Output ('Public API ..... {0}' -f (Mark $Status.PublicBackend));Write-Output ('Public Login ... {0}' -f (Mark $Status.PublicLogin));Write-Output ('Public Web ..... {0}' -f (Mark $Status.PublicWeb));Write-Output ('Routing ........ {0}' -f $Routing);Write-Output ('AI ............. {0}' -f $AI)
+  Write-Output ('Network ........ {0}' -f (Mark $Status.Network))
+  Write-Output ('Tailscale ...... {0}' -f (Mark $Status.Tailscale))
+  Write-Output ('DNS ............ {0}' -f (Mark $Status.DNS))
+  Write-Output ('Valhalla ....... {0}' -f (Mark $Status.Valhalla))
+  Write-Output ('Backend ........ {0}' -f (Mark ($Status.BackendGuest -and $Status.LocalBackend)))
+  Write-Output ('Frontend ....... {0}' -f (Mark ($Status.FrontendGuest -and $Status.LocalFrontend)))
+  Write-Output ('Funnel ......... {0}' -f (Mark $Status.Funnel))
+  Write-Output ('Public frontend  {0}' -f (Mark $Status.PublicWeb))
+  Write-Output ('Public login .... {0}' -f (Mark $Status.PublicLogin))
+  Write-Output ('Public API ...... {0}' -f (Mark $Status.PublicBackend))
+  if($Routing -ne 'NOT_RUN'){Write-Output ('Routing ........ {0}' -f $Routing)}
+  if($AI -ne 'NOT_RUN'){Write-Output ('AI ............. {0}' -f $AI)}
 }
