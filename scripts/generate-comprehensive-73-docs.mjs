@@ -760,7 +760,9 @@ async function buildDocs() {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    const mdPath = path.join(dir, "Final_Documentation Getra.md");
+    const isAiFinal = dir.endsWith("AI FINAL");
+    const filename = isAiFinal ? "AIFInal" : "Final_Documentation Getra";
+    const mdPath = path.join(dir, `${filename}.md`);
     fs.writeFileSync(mdPath, markdown, "utf8");
     console.log(`[OK] Markdown written to: ${mdPath}`);
   }
@@ -912,7 +914,9 @@ ${rawHtml}
   await page.setContent(html, { waitUntil: "networkidle0" });
 
   for (const dir of OUTPUT_DIRS) {
-    const pdfPath = path.join(dir, "Final_Documentation Getra.pdf");
+    const isAiFinal = dir.endsWith("AI FINAL");
+    const filename = isAiFinal ? "AIFInal" : "Final_Documentation Getra";
+    const pdfPath = path.join(dir, `${filename}.pdf`);
     console.log(`Rendering PDF to: ${pdfPath}...`);
     await page.pdf({
       path: pdfPath,
