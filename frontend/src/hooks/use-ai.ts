@@ -34,7 +34,11 @@ export function useAi() {
       if (requestGeneration !== generation.current) return;
       const appliedAnswer = await onResponse?.(res);
       if (requestGeneration !== generation.current) return;
-      const assistantMessage: AiAskMessage = { role: "assistant", content: appliedAnswer ?? res.answer };
+      const assistantMessage: AiAskMessage = {
+        role: "assistant",
+        content: appliedAnswer ?? res.answer,
+        action: res.action,
+      };
       setMessages([...nextMessages, assistantMessage]);
       setProvider(res.provider);
       setState("SUCCESS");

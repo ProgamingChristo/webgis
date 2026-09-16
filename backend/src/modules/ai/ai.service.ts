@@ -214,7 +214,10 @@ export class AiService {
       };
     }
 
-    if (/^getra bisa (?:bantu )?apa\b/iu.test(normalizedQuestion)) {
+    if (
+      /^getra bisa (?:bantu )?apa\b/iu.test(normalizedQuestion) ||
+      /\bapa yang (?:bisa|dapat) (?:dilakukan|dibantu) getra\b/iu.test(normalizedQuestion)
+    ) {
       return {
         answer:
           "GETRA dapat membantu Anda menemukan UMKM lokal dengan prinsip Fair Discovery, menghitung rute berjalan kaki dan multimodal berbasis jaringan GIS yang akurat, serta membantu pelaku usaha mendaftarkan dan mempromosikan usahanya.",
@@ -229,11 +232,11 @@ export class AiService {
     if (/\b(?:gimana|bagaimana|cara)\s+(?:daftar|daftarkan)\s+usaha\b/iu.test(normalizedQuestion)) {
       return {
         answer:
-          "Anda dapat mendaftarkan usaha Anda melalui menu UMKM > Daftarkan Usaha di GETRA dengan mengisi nama usaha, alamat lengkap, kategori usaha, dan menandai koordinat lokasi pada peta untuk diverifikasi tim Admin.",
-        intent: "UMKM_POI",
-        limitations: [],
-        evidence: [],
-        action: { type: "ANSWER_ONLY" },
+          "Anda dapat mendaftarkan usaha Anda melalui menu UMKM > Daftarkan Usaha di GETRA dengan mengisi nama usaha, alamat lengkap, kategori usaha, dan menandai koordinat lokasi pada peta untuk diverifikasi tim Admin. Setelah disetujui, usaha Anda akan dipublikasikan secara resmi pada peta Fair Discovery.",
+        intent: "UMKM_CREATE",
+        limitations: ["Pendaftaran usaha memerlukan kurasi dan persetujuan Administrator."],
+        evidence: [{ source: "GETRA Registry", dataset: "UMKM Canonical Catalog" }],
+        action: { type: "NAVIGATE", path: "/umkm/merchants/new", label: "Daftarkan Usaha Sekarang" },
         provider: "deterministic",
       };
     }
@@ -241,11 +244,11 @@ export class AiService {
     if (/\bkenapa belum bisa (?:promosi|bayar)\b/iu.test(normalizedQuestion) || /\bbagaimana promosi di getra\b/iu.test(normalizedQuestion)) {
       return {
         answer:
-          "Promosi berbayar (Midtrans Sandbox) di GETRA mensyaratkan usaha Anda telah berstatus terverifikasi (VERIFIED) oleh tim Admin, dipublikasikan aktif di peta, dan akun Anda berada pada mode stakeholder UMKM.",
-        intent: "UMKM_POI",
-        limitations: [],
-        evidence: [],
-        action: { type: "ANSWER_ONLY" },
+          "Promosi berbayar (Midtrans Sandbox) di GETRA mensyaratkan usaha Anda telah berstatus terverifikasi (VERIFIED) oleh tim Admin, dipublikasikan aktif di peta, dan akun Anda berada pada mode stakeholder UMKM. Kunjungi halaman Kelola Promosi (/umkm/advertising) untuk mengatur materi dan jadwal promosi.",
+        intent: "PROMOTION_SETUP",
+        limitations: ["Promosi membutuhkan verifikasi merchant dan penyelesaian transaksi Midtrans Sandbox."],
+        evidence: [{ source: "GETRA Advertising Engine", dataset: "Promotion Workflow" }],
+        action: { type: "NAVIGATE", path: "/umkm/advertising", label: "Buka Kelola Promosi" },
         provider: "deterministic",
       };
     }
@@ -254,10 +257,10 @@ export class AiService {
       return {
         answer:
           "Fitur Promosi (Sponsored) di GETRA memungkinkan UMKM terverifikasi meningkatkan jangkauan promosi visual pada peta dan panel rekomendasi melalui pembayaran resmi Midtrans Sandbox tanpa mengorbankan relevansi hasil pencarian Fair Discovery.",
-        intent: "UMKM_POI",
+        intent: "PROMOTION_SETUP",
         limitations: [],
-        evidence: [],
-        action: { type: "ANSWER_ONLY" },
+        evidence: [{ source: "GETRA Advertising Engine", dataset: "Promotion Definition" }],
+        action: { type: "NAVIGATE", path: "/umkm/advertising", label: "Buka Kelola Promosi" },
         provider: "deterministic",
       };
     }
@@ -412,7 +415,9 @@ export class AiService {
       deterministicAction.type ===
         "CALCULATE_ROUTE" ||
       deterministicAction.type ===
-        "CHANGE_ROUTE_MODE"
+        "CHANGE_ROUTE_MODE" ||
+      deterministicAction.type ===
+        "NAVIGATE"
     ) {
       action =
         deterministicAction;
@@ -431,7 +436,9 @@ export class AiService {
 
     if (
       action.type !==
-      "ANSWER_ONLY"
+      "ANSWER_ONLY" &&
+      action.type !==
+      "NAVIGATE"
     ) {
       return {
         answer:
@@ -497,6 +504,9 @@ export class AiService {
       map_action:
         mapAction,
 
+      action:
+        action.type === "NAVIGATE" ? action : { type: "ANSWER_ONLY" },
+
       provider:
         answer.provider,
     };
@@ -518,20 +528,37 @@ export class AiService {
       );
 
     /**
-     * Greetings / identity questions do not need an external model.
+     * Known GETRA product knowledge & operational intents do not need external LLM uncertainty.
      */
-    if (
-      deterministicIntent ===
-        "ASSISTANT_IDENTITY" ||
-      deterministicIntent ===
-        "CASUAL_CHAT"
-    ) {
-      return {
-        intent:
-          deterministicIntent,
+    const deterministicProductKnowledgeIntents: readonly AiIntent[] = [
+      "ASSISTANT_IDENTITY",
+      "CASUAL_CHAT",
+      "GENERAL_HELP",
+      "AI_HELP",
+      "PROMOTION_CREATE",
+      "PROMOTION_SETUP",
+      "PROMOTION_TARGETING",
+      "PROMOTION_SCHEDULE",
+      "PROMOTION_PREVIEW",
+      "PROMOTION_PAYMENT",
+      "PROMOTION_ANALYTICS",
+      "UMKM_CREATE",
+      "UMKM_SUBMIT",
+      "UMKM_STATUS",
+      "UMKM_CLAIM",
+      "UMKM_OWNERSHIP",
+      "ACTIVE_JOURNEY",
+      "PAYMENT_STATUS",
+      "COMMUNITY",
+      "COMMUNITY_OBSERVATION",
+      "PROFILE",
+      "ADMIN",
+    ];
 
-        provider:
-          "deterministic",
+    if (deterministicProductKnowledgeIntents.includes(deterministicIntent)) {
+      return {
+        intent: deterministicIntent,
+        provider: "deterministic",
       };
     }
 
@@ -617,6 +644,9 @@ Classify the current user request into exactly one supported intent:
 - CASUAL_CHAT:
   Lightweight conversation that does not require GIS, merchant search, routing, or spatial facts.
 
+- GENERAL_HELP:
+  Questions about what GETRA is, its capabilities, features, and how to get started.
+
 - GENERAL_AREA:
   Questions about what exists or is happening in an area generally.
 
@@ -625,7 +655,9 @@ Classify the current user request into exactly one supported intent:
 
 - WALKING_ROUTE:
   Requests involving route calculation, directions, travel duration, navigation, or walking to a destination.
-  This historical intent name may still accompany routes that later change transport mode through an application action.
+
+- ACTIVE_JOURNEY:
+  Requests related to live journey tracking, active navigation corridor, being lost, or journey status.
 
 - UMKM_POI:
   Questions about a specific already-selected merchant, business, UMKM, or POI.
@@ -633,17 +665,56 @@ Classify the current user request into exactly one supported intent:
 - MERCHANT_SEARCH:
   Requests to search, discover, find, filter, or recommend merchants, food, shops, restaurants, or UMKM.
 
+- UMKM_CREATE:
+  Questions on how to register, create, submit, or add a business/UMKM in GETRA.
+
+- UMKM_STATUS:
+  Questions about why a business is pending, review status, or when it will be approved.
+
+- UMKM_CLAIM:
+  Questions on how to claim an existing business or transfer store ownership.
+
+- PROMOTION_CREATE:
+  Questions on how to create, start, or buy promotions/campaigns/ads for a business.
+
+- PROMOTION_SETUP:
+  Questions about promotion materials, visual banner requirements, or promotion setup.
+
+- PROMOTION_TARGETING:
+  Questions about defining the promotion target area or radius buffer.
+
+- PROMOTION_SCHEDULE:
+  Questions about scheduling promotion dates, run times, or duration.
+
+- PROMOTION_PREVIEW:
+  Questions about previewing or simulating promotion appearance on the map.
+
+- PROMOTION_PAYMENT:
+  Questions about paying for promotions via Midtrans Sandbox or pricing.
+
+- PROMOTION_ANALYTICS:
+  Questions about viewing promotion statistics, impressions, clicks, or performance.
+
+- PAYMENT_STATUS:
+  Questions about checking Midtrans Sandbox transaction status, callbacks, or invoices.
+
+- COMMUNITY:
+  Questions about community reports, citizen observations, comments, or report moderation.
+
 - ACCESSIBILITY:
   Questions about pedestrian accessibility, sidewalk conditions, wheelchair access, ramps, guiding blocks, or disability facilities.
 
 - DEMAND_SUPPLY:
   Questions regarding market potential, retail gap, customer footfall vs business supply, or recommendations where to open a business space.
 
-- COMMUNITY_OBSERVATION:
-  Questions about citizen/community crowdsourced reports or local pedestrian observations.
+- PROFILE:
+  Questions about user account settings, changing profile, experience mode, or logout.
+
+- ADMIN:
+  Questions about admin verification, curation queue, or administrator actions.
 
 - UNKNOWN:
-  The request cannot be classified safely.
+  The request cannot be classified safely into any GETRA capability.
 
 Important semantic rule:
 A transit word can be a LOCATION RELATION inside a merchant search.
@@ -675,6 +746,9 @@ Also return at most one strict AiApplicationAction:
 
 - SWITCH_MAP_MODE:
   when the user asks to switch or view the map in accessibility, business-space, or analytics mode.
+
+- NAVIGATE:
+  when directing the user to an existing workspace (e.g. /umkm/advertising, /umkm/merchants/new, /community, /profile).
 
 - REQUEST_CLARIFICATION:
   only when required information is genuinely ambiguous or missing.
@@ -1245,11 +1319,18 @@ Rules:
         break;
       }
 
+      case "COMMUNITY":
       case "COMMUNITY_OBSERVATION": {
         facts = {
-          reports_count: 0,
-          summary:
-            "Observasi komunitas mengumpulkan kontribusi catatan pejalan kaki dan warga mengenai kondisi trotoar, aksesibilitas, dan fasilitas sekitar.",
+          feature_name: "Komunitas Pejalan Kaki & Warga GETRA",
+          capabilities: [
+            "Membuat postingan laporan kondisi fasilitas trotoar, halte, atau aksesibilitas.",
+            "Mengunggah foto bukti temuan lapangan.",
+            "Memberikan komentar dan reaksi pada laporan warga lain.",
+            "Melaporkan konten yang tidak pantas kepada tim kurasi Admin.",
+          ],
+          moderation:
+            "Laporan komunitas dimoderasi secara berkala oleh tim Admin GETRA untuk menjaga keabsahan data publik.",
           disclaimer:
             "Laporan komunitas merupakan observasi terikat waktu yang melalui proses moderasi dan tidak menjamin perubahan rute seketika.",
         };
@@ -1261,6 +1342,219 @@ Rules:
 
         break;
       }
+
+      case "PROMOTION_CREATE":
+      case "PROMOTION_SETUP":
+      case "PROMOTION_TARGETING":
+      case "PROMOTION_SCHEDULE":
+      case "PROMOTION_PREVIEW":
+      case "PROMOTION_PAYMENT":
+      case "PROMOTION_ANALYTICS": {
+        facts = {
+          feature_name: "Promosi UMKM GETRA (Sponsored Promotion)",
+          prerequisites: [
+            "Usaha sudah terdaftar dan berstatus terverifikasi (VERIFIED) oleh tim Admin.",
+            "Profil usaha tampil aktif pada peta interaktif GETRA.",
+            "Akun pengguna berada dalam mode stakeholder UMKM.",
+          ],
+          workflow_steps: [
+            "1. Masuk ke menu Kelola Promosi (/umkm/advertising).",
+            "2. Buat kampanye baru dengan mengisi judul promosi, materi visual (banner), dan deskripsi penawaran.",
+            "3. Tentukan wilayah sasaran menggunakan radius buffer spasial pada peta.",
+            "4. Atur durasi penayangan dan jadwal tayang kampanye.",
+            "5. Lakukan uji penayangan (preview) tampilan kartu promosi pada peta.",
+            "6. Selesaikan pembayaran resmi melalui gateway Midtrans Sandbox (QRIS / Virtual Account simulasi).",
+            "7. Setelah konfirmasi settlement dari sistem, promosi berstatus AKTIF (ACTIVE) dan tayang kepada pengguna sekitar.",
+            "8. Pantau metrik impresi, klik, dan interaksi melalui dashboard analitik promosi.",
+          ],
+          payment_gateway: "Midtrans Sandbox (simulasi pembayaran aman)",
+          fair_discovery_protection:
+            "Promosi meningkatkan keterlihatan visual tanpa memanipulasi keaslian ranking jarak Fair Discovery.",
+          limitations: [
+            "Promosi hanya aktif setelah transaksi pembayaran Midtrans Sandbox terverifikasi.",
+            "GETRA tidak menjamin proyeksi omzet atau keuntungan finansial tertentu.",
+          ],
+        };
+
+        provenance.push({
+          source: "GETRA Advertising Engine",
+          dataset: "Promotion Workflow & Midtrans Sandbox Gateway",
+        });
+
+        break;
+      }
+
+      case "UMKM_CREATE":
+      case "UMKM_SUBMIT":
+      case "UMKM_STATUS":
+      case "UMKM_CLAIM":
+      case "UMKM_OWNERSHIP": {
+        facts = {
+          feature_name: "Pendaftaran dan Tata Kelola UMKM GETRA",
+          workflow_steps: [
+            "1. Login atau register akun GETRA.",
+            "2. Buka menu Kelola UMKM > Daftarkan Usaha (/umkm/merchants/new).",
+            "3. Isi informasi profil usaha: nama toko, kategori, jam buka/tutup, nomor kontak, dan deskripsi produk.",
+            "4. Tandai titik koordinat lokasi usaha secara presisi pada peta interaktif.",
+            "5. Unggah foto tempat usaha atau dokumen pendukung.",
+            "6. Submit formulir pendaftaran (status awal menjadi PENDING).",
+            "7. Tim Administrator memeriksa kelengkapan data dan keabsahan lokasi melalui dashboard Admin.",
+            "8. Setelah disetujui (APPROVED), data menjadi data kanonikal publik dan tampil pada pencarian peta Fair Discovery.",
+            "9. Status kepemilikan terverifikasi (OWNER VERIFIED) memberikan hak penuh mengelola informasi toko dan mengajukan promosi.",
+          ],
+          status_definitions: {
+            PENDING: "Pengajuan data usaha sedang dalam antrean kurasi oleh tim Admin GETRA.",
+            APPROVED: "Data usaha telah diverifikasi Admin dan resmi tampil publik pada peta.",
+            REJECTED: "Pengajuan belum memenuhi kriteria kelengkapan data atau keabsahan lokasi.",
+          },
+          governance_rules: [
+            "Data Terverifikasi (keabsahan lokasi/profil) berbeda dengan Pemilik Terverifikasi (hak kelola usaha).",
+            "Publikasi peta tunduk pada kurasi Admin; usaha yang masih pending tidak langsung tampil publik.",
+            "Klaim usaha yang sudah ada memerlukan unggahan dokumen bukti kepemilikan untuk diverifikasi Admin.",
+          ],
+          limitations: [
+            "Persetujuan data usaha membutuhkan verifikasi kurasi oleh tim Administrator.",
+            "Asisten AI tidak dapat mengubah status kurasi atau memindahtangankan kepemilikan usaha.",
+          ],
+        };
+
+        provenance.push({
+          source: "GETRA Registry",
+          dataset: "UMKM Canonical Catalog & Ownership Governance",
+        });
+
+        break;
+      }
+
+      case "ACTIVE_JOURNEY": {
+        facts = {
+          feature_name: "Active Journey & Live Navigation",
+          guidance:
+            "Active Journey memandu perjalanan Anda secara langsung mengikuti rute jaringan GIS yang telah dihitung.",
+          instructions: [
+            "Pilih tujuan dan hitung rute pada peta terlebih dahulu.",
+            "Tekan tombol 'Mulai Perjalanan' untuk mengaktifkan pelacakan koridor rute.",
+            "Sistem akan memantau posisi Anda terhadap koridor rute resmi.",
+            "Jika Anda menyimpang dari jalur, sistem akan menghitung ulang rute secara otomatis.",
+          ],
+          limitations: [
+            "Jarak dan sisa waktu perjalanan dihitung langsung oleh routing authority PostGIS/Valhalla, bukan estimasi fiktif.",
+            "Pastikan izin lokasi dan sinyal GPS perangkat aktif.",
+          ],
+        };
+
+        provenance.push({
+          source: "GETRA GIS Navigation",
+          dataset: "Active Route Corridor & Spatial Tracking",
+        });
+
+        break;
+      }
+
+      case "PAYMENT_STATUS": {
+        facts = {
+          feature_name: "Gateway Pembayaran Promosi GETRA",
+          provider: "Midtrans Sandbox",
+          status_types: [
+            "PENDING: Menunggu pembayaran oleh pengguna.",
+            "SETTLEMENT: Pembayaran berhasil terverifikasi oleh gateway.",
+            "EXPIRE: Batas waktu transaksi telah habis.",
+            "CANCEL: Transaksi dibatalkan.",
+          ],
+          invoice_info:
+            "Invoice resmi otomatis diterbitkan dan dapat diunduh pada riwayat kampanye promosi setelah status transaksi settlement.",
+          safety_protocol:
+            "AI tidak dapat mengubah status transaksi secara sepihak dan tidak menyatakan pembayaran sukses tanpa konfirmasi sistem webhook Midtrans.",
+          limitations: [
+            "Status pembayaran mengikuti notifikasi resmi dari server Midtrans.",
+            "Pada mode Sandbox, pembayaran dilakukan menggunakan simulator resmi Midtrans.",
+          ],
+        };
+
+        provenance.push({
+          source: "GETRA Payment Gateway",
+          dataset: "Midtrans Sandbox Transaction Gateway",
+        });
+
+        break;
+      }
+
+      case "PROFILE": {
+        facts = {
+          feature_name: "Manajemen Profil Akun GETRA",
+          capabilities: [
+            "Melihat dan memperbarui informasi identitas profil pengguna.",
+            "Melihat mode peran aktif: Komuter (General), UMKM, Investor, atau Pemerintah.",
+            "Mengelola keamanan akun dan melakukan keluar akun (logout) dengan aman.",
+          ],
+          rbac_policy:
+            "Pemisahan hak akses ketat: Pengguna biasa (USER) dan Administrator (ADMIN). Mode pengalaman (UMKM/Investor/Pemerintah) adalah preferensi antarmuka, bukan eskalasi hak akses sistem.",
+        };
+
+        provenance.push({
+          source: "GETRA Auth & Security",
+          dataset: "Role-Based Access Control & User Profile",
+        });
+
+        break;
+      }
+
+      case "ADMIN": {
+        facts = {
+          feature_name: "Portal Administrasi GETRA",
+          role_required: "ADMINISTRATOR",
+          responsibilities: [
+            "Kurasi dan persetujuan (approval) pengajuan UMKM baru.",
+            "Verifikasi dokumen legalitas klaim kepemilikan usaha.",
+            "Moderasi konten laporan komunitas.",
+            "Pengawasan metrik analitik dan transaksi promosi.",
+          ],
+          security_rule:
+            "Akses ke dashboard Admin (/admin) dibatasi secara ketat hanya untuk akun dengan peran sistem Administrator.",
+        };
+
+        provenance.push({
+          source: "GETRA Core Security",
+          dataset: "Admin Authorization & Curatorial Gateway",
+        });
+
+        break;
+      }
+
+      case "GENERAL_HELP":
+      case "AI_HELP": {
+        facts = {
+          assistant_name: "Asisten GETRA (Tanya GETRA)",
+          platform: "GETRA — Geo-Enabled Transit & Retail Analytics",
+          key_capabilities: [
+            "Pencarian UMKM lokal berbasis Fair Discovery (relevansi dan kedekatan spasial).",
+            "Kalkulasi rute pejalan kaki multimodal berbasis PostGIS dan Valhalla.",
+            "Pemetaan fasilitas dan bukti foto aksesibilitas disabilitas.",
+            "Digitalisasi, pendaftaran, dan promosi UMKM via Midtrans Sandbox.",
+            "Analisis kesenjangan komersial (Demand & Supply gap) di koridor transit.",
+            "Pelaporan dan interaksi komunitas pejalan kaki.",
+          ],
+          how_to_start:
+            "Mulai dengan mencari tempat kuliner sekitar, meminta panduan rute perjalanan, atau mendaftarkan usaha Anda.",
+        };
+
+        provenance.push({
+          source: "GETRA Knowledge Base",
+          dataset: "Platform Architecture & Capabilities",
+        });
+
+        break;
+      }
+
+      case "CLARIFICATION":
+      case "UNSUPPORTED":
+      case "SEARCH_MERCHANT":
+      case "SEARCH_PLACE":
+      case "NEARBY":
+      case "DISCOVERY":
+      case "ROUTING":
+      case "SERVICE_AREA":
+      case "MAP":
 
       case "UNKNOWN": {
         facts = {
@@ -1409,130 +1703,214 @@ function classifyIntentDeterministically(
   question: string,
   history?: AiAskRequest["history"],
 ): AiIntent {
-  const current =
-    question
-      .toLocaleLowerCase(
-        "id-ID",
-      )
-      .replace(/\s+/g, " ")
-      .trim();
+  const current = question
+    .toLocaleLowerCase("id-ID")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Normalize common Indonesian typo and slang variations
+  const normalized = current
+    .replace(/\bpromsoi\b/giu, "promosi")
+    .replace(/\bpromso\b/giu, "promosi")
+    .replace(/\bdaftr\b/giu, "daftar")
+    .replace(/\bumk\b/giu, "umkm")
+    .replace(/\bmaknan\b/giu, "makanan")
+    .replace(/\bjakpus\b/giu, "jakarta pusat")
+    .replace(/\bjaktim\b/giu, "jakarta timur")
+    .replace(/\bjaksel\b/giu, "jakarta selatan")
+    .replace(/\bjakbar\b/giu, "jakarta barat")
+    .replace(/\bjakut\b/giu, "jakarta utara")
+    .replace(/\bgmn\b/giu, "gimana")
+    .replace(/\btoko aku\b/giu, "toko saya")
+    .replace(/\bumkm ku\b/giu, "umkm saya");
 
   const recentContext =
     history
-      ?.slice(-2)
-      .map(
-        (item) =>
-          item.content,
-      )
+      ?.slice(-3)
+      .map((item) => item.content)
       .join(" ")
-      .toLocaleLowerCase(
-        "id-ID",
-      ) ?? "";
+      .toLocaleLowerCase("id-ID") ?? "";
 
-  const combined =
-    `${recentContext} ${current}`;
+  const combined = `${recentContext} ${normalized}`;
 
+  // 1. Assistant Identity & Greetings
   if (
-    /^(halo|hai|hi|hello|pagi|siang|sore|malam)[!.?\s]*$/u.test(
-      current,
-    ) ||
-    /kamu siapa|siapa kamu|asisten (?:aku|saya)|getra ai|apakah kamu ai|kamu ai|apa yang (?:bisa|dapat) kamu (?:lakukan|bantu)/u.test(
-      current,
-    )
+    /^(halo|hai|hi|hello|pagi|siang|sore|malam)[!.?\s]*$/u.test(normalized) ||
+    /kamu siapa|siapa kamu|asisten (?:aku|saya)|getra ai|apakah kamu ai|kamu ai|apa yang (?:bisa|dapat) kamu (?:lakukan|bantu)/u.test(normalized)
   ) {
     return "ASSISTANT_IDENTITY";
   }
 
+  // 2. Casual Chat & Introductions
   if (
-    /\b(halo|hai|hi|hello|pagi|siang|sore|malam)\b/u.test(
-      current,
-    ) ||
-    /\b(aku|saya|namaku|nama saya)\b/u.test(
-      current,
-    ) ||
-    /\b(random|acak|cerita|ngobrol|chat|tes|test|apa kabar|makasih|terima kasih)\b/u.test(
-      current,
-    )
+    /^(?:halo|hai|hi|hello)\s+(?:aku|saya)\s+[a-z]+$/iu.test(normalized) ||
+    /\b(namaku|nama saya)\b/iu.test(normalized) ||
+    /^(?:halo|hai|hi|hello|pagi|siang|sore|malam)$/iu.test(normalized) ||
+    /\b(random|acak|cerita|ngobrol|chat|tes|test|apa kabar|makasih|terima kasih|thank you|thanks)\b/u.test(normalized)
   ) {
     return "CASUAL_CHAT";
   }
 
-  /**
-   * Route requests take precedence.
-   */
+  // 3. General Help / Platform Overview
   if (
-    /\b(jalan kaki|berapa lama|rute|route|duration|durasi|navigasi|arah ke)\b/u.test(
-      current,
-    )
+    /\b(apa itu getra|getra bisa apa|getra bisa buat apa|fitur getra apa saja|apa saja fitur getra|bagaimana menggunakan getra|cara pakai getra|saya harus mulai dari mana|mulai dari mana|panduan getra|apa fungsi getra|tentang getra|keunggulan getra)\b/iu.test(normalized)
   ) {
-    return "WALKING_ROUTE";
+    return "GENERAL_HELP";
   }
 
-  /**
-   * Explicit nearest-transit requests.
-   *
-   * Important:
-   * "bakso dekat stasiun"
-   * should NOT automatically become NEAREST_TRANSIT.
-   */
+  // 4. Multi-turn Follow-ups based on recent context
+  const isContextualFollowUp =
+    /^(kalau sudah submit\??|kalau sudah buat\??|kalau sudah dibuat\??|setelah submit\??|setelah dibuat\??|udah submit terus gimana\??|cara bayarnya\??|bayarnya gimana\??|berapa biayanya\??|wilayah sasarannya\??|targetnya\??|jadwalnya\??|kenapa belum muncul\??|kok belum aktif\??|kapan disetujui\??|kenapa masih pending\??|yang paling dekat\??|yang tadi paling dekat mana\??|yang buka sekarang\??|kalau jalan kaki\??|kalau naik motor\??|bisa ke sana\??|berapa jauh\??)$/iu.test(normalized);
+
+  if (isContextualFollowUp) {
+    if (/\b(promosi|promo|iklan|campaign|sponsored)\b/iu.test(recentContext)) {
+      if (/\b(bayar|biaya)\w*\b/iu.test(normalized)) return "PROMOTION_PAYMENT";
+      if (/\b(wilayah|sasaran|target)\w*\b/iu.test(normalized)) return "PROMOTION_TARGETING";
+      if (/\bjadwal\w*\b/iu.test(normalized)) return "PROMOTION_SCHEDULE";
+      if (/\b(dibuat|buat|jadi)\w*\b/iu.test(normalized)) return "PROMOTION_SETUP";
+      return "PROMOTION_CREATE";
+    }
+
+    if (/\b(umkm|usaha|toko|warung|merchant|daftarkan|pengajuan)\b/iu.test(recentContext)) {
+      if (/\b(submit|disetujui|pending|muncul|tampil)\w*\b/iu.test(normalized)) return "UMKM_STATUS";
+      return "UMKM_CREATE";
+    }
+
+    if (/\b(cari|makan|kopi|coffee|bakso|resto|tempat|merchant)\b/iu.test(recentContext)) {
+      if (/\b(dekat|buka|murah)\b/iu.test(normalized)) return "MERCHANT_SEARCH";
+    }
+
+    if (/\b(rute|jalan kaki|motor|mobil|perjalanan)\b/iu.test(recentContext)) {
+      return "WALKING_ROUTE";
+    }
+  }
+
+  // 5. Active Journey & Live Navigation
   if (
-    /\b(stasiun|halte|transit)\b.*\b(dekat|terdekat|nearest)\b/u.test(
-      current,
-    ) ||
-    /\b(paling dekat|terdekat|nearest)\b.*\b(stasiun|halte|transit)\b/u.test(
-      current,
-    )
+    /\b(mulai jalan|mulai perjalanan|saya tersesat|tersesat|rute saya berubah|sisa perjalanan|berapa sisa perjalanan|sudah sampai|saya sudah sampai|fokuskan peta|navigasi ke merchant)\b/iu.test(normalized)
   ) {
-    return "NEAREST_TRANSIT";
+    return "ACTIVE_JOURNEY";
+  }
+
+  // 6. Payment & Midtrans Sandbox
+  if (
+    /\b(status pembayaran|cek pembayaran|pembayaran.*berhasil|midtrans sandbox|midtrans|invoice saya|lihat invoice|bukti bayar|order id|transaksi pembayaran)\b/iu.test(normalized)
+  ) {
+    return "PAYMENT_STATUS";
+  }
+
+  // 7. Promotion & Advertising
+  if (
+    /\b(promosi|promo|iklan|campaign|pasang iklan|iklanin usaha|iklanin toko)\b/iu.test(normalized) ||
+    /\b(wilayah sasaran|radius sasaran|target wilayah|atur jadwal|mengatur jadwal|jadwal tayang|uji penayangan|simulasi tayang)\b/iu.test(normalized)
+  ) {
+    if (/\b(statistik|analytics|analitik|impresi|performa)\b/iu.test(normalized)) {
+      return "PROMOTION_ANALYTICS";
+    }
+    if (/\b(bayar|biaya|tarif|harga|midtrans)\b/iu.test(normalized)) {
+      return "PROMOTION_PAYMENT";
+    }
+    if (/\b(wilayah sasaran|radius sasaran|target wilayah|jangkauan)\b/iu.test(normalized)) {
+      return "PROMOTION_TARGETING";
+    }
+    if (/\b(jadwal|durasi|waktu tayang|tanggal tayang|atur jadwal|mengatur jadwal)\b/iu.test(normalized)) {
+      return "PROMOTION_SCHEDULE";
+    }
+    if (/\b(preview|uji penayangan|simulasi tayang|tampilan iklan)\b/iu.test(normalized)) {
+      return "PROMOTION_PREVIEW";
+    }
+    if (/\b(materi|banner|konten|foto promosi)\b/iu.test(normalized)) {
+      return "PROMOTION_SETUP";
+    }
+    return "PROMOTION_CREATE";
+  }
+
+  // 8. UMKM Onboarding, Claim & Status
+  if (
+    /\b(daftar umkm|daftarkan umkm|buat umkm|bikin umkm|tambah umkm|daftar usaha|daftarkan usaha|buat usaha|bikin usaha|tambah toko|daftarin toko|masukin usaha|usaha saya belum ada|submit umkm|submit usaha)\b/iu.test(normalized)
+  ) {
+    return "UMKM_CREATE";
   }
 
   if (
-    /\b(aksesibilitas|disabilitas|kursi roda|ramah kursi roda|guiding block|trotoar rusak|kondisi trotoar|rampa|ramp|fasilitas disabilitas|jalur difabel)\b/iu.test(
-      current,
-    )
+    /\b(claim umkm|klaim umkm|claim toko|klaim toko|claim usaha|klaim usaha|menjadi pemilik|hak milik usaha|kepemilikan usaha|siapa yang boleh mengubah usaha)\b/iu.test(normalized)
   ) {
-    return "ACCESSIBILITY";
+    return "UMKM_CLAIM";
   }
 
   if (
-    /\b(demand|supply|peluang usaha|potensi usaha|analisis pasar|potensi pasar|kesenjangan usaha|kesenjangan komersial)\b/iu.test(
-      current,
-    )
+    /\b(status pengajuan|umkm.*pending|usaha.*pending|kenapa.*pending|kapan.*disetujui|usaha.*belum tampil|toko.*belum muncul|status verifikasi usaha)\b/iu.test(normalized)
   ) {
-    return "DEMAND_SUPPLY";
+    return "UMKM_STATUS";
   }
 
+  // 9. Community & Citizen Reports
   if (
-    /\b(laporan warga|komunitas|kontribusi warga|observasi komunitas|laporan masyarakat)\b/iu.test(
-      current,
-    )
+    /\b(buat post|buat posting|buat postingan|komentar|komentari|reaction|reaksi|report post|laporkan postingan|laporan warga|komunitas|kontribusi warga|observasi komunitas|laporan masyarakat)\b/iu.test(normalized)
   ) {
     return "COMMUNITY_OBSERVATION";
   }
 
-  /**
-   * Explicit discovery/search requests.
-   */
+  // 10. Accessibility & Special Needs
   if (
-    /\b(cari|carikan|temukan|rekomendasikan|rekomendasi|mau makan|tempat makan)\b/u.test(
-      current,
-    )
+    /\b(aksesibilitas|disabilitas|kursi roda|ramah kursi roda|guiding block|trotoar rusak|kondisi trotoar|rampa|ramp|fasilitas disabilitas|jalur difabel|titik aksesibilitas)\b/iu.test(normalized)
+  ) {
+    return "ACCESSIBILITY";
+  }
+
+  // 11. Profile & Account
+  if (
+    /\b(edit profile|edit profil|ubah profil|ganti profile|ganti profil|logout|keluar akun|role saya|peran saya|keamanan akun|ganti password|profil pengguna)\b/iu.test(normalized)
+  ) {
+    return "PROFILE";
+  }
+
+  // 12. Admin & System Management
+  if (
+    /\b(dashboard admin|halaman admin|menu admin|fitur admin|persetujuan admin|kurasi admin)\b/iu.test(normalized)
+  ) {
+    return "ADMIN";
+  }
+
+  // 13. Route requests take precedence
+  if (
+    /\b(jalan kaki|berapa lama|rute|route|duration|durasi|navigasi|arah ke|cara ke|rute terbaik|bisa jalan kaki|naik motor|naik mobil|jarak ke)\b/iu.test(normalized)
+  ) {
+    return "WALKING_ROUTE";
+  }
+
+  // 14. Explicit nearest-transit requests
+  if (
+    /\b(stasiun|halte|transit)\b.*\b(dekat|terdekat|nearest)\b/u.test(normalized) ||
+    /\b(paling dekat|terdekat|nearest)\b.*\b(stasiun|halte|transit)\b/u.test(normalized)
+  ) {
+    return "NEAREST_TRANSIT";
+  }
+
+  // 15. Demand-Supply Analysis
+  if (
+    /\b(demand|supply|peluang usaha|potensi usaha|analisis pasar|potensi pasar|kesenjangan usaha|kesenjangan komersial)\b/iu.test(normalized)
+  ) {
+    return "DEMAND_SUPPLY";
+  }
+
+  // 16. Explicit discovery/search requests
+  if (
+    /\b(cari|carikan|temukan|rekomendasikan|rekomendasi|mau makan|tempat makan|coffee shop|kopi|kafe|cafe|resto|restoran|kuliner|hidden gem|warung makan)\b/u.test(normalized)
   ) {
     return "MERCHANT_SEARCH";
   }
 
+  // 17. Specific UMKM / POI
   if (
-    /\b(umkm|merchant|usaha|toko|warung|restoran|restaurant|kuliner|poi)\b/u.test(
-      combined,
-    )
+    /\b(umkm|merchant|usaha|toko|warung|restoran|restaurant|kuliner|poi)\b/u.test(combined)
   ) {
     return "UMKM_POI";
   }
 
+  // 18. General Area
   if (
-    /\b(area|wilayah|sekitar|kawasan)\b/u.test(
-      combined,
-    )
+    /\b(area|wilayah|sekitar|kawasan|lingkungan)\b/u.test(combined)
   ) {
     return "GENERAL_AREA";
   }
@@ -1560,7 +1938,20 @@ export function determineApplicationAction(
         "id-ID",
       )
       .replace(/\s+/g, " ")
-      .trim();
+      .trim()
+      .replace(/\bpromsoi\b/giu, "promosi")
+      .replace(/\bpromso\b/giu, "promosi")
+      .replace(/\bdaftr\b/giu, "daftar")
+      .replace(/\bumk\b/giu, "umkm")
+      .replace(/\bmaknan\b/giu, "makanan")
+      .replace(/\bjakpus\b/giu, "jakarta pusat")
+      .replace(/\bjaktim\b/giu, "jakarta timur")
+      .replace(/\bjaksel\b/giu, "jakarta selatan")
+      .replace(/\bjakbar\b/giu, "jakarta barat")
+      .replace(/\bjakut\b/giu, "jakarta utara")
+      .replace(/\bgmn\b/giu, "gimana")
+      .replace(/\btoko aku\b/giu, "toko saya")
+      .replace(/\bumkm ku\b/giu, "umkm saya");
 
   const isAmbiguousQuery =
     /^(ke sana|ke situ|mau makan|cari yang bagus|cari dekat situ|yang bagus)$/iu.test(
@@ -1598,6 +1989,51 @@ export function determineApplicationAction(
           "Makanan atau tempat seperti apa yang ingin Anda cari? Anda bisa menyebutkan jenis makanan atau lokasinya.",
       };
     }
+  }
+
+  // 1. Actionable navigation to existing GETRA workspaces
+  if (
+    /\b(promosi|promo|iklan|campaign)\b/iu.test(normalized) &&
+    /\b(cara|bagaimana|buat|bikin|daftar|pasang|atur|kelola|mau|mulai|biaya|bayar|tampil|aktif)\b/iu.test(normalized)
+  ) {
+    return {
+      type: "NAVIGATE",
+      path: "/umkm/advertising",
+      label: "Buka Kelola Promosi",
+    };
+  }
+
+  if (
+    /\b(umkm|usaha|toko|warung|merchant)\b/iu.test(normalized) &&
+    /\b(cara|bagaimana|buat|bikin|daftar|daftarkan|tambah|submit|masukin|mulai|registrasi)\b/iu.test(normalized)
+  ) {
+    return {
+      type: "NAVIGATE",
+      path: "/umkm/merchants/new",
+      label: "Daftarkan Usaha Sekarang",
+    };
+  }
+
+  if (
+    /\b(komunitas|laporan warga)\b/iu.test(normalized) ||
+    /\b(buat post|buat posting|buat postingan|tulis laporan|lapor fasilitas)\b/iu.test(normalized)
+  ) {
+    return {
+      type: "NAVIGATE",
+      path: "/community",
+      label: "Buka Komunitas",
+    };
+  }
+
+  if (
+    /\b(profile|profil|akun saya|pengaturan akun)\b/iu.test(normalized) &&
+    /\b(edit|ubah|ganti|buka|lihat)\b/iu.test(normalized)
+  ) {
+    return {
+      type: "NAVIGATE",
+      path: "/profile",
+      label: "Buka Profil Pengguna",
+    };
   }
 
   if (
@@ -1852,6 +2288,9 @@ function actionMessage(
     case "SWITCH_MAP_MODE":
       return `Saya mengalihkan tampilan peta ke mode ${action.mode}.`;
 
+    case "NAVIGATE":
+      return `Buka ${action.label} (${action.path}) untuk melanjutkan.`;
+
     case "ANSWER_ONLY":
       return "";
   }
@@ -1876,6 +2315,142 @@ function formatDeterministicAnswer(
     "CASUAL_CHAT"
   ) {
     return "Hai, saya siap membantu. Anda dapat bertanya tentang tempat, rute, area, usaha lokal, ruang usaha, atau aksesibilitas berdasarkan data GETRA yang tersedia.";
+  }
+
+  if (
+    intent === "GENERAL_HELP" ||
+    intent === "AI_HELP"
+  ) {
+    return (
+      "GETRA (Geo-Enabled Transit & Retail Analytics) adalah platform WebGIS mobilitas cerdas dan analitik retail transit. Fitur utama GETRA meliputi:\n\n" +
+      "1. Pencarian UMKM berbasis Fair Discovery (relevansi dan kedekatan spasial riil).\n" +
+      "2. Kalkulasi rute multimodal berbasis PostGIS dan Valhalla (jalan kaki ramah difabel, motor, dan mobil).\n" +
+      "3. Pemetaan fasilitas dan bukti foto aksesibilitas disabilitas.\n" +
+      "4. Digitalisasi, pendaftaran, dan promosi UMKM via Midtrans Sandbox.\n" +
+      "5. Analisis kesenjangan komersial (Demand & Supply gap) di sekitar koridor transit.\n" +
+      "6. Kontribusi dan laporan kondisi fasilitas pedestrian oleh komunitas."
+    );
+  }
+
+  if (
+    intent === "PROMOTION_CREATE" ||
+    intent === "PROMOTION_SETUP"
+  ) {
+    return (
+      "Untuk mempromosikan usaha di GETRA, ikuti alur resmi berikut:\n\n" +
+      "1. Pastikan usaha Anda sudah terdaftar, berstatus terverifikasi (VERIFIED) oleh tim Admin, dan tampil aktif di peta.\n" +
+      "2. Masuk ke halaman Kelola Promosi (/umkm/advertising) pada mode UMKM.\n" +
+      "3. Buat kampanye baru: masukkan judul promo, deskripsi penawaran, dan unggah materi banner visual.\n" +
+      "4. Tentukan wilayah sasaran dengan mengatur radius jangkauan promosi di sekitar lokasi usaha Anda.\n" +
+      "5. Tentukan jadwal dan durasi tayang kampanye promosi.\n" +
+      "6. Lakukan uji penayangan (preview) untuk memeriksa tampilan kartu promosi pada peta.\n" +
+      "7. Lakukan pembayaran resmi melalui gateway Midtrans Sandbox (menggunakan simulator QRIS atau Virtual Account).\n" +
+      "8. Setelah pembayaran terkonfirmasi oleh sistem, promosi akan berstatus AKTIF dan tampil kepada pengguna di wilayah sasaran.\n" +
+      "9. Pantau performa promosi (impresi dan interaksi) secara transparan melalui dashboard analitik promosi."
+    );
+  }
+
+  if (intent === "PROMOTION_TARGETING") {
+    return (
+      "Penentuan wilayah sasaran promosi di GETRA dilakukan dengan mengatur radius jangkauan spasial (geofence/buffer) pada peta dari titik lokasi usaha Anda. Promosi akan diprioritaskan tampil kepada pejalan kaki dan pengguna yang berada di dalam wilayah sasaran tersebut tanpa merusak ranking keaslian Fair Discovery."
+    );
+  }
+
+  if (intent === "PROMOTION_SCHEDULE") {
+    return (
+      "Jadwal promosi di GETRA dapat diatur saat pembuatan kampanye di Kelola Promosi (/umkm/advertising). Anda dapat menentukan tanggal mulai, tanggal berakhir, dan durasi penayangan. Promosi hanya akan aktif dan tayang pada rentang waktu yang telah dijadwalkan dan dibayar."
+    );
+  }
+
+  if (intent === "PROMOTION_PREVIEW") {
+    return (
+      "Fitur Uji Penayangan (Preview) di GETRA memungkinkan Anda melihat simulasi tampilan kartu promosi interaktif pada peta sebelum melakukan pembayaran. Anda dapat memastikan banner visual, teks penawaran, dan informasi toko sudah sesuai sebelum kampanye ditayangkan."
+    );
+  }
+
+  if (intent === "PROMOTION_PAYMENT") {
+    return (
+      "Pembayaran promosi di GETRA diproses secara resmi melalui gateway Midtrans Sandbox. Anda dapat memilih metode simulasi QRIS atau Virtual Account Bank. Promosi baru akan aktif (ACTIVE) setelah status transaksi berhasil dikonfirmasi (SETTLEMENT) oleh sistem webhook backend."
+    );
+  }
+
+  if (intent === "PROMOTION_ANALYTICS") {
+    return (
+      "Statistik dan analitik promosi dapat dipantau langsung pada dashboard Kelola Promosi (/umkm/advertising). GETRA menyajikan data transparan mengenai jumlah penayangan (impresi), interaksi klik kartu promosi, dan sebaran spasial audiens tanpa estimasi omzet fiktif."
+    );
+  }
+
+  if (
+    intent === "UMKM_CREATE" ||
+    intent === "UMKM_SUBMIT"
+  ) {
+    return (
+      "Untuk mendaftarkan UMKM baru di GETRA, ikuti alur resmi berikut:\n\n" +
+      "1. Masuk (Login) ke akun GETRA Anda.\n" +
+      "2. Buka menu Kelola UMKM > Daftarkan Usaha (/umkm/merchants/new).\n" +
+      "3. Isi informasi profil usaha: nama toko/usaha, kategori usaha, jam operasional, nomor kontak, dan deskripsi produk.\n" +
+      "4. Tentukan titik lokasi usaha secara akurat dengan menandai pin pada peta interaktif.\n" +
+      "5. Unggah foto tempat usaha dan dokumen legalitas pendukung jika ada.\n" +
+      "6. Kirim (submit) formulir pendaftaran. Status pengajuan awal menjadi PENDING.\n" +
+      "7. Tim Administrator GETRA akan memeriksa kelengkapan data dan keabsahan lokasi usaha melalui dashboard Admin.\n" +
+      "8. Setelah disetujui (APPROVED), profil usaha Anda resmi menjadi data kanonikal publik dan tampil pada pencarian peta Fair Discovery.\n" +
+      "9. Dengan status kepemilikan terverifikasi (OWNER VERIFIED), Anda memiliki akses penuh mengelola profil toko dan mengajukan promosi berbayar."
+    );
+  }
+
+  if (intent === "UMKM_STATUS") {
+    return (
+      "Status pengajuan UMKM di GETRA melalui tahapan kurasi:\n\n" +
+      "- PENDING: Pengajuan Anda telah diterima dan sedang dalam antrean kurasi oleh tim Admin GETRA.\n" +
+      "- APPROVED: Pengajuan disetujui Admin, data telah menjadi kanonikal publik, dan toko tampil pada peta.\n" +
+      "- REJECTED: Pengajuan belum memenuhi syarat keabsahan data atau lokasi.\n\n" +
+      "Usaha yang masih berstatus pending belum tampil di peta publik demi menjaga keabsahan data spasial. Anda dapat memantau status secara berkala di menu Kelola UMKM."
+    );
+  }
+
+  if (
+    intent === "UMKM_CLAIM" ||
+    intent === "UMKM_OWNERSHIP"
+  ) {
+    return (
+      "Untuk mengklaim kepemilikan usaha yang sudah terdaftar di peta GETRA:\n\n" +
+      "1. Masuk ke halaman detail toko atau menu Kelola UMKM.\n" +
+      "2. Pilih opsi 'Klaim Usaha Ini'.\n" +
+      "3. Unggah bukti identitas dan dokumen kepemilikan usaha (KTP, izin usaha, atau foto tempat usaha).\n" +
+      "4. Tim Administrator akan memverifikasi dokumen klaim Anda.\n" +
+      "5. Setelah diverifikasi, hak pengelolaan profil toko akan dialihkan ke akun Anda sebagai pemilik terverifikasi (OWNER VERIFIED)."
+    );
+  }
+
+  if (intent === "ACTIVE_JOURNEY") {
+    return (
+      "Fitur Active Journey GETRA memandu navigasi langsung mengikuti rute jaringan GIS yang telah dihitung. Untuk memulai, tentukan rute perjalanan terlebih dahulu lalu tekan tombol 'Mulai Perjalanan'. Sistem akan memantau posisi Anda dan menghitung ulang rute jika Anda keluar dari koridor rute resmi."
+    );
+  }
+
+  if (intent === "PAYMENT_STATUS") {
+    return (
+      "Status transaksi pembayaran promosi GETRA dikelola melalui Midtrans Sandbox. Status yang berlaku meliputi PENDING (menunggu bayar), SETTLEMENT (lunas), EXPIRE (kedaluwarsa), atau CANCEL (dibatalkan). Invoice resmi otomatis diterbitkan pada riwayat kampanye setelah status transaksi settlement terkonfirmasi oleh backend."
+    );
+  }
+
+  if (
+    intent === "COMMUNITY" ||
+    intent === "COMMUNITY_OBSERVATION"
+  ) {
+    return "Observasi komunitas GETRA menampung laporan warga mengenai kondisi akses jalan dan fasilitas. Catatan ini bersifat waktu-terbatas dan dimoderasi secara berkala.";
+  }
+
+  if (intent === "PROFILE") {
+    return (
+      "Halaman Profil Pengguna (/profile) memungkinkan Anda melihat data akun, berganti mode peran antarmuka (Komuter, UMKM, Investor, Pemerintah), memeriksa keamanan akun, dan melakukan keluar (logout)."
+    );
+  }
+
+  if (intent === "ADMIN") {
+    return (
+      "Dashboard Admin GETRA (/admin) dikhususkan untuk tim kurator berwenang guna menyetujui pendaftaran UMKM, memverifikasi klaim kepemilikan, dan memoderasi laporan komunitas. Pengguna biasa tidak memiliki akses administratif."
+    );
   }
 
   if (
@@ -1906,10 +2481,6 @@ function formatDeterministicAnswer(
     const inf = typeof facts.inferences === "string" ? facts.inferences : "Terdapat indikasi potensi pasar pejalan kaki.";
     const rec = typeof facts.recommendations === "string" ? facts.recommendations : "Lakukan validasi lapangan langsung.";
     return `[OBSERVASI] ${obs}\n[INFERENSI] ${inf}\n[REKOMENDASI] ${rec}\n[BATASAN] Analisis ini bersifat indikatif dan tidak menjamin omzet atau keuntungan finansial.`;
-  }
-
-  if (intent === "COMMUNITY_OBSERVATION") {
-    return "Observasi komunitas GETRA menampung laporan warga mengenai kondisi akses jalan dan fasilitas. Catatan ini bersifat waktu-terbatas dan dimoderasi secara berkala.";
   }
 
   if (

@@ -34,10 +34,15 @@ const SLANG_TYPO_DICTIONARY: Record<string, string> = {
   dket: "dekat",
   tmpt: "tempat",
   mkn: "makan",
+  maknan: "makanan",
   coffee: "kopi",
   find: "cari",
   nearest: "terdekat",
   "open now": "buka sekarang",
+  promsoi: "promosi",
+  promso: "promosi",
+  daftr: "daftar",
+  umk: "umkm",
 };
 
 export function normalizeSlangAndTypos(text: string): string {

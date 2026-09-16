@@ -22,6 +22,7 @@ export type AiRouteMode =
 export interface AiAskMessage {
   role: "user" | "assistant";
   content: string;
+  action?: AiApplicationAction;
 }
 
 /**
@@ -110,6 +111,11 @@ export type AiApplicationAction =
   | {
       type: "REQUEST_CLARIFICATION";
       prompt: string;
+    }
+  | {
+      type: "NAVIGATE";
+      path: string;
+      label: string;
     };
 
 /**

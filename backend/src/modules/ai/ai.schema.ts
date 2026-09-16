@@ -2,17 +2,56 @@ import { z } from "zod";
 import { SearchCriteriaSchema } from "./search-action";
 
 export const AiIntentEnum = z.enum([
+  // Core & Identity
   "ASSISTANT_IDENTITY",
   "CASUAL_CHAT",
+  "GENERAL_HELP",
+  "AI_HELP",
+  "CLARIFICATION",
+  "UNSUPPORTED",
+  "UNKNOWN",
+
+  // Spatial Search & Discovery
+  "MERCHANT_SEARCH",
+  "SEARCH_MERCHANT",
+  "SEARCH_PLACE",
+  "NEARBY",
+  "DISCOVERY",
   "GENERAL_AREA",
   "NEAREST_TRANSIT",
-  "WALKING_ROUTE",
   "UMKM_POI",
-  "MERCHANT_SEARCH",
+
+  // Routing & Journey
+  "WALKING_ROUTE",
+  "ROUTING",
+  "SERVICE_AREA",
+  "ACTIVE_JOURNEY",
+  "MAP",
+
+  // UMKM & Ownership
+  "UMKM_CREATE",
+  "UMKM_SUBMIT",
+  "UMKM_STATUS",
+  "UMKM_CLAIM",
+  "UMKM_OWNERSHIP",
+
+  // Promotion & Advertising
+  "PROMOTION_CREATE",
+  "PROMOTION_SETUP",
+  "PROMOTION_TARGETING",
+  "PROMOTION_SCHEDULE",
+  "PROMOTION_PREVIEW",
+  "PROMOTION_PAYMENT",
+  "PROMOTION_ANALYTICS",
+  "PAYMENT_STATUS",
+
+  // Community, Accessibility, Stakeholder & Admin
+  "COMMUNITY",
+  "COMMUNITY_OBSERVATION",
   "ACCESSIBILITY",
   "DEMAND_SUPPLY",
-  "COMMUNITY_OBSERVATION",
-  "UNKNOWN",
+  "PROFILE",
+  "ADMIN",
 ]);
 
 export type AiIntent = z.infer<typeof AiIntentEnum>;
@@ -203,6 +242,15 @@ export const AiApplicationActionSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("REQUEST_CLARIFICATION"),
     prompt: z.string().trim().min(2).max(240),
+  }),
+
+  /**
+   * Actionable client navigation to existing GETRA features / workspaces.
+   */
+  z.object({
+    type: z.literal("NAVIGATE"),
+    path: z.string().trim().min(1).max(200),
+    label: z.string().trim().min(1).max(100),
   }),
 ]);
 

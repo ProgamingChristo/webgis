@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import {
+  ArrowUpRight,
   Eraser,
   LoaderCircle,
   Minus,
@@ -695,11 +696,23 @@ export function AiPanel({
               "Budget 20 ribu",
               "Tempat lain di sekitar sini",
             ]
-          : [
-              "Cari tempat makan di sekitar saya",
-              "Apa yang menarik di area ini?",
-              "Cari tempat sesuai kebutuhan saya",
-            ];
+          : activeExperience === "UMKM"
+            ? [
+                "Bagaimana cara promosi?",
+                "Cara buat UMKM?",
+                "Bagaimana melihat statistik promosi?",
+              ]
+            : activeExperience === "INVESTOR" || activeExperience === "GOVERNMENT"
+              ? [
+                  "Analisis demand dan supply area",
+                  "Cari fasilitas aksesibilitas",
+                  "Bagaimana laporan komunitas?",
+                ]
+              : [
+                  "Cari tempat makan di sekitar saya",
+                  "Bagaimana cara promosi?",
+                  "Cara buat UMKM?",
+                ];
 
   return (
     <section
@@ -806,6 +819,18 @@ export function AiPanel({
                   message.content
                 }
               </p>
+
+              {message.role === "assistant" && message.action?.type === "NAVIGATE" ? (
+                <div className="tanya-getra__cta-container mt-2.5 pt-2 border-t border-slate-100/80 dark:border-slate-800/80 flex items-center justify-start">
+                  <a
+                    href={message.action.path}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <span>{message.action.label}</span>
+                    <ArrowUpRight size={14} aria-hidden="true" />
+                  </a>
+                </div>
+              ) : null}
             </div>
           ),
         )}
