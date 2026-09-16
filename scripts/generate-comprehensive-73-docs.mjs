@@ -9,8 +9,8 @@ const OUTPUT_DIRS = [
   "D:\\getra docs\\Production docs\\final",
 ];
 
-const SHA = "50254c1";
-const FULL_SHA = "50254c18f71aec355d470f75a66de671d1a6e9c3";
+const SHA = "bee20aa";
+const FULL_SHA = "bee20aa881ef7300960041612b08cc9be6fac3cc";
 const DATE = "16 September 2026";
 
 function generateMarkdownContent() {
