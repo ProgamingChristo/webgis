@@ -274,7 +274,8 @@ export class AiService {
      * All executable application behavior now goes through
      * the canonical `action` property.
      */
-    if (context?.enable_search) {
+    const isProductGuidanceQuestion = /\b(bagaimana|gmn|gimana|cara\s+(?:buat|bikin|daftar|daftarin|promosi|pasang|klaim|claim)|status\s+(?:pembayaran|pengajuan|verifikasi)|observasi\s+komunitas|aksesibilitas|accessibility)\b/iu.test(req.question);
+    if (!isProductGuidanceQuestion && (context?.enable_search || /\b(cari|carikan|temukan|rekomendasi|mau makan|tempat makan|coffee)\b/iu.test(req.question))) {
       const extracted =
         await extractSearchAction(req);
 
@@ -307,7 +308,7 @@ export class AiService {
             criteria &&
             (
               !needsOrigin ||
-              context.origin
+              context?.origin
             ),
         );
 
@@ -344,7 +345,7 @@ export class AiService {
 
         const clarification =
           needsOrigin &&
-          !context.origin
+          !context?.origin
             ? "Aktifkan lokasi saya sebelum mencari tempat terdekat."
             : extracted.data
                 .clarification ||
@@ -1671,6 +1672,7 @@ ${JSON.stringify(
           formatDeterministicAnswer(
             intent,
             facts,
+            question,
           ),
 
         limitations_mentioned: [
@@ -1853,7 +1855,7 @@ function classifyIntentDeterministically(
 
   // 10. Accessibility & Special Needs
   if (
-    /\b(aksesibilitas|disabilitas|kursi roda|ramah kursi roda|guiding block|trotoar rusak|kondisi trotoar|rampa|ramp|fasilitas disabilitas|jalur difabel|titik aksesibilitas)\b/iu.test(normalized)
+    /\b(aksesibilitas|accessibility|disabilitas|disability|kursi roda|wheelchair|ramah kursi roda|guiding block|trotoar rusak|kondisi trotoar|rampa|ramp|fasilitas disabilitas|jalur difabel|titik aksesibilitas|titik akses|accessibility point)\b/iu.test(normalized)
   ) {
     return "ACCESSIBILITY";
   }
@@ -1877,6 +1879,16 @@ function classifyIntentDeterministically(
     /\b(jalan kaki|berapa lama|rute|route|duration|durasi|navigasi|arah ke|cara ke|rute terbaik|bisa jalan kaki|naik motor|naik mobil|jarak ke)\b/iu.test(normalized)
   ) {
     return "WALKING_ROUTE";
+  }
+
+  // 13b. Proximity / Nearest follow-up or query
+  if (
+    /\b(yang paling dekat|paling dekat|terdekat|yang terdekat|mana yang lebih dekat|paling dket|terdkat)\b/iu.test(normalized)
+  ) {
+    if (recentContext && (recentContext.includes("transit") || recentContext.includes("stasiun") || recentContext.includes("halte"))) {
+      return "NEAREST_TRANSIT";
+    }
+    return "MERCHANT_SEARCH";
   }
 
   // 14. Explicit nearest-transit requests
@@ -2302,6 +2314,7 @@ function formatDeterministicAnswer(
     string,
     unknown
   >,
+  question?: string,
 ): string {
   if (
     intent ===
@@ -2457,6 +2470,9 @@ function formatDeterministicAnswer(
     intent ===
     "MERCHANT_SEARCH"
   ) {
+    if (question && /\b(cari|carikan|temukan|rekomendasi|tempat makan|kopi|umkm|toko)\b/iu.test(question)) {
+      return "GETRA siap mencari tempat atau UMKM terdaftar sesuai kebutuhan Anda pada peta Fair Discovery. Gunakan filter pencarian untuk melihat lokasi terdekat.";
+    }
     return "Sebutkan jenis tempat, makanan, atau kebutuhan yang ingin Anda cari agar GETRA dapat menampilkan hasil yang relevan.";
   }
 

@@ -1,8 +1,13 @@
 . .\ops\getra-judging-common.ps1
 $ip = Resolve-GetraVmAddress
 
-Write-Host "Updating release.env with current SHA 697ac3f..."
-$setShaCmd = "sed -i 's/GETRA_RELEASE_SHA=.*/GETRA_RELEASE_SHA=697ac3f/' /home/getra/phase10d-qa/release.env && cat /home/getra/phase10d-qa/release.env"
+Write-Host "Syncing repo on VM to latest Getra_Deploy..."
+$pullCmd = "cd /home/getra/getra-full-product-10e && git fetch origin Getra_Deploy && git checkout Getra_Deploy && git pull origin Getra_Deploy"
+$rPull = Invoke-GetraSsh $ip $pullCmd
+Write-Host ($rPull.Output -join "`n")
+
+Write-Host "Updating release.env with current SHA 2736d9f..."
+$setShaCmd = "sed -i 's/GETRA_RELEASE_SHA=.*/GETRA_RELEASE_SHA=2736d9f/' /home/getra/phase10d-qa/release.env && cat /home/getra/phase10d-qa/release.env"
 $r = Invoke-GetraSsh $ip $setShaCmd
 Write-Host ($r.Output -join "`n")
 

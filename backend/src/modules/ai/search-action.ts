@@ -114,7 +114,9 @@ function extractDeterministicSearchAction(request: AiAskRequest) {
   // AI orchestration path. This fallback only creates executable searches.
   if (
     /\b(rute|route|navigasi|berapa lama|jalan kaki dari|menuju)\b/u.test(normalized)
-    || /^(apa|apakah|bagaimana|kenapa|mengapa|siapa|kapan)\b/u.test(normalized)
+    || /^(apa|apakah|bagaimana|kenapa|mengapa|siapa|kapan|cara|gimana|gmn)\b/u.test(normalized)
+    || /\b(cara buat|cara bikin|cara daftar|cara daftarin|cara promosi|cara pasang|cara klaim|cara claim|buat umkm|daftar umkm|bikin umkm|daftr umk|gmn bikin)\b/u.test(normalized)
+    || /\b(aksesibilitas|accessibility|disabilitas|kursi roda|wheelchair)\b/u.test(normalized)
     || /^(halo|hai|hi|hello|pagi|siang|sore|malam)\b/u.test(normalized)
   ) {
     return null;
@@ -128,7 +130,7 @@ function extractDeterministicSearchAction(request: AiAskRequest) {
       || parsed.constraints.opening
       || parsed.constraints.walking,
   );
-  const hasFoodOrCategoryCue = /\b(bakso|kopi|coffee|cafe|kafe|makan|warung|mie|nasi|soto|sate|ayam|bebek|seafood|roti|martabak|jus|tea|teh|dimsum|snack|gudeg|padang|pempek|toko|kuliner|restoran)\b/iu.test(normalizedRaw);
+  const hasFoodOrCategoryCue = /\b(bakso|kopi|coffee|cafe|kafe|makan|warung|mie|nasi|soto|sate|ayam|bebek|seafood|roti|martabak|jus|tea|teh|dimsum|snack|gudeg|padang|pempek|toko|kuliner|restoran|umkm|usaha|pedagang|gerai|outlet)\b/iu.test(normalizedRaw);
   const hasSearchCue = /\b(cari|carikan|temukan|rekomendasikan|rekomendasi|mau makan|tempat makan|tempat ngopi|tmpt ngopi)\b/u.test(normalizedRaw) || hasFoodOrCategoryCue;
 
   // A short noun phrase such as "bakso di jakarta pusat" is a valid search
