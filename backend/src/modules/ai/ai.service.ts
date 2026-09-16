@@ -2241,6 +2241,14 @@ function classifyIntentDeterministically(
     .replace(/\btoko aku\b/giu, "toko saya")
     .replace(/\bumkm ku\b/giu, "umkm saya");
 
+  const recentUserContext =
+    history
+      ?.filter((item) => item.role === "user")
+      .slice(-3)
+      .map((item) => item.content)
+      .join(" ")
+      .toLocaleLowerCase("id-ID") ?? "";
+
   const recentContext =
     history
       ?.slice(-3)
@@ -2248,7 +2256,7 @@ function classifyIntentDeterministically(
       .join(" ")
       .toLocaleLowerCase("id-ID") ?? "";
 
-  const combined = `${recentContext} ${normalized}`;
+  const combined = `${recentUserContext || recentContext} ${normalized}`;
 
   // 1. Assistant Identity & Greetings
   if (
@@ -2280,28 +2288,44 @@ function classifyIntentDeterministically(
     /^(kalau sudah submit\??|kalau sudah buat\??|kalau sudah dibuat\??|setelah submit\??|setelah dibuat\??|udah submit terus gimana\??|cara bayarnya\??|bayarnya gimana\??|berapa biayanya\??|wilayah sasarannya\??|targetnya\??|jadwalnya\??|kenapa belum muncul\??|kok belum aktif\??|kapan disetujui\??|kenapa masih pending\??|yang paling dekat\??|yang tadi paling dekat mana\??|yang buka sekarang\??|yang buka\??|yang murah\??|yang bisa jalan kaki\??|yang buka dan bisa jalan kaki\??|kalau jalan kaki\??|kalau naik motor\??|bisa ke sana\??|berapa jauh\??)$/iu.test(normalized);
 
   if (isContextualFollowUp) {
-    if (/\b(promosi|promo|iklan|campaign|sponsored)\b/iu.test(recentContext)) {
-      if (/\b(bayar|biaya)\w*\b/iu.test(normalized)) return "PROMOTION_PAYMENT";
-      if (/\b(wilayah|sasaran|target)\w*\b/iu.test(normalized)) return "PROMOTION_TARGETING";
-      if (/\bjadwal\w*\b/iu.test(normalized)) return "PROMOTION_SCHEDULE";
-      if (/\b(dibuat|buat|jadi)\w*\b/iu.test(normalized)) return "PROMOTION_SETUP";
-      return "PROMOTION_CREATE";
-    }
+    // Check user's conversational intent first
+    const activeCtx = recentUserContext || recentContext;
 
     if (/\b(dekat|terdekat|buka|murah|jalan kaki)\b/iu.test(normalized)) {
       return "MERCHANT_SEARCH";
     }
 
-    if (/\b(umkm|usaha|toko|warung|merchant|daftarkan|pengajuan)\b/iu.test(recentContext)) {
-      if (/\b(submit|disetujui|pending|muncul|tampil)\w*\b/iu.test(normalized)) return "UMKM_STATUS";
+    if (/\b(submit|disetujui|pending|muncul|tampil)\w*\b/iu.test(normalized)) {
+      if (/\b(promosi|promo|iklan|campaign)\b/iu.test(activeCtx)) return "PROMOTION_STATUS";
+      return "UMKM_STATUS";
+    }
+
+    if (/\b(bayar|biaya|tarif)\w*\b/iu.test(normalized)) {
+      return "PROMOTION_PAYMENT";
+    }
+
+    if (/\b(wilayah|sasaran|target)\w*\b/iu.test(normalized)) {
+      return "PROMOTION_TARGETING";
+    }
+
+    if (/\bjadwal\w*\b/iu.test(normalized)) {
+      return "PROMOTION_SCHEDULE";
+    }
+
+    if (/\b(promosi|promo|iklan|campaign|sponsored)\b/iu.test(activeCtx)) {
+      if (/\b(dibuat|buat|jadi)\w*\b/iu.test(normalized)) return "PROMOTION_SETUP";
+      return "PROMOTION_CREATE";
+    }
+
+    if (/\b(umkm|usaha|toko|warung|merchant|daftarkan|pengajuan)\b/iu.test(activeCtx)) {
       return "UMKM_CREATE";
     }
 
-    if (/\b(cari|makan|kopi|coffee|bakso|resto|tempat|merchant)\b/iu.test(recentContext)) {
+    if (/\b(cari|makan|kopi|coffee|bakso|resto|tempat|merchant)\b/iu.test(activeCtx)) {
       if (/\b(dekat|buka|murah)\b/iu.test(normalized)) return "MERCHANT_SEARCH";
     }
 
-    if (/\b(rute|jalan kaki|motor|mobil|perjalanan)\b/iu.test(recentContext)) {
+    if (/\b(rute|jalan kaki|motor|mobil|perjalanan)\b/iu.test(activeCtx)) {
       return "WALKING_ROUTE";
     }
   }
