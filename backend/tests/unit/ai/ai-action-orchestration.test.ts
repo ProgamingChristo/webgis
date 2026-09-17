@@ -57,4 +57,40 @@ describe("Tanya GETRA application actions", () => {
       prompt: "Dari mana Anda ingin memulai perjalanan?",
     });
   });
+
+  it("resolves origin ambiguity multi-turn when user selects a candidate", () => {
+    const history = [
+      { role: "user" as const, content: "rute dari Bundaran HI ke Monas" },
+      { role: "assistant" as const, content: "Titik awal dan tujuan sudah disiapkan. Pilih moda perjalanan untuk menghitung rute." },
+      { role: "assistant" as const, content: "Lokasi asalnya belum unik. Pilih salah satu: Bundaran Hotel Indonesia, Bundaran HI ASTRA." },
+    ];
+
+    expect(determineApplicationAction("Bundaran Hotel Indonesia", undefined, history)).toEqual({
+      type: "CALCULATE_ROUTE",
+      mode: "walking",
+      origin: { type: "PLACE_QUERY", query: "Bundaran Hotel Indonesia" },
+      destination: { type: "PLACE_QUERY", query: "Monas" },
+    });
+  });
+
+  it("resolves mode selection response when endpoints are already prepared", () => {
+    const history = [
+      { role: "user" as const, content: "rute dari Stasiun Gambir ke Sarinah" },
+      { role: "assistant" as const, content: "Titik awal dan tujuan sudah disiapkan. Pilih moda perjalanan untuk menghitung rute." },
+    ];
+
+    expect(determineApplicationAction("Jalan Kaki", undefined, history)).toEqual({
+      type: "CALCULATE_ROUTE",
+      mode: "walking",
+      origin: { type: "PLACE_QUERY", query: "Stasiun Gambir" },
+      destination: { type: "PLACE_QUERY", query: "Sarinah" },
+    });
+  });
+
+  it("focuses map for standalone canonical landmark", () => {
+    expect(determineApplicationAction("Bundaran Hotel Indonesia")).toEqual({
+      type: "FOCUS_PLACE",
+      query: "Bundaran Hotel Indonesia",
+    });
+  });
 });

@@ -980,6 +980,7 @@ export class AiService {
       determineApplicationAction(
         question,
         context,
+        history,
       );
 
     const decision =
@@ -1008,7 +1009,13 @@ export class AiService {
       deterministicAction.type ===
         "CALCULATE_ROUTE" ||
       deterministicAction.type ===
+        "PREPARE_ROUTE" ||
+      deterministicAction.type ===
         "CHANGE_ROUTE_MODE" ||
+      deterministicAction.type ===
+        "FOCUS_PLACE" ||
+      deterministicAction.type ===
+        "SWITCH_MAP_MODE" ||
       deterministicAction.type ===
         "NAVIGATE"
     ) {
@@ -1033,6 +1040,15 @@ export class AiService {
       action.type !==
       "NAVIGATE"
     ) {
+      const resolvedIntent: AiIntent =
+        action.type === "CALCULATE_ROUTE" ||
+        action.type === "PREPARE_ROUTE" ||
+        action.type === "CHANGE_ROUTE_MODE"
+          ? "WALKING_ROUTE"
+          : action.type === "FOCUS_PLACE"
+            ? "SEARCH_PLACE"
+            : intent;
+
       return {
         answer:
           actionMessage(
@@ -1040,7 +1056,7 @@ export class AiService {
             context?.selected_entity_name,
           ),
 
-        intent,
+        intent: resolvedIntent,
 
         limitations: [],
 
@@ -2307,6 +2323,45 @@ function classifyIntentDeterministically(
 
   const combined = `${recentUserContext || recentContext} ${normalized}`;
 
+  const lastAssistantMsg =
+    history
+      ?.filter((item) => item.role === "assistant")
+      .slice(-1)[0]
+      ?.content ?? "";
+
+  // 0. Multi-turn disambiguation prompts and mode responses
+  if (
+    /\b(lokasi asalnya belum unik|tujuannya belum unik|dari mana anda ingin memulai|tempat mana yang ingin anda tuju|pilih moda perjalanan|titik awal dan tujuan sudah disiapkan)\b/iu.test(
+      lastAssistantMsg,
+    )
+  ) {
+    return "WALKING_ROUTE";
+  }
+
+  if (/\blokasi(?:nya)? belum unik\b/iu.test(lastAssistantMsg)) {
+    return "SEARCH_PLACE";
+  }
+
+  if (
+    /^(jalan kaki|berjalan|kaki|motor|sepeda motor|naik motor|mobil|mengemudi|naik mobil)$/iu.test(
+      normalized,
+    )
+  ) {
+    return "WALKING_ROUTE";
+  }
+
+  const isLandmarkQuery =
+    /^(bundaran hi|bundaran hotel indonesia|monas|monumen nasional|sarinah|gbk|gelora bung karno|kota tua|blok m|dukuh atas|lapangan banteng|grand indonesia|plaza indonesia)$/iu.test(
+      normalized,
+    ) || /^(stasiun|halte|terminal)\s+[a-z0-9\s.]+$/iu.test(normalized);
+
+  if (isLandmarkQuery) {
+    if (/^(stasiun|halte|terminal)/iu.test(normalized)) {
+      return "NEAREST_TRANSIT";
+    }
+    return "SEARCH_PLACE";
+  }
+
   // 1. Assistant Identity & Greetings
   if (
     /^(halo|hai|hi|hello|pagi|siang|sore|malam)[!.?\s]*$/u.test(normalized) ||
@@ -2637,6 +2692,7 @@ function classifyIntentDeterministically(
 export function determineApplicationAction(
   question: string,
   context?: AiAskRequest["context"],
+  history?: AiAskRequest["history"],
 ): AiApplicationAction {
   const normalized =
     question
@@ -2658,6 +2714,172 @@ export function determineApplicationAction(
       .replace(/\bgmn\b/giu, "gimana")
       .replace(/\btoko aku\b/giu, "toko saya")
       .replace(/\bumkm ku\b/giu, "umkm saya");
+
+  const lastAssistantMsg =
+    history
+      ?.filter((item) => item.role === "assistant")
+      .slice(-1)[0]
+      ?.content ?? "";
+
+  const requestedModes = inferRequestedRouteModes(normalized);
+  const prevEndpoints = findPreviousRouteEndpoints(history);
+
+  // 0a. Check if user is resolving an origin ambiguity (e.g. "Bundaran Hotel Indonesia")
+  const isOriginAmbiguityPrompt =
+    /\b(lokasi asalnya belum unik|dari mana anda ingin memulai)\b/iu.test(lastAssistantMsg);
+
+  if (isOriginAmbiguityPrompt && normalized.length >= 2) {
+    const originPlace = question.trim();
+    const destination =
+      context?.selected_entity_id
+        ? ({ type: "SELECTED_MERCHANT" as const })
+        : prevEndpoints.destQuery
+          ? ({ type: "PLACE_QUERY" as const, query: prevEndpoints.destQuery })
+          : context?.selected_entity_name
+            ? ({ type: "PLACE_QUERY" as const, query: context.selected_entity_name })
+            : null;
+
+    const chosenMode = requestedModes[0] || prevEndpoints.mode || "walking";
+
+    if (destination) {
+      return {
+        type: "CALCULATE_ROUTE",
+        mode: chosenMode,
+        origin: { type: "PLACE_QUERY", query: originPlace },
+        destination,
+      };
+    }
+
+    return {
+      type: "REQUEST_CLARIFICATION",
+      prompt: "Tempat mana yang ingin Anda tuju?",
+    };
+  }
+
+  // 0b. Check if user is resolving a destination ambiguity
+  const isDestAmbiguityPrompt =
+    /\b(tujuannya belum unik|tempat mana yang ingin anda tuju)\b/iu.test(lastAssistantMsg);
+
+  if (isDestAmbiguityPrompt && normalized.length >= 2) {
+    const destPlace = question.trim();
+    const origin =
+      context?.origin
+        ? ({ type: "CURRENT_LOCATION" as const })
+        : prevEndpoints.originQuery
+          ? ({ type: "PLACE_QUERY" as const, query: prevEndpoints.originQuery })
+          : ({ type: "CURRENT_LOCATION" as const });
+
+    const chosenMode = requestedModes[0] || prevEndpoints.mode || "walking";
+
+    return {
+      type: "CALCULATE_ROUTE",
+      mode: chosenMode,
+      origin,
+      destination: { type: "PLACE_QUERY", query: destPlace },
+    };
+  }
+
+  // 0c. Check if user is resolving a general place ambiguity
+  const isPlaceAmbiguityPrompt =
+    /\blokasi(?:nya)? belum unik\b/iu.test(lastAssistantMsg);
+
+  if (isPlaceAmbiguityPrompt && normalized.length >= 2) {
+    return {
+      type: "FOCUS_PLACE",
+      query: question.trim(),
+    };
+  }
+
+  // 0d. Check if user is responding to mode selection prompt
+  const isModeSelectionPrompt =
+    /\b(pilih moda perjalanan|titik awal dan tujuan sudah disiapkan)\b/iu.test(lastAssistantMsg) ||
+    /^(jalan kaki|berjalan|kaki|motor|sepeda motor|naik motor|mobil|mengemudi|naik mobil)$/iu.test(normalized);
+
+  if (isModeSelectionPrompt) {
+    const selectedMode =
+      requestedModes[0] ||
+      (/\b(kaki|jalan)\b/iu.test(normalized) ? ("walking" as const) : null) ||
+      (/\b(motor)\b/iu.test(normalized) ? ("motorcycle" as const) : null) ||
+      (/\b(mobil)\b/iu.test(normalized) ? ("car" as const) : null);
+
+    if (selectedMode) {
+      if (context?.active_route) {
+        return {
+          type: "CHANGE_ROUTE_MODE",
+          mode: selectedMode,
+        };
+      }
+
+      const origin =
+        context?.origin
+          ? ({ type: "CURRENT_LOCATION" as const })
+          : prevEndpoints.originQuery
+            ? ({ type: "PLACE_QUERY" as const, query: prevEndpoints.originQuery })
+            : ({ type: "CURRENT_LOCATION" as const });
+
+      const destination =
+        context?.selected_entity_id
+          ? ({ type: "SELECTED_MERCHANT" as const })
+          : prevEndpoints.destQuery
+            ? ({ type: "PLACE_QUERY" as const, query: prevEndpoints.destQuery })
+            : context?.selected_entity_name
+              ? ({ type: "PLACE_QUERY" as const, query: context.selected_entity_name })
+              : null;
+
+      if (destination) {
+        return {
+          type: "CALCULATE_ROUTE",
+          mode: selectedMode,
+          origin,
+          destination,
+        };
+      }
+    }
+  }
+
+  // 0e. Standalone Landmark or Transit Place
+  const CANONICAL_LANDMARKS_LIST = [
+    "bundaran hi",
+    "bundaran hotel indonesia",
+    "monas",
+    "monumen nasional",
+    "sarinah",
+    "gbk",
+    "gelora bung karno",
+    "kota tua",
+    "blok m",
+    "dukuh atas",
+    "lapangan banteng",
+    "grand indonesia",
+    "plaza indonesia",
+  ];
+
+  const isStandaloneLandmark =
+    CANONICAL_LANDMARKS_LIST.includes(normalized) ||
+    /^(stasiun|halte|terminal|taman|pasar|gedung|mall|plaza)\s+[a-z0-9\s.]+$/iu.test(normalized);
+
+  if (isStandaloneLandmark) {
+    if (/\b(tempat mana yang ingin anda tuju|tujuannya belum unik)\b/iu.test(lastAssistantMsg)) {
+      const origin =
+        context?.origin
+          ? ({ type: "CURRENT_LOCATION" as const })
+          : prevEndpoints.originQuery
+            ? ({ type: "PLACE_QUERY" as const, query: prevEndpoints.originQuery })
+            : ({ type: "CURRENT_LOCATION" as const });
+      const chosenMode = prevEndpoints.mode || "walking";
+      return {
+        type: "CALCULATE_ROUTE",
+        mode: chosenMode,
+        origin,
+        destination: { type: "PLACE_QUERY", query: question.trim() },
+      };
+    }
+
+    return {
+      type: "FOCUS_PLACE",
+      query: question.trim(),
+    };
+  }
 
   const isAmbiguousQuery =
     /^(ke sana|ke situ|mau makan|cari yang bagus|cari dekat situ|yang bagus)$/iu.test(
@@ -2772,7 +2994,6 @@ export function determineApplicationAction(
     };
   }
 
-  const requestedModes = inferRequestedRouteModes(normalized);
   const mode = requestedModes.length === 1 ? requestedModes[0] : null;
 
   const asksForRoute =
@@ -2959,7 +3180,7 @@ function extractDestinationQuery(
 } | null {
   const match =
     question.match(
-      /\b(?:ke|menuju)\s+(.+?)(?=\s+(?:berapa\s+lama|jalan\s+kaki|naik\s+|pakai\s+)|[?!,.]|$)/iu,
+      /\b(?:ke|menuju)\s+(.+?)(?=\s+(?:berapa\s+lama|dari\s+|jalan\s+kaki|naik\s+|pakai\s+)|[?!,.]|$)/iu,
     );
 
   const query =
@@ -2978,15 +3199,52 @@ function extractDestinationQuery(
     : null;
 }
 
+function findPreviousRouteEndpoints(history?: AiAskRequest["history"]): {
+  originQuery?: string;
+  destQuery?: string;
+  mode?: "walking" | "motorcycle" | "car";
+} {
+  if (!history || history.length === 0) return {};
+  const userMsgs = history.filter((m) => m.role === "user").slice(-5).reverse();
+  for (const msg of userMsgs) {
+    const origin = extractOriginQuery(msg.content);
+    const dest = extractDestinationQuery(msg.content);
+    const modes = inferRequestedRouteModes(msg.content);
+    if (origin || dest || modes.length > 0) {
+      return {
+        originQuery: origin?.query,
+        destQuery: dest?.query,
+        mode: modes[0],
+      };
+    }
+  }
+  return {};
+}
+
 function actionMessage(
   action: AiApplicationAction,
   selectedName?: string,
 ): string {
   switch (action.type) {
-    case "CALCULATE_ROUTE":
+    case "CALCULATE_ROUTE": {
+      const origText =
+        action.origin.type === "PLACE_QUERY"
+          ? action.origin.query
+          : action.origin.type === "CURRENT_LOCATION"
+            ? "lokasi Anda"
+            : "titik pilihan";
+
+      const destText =
+        action.destination.type === "PLACE_QUERY"
+          ? action.destination.query
+          : action.destination.type === "SELECTED_MERCHANT"
+            ? (selectedName || "tempat tujuan")
+            : "titik tujuan";
+
       return selectedName
         ? `Saya menyiapkan rute ke ${selectedName} menggunakan GETRA.`
-        : "Saya menyiapkan rute menggunakan GETRA.";
+        : `Saya menyiapkan rute dari ${origText} ke ${destText} menggunakan kalkulasi GIS GETRA.`;
+    }
 
     case "PREPARE_ROUTE":
       return "Titik awal dan tujuan sudah disiapkan. Pilih moda perjalanan untuk menghitung rute.";

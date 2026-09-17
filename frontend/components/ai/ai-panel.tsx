@@ -677,42 +677,65 @@ export function AiPanel({
   /**
    * Contextual suggestions.
    */
+  const lastAssistantMsg =
+    messages
+      .filter((m) => m.role === "assistant")
+      .slice(-1)[0]?.content ?? "";
+
+  const choiceMatch =
+    /pilih\s+(?:salah\s+satu|nama\s+yang\s+lebih\s+lengkap)[.:]?\s*([^.]+)/iu.exec(lastAssistantMsg);
+  const candidateSuggestions = choiceMatch
+    ? choiceMatch[1].split(",").map((s) => s.trim().replace(/\.$/, "")).filter((s) => s.length >= 2)
+    : null;
+
+  const modeSelectionMatch =
+    /pilih\s+moda\s+perjalanan/iu.test(lastAssistantMsg) ||
+    /titik awal dan tujuan/iu.test(lastAssistantMsg);
+
   const suggestions =
-    activeRoute
-      ? [
-          "Kalau naik motor?",
-          "Apa yang ada di sekitar rute ini?",
-          "Cari tempat lain di sekitar tujuan",
-        ]
-      : selectedEntityId
+    candidateSuggestions && candidateSuggestions.length > 0
+      ? candidateSuggestions
+      : modeSelectionMatch
         ? [
-            "Berikan rute ke tempat ini",
-            "Yang paling dekat saja",
-            "Tempat lain di sekitar sini",
+            "Jalan Kaki",
+            "Sepeda Motor",
+            "Mobil",
           ]
-        : searchContext
+        : activeRoute
           ? [
-              "Yang paling dekat saja",
-              "Budget 20 ribu",
-              "Tempat lain di sekitar sini",
+              "Kalau naik motor?",
+              "Apa yang ada di sekitar rute ini?",
+              "Cari tempat lain di sekitar tujuan",
             ]
-          : activeExperience === "UMKM"
+          : selectedEntityId
             ? [
-                "Bagaimana cara promosi?",
-                "Cara buat UMKM?",
-                "Bagaimana melihat statistik promosi?",
+                "Berikan rute ke tempat ini",
+                "Yang paling dekat saja",
+                "Tempat lain di sekitar sini",
               ]
-            : activeExperience === "INVESTOR" || activeExperience === "GOVERNMENT"
+            : searchContext
               ? [
-                  "Analisis demand dan supply area",
-                  "Cari fasilitas aksesibilitas",
-                  "Bagaimana laporan komunitas?",
+                  "Yang paling dekat saja",
+                  "Budget 20 ribu",
+                  "Tempat lain di sekitar sini",
                 ]
-              : [
-                  "Cari tempat makan di sekitar saya",
-                  "Bagaimana cara promosi?",
-                  "Cara buat UMKM?",
-                ];
+              : activeExperience === "UMKM"
+                ? [
+                    "Bagaimana cara promosi?",
+                    "Cara buat UMKM?",
+                    "Bagaimana melihat statistik promosi?",
+                  ]
+                : activeExperience === "INVESTOR" || activeExperience === "GOVERNMENT"
+                  ? [
+                      "Analisis demand dan supply area",
+                      "Cari fasilitas aksesibilitas",
+                      "Bagaimana laporan komunitas?",
+                    ]
+                  : [
+                      "Cari tempat makan di sekitar saya",
+                      "Bagaimana cara promosi?",
+                      "Cara buat UMKM?",
+                    ];
 
   return (
     <section
