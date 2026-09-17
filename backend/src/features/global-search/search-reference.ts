@@ -24,6 +24,17 @@ export const KNOWN_TRANSIT_STATIONS: Array<{ label: string; aliases: string[]; l
   { label: "Stasiun Klender", aliases: ["stasiun klender", "st klender", "klender"], longitude: 106.8996, latitude: -6.2132 },
   { label: "Stasiun Buaran", aliases: ["stasiun buaran", "st buaran", "buaran"], longitude: 106.9242, latitude: -6.2163 },
   { label: "Stasiun Cawang", aliases: ["stasiun cawang", "st cawang", "cawang"], longitude: 106.8588, latitude: -6.2427 },
+  // Canonical Jakarta Landmarks & Transit Hubs
+  { label: "Bundaran HI", aliases: ["bundaran hi", "bundaran hotel indonesia", "bunderan hi", "monumen selamat datang", "halte bundaran hi", "stasiun mrt bundaran hi"], longitude: 106.8231, latitude: -6.195 },
+  { label: "Monas", aliases: ["monas", "monumen nasional", "kawasan monas"], longitude: 106.8272, latitude: -6.1754 },
+  { label: "Sarinah", aliases: ["sarinah", "mall sarinah", "gedung sarinah"], longitude: 106.8242, latitude: -6.1874 },
+  { label: "Gelora Bung Karno", aliases: ["gelora bung karno", "gbk", "senayan"], longitude: 106.8018, latitude: -6.2186 },
+  { label: "Kota Tua", aliases: ["kota tua", "kawasan kota tua", "museum fatahillah"], longitude: 106.8133, latitude: -6.1345 },
+  { label: "Blok M", aliases: ["blok m", "kawasan blok m", "terminal blok m"], longitude: 106.7978, latitude: -6.2443 },
+  { label: "Dukuh Atas", aliases: ["dukuh atas", "taman dukuh atas", "stasiun dukuh atas"], longitude: 106.8222, latitude: -6.2008 },
+  { label: "Lapangan Banteng", aliases: ["lapangan banteng"], longitude: 106.8358, latitude: -6.1706 },
+  { label: "Grand Indonesia", aliases: ["grand indonesia", "gi"], longitude: 106.8198, latitude: -6.1958 },
+  { label: "Plaza Indonesia", aliases: ["plaza indonesia", "pi"], longitude: 106.8217, latitude: -6.1931 },
 ];
 
 export async function resolveSearchReference(supabase: SupabaseClient, name: string | undefined, origin: CommuterOrigin | null): Promise<SearchReference | null> {

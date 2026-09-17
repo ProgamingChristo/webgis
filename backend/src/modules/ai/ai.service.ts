@@ -1,5 +1,6 @@
 import {
   extractSearchAction,
+  normalizeSlangAndTypos,
   SearchCriteriaSchema,
 } from "./search-action";
 
@@ -74,7 +75,7 @@ export class AiService {
       history,
     } = req;
 
-    const normalizedQuestion = question.toLocaleLowerCase("id-ID").trim();
+    const normalizedQuestion = normalizeSlangAndTypos(question).toLocaleLowerCase("id-ID").trim();
 
     // 1. Guardrail: Secret Exfiltration & Prompt Injection
     const isSecretExfiltration =
@@ -228,6 +229,54 @@ export class AiService {
           "Daftar lengkap harga menu untuk usaha ini belum tercatat pada basis data GETRA. Kunjungi langsung lokasi usaha untuk melihat daftar menu dan harga terkini.",
         intent: "UMKM_POI",
         limitations: ["Daftar menu lengkap tidak tersedia."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:apakah\s+)?(?:toko|usaha|warung|tempat)\s+ini\s+pasti\s+ramai\b/iu.test(normalizedQuestion) || /\bpasti ramai\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "GETRA tidak dapat menjamin tingkat keramaian suatu usaha. Kepadatan pengunjung dipengaruhi oleh banyak faktor dinamis di luar estimasi indikatif mobilitas pejalan kaki.",
+        intent: "SAFETY_GUARDRAIL",
+        limitations: ["Prediksi keramaian riil di luar jaminan sistem."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:apakah\s+)?(?:lokasi|usaha|toko|titik)\s+ini\s+pasti\s+untung\b/iu.test(normalizedQuestion) || /\bpasti untung\b/iu.test(normalizedQuestion) || /\bjaminan omzet\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "GETRA tidak memberikan jaminan keuntungan finansial atau kepastian omzet usaha. Analisis potensi pasar (Retail Gap dan Demand/Supply) bersifat indikatif spasial sebagai bahan pertimbangan awal.",
+        intent: "SAFETY_GUARDRAIL",
+        limitations: ["GETRA tidak memberikan jaminan finansial."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:apakah\s+)?(?:jalan|jalur|rute)\s+ini\s+pasti\s+aman\b/iu.test(normalizedQuestion) || /\bpasti aman\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "GETRA menyajikan data kondisi trotoar dan fasilitas aksesibilitas berdasarkan observasi lapangan terverifikasi, namun tidak membuat klaim keamanan mutlak di luar data faktual infrastruktur yang tercatat.",
+        intent: "SAFETY_GUARDRAIL",
+        limitations: ["Data keamanan mutlak di luar cakupan faktual."],
+        evidence: [],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\bberapa omzet\b/iu.test(normalizedQuestion) || /\b(?:omzet|pendapatan|penghasilan)\s+(?:toko|warung|usaha|merchant)\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Data omzet dan pendapatan riil pemilik usaha bersifat privat dan tidak tercatat pada basis data publik GETRA.",
+        intent: "SAFETY_GUARDRAIL",
+        limitations: ["Data omzet privat tidak tersedia."],
         evidence: [],
         action: { type: "ANSWER_ONLY" },
         provider: "deterministic",
@@ -813,10 +862,10 @@ export class AiService {
     const isSearchOrDiscovery =
       Boolean(context?.enable_search) ||
       isContextualFilterFollowUp ||
-      /\b(cari|carikan|temukan|rekomendasi|mau makan|tempat makan|coffee|kopi|kuliner)\b/iu.test(req.question) ||
-      /\b(?:umkm|makanan|kuliner|toko|warung|tempat makan|resto|kopi)\s+(?:di\s+)?(?:dekat|sekitar|terdekat|paling dekat)\b/iu.test(req.question) ||
-      /\b(?:umkm|toko|warung|usaha)\s+(?:terdekat|paling dekat)\b/iu.test(req.question) ||
-      /\b(?:dekat|sekitar)\s+(?:stasiun|halte|st\.)\b/iu.test(req.question);
+      /\b(cari|carikan|temukan|rekomendasi|mau makan|tempat makan|coffee|kopi|bakso|mie|nasi|soto|sate|kuliner|makan)\b/iu.test(normalizedQuestion) ||
+      /\b(?:umkm|makanan|kuliner|toko|warung|tempat makan|resto|kopi|bakso)\s+(?:di\s+)?(?:dekat|sekitar|terdekat|paling dekat)\b/iu.test(normalizedQuestion) ||
+      /\b(?:umkm|toko|warung|usaha)\s+(?:terdekat|paling dekat)\b/iu.test(normalizedQuestion) ||
+      /\b(?:dekat|sekitar)\s+(?:stasiun|halte|st\.)\b/iu.test(normalizedQuestion);
 
     if (!isProductGuidanceQuestion && isSearchOrDiscovery) {
       const extracted =
@@ -2296,7 +2345,7 @@ function classifyIntentDeterministically(
     }
 
     if (/\b(submit|disetujui|pending|muncul|tampil)\w*\b/iu.test(normalized)) {
-      if (/\b(promosi|promo|iklan|campaign)\b/iu.test(activeCtx)) return "PROMOTION_STATUS";
+      if (/\b(promosi|promo|iklan|campaign)\b/iu.test(activeCtx)) return "PROMOTION_SETUP";
       return "UMKM_STATUS";
     }
 
@@ -2504,9 +2553,17 @@ function classifyIntentDeterministically(
     return "BUSINESS_SPACE";
   }
 
-  // Filter Diagnosis
+  // Landmark & Place Location
   if (
-    /\b(perluasan radius|perluas radius|kenapa hasil kosong|kenapa tempat tidak muncul karena filter)\b/iu.test(normalized)
+    /\b(bundaran hi|monas|sarinah|gbk|gelora bung karno|kota tua|blok m|dukuh atas|lapangan banteng)\s+(?:di mana|dimana|lokasi|posisi)\b/iu.test(normalized) ||
+    /\b(?:di mana|dimana|lokasi|posisi|tampilkan|fokuskan|fokus ke)\s+(?:bundaran hi|monas|sarinah|gbk|gelora bung karno|kota tua|blok m|dukuh atas|lapangan banteng)\b/iu.test(normalized)
+  ) {
+    return "SEARCH_PLACE";
+  }
+
+  // Filter Diagnosis & Zero-Result Recovery
+  if (
+    /\b(perluasan radius|perluas radius|kenapa hasil kosong|kenapa tempat tidak muncul karena filter|kenapa kosong|kenapa tidak ada hasil|belum ada tempat yang sesuai|kenapa tidak ada tempat yang cocok|hasilnya mana|tidak ada umkm|tidak ada tempat)\b/iu.test(normalized)
   ) {
     return "FILTER_DIAGNOSIS";
   }
@@ -2735,6 +2792,30 @@ export function determineApplicationAction(
       prompt:
         "Untuk mengetahui jarak dan estimasi waktu tempuh yang akurat, rute harus dihitung terlebih dahulu menggunakan kalkulasi GIS GETRA. Silakan tentukan titik awal dan tujuan Anda.",
     };
+  }
+
+  // Place & Landmark Map Focus (e.g., "Bundaran HI di mana?", "tampilkan Monas", "lokasi Sarinah")
+  const placeLocationMatch =
+    /^(?:di mana|dimana|lokasi|posisi|tampilkan|fokuskan|fokus ke|lihat)\s+([a-z0-9\s.]+?)(?:\s+(?:di mana|dimana|berada))?[?!.]*$/iu.exec(normalized) ||
+    /^([a-z0-9\s.]+?)\s+(?:di mana|dimana|berada)[?!.]*$/iu.exec(normalized);
+
+  if (placeLocationMatch && !asksForRoute) {
+    const rawPlace = placeLocationMatch[1].trim()
+      .replace(/^(?:di|pada|ke|titik|peta|area)\s+/iu, "")
+      .replace(/\s+(?:di peta|pada peta)$/iu, "")
+      .trim();
+
+    const isNonPlaceQuery =
+      /^(kamu|getra|kita|saya|aku|umkm|usaha|toko|tempat|rute|jalur|peta|fokuskan peta|invoice|invoice saya|promosi|pembayaran|rekening|status|akun|profil|pengaturan|admin|bantuan|order|transaksi)$/iu.test(
+        rawPlace,
+      );
+
+    if (rawPlace.length >= 2 && !isNonPlaceQuery) {
+      return {
+        type: "FOCUS_PLACE",
+        query: rawPlace,
+      };
+    }
   }
 
   /**
@@ -3170,7 +3251,7 @@ function formatDeterministicAnswer(
   }
 
   if (intent === "FILTER_DIAGNOSIS") {
-    return "Jika pencarian tidak menghasilkan tempat, periksa filter aktif seperti status buka, batas anggaran, atau jarak berjalan kaki. Anda dapat memperluas radius pencarian atau menonaktifkan filter ketat pada panel pencarian untuk melihat lebih banyak UMKM.";
+    return "Jika pencarian tidak menghasilkan tempat, periksa filter aktif seperti status buka, batas anggaran, atau jarak berjalan kaki. Belum ada tempat yang sesuai dengan semua filter aktif. GETRA mematuhi prinsip Fair Discovery dan tidak mengubah filter Anda secara diam-diam. Untuk memperluas hasil, Anda dapat mempertimbangkan relaksasi berikut:\n- Memperluas radius pencarian (misal hingga 2,5 km)\n- Menghapus batas anggaran pengeluaran\n- Menampilkan tempat tanpa filter status buka operasional\n- Menghapus batas waktu berjalan kaki\n- Menjelajahi area di sekitar simpul transit atau landmark terdekat";
   }
 
   if (intent === "UMKM_LOCATION") {

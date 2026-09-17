@@ -125,6 +125,17 @@ const KNOWN_TRANSIT_STATION_PATTERNS = [
   { label: "Stasiun Klender", patterns: [/\bstasiun\s+klender\b/iu, /\bst\.\s*klender\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?klender\b/iu] },
   { label: "Stasiun Buaran", patterns: [/\bstasiun\s+buaran\b/iu, /\bst\.\s*buaran\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?buaran\b/iu] },
   { label: "Stasiun Cawang", patterns: [/\bstasiun\s+cawang\b/iu, /\bst\.\s*cawang\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:stasiun\s+)?cawang\b/iu] },
+  // Landmarks & Key Urban Focal Points
+  { label: "Bundaran HI", patterns: [/\bbundaran\s+hi\b/iu, /\bbunderan\s+hi\b/iu, /\bbundaran\s+hotel\s+indonesia\b/iu, /\bmonumen\s+selamat\s+datang\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+bundaran\s+hi\b/iu] },
+  { label: "Monas", patterns: [/\bmonas\b/iu, /\bmonumen\s+nasional\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+monas\b/iu] },
+  { label: "Sarinah", patterns: [/\bsarinah\b/iu, /\bmall\s+sarinah\b/iu, /\bgedung\s+sarinah\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+sarinah\b/iu] },
+  { label: "Gelora Bung Karno", patterns: [/\bgelora\s+bung\s+karno\b/iu, /\bgbk\b/iu, /\bsenayan\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+(?:gbk|gelora\s+bung\s+karno)\b/iu] },
+  { label: "Kota Tua", patterns: [/\bkota\s+tua\b/iu, /\bkawasan\s+kota\s+tua\b/iu, /\bmuseum\s+fatahillah\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+kota\s+tua\b/iu] },
+  { label: "Blok M", patterns: [/\bblok\s+m\b/iu, /\bkawasan\s+blok\s+m\b/iu, /\bterminal\s+blok\s+m\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+blok\s+m\b/iu] },
+  { label: "Dukuh Atas", patterns: [/\bdukuh\s+atas\b/iu, /\btaman\s+dukuh\s+atas\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+dukuh\s+atas\b/iu] },
+  { label: "Lapangan Banteng", patterns: [/\blapangan\s+banteng\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+lapangan\s+banteng\b/iu] },
+  { label: "Grand Indonesia", patterns: [/\bgrand\s+indonesia\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+grand\s+indonesia\b/iu] },
+  { label: "Plaza Indonesia", patterns: [/\bplaza\s+indonesia\b/iu, /\b(?:dekat|sekitar|di dekat|di sekitar)\s+plaza\s+indonesia\b/iu] },
 ];
 
 function findTransitMention(text: string): { label: string; rawMatch: string } | null {

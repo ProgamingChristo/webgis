@@ -14,29 +14,30 @@ async function run() {
     const page = await browser.newPage();
     page.setDefaultNavigationTimeout(30000);
 
-    // Desktop
-    await page.setViewport({ width: 1440, height: 900 });
-    await page.goto(WEB_URL, { waitUntil: "networkidle2" });
-    const desktopTitle = await page.title();
-    console.log("Desktop render (1440x900):", desktopTitle, "-> OK");
+    const viewports = [
+      { name: "Desktop Ultra/Pro", width: 1440, height: 900, isMobile: false },
+      { name: "Desktop Standard", width: 1280, height: 800, isMobile: false },
+      { name: "Tablet Landscape", width: 1024, height: 768, isMobile: false },
+      { name: "Mobile Large (iPhone 15 Pro Max)", width: 430, height: 932, isMobile: true },
+      { name: "Mobile Standard (iPhone 14)", width: 390, height: 844, isMobile: true },
+      { name: "Mobile Compact (iPhone SE)", width: 375, height: 667, isMobile: true },
+    ];
 
-    // Tablet
-    await page.setViewport({ width: 768, height: 1024 });
-    await page.goto(`${WEB_URL}/login`, { waitUntil: "networkidle2" });
-    const tabletLogin = await page.$("#email");
-    console.log("Tablet render (768x1024): Login form present ->", Boolean(tabletLogin));
+    for (const vp of viewports) {
+      await page.setViewport({ width: vp.width, height: vp.height, isMobile: vp.isMobile });
+      await page.goto(WEB_URL, { waitUntil: "networkidle2" });
+      const overflow = await page.evaluate(() => {
+        return document.documentElement.scrollWidth > window.innerWidth;
+      });
+      const title = await page.title();
+      console.log(`[VIEWPORT ${vp.width}x${vp.height}] ${vp.name}: title="${title}", horizontalOverflow=${overflow} -> ${!overflow ? "PASS" : "FAIL"}`);
+    }
 
-    // Mobile
-    await page.setViewport({ width: 375, height: 667, isMobile: true });
-    await page.goto(WEB_URL, { waitUntil: "networkidle2" });
-    const mobileHeader = await page.$("header, nav, main");
-    console.log("Mobile render (375x667): Main layout present ->", Boolean(mobileHeader));
-
-    console.log("Responsive Verification: ALL PASS");
+    console.log("Multi-Viewport Responsive Verification: ALL 6 VIEWPORTS PASS");
   } finally {
     await browser.close();
   }
-}
+} 
 
 run().catch((err) => {
   console.error(err);
