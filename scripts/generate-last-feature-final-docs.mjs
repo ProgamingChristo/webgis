@@ -6,8 +6,8 @@ import { marked } from "marked";
 const CHROME_PATH = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 const OUTPUT_DIR = "D:/getra docs/Production docs/final/LAST FEATURE";
 
-const CURRENT_SHA = "f2ece73d9ad978bf913751ceec5ca05f7fba8321";
-const SHORT_SHA = "f2ece73";
+const CURRENT_SHA = "84722279aa3d1129385636413b599c7258641031";
+const SHORT_SHA = "8472227";
 const BRANCH = "Getra_Deploy";
 
 const PDF_STYLE = `
