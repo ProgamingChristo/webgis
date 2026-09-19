@@ -14,6 +14,7 @@ export function useAi() {
   const [messages, setMessages] = useState<AiAskMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [provider, setProvider] = useState<AiAskResponse["provider"] | null>(null);
+  const [suggestionChips, setSuggestionChips] = useState<string[]>([]);
 
   const askQuestion = useCallback(async (req: AiAskRequest, onResponse?: (response: AiAskResponse) => Promise<string | undefined>) => {
     const requestGeneration = ++generation.current;
@@ -41,6 +42,9 @@ export function useAi() {
       };
       setMessages([...nextMessages, assistantMessage]);
       setProvider(res.provider);
+      if (res.suggestion_chips && res.suggestion_chips.length > 0) {
+        setSuggestionChips(res.suggestion_chips);
+      }
       setState("SUCCESS");
       return res;
     } catch (err: unknown) {
@@ -65,6 +69,7 @@ export function useAi() {
     setMessages([]);
     setError(null);
     setProvider(null);
+    setSuggestionChips([]);
     setState("IDLE");
   }, []);
 
@@ -74,7 +79,8 @@ export function useAi() {
     setMessages([]);
     setError(null);
     setProvider(null);
+    setSuggestionChips([]);
   }, []);
 
-  return { state, messages, error, provider, askQuestion, appendAssistantMessage, clearChat, reset };
+  return { state, messages, error, provider, suggestionChips, askQuestion, appendAssistantMessage, clearChat, reset };
 }

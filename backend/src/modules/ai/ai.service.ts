@@ -68,6 +68,20 @@ export class AiService {
   async handleAskRequest(
     req: AiAskRequest,
   ): Promise<AiAskResponse> {
+    const res = await this.executeAskRequest(req);
+    if (!res.suggestion_chips || res.suggestion_chips.length === 0) {
+      res.suggestion_chips = getSuggestionChips(
+        res.intent,
+        res.action,
+        req.active_experience,
+      );
+    }
+    return res;
+  }
+
+  private async executeAskRequest(
+    req: AiAskRequest,
+  ): Promise<AiAskResponse> {
     const {
       question,
       active_experience,
@@ -564,8 +578,20 @@ export class AiService {
     if (/\b(?:bagaimana\s+)?(?:mendapatkan|melihat)\s+invoice\b/iu.test(normalizedQuestion)) {
       return {
         answer:
-          "Invoice resmi pembayaran promosi diterbitkan secara otomatis setelah transaksi berstatus SETTLEMENT. Anda dapat melihat dan mengunduh invoice melalui riwayat promosi pada halaman Kelola Promosi (/umkm/advertising).",
+          "Invoice resmi pembayaran promosi diterbitkan secara otomatis setelah transaksi berstatus settlement (SETTLEMENT). Anda dapat melihat dan mengunduh invoice melalui riwayat promosi pada halaman Kelola Promosi (/umkm/advertising).",
         intent: "PROMOTION_INVOICE",
+        limitations: ["Invoice hanya tersedia untuk transaksi yang telah diselesaikan (settlement)."],
+        evidence: [{ source: "GETRA Payment Gateway", dataset: "Promotion Invoicing Service" }],
+        action: { type: "NAVIGATE", path: "/umkm/advertising", label: "Buka Kelola Promosi" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:mana|di mana|unduh|cetak)\s+invoice\b/iu.test(normalizedQuestion) || /\binvoice saya\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Invoice resmi pembayaran promosi diterbitkan secara otomatis setelah transaksi berstatus settlement (SETTLEMENT). Anda dapat melihat dan mengunduh invoice melalui riwayat promosi pada halaman Kelola Promosi (/umkm/advertising).",
+        intent: "PAYMENT_STATUS",
         limitations: ["Invoice hanya tersedia untuk transaksi yang telah diselesaikan (settlement)."],
         evidence: [{ source: "GETRA Payment Gateway", dataset: "Promotion Invoicing Service" }],
         action: { type: "NAVIGATE", path: "/umkm/advertising", label: "Buka Kelola Promosi" },
@@ -676,6 +702,18 @@ export class AiService {
         intent: "COMMUNITY",
         limitations: ["Kontribusi komunitas dimoderasi demi kenyamanan bersama."],
         evidence: [{ source: "GETRA Community Engine", dataset: "Citizen Observation Feed" }],
+        action: { type: "NAVIGATE", path: "/community", label: "Buka Komunitas" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:cara buat posting|bagaimana membuat laporan|buat laporan|laporan warga)\b/iu.test(normalizedQuestion) || /\bapakah ada laporan warga atau observasi komunitas\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Observasi komunitas GETRA menampung laporan warga mengenai kondisi akses jalan dan fasilitas. Untuk membuat laporan atau postingan baru, buka menu Komunitas (/community) dan tekan 'Buat Postingan Baru'. Catatan ini bersifat waktu-terbatas dan dimoderasi secara berkala.",
+        intent: "COMMUNITY_OBSERVATION",
+        limitations: ["Kontribusi komunitas dimoderasi demi kenyamanan bersama."],
+        evidence: [{ source: "GETRA Community", dataset: "Citizen Observation Feed" }],
         action: { type: "NAVIGATE", path: "/community", label: "Buka Komunitas" },
         provider: "deterministic",
       };
@@ -840,11 +878,143 @@ export class AiService {
       };
     }
 
+    if (/\b(?:saya\s+)?keluar\s+(?:dari\s+)?(?:rute|jalur)\b/iu.test(normalizedQuestion) || /\b(?:menyimpang|salah jalan)\b/iu.test(normalizedQuestion) || /\brute ulang\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Sistem mendeteksi deviasi posisi dari koridor rute aktif. GETRA menghitung ulang (reroute) jalur terbaik dari koordinat GPS Anda saat ini menuju titik tujuan yang telah dipilih.",
+        intent: "ACTIVE_JOURNEY",
+        limitations: ["Kalkulasi reroute memerlukan koordinat GPS perangkat aktif."],
+        evidence: [{ source: "GETRA Routing Engine", dataset: "Dynamic Rerouting Authority" }],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\bbantu buat deskripsi usaha\b/iu.test(normalizedQuestion) || /\bdeskripsi usaha\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Tips membuat deskripsi usaha UMKM di GETRA:\n1. Jelaskan produk atau kuliner unggulan Anda secara spesifik.\n2. Cantumkan keunikan rasa, bahan baku berkualitas, atau rentang harga terjangkau.\n3. Informasikan jam operasional buka dan fasilitas (seperti tempat duduk atau take away).\n4. Sebutkan patokan lokasi fisik dari titik transit terdekat (contoh: '200m timur Stasiun Manggarai'). Anda dapat mengisinya langsung pada formulir pendaftaran UMKM.",
+        intent: "UMKM_CREATE",
+        limitations: ["Deskripsi usaha dapat diperbarui kapan saja oleh pemilik usaha terverifikasi."],
+        evidence: [{ source: "GETRA Onboarding Guide", dataset: "Merchant Content Best Practices" }],
+        action: { type: "NAVIGATE", path: "/umkm/merchants/new", label: "Daftarkan Usaha Sekarang" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\bagar usaha (?:saya )?muncul\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Agar usaha Anda muncul pada peta Fair Discovery GETRA:\n1. Daftarkan usaha melalui menu UMKM (/umkm/merchants/new) dan lengkapi pin koordinat lokasi.\n2. Tunggu proses kurasi verifikasi oleh tim Administrator GETRA untuk memastikan keabsahan data lokasi.\n3. Setelah status pendaftaran disetujui (APPROVED), toko Anda otomatis tampil di peta dan dapat ditemukan konsumen sekitar.",
+        intent: "UMKM_STATUS",
+        limitations: ["Publikasi di peta publik mensyaratkan persetujuan Administrator."],
+        evidence: [{ source: "GETRA Registry", dataset: "Merchant Verification Workflow" }],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:apa\s+)?beda(?:nya)?\s+user\s+dan\s+admin\b/iu.test(normalizedQuestion) || /\bperbedaan user dan admin\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Pemisahan hak akses di GETRA menerapkan prinsip Role-Based Access Control (RBAC):\n- Peran USER: Akun publik umum untuk navigasi rute, pencarian UMKM (Fair Discovery), mendaftarkan usaha baru, mengajukan promosi, dan berkontribusi laporan komunitas.\n- Peran ADMIN: Kurator sistem internal berwenang yang menyetujui/menolak pendaftaran UMKM, memverifikasi klaim kepemilikan usaha, dan memoderasi konten laporan warga. Pendaftaran publik secara eksklusif hanya menghasilkan peran USER.",
+        intent: "PROFILE",
+        limitations: ["Pemisahan hak akses mencegah eskalasi wewenang ilegal pada data kurasi."],
+        evidence: [{ source: "GETRA Security Architecture", dataset: "RBAC Specification" }],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:bagaimana\s+cara\s+|cara\s+)?register\b/iu.test(normalizedQuestion) || /\bcara daftar akun\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Untuk mendaftar akun di GETRA, buka halaman registrasi (/register), masukkan nama lengkap, alamat email aktif, dan kata sandi aman. Setiap akun baru otomatis terdaftar dengan peran USER yang aman dan dapat mengaktifkan pengalaman UMKM, Investor, atau Government langsung dari menu profil.",
+        intent: "PROFILE",
+        limitations: [],
+        evidence: [{ source: "GETRA Auth Hub", dataset: "User Onboarding" }],
+        action: { type: "NAVIGATE", path: "/register", label: "Buka Halaman Daftar" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:apa yang ada di sekitar area ini|apa yang ada di peta|tunjukkan area ini)\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Peta GETRA menampilkan sebaran UMKM lokal terverifikasi, simpul transportasi publik (stasiun KRL dan halte TransJakarta), koridor jaringan jalan kaki resmi, serta titik fasilitas aksesibilitas ramah difabel. Anda dapat menjelajahi peta atau menggunakan filter kategori di bilah pencarian.",
+        intent: "GENERAL_AREA",
+        limitations: [],
+        evidence: [{ source: "GETRA WebGIS Engine", dataset: "Spatial POI & Infrastructure" }],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\brute jalan kaki paling aman\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "GETRA menghitung rute pejalan kaki berdasarkan graf pedestrian PostGIS dan Valhalla yang memprioritaskan koridor trotoar resmi, zebra cross, dan jembatan penyeberangan orang (JPO). Anda dapat mengaktifkan layer 'Aksesibilitas' pada peta untuk melihat kondisi trotoar nyata sebelum memulai perjalanan.",
+        intent: "WALKING_ROUTE",
+        limitations: ["Kondisi riil di lapangan dapat dipengaruhi cuaca dan perbaikan fasilitas."],
+        evidence: [{ source: "GETRA Pedestrian Routing", dataset: "Valhalla Pedestrian Graph" }],
+        action: { type: "SWITCH_MAP_MODE", mode: "accessibility" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:cari|ada|rute|jalur)\s+alternatif\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "GETRA mendukung kalkulasi rute multimodal (jalan kaki, sepeda motor, dan mobil). Pada panel rute, Anda dapat beralih moda perjalanan untuk membandingkan estimasi jarak dan waktu tempuh yang dihitung secara matematis oleh authority routing Valhalla.",
+        intent: "WALKING_ROUTE",
+        limitations: ["Waktu tempuh dihitung berdasarkan panjang segmen jalan dan kecepatan rata-rata moda."],
+        evidence: [{ source: "GETRA Routing Authority", dataset: "Multimodal Routing Engines" }],
+        action: { type: "ANSWER_ONLY" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\b(?:apakah ada|ada)\s+akses kursi roda\b/iu.test(normalizedQuestion) || /\b(?:apa )?hambatan menuju\b/iu.test(normalizedQuestion) || /\bfasilitas akses\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Informasi akses kursi roda dan fasilitas ramah difabel (rampa, guiding block, trotoar rata) dipetakan pada lapisan Aksesibilitas GETRA. Sistem menyajikan observasi lapangan terverifikasi sehingga Anda dapat mengantisipasi hambatan fisik pada jalur pejalan kaki.",
+        intent: "ACCESSIBILITY",
+        limitations: ["Data mengacu pada catatan observasi infrastruktur terverifikasi."],
+        evidence: [{ source: "GETRA Pedestrian GIS", dataset: "Accessibility Infrastructure Layer" }],
+        action: { type: "SWITCH_MAP_MODE", mode: "accessibility" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\barea mana yang menarik untuk usaha\b/iu.test(normalizedQuestion) || /\bapa demand di area ini\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Area di sekitar simpul transit mobilitas tinggi (seperti Stasiun Sudirman, Manggarai, dan Tanah Abang) memiliki pergerakan pejalan kaki (Demand) yang kuat. Anda dapat memeriksa layer Retail Gap pada mode analitik GETRA untuk melihat koridor dengan kesenjangan ketersediaan UMKM makanan atau retail.",
+        intent: "DEMAND_SUPPLY",
+        limitations: ["Analisis spasial bersifat indikatif dan tidak menggantikan riset kelayakan bisnis menyeluruh."],
+        evidence: [{ source: "GETRA Analytics Engine", dataset: "Pedestrian Retail Gap" }],
+        action: { type: "SWITCH_MAP_MODE", mode: "analytics" },
+        provider: "deterministic",
+      };
+    }
+
+    if (/\barea mana yang memiliki masalah akses\b/iu.test(normalizedQuestion) || /\bdampak penutupan jalan\b/iu.test(normalizedQuestion)) {
+      return {
+        answer:
+          "Area dengan kendala fasilitas pejalan kaki (seperti trotoar rusak atau penyempitan jalur) dipetakan pada layer Aksesibilitas berdasarkan laporan observasi warga. Jika terjadi penutupan jalan, mesin routing GIS GETRA (Valhalla/PostGIS) secara otomatis mengalihkan jalur pejalan kaki ke segmen jalan terhubung terdekat.",
+        intent: "INVESTOR_MODE",
+        limitations: ["Deviasi rute dihitung secara matematis mengikuti jaringan jalan yang terbuka."],
+        evidence: [{ source: "GETRA Governance & Resilience", dataset: "Pedestrian Infrastructure Audit" }],
+        action: { type: "SWITCH_MAP_MODE", mode: "accessibility" },
+        provider: "deterministic",
+      };
+    }
+
     /**
      * Merchant/search requests use the dedicated structured
      * search extractor first.
      */
-    const isProductGuidanceQuestion = /\b(bagaimana|gmn|gimana|cara\s+(?:buat|bikin|daftar|daftarin|promosi|pasang|klaim|claim|edit|ubah|submit|atur)|iklan|iklanin|promosi|promo|kenapa\s+(?:usaha|promosi|pembayaran|belum)|status\s+(?:pembayaran|pengajuan|verifikasi)|observasi\s+komunitas|aksesibilitas|accessibility|apa\s+itu\s+(?:fair\s+discovery|hidden\s+gem|sponsored|demand|supply|retail\s+gap|business\s+space)|apakah\s+(?:pembayaran|hasil\s+ini)|buatkan\s+(?:koordinat|route)|tebak\s+eta|buat\s+merchant|ubah\s+filter|anggap\s+(?:pembayaran|umkm)|tampilkan\s+private|approve\s+umkm|berapa\s+jarak\s+lurus|jelaskan\s+(?:detail\s+titik|usaha|toko|merchant|ini)|cari\s+fasilitas\s+accessibility|perluasan\s+radius|halte\s+paling\s+dekat|stasiun\s+terdekat|transit\s+terdekat|kamu\s+asisten|siapa\s+kamu|asisten\s+(?:aku|saya))\b/iu.test(req.question);
+    const isProductGuidanceQuestion = /\b(bagaimana|gmn|gimana|cara\s+(?:buat|bikin|daftar|daftarin|promosi|pasang|klaim|claim|edit|ubah|submit|atur|register)|iklan|iklanin|promosi|promo|kenapa\s+(?:usaha|promosi|pembayaran|belum)|status\s+(?:pembayaran|pengajuan|verifikasi)|observasi\s+komunitas|aksesibilitas|accessibility|kursi\s+roda|apa\s+itu\s+(?:fair\s+discovery|hidden\s+gem|sponsored|demand|supply|retail\s+gap|business\s+space)|apakah\s+(?:pembayaran|hasil\s+ini|ada\s+akses)|buatkan\s+(?:koordinat|route)|tebak\s+eta|buat\s+merchant|ubah\s+filter|anggap\s+(?:pembayaran|umkm)|tampilkan\s+private|approve\s+umkm|berapa\s+jarak\s+lurus|jelaskan\s+(?:detail\s+titik|usaha|toko|merchant|ini)|cari\s+fasilitas\s+accessibility|perluasan\s+radius|halte\s+paling\s+dekat|stasiun\s+terdekat|transit\s+terdekat|kamu\s+asisten|siapa\s+kamu|asisten\s+(?:aku|saya)|keluar\s+(?:dari\s+)?rute|keluar\s+jalur|beda(?:nya)?\s+user|deskripsi\s+usaha|agar\s+usaha|apa\s+yang\s+ada\s+di\s+peta|penutupan\s+jalan|rute\s+jalan\s+kaki\s+paling\s+aman|rute\s+alternatif|jalur\s+alternatif|area\s+mana\s+yang\s+menarik)\b/iu.test(req.question);
 
     const searchCtx = context?.search_context as any;
     const hasPriorSearchContext = Boolean(
@@ -865,7 +1035,9 @@ export class AiService {
       /\b(cari|carikan|temukan|rekomendasi|mau makan|tempat makan|coffee|kopi|bakso|mie|nasi|soto|sate|kuliner|makan)\b/iu.test(normalizedQuestion) ||
       /\b(?:umkm|makanan|kuliner|toko|warung|tempat makan|resto|kopi|bakso)\s+(?:di\s+)?(?:dekat|sekitar|terdekat|paling dekat)\b/iu.test(normalizedQuestion) ||
       /\b(?:umkm|toko|warung|usaha)\s+(?:terdekat|paling dekat)\b/iu.test(normalizedQuestion) ||
-      /\b(?:dekat|sekitar)\s+(?:stasiun|halte|st\.)\b/iu.test(normalizedQuestion);
+      /\b(?:dekat|sekitar)\s+(?:stasiun|halte|st\.)\b/iu.test(normalizedQuestion) ||
+      /\b(?:tempat|toko|warung|usaha)\s+(?:yang\s+)?(?:buka|murah)\b/iu.test(normalizedQuestion) ||
+      /\b(tempat yang buka|buka sekarang)\b/iu.test(normalizedQuestion);
 
     if (!isProductGuidanceQuestion && isSearchOrDiscovery) {
       const extracted =
@@ -2276,6 +2448,100 @@ ${JSON.stringify(
 }
 
 /**
+ * Context-aware prompt suggestion chips generated by the AI engine.
+ */
+export function getSuggestionChips(
+  intent: AiIntent,
+  action?: AiApplicationAction,
+  activeExperience?: string,
+): string[] {
+  if (action?.type === "CALCULATE_ROUTE" || action?.type === "PREPARE_ROUTE" || intent === "WALKING_ROUTE") {
+    return [
+      "Rute motor",
+      "Rute mobil",
+      "Berapa lama jalan kaki?",
+      "Cari rute alternatif",
+    ];
+  }
+  if (action?.type === "APPLY_SEARCH_CRITERIA" || intent === "MERCHANT_SEARCH" || intent === "SEARCH_PLACE") {
+    return [
+      "Tempat makan buka sekarang",
+      "Kopi dekat stasiun",
+      "Cari bakso terdekat",
+      "Rute jalan kaki ke sini",
+    ];
+  }
+  if (intent === "UMKM_CREATE" || intent === "UMKM_SUBMIT" || intent === "UMKM_STATUS" || intent === "UMKM_CLAIM") {
+    return [
+      "Cara daftar UMKM",
+      "Bantu buat deskripsi usaha",
+      "Bagaimana agar usaha saya muncul?",
+      "Bagaimana cara promosi?",
+    ];
+  }
+  if (intent === "PROMOTION_CREATE" || intent === "PROMOTION_SETUP" || intent === "PROMOTION_PAYMENT" || intent === "PAYMENT_STATUS") {
+    return [
+      "Wilayah sasaran promosi",
+      "Jadwal tayang kampanye",
+      "Cara bayar Midtrans Sandbox",
+      "Mana invoice saya?",
+    ];
+  }
+  if (intent === "ACCESSIBILITY") {
+    return [
+      "Akses kursi roda terdekat",
+      "Laporkan trotoar rusak",
+      "Fasilitas ramah difabel",
+      "Rute pedestrian aman",
+    ];
+  }
+  if (intent === "INVESTOR_MODE" || intent === "DEMAND_SUPPLY") {
+    return [
+      "Area potensi usaha",
+      "Retail gap di transit",
+      "Business space tersedia",
+      "Analisis permintaan area",
+    ];
+  }
+  if (intent === "COMMUNITY" || intent === "COMMUNITY_OBSERVATION") {
+    return [
+      "Bagaimana membuat laporan?",
+      "Aktivitas komunitas sekitar",
+      "Kondisi trotoar terbaru",
+    ];
+  }
+  if (intent === "PROFILE" || intent === "ADMIN") {
+    return [
+      "Apa bedanya USER dan ADMIN?",
+      "Bagaimana cara register?",
+      "Pengaturan keamanan akun",
+    ];
+  }
+  if (activeExperience === "UMKM") {
+    return [
+      "Bagaimana cara promosi?",
+      "Cara buat UMKM?",
+      "Bagaimana melihat statistik promosi?",
+      "Bantu buat deskripsi usaha",
+    ];
+  }
+  if (activeExperience === "INVESTOR" || activeExperience === "GOVERNMENT") {
+    return [
+      "Analisis demand dan supply area",
+      "Area mana yang menarik untuk usaha?",
+      "Cari fasilitas aksesibilitas",
+      "Bagaimana laporan komunitas?",
+    ];
+  }
+  return [
+    "Cari bakso di jakarta pusat",
+    "UMKM dekat stasiun manggarai",
+    "Rute jalan kaki paling aman",
+    "Apa saja fitur GETRA?",
+  ];
+}
+
+/**
  * Deterministic first-pass intent detection.
  *
  * This is intentionally conservative.
@@ -2305,6 +2571,14 @@ function classifyIntentDeterministically(
     .replace(/\bgmn\b/giu, "gimana")
     .replace(/\btoko aku\b/giu, "toko saya")
     .replace(/\bumkm ku\b/giu, "umkm saya");
+
+  // 0a. Nonsense & Gibberish / Keyboard Mash Filter
+  if (
+    /^(asdf|qwerty|zxcv|blabla|hskj|testtest|[bcdfghjklmnpqrstvwxyz]{6,})/iu.test(normalized) ||
+    (normalized.length >= 6 && !/[aeiouy]/iu.test(normalized))
+  ) {
+    return "UNKNOWN";
+  }
 
   const recentUserContext =
     history
@@ -2436,14 +2710,14 @@ function classifyIntentDeterministically(
 
   // 5. Active Journey & Live Navigation
   if (
-    /\b(mulai jalan|mulai perjalanan|saya tersesat|tersesat|rute saya berubah|sisa perjalanan|berapa sisa perjalanan|sudah sampai|saya sudah sampai|fokuskan peta|navigasi ke merchant|kembali ke rute|kembali ke navigasi|kembali ke perjalanan)\b/iu.test(normalized)
+    /\b(mulai jalan|mulai perjalanan|saya tersesat|tersesat|rute saya berubah|sisa perjalanan|berapa sisa perjalanan|sudah sampai|saya sudah sampai|fokuskan peta|navigasi ke merchant|kembali ke rute|kembali ke navigasi|kembali ke perjalanan|saya keluar jalur|saya keluar dari rute|keluar dari rute|keluar rute|keluar jalur|menyimpang dari rute|menyimpang rute|salah jalan)\b/iu.test(normalized)
   ) {
     return "ACTIVE_JOURNEY";
   }
 
   // 6. Payment & Midtrans Sandbox
   if (
-    /\b(status pembayaran|cek pembayaran|pembayaran.*berhasil|midtrans sandbox|midtrans|invoice saya|lihat invoice|bukti bayar|order id|transaksi pembayaran)\b/iu.test(normalized)
+    /\b(status pembayaran|cek pembayaran|pembayaran.*berhasil|midtrans sandbox|midtrans|order id|transaksi pembayaran)\b/iu.test(normalized)
   ) {
     return "PAYMENT_STATUS";
   }
@@ -2468,7 +2742,7 @@ function classifyIntentDeterministically(
     if (/\b(preview|uji penayangan|simulasi tayang|tampilan iklan)\b/iu.test(normalized)) {
       return "PROMOTION_PREVIEW";
     }
-    if (/\b(materi|banner|konten|foto promosi)\b/iu.test(normalized)) {
+    if (/\b(materi|banner|konten|foto promosi|kenapa.*belum tampil|belum tampil|belum muncul|belum tayang)\b/iu.test(normalized)) {
       return "PROMOTION_SETUP";
     }
     return "PROMOTION_CREATE";
@@ -2477,7 +2751,7 @@ function classifyIntentDeterministically(
   // 8. UMKM Onboarding, Claim & Status
   if (
     /\b(?:daftar|daftarkan|buat|membuat|bikin|tambah|daftarin|masukin|submit)\s+(?:umkm|usaha|toko|warung)\b/iu.test(normalized) ||
-    /\b(usaha saya belum ada|toko saya belum ada)\b/iu.test(normalized)
+    /\b(usaha saya belum ada|toko saya belum ada|bantu buat deskripsi usaha|deskripsi usaha|deskripsi toko|deskripsi umkm)\b/iu.test(normalized)
   ) {
     return "UMKM_CREATE";
   }
@@ -2489,28 +2763,28 @@ function classifyIntentDeterministically(
   }
 
   if (
-    /\b(status pengajuan|umkm.*pending|usaha.*pending|kenapa.*pending|kapan.*disetujui|usaha.*belum tampil|toko.*belum muncul|status verifikasi usaha)\b/iu.test(normalized)
+    /\b(status pengajuan|umkm.*pending|usaha.*pending|kenapa.*pending|kapan.*disetujui|usaha.*belum tampil|toko.*belum muncul|status verifikasi usaha|agar usaha saya muncul|agar usaha.*muncul|agar toko.*muncul)\b/iu.test(normalized)
   ) {
     return "UMKM_STATUS";
   }
 
   // 9. Community & Citizen Reports
   if (
-    /\b(buat post|buat posting|buat postingan|komentar|komentari|reaction|reaksi|report post|laporkan postingan|laporan warga|komunitas|kontribusi warga|observasi komunitas|laporan masyarakat)\b/iu.test(normalized)
+    /\b(buat post|buat posting|buat postingan|komentar|komentari|reaction|reaksi|report post|laporkan postingan|laporan warga|komunitas|kontribusi warga|observasi komunitas|laporan masyarakat|bagaimana membuat laporan|buat laporan|bikin laporan|aktivitas komunitas|informasi terbaru di area ini)\b/iu.test(normalized)
   ) {
     return "COMMUNITY_OBSERVATION";
   }
 
   // 10. Accessibility & Special Needs
   if (
-    /\b(aksesibilitas|accessibility|disabilitas|disability|kursi roda|wheelchair|ramah kursi roda|guiding block|trotoar rusak|kondisi trotoar|rampa|ramp|fasilitas disabilitas|jalur difabel|titik aksesibilitas|titik akses|accessibility point)\b/iu.test(normalized)
+    /\b(aksesibilitas|accessibility|disabilitas|disability|kursi roda|wheelchair|ramah kursi roda|akses kursi roda|guiding block|trotoar rusak|kondisi trotoar|rampa|ramp|fasilitas disabilitas|fasilitas akses|jalur difabel|titik aksesibilitas|titik akses|accessibility point|apa hambatan menuju|hambatan rute|hambatan akses)\b/iu.test(normalized)
   ) {
     return "ACCESSIBILITY";
   }
 
   // 11. Profile & Account
   if (
-    /\b(edit profile|edit profil|ubah profil|ganti profile|ganti profil|logout|keluar akun|role saya|peran saya|keamanan akun|ganti password|profil pengguna)\b/iu.test(normalized)
+    /\b(edit profile|edit profil|ubah profil|ganti profile|ganti profil|logout|keluar akun|role saya|peran saya|keamanan akun|ganti password|profil pengguna|apa bedanya user dan admin|beda user dan admin|perbedaan user dan admin|bagaimana cara register|cara register|cara daftar akun|registrasi akun)\b/iu.test(normalized)
   ) {
     return "PROFILE";
   }
@@ -2524,7 +2798,7 @@ function classifyIntentDeterministically(
 
   // 13. Route requests take precedence
   if (
-    /\b(jalan kaki|berapa lama|rute|route|duration|durasi|navigasi|arah ke|cara ke|rute terbaik|bisa jalan kaki|naik motor|naik mobil|jarak ke)\b/iu.test(normalized)
+    /\b(jalan kaki|berapa lama|rute|route|duration|durasi|navigasi|arah ke|cara ke|rute terbaik|bisa jalan kaki|naik motor|naik mobil|jarak ke|antar saya|antar ke sini|pandu saya|pandu ke sini|rute jalan kaki paling aman|cari alternatif|rute alternatif|jalur alternatif|ada alternatif)\b/iu.test(normalized)
   ) {
     return "WALKING_ROUTE";
   }
@@ -2549,14 +2823,14 @@ function classifyIntentDeterministically(
 
   // 15. Demand-Supply Analysis
   if (
-    /\b(demand|supply|peluang usaha|potensi usaha|analisis pasar|potensi pasar|kesenjangan usaha|kesenjangan komersial)\b/iu.test(normalized)
+    /\b(demand|supply|peluang usaha|potensi usaha|analisis pasar|potensi pasar|kesenjangan usaha|kesenjangan komersial|area mana yang menarik untuk usaha|area potensi usaha|apa demand di area ini|demand di area ini)\b/iu.test(normalized)
   ) {
     return "DEMAND_SUPPLY";
   }
 
   // 16. Explicit discovery/search requests
   if (
-    /\b(cari|carikan|temukan|rekomendasikan|rekomendasi|mau makan|tempat makan|coffee shop|kopi|kafe|cafe|resto|restoran|kuliner|hidden gem|warung makan)\b/u.test(normalized)
+    /\b(cari|carikan|temukan|rekomendasikan|rekomendasi|mau makan|tempat makan|coffee shop|kopi|kafe|cafe|resto|restoran|kuliner|hidden gem|warung makan|tempat yang buka|buka sekarang)\b/u.test(normalized)
   ) {
     return "MERCHANT_SEARCH";
   }
@@ -2596,7 +2870,7 @@ function classifyIntentDeterministically(
 
   // Investor / Government Mode
   if (
-    /\b(bagaimana investor menggunakan getra|investor.*getra|bagaimana government menggunakan getra|pemerintah.*getra)\b/iu.test(normalized)
+    /\b(bagaimana investor menggunakan getra|investor.*getra|bagaimana government menggunakan getra|pemerintah.*getra|area mana yang memiliki masalah akses|masalah aksesibilitas kota|dampak penutupan jalan|penutupan jalan|jalan ditutup)\b/iu.test(normalized)
   ) {
     return "INVESTOR_MODE";
   }
@@ -2638,7 +2912,7 @@ function classifyIntentDeterministically(
 
   // Promotion Invoice
   if (
-    /\b(bagaimana mendapatkan invoice|melihat invoice|unduh invoice|cetak invoice|bukti bayar promosi)\b/iu.test(normalized)
+    /\b(bagaimana mendapatkan invoice|melihat invoice|unduh invoice|cetak invoice|bukti bayar promosi|mana invoice saya|invoice saya|lihat invoice|faktur saya)\b/iu.test(normalized)
   ) {
     return "PROMOTION_INVOICE";
   }
@@ -2671,7 +2945,7 @@ function classifyIntentDeterministically(
 
   // 18. General Area
   if (
-    /\b(area|wilayah|sekitar|kawasan|lingkungan)\b/u.test(combined)
+    /\b(area|wilayah|sekitar|kawasan|lingkungan|apa yang ada di sekitar area ini|apa yang ada di peta|tunjukkan area ini)\b/u.test(combined)
   ) {
     return "GENERAL_AREA";
   }
@@ -2997,7 +3271,7 @@ export function determineApplicationAction(
   const mode = requestedModes.length === 1 ? requestedModes[0] : null;
 
   const asksForRoute =
-    /\b(rute|route|berapa lama|arah|navigasi|cara ke|pandu ke)\b/iu.test(normalized) ||
+    /\b(rute|route|berapa lama|arah|navigasi|cara ke|pandu ke|antar saya|antar ke sini|pandu saya|pandu ke sini)\b/iu.test(normalized) ||
     (/\b(jalan kaki|naik motor|naik mobil|jalan)\b/iu.test(normalized) && /\b(ke|menuju|dari)\b/iu.test(normalized)) ||
     /\b(dari\s+.+\s+ke\s+.+)\b/iu.test(normalized) ||
     /\b(?:ke|menuju)\s+(?:nomor\s+\d+|\d+|tempat|toko|merchant)\b/iu.test(normalized) ||

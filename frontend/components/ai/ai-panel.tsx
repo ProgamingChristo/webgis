@@ -146,6 +146,7 @@ export function AiPanel({
   const {
     state,
     messages,
+    suggestionChips,
     askQuestion,
     appendAssistantMessage,
     clearChat,
@@ -695,12 +696,14 @@ export function AiPanel({
   const suggestions =
     candidateSuggestions && candidateSuggestions.length > 0
       ? candidateSuggestions
-      : modeSelectionMatch
-        ? [
-            "Jalan Kaki",
-            "Sepeda Motor",
-            "Mobil",
-          ]
+      : suggestionChips && suggestionChips.length > 0
+        ? suggestionChips
+        : modeSelectionMatch
+          ? [
+              "Jalan Kaki",
+              "Sepeda Motor",
+              "Mobil",
+            ]
         : activeRoute
           ? [
               "Kalau naik motor?",
