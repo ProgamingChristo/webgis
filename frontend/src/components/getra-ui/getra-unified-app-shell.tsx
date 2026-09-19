@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Database, Megaphone, RefreshCw, ShieldCheck, Store } from "lucide-react";
+import { BarChart3, Car, Database, Globe, Map, Megaphone, ParkingCircle, Plane, RefreshCw, ShieldCheck, Store, Video, Wind } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -21,10 +21,25 @@ const ADMIN_NAV = [
   { href: "/admin/import", label: "Impor Data", icon: Database },
   { href: "/admin/community/contributions", label: "Moderasi Kontribusi", icon: ShieldCheck },
 ];
+const INTERNATIONAL_NAV = [
+  { href: "/international", label: "Portal Global (50)", icon: Globe, exact: true },
+  { href: "/international/cctv", label: "CCTV AI", icon: Video, exact: true },
+  { href: "/international/traffic-congestion", label: "Deteksi Macet", icon: Car, exact: true },
+  { href: "/international/multimodal-transit", label: "Rute Multimoda", icon: Plane, exact: true },
+  { href: "/international/air-quality", label: "Sensor Udara", icon: Wind, exact: true },
+  { href: "/international/smart-parking", label: "Parkir Cerdas", icon: ParkingCircle, exact: true },
+  { href: "/international/open-basemaps", label: "Multi-Basemap", icon: Map, exact: true },
+];
 
 export function GetraAppShell({ actions, children, description, eyebrow = "GETRA", title, tone = "general", utilities, showContextNavigation = true }: GetraAppShellProps) {
   const pathname = usePathname();
-  const contextualNav = tone === "umkm" ? UMKM_NAV : tone === "admin" ? ADMIN_NAV : [];
+  const contextualNav = tone === "umkm"
+    ? UMKM_NAV
+    : tone === "admin"
+    ? ADMIN_NAV
+    : Boolean(pathname && pathname.startsWith("/international"))
+    ? INTERNATIONAL_NAV
+    : [];
   return (
     <main className={`getra-app-shell getra-app-shell--${tone}`}>
       <GetraGlobalHeader utilities={utilities} />

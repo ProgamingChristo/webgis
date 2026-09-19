@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Database, LogOut, Menu, RefreshCw, ShieldCheck, Store, UsersRound, MapPinned, X } from "lucide-react";
+import { Building2, Database, Globe, LogOut, Menu, RefreshCw, ShieldCheck, Store, UsersRound, MapPinned, X, Video, Car, Plane, Wind, Zap, Map } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from "react";
@@ -16,6 +16,7 @@ const GLOBAL_NAV = [
   { href: "/app", label: "Peta", icon: MapPinned, experience: "GENERAL" as const },
   { href: "/umkm", label: "UMKM", icon: Store, experience: "UMKM" as const },
   { href: "/community", label: "Komunitas", icon: UsersRound, experience: "GENERAL" as const },
+  { href: "/international", label: "Global", icon: Globe, experience: "GENERAL" as const },
 ];
 
 export function GetraGlobalHeader({ contextActions, utilities }: { contextActions?: ReactNode; utilities?: ReactNode }) {
@@ -100,6 +101,15 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
           <button aria-expanded={utilityOpen} className="getra-utility-menu__trigger" onClick={() => setUtilityOpen((open) => !open)} type="button">Fitur</button>
           {utilityOpen ? (
             <div className="getra-utility-menu__panel">
+              <span className="getra-utility-menu__label">Smart City & Global (50 Fitur)</span>
+              <Link href="/international" onClick={closeMenus}><Globe size={16} />Portal Global Hub</Link>
+              <Link href="/international/cctv" onClick={closeMenus}><Video size={16} />CCTV Live Stream</Link>
+              <Link href="/international/traffic-congestion" onClick={closeMenus}><Car size={16} />Deteksi Macet AI</Link>
+              <Link href="/international/multimodal-transit" onClick={closeMenus}><Plane size={16} />Rute Multimoda</Link>
+              <Link href="/international/air-quality" onClick={closeMenus}><Wind size={16} />Sensor Udara & AQI</Link>
+              <Link href="/international/ev-charging" onClick={closeMenus}><Zap size={16} />Stasiun Cas EV</Link>
+              <Link href="/international/open-basemaps" onClick={closeMenus}><Map size={16} />Multi-Engine Basemap</Link>
+
               <span className="getra-utility-menu__label">Transit & Komuter</span>
               <Link href="/transit" onClick={closeMenus}><MapPinned size={16} />Simpul Transit</Link>
               <Link href="/accessibility" onClick={closeMenus}><ShieldCheck size={16} />Aksesibilitas</Link>
@@ -156,6 +166,9 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
                   </Link>
                 );
               })}
+              <Link href="/international" onClick={closeMenus}><Globe size={17} />Portal Global (50 Modul)</Link>
+              <Link href="/international/cctv" onClick={closeMenus}><Video size={17} />CCTV Live Stream</Link>
+              <Link href="/international/traffic-congestion" onClick={closeMenus}><Car size={17} />Deteksi Macet AI</Link>
               <Link href="/transit" onClick={closeMenus}><MapPinned size={17} />Simpul Transit</Link>
               <Link href="/accessibility" onClick={closeMenus}><ShieldCheck size={17} />Aksesibilitas</Link>
               <Link href="/eco-walk" onClick={closeMenus}><RefreshCw size={17} />Langkah Hijau</Link>
