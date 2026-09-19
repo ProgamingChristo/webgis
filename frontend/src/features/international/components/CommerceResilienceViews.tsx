@@ -27,31 +27,31 @@ import {
 export function TouristAudioGuideView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-pink-500/30 bg-gradient-to-r from-slate-950 via-pink-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-pink-500/20 px-3 py-1 text-xs font-semibold text-pink-300 border border-pink-500/30">
-          <Headphones size={14} className="text-pink-400" /> Geofenced Smart Audio Storytelling
+      <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
+          <Headphones size={14} className="text-[#118ab2]" /> Geofenced Smart Audio Storytelling
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Panduan Suara Wisata Pejalan Kaki Multibahasa
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Titik narasi sejarah dan kuliner otomatis berbunyi saat wisatawan berjalan melintasi zona cagar budaya dan pasar tradisional.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {AUDIO_TOUR_SPOTS.map((spot) => (
-          <div key={spot.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl space-y-4">
+          <div key={spot.id} className="rounded-3xl border border-[#464b71]/15 bg-white p-6 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="font-bold text-base text-white">{spot.title}</h3>
-              <span className="rounded bg-pink-500/20 text-pink-300 px-2 py-0.5 text-xs font-mono">⭐ {spot.rating}</span>
+              <h3 className="font-black text-base text-[#464b71]">{spot.title}</h3>
+              <span className="rounded-full bg-amber-100 text-amber-800 px-3 py-0.5 text-xs font-mono font-bold">⭐ {spot.rating}</span>
             </div>
-            <p className="text-xs leading-relaxed text-slate-300">{spot.snippet}</p>
-            <div className="flex justify-between items-center text-xs text-slate-400 border-t border-slate-800 pt-3">
-              <span>Durasi: {spot.durationMinutes} menit</span>
+            <p className="text-xs leading-relaxed text-[#66708d]">{spot.snippet}</p>
+            <div className="flex justify-between items-center text-xs text-[#66708d] border-t border-[#464b71]/10 pt-3">
+              <span>Durasi: <strong className="text-[#464b71]">{spot.durationMinutes} menit</strong></span>
               <div className="flex gap-1.5">
                 {spot.languages.map((lang) => (
-                  <span key={lang} className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-cyan-300 font-bold">{lang}</span>
+                  <span key={lang} className="rounded-full bg-[#118ab2]/10 px-2.5 py-0.5 text-[10px] text-[#118ab2] font-bold">{lang}</span>
                 ))}
               </div>
             </div>
@@ -72,28 +72,28 @@ export function CurrencyTaxRefundView() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-slate-950 via-amber-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-semibold text-amber-300 border border-amber-500/30">
-          <Coins size={14} className="text-amber-400" /> Turis & Belanja Bebas Pajak
+      <header className="rounded-3xl border border-[#ffd166]/40 bg-gradient-to-br from-white via-[#fffdfa] to-[#fef9ee] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3.5 py-1 text-xs font-bold text-amber-700 border border-amber-500/20">
+          <Coins size={14} className="text-amber-600" /> Turis & Belanja Bebas Pajak
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Konversi Valas & Kalkulator Pengembalian Pajak (Tax Refund)
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Hitung estimasi pengembalian PPN / VAT turis internasional dan temukan konter verifikasi bea cukai terdekat.
         </p>
       </header>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {TAX_REFUND_DATA.map((c, idx) => (
           <button
             key={idx}
             type="button"
             onClick={() => setSelectedCountryIdx(idx)}
-            className={`rounded-xl px-4 py-2 text-xs font-bold transition border ${
+            className={`rounded-2xl px-4 py-2 text-xs font-bold transition border ${
               selectedCountryIdx === idx
-                ? "bg-amber-500 text-slate-950 border-amber-500"
-                : "bg-slate-900 border-slate-800 text-slate-300"
+                ? "bg-[#118ab2] text-white border-[#118ab2] shadow-sm"
+                : "bg-white border-[#464b71]/15 text-[#464b71] hover:bg-[#f8fafc]"
             }`}
           >
             {c.country} ({c.currency})
@@ -101,29 +101,29 @@ export function CurrencyTaxRefundView() {
         ))}
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl space-y-6">
+      <div className="rounded-3xl border border-[#464b71]/15 bg-white p-6 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-6">
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-300">Total Nilai Belanja ({country.currency}):</label>
+          <label className="text-xs font-black text-[#464b71]">Total Nilai Belanja ({country.currency}):</label>
           <input
             type="number"
             value={purchaseAmount}
             onChange={(e) => setPurchaseAmount(Number(e.target.value))}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 p-3 text-white font-bold text-lg"
+            className="w-full rounded-2xl border border-[#464b71]/15 bg-white p-3.5 text-[#464b71] font-black text-lg focus:border-[#118ab2] focus:outline-hidden shadow-sm"
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-800 pt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-[#464b71]/10 pt-4">
           <div className="space-y-1">
-            <span className="text-xs text-slate-400">Tarif Standar VAT:</span>
-            <p className="text-xl font-black text-white">{country.standardVatPct}%</p>
+            <span className="text-xs text-[#66708d]">Tarif Standar VAT:</span>
+            <p className="text-2xl font-black text-[#464b71]">{country.standardVatPct}%</p>
           </div>
           <div className="space-y-1 text-right">
-            <span className="text-xs text-slate-400">Estimasi Pengembalian Uang:</span>
-            <p className="text-2xl font-black text-emerald-400">{country.currency} {estimatedRefund}</p>
+            <span className="text-xs text-[#66708d]">Estimasi Pengembalian Uang:</span>
+            <p className="text-2xl font-black text-emerald-700">{country.currency} {estimatedRefund}</p>
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-2 text-xs text-slate-300">
+        <div className="rounded-2xl border border-[#118ab2]/20 bg-[#f0f9ff] p-4 space-y-2 text-xs text-[#464b71]">
           <p><strong>Metode Refund:</strong> {country.refundMethod}</p>
           <p><strong>Konter Bandara:</strong> {country.nearestRefundCounter}</p>
         </div>
@@ -144,35 +144,35 @@ export function MarketTranslatorView() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-blue-500/30 bg-gradient-to-r from-slate-950 via-blue-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-300 border border-blue-500/30">
-          <Languages size={14} className="text-blue-400" /> Asisten Komunikasi Pedagang & Wisatawan
+      <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
+          <Languages size={14} className="text-[#118ab2]" /> Asisten Komunikasi Pedagang & Wisatawan
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Penerjemah Tawar-Menawar & Kartu Alergi Makanan
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Ungkapan tawar menawar sopan dan kartu alergi makanan darurat dalam 5 bahasa utama untuk kenyamanan berbelanja di pasar lokal UMKM.
         </p>
       </header>
 
       <div className="space-y-4">
         {MARKET_PHRASES.map((phrase, idx) => (
-          <div key={idx} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl space-y-3">
+          <div key={idx} className="rounded-3xl border border-[#464b71]/15 bg-white p-6 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-3">
             <div className="flex justify-between items-center">
-              <span className="rounded bg-blue-500/20 text-blue-300 px-2 py-0.5 text-[10px] font-bold uppercase">{phrase.category}</span>
+              <span className="rounded-full bg-[#118ab2]/10 text-[#118ab2] px-3 py-0.5 text-[10px] font-bold uppercase">{phrase.category}</span>
               <button
                 type="button"
                 onClick={() => copyText(phrase.japanese, idx)}
-                className="flex items-center gap-1 text-xs text-slate-400 hover:text-cyan-400 transition"
+                className="flex items-center gap-1 text-xs text-[#66708d] hover:text-[#118ab2] font-semibold transition"
               >
                 <Copy size={12} /> {copiedIdx === idx ? "Tersalin!" : "Salin Frase"}
               </button>
             </div>
-            <p className="text-base font-bold text-white">🇮🇩 {phrase.indonesian}</p>
-            <p className="text-sm text-slate-300">🇬🇧 {phrase.english}</p>
-            <p className="text-sm text-cyan-300 font-medium">🇯🇵 {phrase.japanese}</p>
-            <p className="text-sm text-slate-400">🇨🇳 {phrase.chinese}</p>
+            <p className="text-base font-black text-[#464b71]">🇮🇩 {phrase.indonesian}</p>
+            <p className="text-sm text-[#66708d]">🇬🇧 {phrase.english}</p>
+            <p className="text-sm text-[#118ab2] font-bold">🇯🇵 {phrase.japanese}</p>
+            <p className="text-sm text-[#66708d]">🇨🇳 {phrase.chinese}</p>
           </div>
         ))}
       </div>
@@ -184,30 +184,30 @@ export function MarketTranslatorView() {
 export function CarbonMarketplaceView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-slate-950 via-emerald-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/30">
-          <Leaf size={14} className="text-emerald-400" /> Voluntary Carbon Market (VCM)
+      <header className="rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-white via-[#f0fdfa] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-500/20">
+          <Leaf size={14} className="text-emerald-600" /> Voluntary Carbon Market (VCM)
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Bursa Kredit Karbon Pejalan Kaki & Restorasi Urban
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Platform penukaran jejak langkah terverifikasi menjadi token offset karbon yang disalurkan ke proyek reforestasi mangrove dan hutan kota.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {CARBON_LISTINGS.map((listing) => (
-          <div key={listing.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl space-y-4">
+          <div key={listing.id} className="rounded-3xl border border-[#464b71]/15 bg-white p-6 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-4">
             <div className="flex justify-between items-center">
-              <span className="rounded bg-emerald-500/20 text-emerald-300 px-2 py-0.5 text-xs font-bold">{listing.registry}</span>
-              <span className="text-xl font-black text-emerald-400">${listing.pricePerTonUsd} / Ton CO₂</span>
+              <span className="rounded-full bg-emerald-100 text-emerald-800 px-3 py-0.5 text-xs font-bold">{listing.registry}</span>
+              <span className="text-xl font-black text-emerald-700">${listing.pricePerTonUsd} / Ton CO₂</span>
             </div>
-            <h3 className="font-bold text-base text-white">{listing.projectName}</h3>
-            <p className="text-xs text-slate-300 leading-relaxed">{listing.impactType}</p>
-            <div className="text-xs text-slate-400 border-t border-slate-800 pt-3 flex justify-between">
+            <h3 className="font-black text-base text-[#464b71]">{listing.projectName}</h3>
+            <p className="text-xs text-[#66708d] leading-relaxed">{listing.impactType}</p>
+            <div className="text-xs text-[#66708d] border-t border-[#464b71]/10 pt-3 flex justify-between font-medium">
               <span>Tersedia: {listing.availableTons.toLocaleString()} Ton</span>
-              <span className="text-cyan-400 font-bold">Verifikasi Blockchain</span>
+              <span className="text-[#118ab2] font-bold">Verifikasi Spasial</span>
             </div>
           </div>
         ))}
@@ -220,29 +220,29 @@ export function CarbonMarketplaceView() {
 export function NightlifeZonesView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-purple-500/30 bg-gradient-to-r from-slate-950 via-purple-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 px-3 py-1 text-xs font-semibold text-purple-300 border border-purple-500/30">
-          <Moon size={14} className="text-purple-400" /> Ekonomi Malam & Ruang 24 Jam
+      <header className="rounded-3xl border border-purple-500/20 bg-gradient-to-br from-white via-[#faf5ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-3.5 py-1 text-xs font-bold text-purple-700 border border-purple-500/20">
+          <Moon size={14} className="text-purple-600" /> Ekonomi Malam & Ruang 24 Jam
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Distrik Ekonomi Malam & 24 Jam Terpadu
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Kawasan kuliner malam, patroli keamanan pejalan kaki larut malam, dan akses angkutan umum 24 jam.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {NIGHTLIFE_DISTRICTS.map((d) => (
-          <div key={d.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl space-y-4">
+          <div key={d.id} className="rounded-3xl border border-[#464b71]/15 bg-white p-6 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="font-bold text-base text-white">{d.districtName}</h3>
-              <span className="rounded bg-purple-500/20 text-purple-300 px-2 py-0.5 text-xs font-mono">Skor Keamanan: {d.safetyScore}/100</span>
+              <h3 className="font-black text-base text-[#464b71]">{d.districtName}</h3>
+              <span className="rounded-full bg-purple-100 text-purple-800 px-3 py-0.5 text-xs font-mono font-bold">Skor Keamanan: {d.safetyScore}/100</span>
             </div>
-            <p className="text-xs text-slate-300">{d.vibe}</p>
-            <div className="text-xs text-slate-400 border-t border-slate-800 pt-3 space-y-1">
-              <p>Outlet Buka Malam: <strong className="text-white">{d.openVenuesCount} Tempat</strong></p>
-              <p>Transit 24 Jam: <span className="text-cyan-400">{d.lateNightTransitLines.join(", ")}</span></p>
+            <p className="text-xs text-[#66708d]">{d.vibe}</p>
+            <div className="text-xs text-[#66708d] border-t border-[#464b71]/10 pt-3 space-y-1">
+              <p>Outlet Buka Malam: <strong className="text-[#464b71]">{d.openVenuesCount} Tempat</strong></p>
+              <p>Transit 24 Jam: <span className="text-[#118ab2] font-semibold">{d.lateNightTransitLines.join(", ")}</span></p>
             </div>
           </div>
         ))}
@@ -255,29 +255,29 @@ export function NightlifeZonesView() {
 export function StreetPerformersView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-pink-500/30 bg-gradient-to-r from-slate-950 via-pink-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-pink-500/20 px-3 py-1 text-xs font-semibold text-pink-300 border border-pink-500/30">
-          <Music size={14} className="text-pink-400" /> Ruang Kreatif Jalanan (Busking Zone)
+      <header className="rounded-3xl border border-rose-500/20 bg-gradient-to-br from-white via-[#fff5f5] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-3.5 py-1 text-xs font-bold text-rose-700 border border-rose-500/20">
+          <Music size={14} className="text-rose-600" /> Ruang Kreatif Jalanan (Busking Zone)
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Panggung Seni Jalanan & Mural Publik
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Titik pertunjukan musisi jalanan berlisensi, jadwal pertunjukan langsung, dan panduan etika ruang publik kreatif.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {BUSKING_SPOTS.map((b) => (
-          <div key={b.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl space-y-4">
+          <div key={b.id} className="rounded-3xl border border-[#464b71]/15 bg-white p-6 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="font-bold text-base text-white">{b.spotName}</h3>
-              <span className="rounded bg-emerald-500/20 text-emerald-300 px-2 py-0.5 text-xs">{b.permitStatus}</span>
+              <h3 className="font-black text-base text-[#464b71]">{b.spotName}</h3>
+              <span className="rounded-full bg-emerald-100 text-emerald-800 px-3 py-0.5 text-xs font-bold">{b.permitStatus}</span>
             </div>
-            <div className="text-xs text-slate-300 space-y-1">
-              <p>Penampil Saat Ini: <strong className="text-cyan-300">{b.currentPerformer || "Buka untuk umum"}</strong></p>
+            <div className="text-xs text-[#66708d] space-y-1.5">
+              <p>Penampil: <strong className="text-[#118ab2]">{b.currentPerformer || "Buka untuk umum"}</strong></p>
               <p>Genre: {b.genre || "Akustik / Teater Mini"}</p>
-              <p className="text-slate-400">Jadwal: {b.upcomingSchedule}</p>
+              <p className="border-t border-[#464b71]/10 pt-2">Jadwal: {b.upcomingSchedule}</p>
             </div>
           </div>
         ))}
@@ -290,28 +290,28 @@ export function StreetPerformersView() {
 export function FreightDeliveryView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-slate-950 via-emerald-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/30">
-          <Package size={14} className="text-emerald-400" /> Logistik Bebas Emisi Last-Mile
+      <header className="rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-white via-[#f0fdfa] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-500/20">
+          <Package size={14} className="text-emerald-600" /> Logistik Bebas Emisi Last-Mile
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Pusat Distribusi Cargo Bike Ramah Lingkungan
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Hub konsolidasi paket berbasis sepeda kargo listrik di pusat kota pejalan kaki tanpa polusi suara dan asap knalpot.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {CARGO_BIKE_HUBS.map((hub) => (
-          <div key={hub.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl space-y-4">
-            <h3 className="font-bold text-base text-white">{hub.hubName}</h3>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs border-t border-slate-800 pt-3">
-              <div>Armada: <p className="text-lg font-bold text-cyan-400">{hub.activeCargoBikes} Unit</p></div>
-              <div>Paket Hari Ini: <p className="text-lg font-bold text-white">{hub.parcelsDispatchedToday}</p></div>
-              <div>CO₂ Terhemat: <p className="text-lg font-bold text-emerald-400">{hub.co2SavedKgToday} kg</p></div>
+          <div key={hub.id} className="rounded-3xl border border-[#464b71]/15 bg-white p-6 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-4">
+            <h3 className="font-black text-base text-[#464b71]">{hub.hubName}</h3>
+            <div className="grid grid-cols-3 gap-2 text-center text-xs border-t border-[#464b71]/10 pt-3">
+              <div>Armada: <p className="text-lg font-black text-[#118ab2]">{hub.activeCargoBikes} Unit</p></div>
+              <div>Paket Hari Ini: <p className="text-lg font-black text-[#464b71]">{hub.parcelsDispatchedToday}</p></div>
+              <div>CO₂ Terhemat: <p className="text-lg font-black text-emerald-700">{hub.co2SavedKgToday} kg</p></div>
             </div>
-            <p className="text-xs text-slate-400">Radius Layanan: {hub.coverageRadiusKm} km dari Hub</p>
+            <p className="text-xs text-[#66708d] border-t border-[#464b71]/10 pt-2">Radius Layanan: {hub.coverageRadiusKm} km dari Hub</p>
           </div>
         ))}
       </div>
@@ -323,29 +323,29 @@ export function FreightDeliveryView() {
 export function CustomsTariffsView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-teal-500/30 bg-gradient-to-r from-slate-950 via-teal-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 px-3 py-1 text-xs font-semibold text-teal-300 border border-teal-500/30">
-          <FileSpreadsheet size={14} className="text-teal-400" /> Ekspor Produk Kerajinan UMKM
+      <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
+          <FileSpreadsheet size={14} className="text-[#118ab2]" /> Ekspor Produk Kerajinan UMKM
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Kalkulator Tarif Bea Cukai Kerajinan UMKM
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Pengecekan kode HS internasional (Harmonized System), bea masuk, dan skema pembebasan pajak untuk kriya dan produk lokal.
         </p>
       </header>
 
       <div className="space-y-4">
         {CUSTOMS_TARIFFS.map((t) => (
-          <div key={t.hsCode} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div key={t.hsCode} className="rounded-3xl border border-[#464b71]/15 bg-white p-6 shadow-[0_10px_24px_rgba(70,75,113,0.06)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <span className="rounded bg-teal-500/20 text-teal-300 px-2 py-0.5 text-xs font-mono font-bold">HS {t.hsCode}</span>
-              <h3 className="font-bold text-sm text-white">{t.productDescription}</h3>
-              <p className="text-xs text-emerald-400">{t.artisanExemptionAvailable ? "✓ Memenuhi Syarat Bebas Bea Masuk Ekspor Kerajinan" : "Tarif Standar"}</p>
+              <span className="rounded-full bg-[#118ab2]/10 text-[#118ab2] px-3 py-0.5 text-xs font-mono font-bold">HS {t.hsCode}</span>
+              <h3 className="font-black text-sm text-[#464b71]">{t.productDescription}</h3>
+              <p className="text-xs text-emerald-700 font-semibold">{t.artisanExemptionAvailable ? "✓ Memenuhi Syarat Bebas Bea Masuk Ekspor Kerajinan" : "Tarif Standar"}</p>
             </div>
             <div className="text-right">
-              <span className="text-xs text-slate-400">Bea Masuk / PPN</span>
-              <p className="text-lg font-black text-cyan-400">{t.baseDutyPct}% / {t.importVatPct}%</p>
+              <span className="text-xs text-[#66708d]">Bea Masuk / PPN</span>
+              <p className="text-lg font-black text-[#118ab2]">{t.baseDutyPct}% / {t.importVatPct}%</p>
             </div>
           </div>
         ))}

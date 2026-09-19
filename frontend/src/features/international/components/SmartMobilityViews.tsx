@@ -28,6 +28,7 @@ import {
   PEDESTRIAN_BRIDGES,
 } from "../data";
 import type { GlobalCityId } from "../types";
+import { CctvLivePlayer } from "./CctvLivePlayer";
 
 // 1. CCTV View
 export function CctvView() {
@@ -40,32 +41,32 @@ export function CctvView() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-slate-950 via-sky-950 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
+      <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/20 px-3 py-1 text-xs font-semibold text-cyan-300 border border-cyan-500/30">
-              <Video size={14} className="text-cyan-400" /> Sensor Visual CCTV Internasional
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
+              <Video size={14} className="text-[#118ab2]" /> Sensor Visual CCTV Internasional
             </span>
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl text-white">
+            <h1 className="text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
               Global Traffic & Pedestrian CCTV Live Stream
             </h1>
-            <p className="max-w-2xl text-sm leading-relaxed text-slate-300">
-              Streaming real-time simulasi CCTV kota-kota global dengan deteksi objek AI (penghitung pedestrian, volume mobil, dan peringatan kemacetan).
+            <p className="max-w-2xl text-sm leading-relaxed text-[#66708d]">
+              Streaming video interaktif 60 FPS CCTV megacity dunia dengan machine vision AI (penghitung pejalan kaki scramble, volume kendaraan, dan deteksi kemacetan real-time).
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
               href="/international"
-              className="inline-flex items-center gap-2 rounded-xl bg-cyan-600/80 px-4 py-2.5 text-sm font-bold text-white shadow hover:bg-cyan-500 transition"
+              className="inline-flex items-center gap-2 rounded-2xl bg-[#118ab2] px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[#0d7495] transition"
             >
-              <ArrowRight size={16} /> Semua Fitur Global
+              <ArrowRight size={16} /> Katalog 50 Fitur
             </Link>
           </div>
         </div>
       </header>
 
       {/* City Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-[#464b71]/10 pb-3">
         {GLOBAL_CITIES.map((c) => (
           <button
             key={c.id}
@@ -75,10 +76,10 @@ export function CctvView() {
               const cityFeeds = CCTV_FEEDS.filter((f) => f.city === c.id);
               if (cityFeeds.length > 0) setActiveFeedId(cityFeeds[0].id);
             }}
-            className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition ${
+            className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition border ${
               selectedCity === c.id
-                ? "bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20"
-                : "bg-slate-900/80 text-slate-300 hover:bg-slate-800 border border-slate-800"
+                ? "bg-[#118ab2] text-white shadow-sm border-[#118ab2]"
+                : "bg-white text-[#464b71] hover:bg-[#f0f9ff] border-[#464b71]/15"
             }`}
           >
             <span>{c.flag}</span>
@@ -90,62 +91,38 @@ export function CctvView() {
       {/* Video Canvas & Stats */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-4">
-          <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl flex flex-col justify-between p-4">
-            {/* Top Bar Video Overlay */}
-            <div className="z-10 flex items-center justify-between">
-              <div className="flex items-center gap-2 rounded-lg bg-black/70 px-3 py-1 text-xs font-mono text-emerald-400 border border-emerald-500/30 backdrop-blur">
-                <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-                LIVE • {activeFeed.fps} FPS • {activeFeed.latencyMs}ms LATENCY
-              </div>
-              <button
-                type="button"
-                onClick={() => setAiDetectionEnabled((prev) => !prev)}
-                className={`rounded-lg px-2.5 py-1 text-xs font-bold transition border ${
-                  aiDetectionEnabled
-                    ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
-                    : "bg-slate-800 text-slate-400 border-slate-700"
-                }`}
-              >
-                AI Bounding Box: {aiDetectionEnabled ? "ON" : "OFF"}
-              </button>
+          {/* Active Canvas Video Player */}
+          <CctvLivePlayer
+            feed={activeFeed}
+            aiDetection={aiDetectionEnabled}
+            onToggleAi={() => setAiDetectionEnabled((prev) => !prev)}
+          />
+
+          {/* AI Metrics Bar */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-[#464b71]/15 bg-white p-4 shadow-[0_4px_12px_rgba(70,75,113,0.04)]">
+              <span className="text-[11px] font-bold text-[#66708d] uppercase">🚶 Pedestrian Detected</span>
+              <p className="mt-1 text-xl font-black text-[#118ab2]">{activeFeed.pedestrianCount} Orang</p>
+              <span className="text-[10px] text-emerald-600 font-bold">Terhitung AI YOLO</span>
             </div>
-
-            {/* Simulated Live Scene Center */}
-            <div className="flex flex-col items-center justify-center text-center py-12">
-              <div className="relative h-28 w-28 rounded-full border-2 border-dashed border-cyan-500/40 flex items-center justify-center animate-spin-slow">
-                <Video size={40} className="text-cyan-400" />
-              </div>
-              <p className="mt-4 text-sm font-bold text-white">{activeFeed.name}</p>
-              <p className="text-xs text-slate-400">{activeFeed.location}</p>
-
-              {aiDetectionEnabled && (
-                <div className="mt-4 flex flex-wrap gap-2 justify-center">
-                  <span className="rounded-md bg-emerald-950/80 border border-emerald-500/40 px-2 py-0.5 text-[11px] font-mono text-emerald-300">
-                    🚶 Pedestrian Detected: {activeFeed.pedestrianCount}
-                  </span>
-                  <span className="rounded-md bg-amber-950/80 border border-amber-500/40 px-2 py-0.5 text-[11px] font-mono text-amber-300">
-                    🚗 Vehicles: {activeFeed.vehicleCount}
-                  </span>
-                  <span className="rounded-md bg-purple-950/80 border border-purple-500/40 px-2 py-0.5 text-[11px] font-mono text-purple-300">
-                    Kepadatan: {activeFeed.congestionLevel}
-                  </span>
-                </div>
-              )}
+            <div className="rounded-2xl border border-[#464b71]/15 bg-white p-4 shadow-[0_4px_12px_rgba(70,75,113,0.04)]">
+              <span className="text-[11px] font-bold text-[#66708d] uppercase">🚗 Volume Mobil</span>
+              <p className="mt-1 text-xl font-black text-[#464b71]">{activeFeed.vehicleCount} Unit</p>
+              <span className="text-[10px] text-sky-600 font-bold">Jalan Terpantau</span>
             </div>
-
-            {/* Bottom Stream Status */}
-            <div className="z-10 flex items-center justify-between text-xs text-slate-400">
-              <span>Feed ID: {activeFeed.id}</span>
-              <span>Protokol: RTSP/WebRTC Edge Gateway</span>
+            <div className="rounded-2xl border border-[#464b71]/15 bg-white p-4 shadow-[0_4px_12px_rgba(70,75,113,0.04)]">
+              <span className="text-[11px] font-bold text-[#66708d] uppercase">🚦 Status Arus</span>
+              <p className="mt-1 text-xl font-black text-amber-600">{activeFeed.congestionLevel}</p>
+              <span className="text-[10px] text-slate-500 font-bold">{activeFeed.fps} FPS · {activeFeed.latencyMs}ms</span>
             </div>
           </div>
         </div>
 
         {/* Camera List Sidebar */}
         <div className="space-y-3">
-          <h3 className="text-sm font-bold text-slate-200">Kamera Tersedia ({feeds.length})</h3>
+          <h3 className="text-sm font-black text-[#464b71]">Kamera CCTV Tersedia ({feeds.length})</h3>
           {feeds.length === 0 ? (
-            <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-6 text-center text-xs text-slate-400">
+            <div className="rounded-2xl border border-[#464b71]/15 bg-white p-6 text-center text-xs text-[#66708d]">
               Sensor CCTV untuk kota ini sedang proses kalibrasi optik.
             </div>
           ) : (
@@ -154,17 +131,23 @@ export function CctvView() {
                 key={f.id}
                 type="button"
                 onClick={() => setActiveFeedId(f.id)}
-                className={`w-full text-left rounded-xl p-3.5 transition border ${
+                className={`w-full text-left rounded-2xl p-4 transition border ${
                   activeFeedId === f.id
-                    ? "bg-cyan-950/40 border-cyan-500/50 text-white shadow"
-                    : "bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800/80"
+                    ? "bg-[#f0f9ff] border-[#118ab2] text-[#464b71] shadow-sm ring-1 ring-[#118ab2]"
+                    : "bg-white border-[#464b71]/15 text-[#464b71] hover:bg-[#f8fafc]"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs">{f.name}</span>
-                  <span className="text-[10px] text-emerald-400 font-mono">ONLINE</span>
+                  <span className="font-black text-xs text-[#464b71]">{f.name}</span>
+                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    LIVE
+                  </span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1">{f.location}</p>
+                <p className="text-[11px] text-[#66708d] mt-1">{f.location}</p>
+                <div className="mt-2 flex items-center justify-between text-[10px] text-[#118ab2] font-semibold">
+                  <span>{f.resolution || "1080p@60fps"}</span>
+                  <span>{f.protocol || "RTSP/WebRTC Gateway"}</span>
+                </div>
               </button>
             ))
           )}
@@ -181,54 +164,60 @@ export function TrafficCongestionView() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-slate-950 via-amber-950/60 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
+      <header className="rounded-3xl border border-[#ffd166]/40 bg-gradient-to-br from-white via-[#fffdfa] to-[#fef9ee] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-semibold text-amber-300 border border-amber-500/30">
-              <Car size={14} className="text-amber-400" /> Pemantauan Arus & Bottleneck Lalu Lintas
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3.5 py-1 text-xs font-bold text-amber-700 border border-amber-500/20">
+              <Car size={14} className="text-amber-600" /> Pemantauan Arus & Bottleneck Lalu Lintas
             </span>
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl text-white">
+            <h1 className="text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
               Pendeteksi Macet & Rekayasa Arus Cerdas
             </h1>
-            <p className="max-w-2xl text-sm leading-relaxed text-slate-300">
+            <p className="max-w-2xl text-sm leading-relaxed text-[#66708d]">
               Analisis kecepatan rata-rata koridor arteri, estimasi keterlambatan, dan rekomendasi jalur pengalihan multimodal bagi komuter dan pejalan kaki.
             </p>
           </div>
+          <Link
+            href="/international"
+            className="inline-flex items-center gap-2 rounded-2xl bg-[#118ab2] px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-[#0d7495] transition self-start md:self-auto"
+          >
+            <ArrowRight size={16} /> Semua Modul
+          </Link>
         </div>
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Zone Selector */}
         <div className="space-y-3">
-          <h3 className="text-sm font-bold text-slate-200">Koridor Pantauan Utama</h3>
+          <h3 className="text-sm font-black text-[#464b71]">Koridor Pantauan Utama</h3>
           {CONGESTION_ZONES.map((z) => (
             <button
               key={z.id}
               type="button"
               onClick={() => setSelectedZone(z.id)}
-              className={`w-full text-left rounded-xl p-4 transition border ${
+              className={`w-full text-left rounded-2xl p-4 transition border ${
                 selectedZone === z.id
-                  ? "bg-amber-950/40 border-amber-500/50 text-white shadow"
-                  : "bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800/80"
+                  ? "bg-[#f0f9ff] border-[#118ab2] shadow-sm text-[#464b71] ring-1 ring-[#118ab2]"
+                  : "bg-white border-[#464b71]/15 text-[#464b71] hover:bg-[#f8fafc]"
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-xs">{z.corridor}</span>
+                <span className="font-black text-xs text-[#464b71]">{z.corridor}</span>
                 <span
-                  className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+                  className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
                     z.level === "GRIDLOCK"
-                      ? "bg-red-500/20 text-red-400"
+                      ? "bg-red-100 text-red-700 border border-red-200"
                       : z.level === "HEAVY"
-                      ? "bg-amber-500/20 text-amber-400"
-                      : "bg-yellow-500/20 text-yellow-300"
+                      ? "bg-amber-100 text-amber-800 border border-amber-200"
+                      : "bg-yellow-100 text-yellow-800 border border-yellow-200"
                   }`}
                 >
                   {z.level}
                 </span>
               </div>
-              <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+              <div className="mt-2 flex items-center justify-between text-[11px] text-[#66708d]">
                 <span>Kecepatan: {z.currentSpeedKmh} km/jam</span>
-                <span className="text-red-400 font-bold">+{z.delayMinutes} menit</span>
+                <span className="text-red-600 font-bold">+{z.delayMinutes} menit</span>
               </div>
             </button>
           ))}
@@ -236,27 +225,27 @@ export function TrafficCongestionView() {
 
         {/* Detailed Insights */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-800 pb-4">
+          <div className="rounded-3xl border border-[#464b71]/15 bg-white p-6 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-[#464b71]/10 pb-4">
               <div>
-                <h2 className="text-lg font-bold text-white">{activeZone.corridor}</h2>
-                <p className="text-xs text-slate-400">Status Lalu Lintas Terkini</p>
+                <h2 className="text-lg font-black text-[#464b71]">{activeZone.corridor}</h2>
+                <p className="text-xs text-[#66708d]">Status Lalu Lintas Terkini</p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <div className="text-xs text-slate-400">Keterlambatan</div>
-                  <div className="text-xl font-black text-amber-400">+{activeZone.delayMinutes} min</div>
+                  <div className="text-xs text-[#66708d]">Keterlambatan</div>
+                  <div className="text-xl font-black text-red-600">+{activeZone.delayMinutes} min</div>
                 </div>
               </div>
             </div>
 
             {/* Speed Comparison Bar */}
             <div className="space-y-2">
-              <div className="flex justify-between text-xs text-slate-300">
+              <div className="flex justify-between text-xs text-[#464b71] font-semibold">
                 <span>Kecepatan Aktual: {activeZone.currentSpeedKmh} km/jam</span>
-                <span>Normal: {activeZone.freeFlowSpeedKmh} km/jam</span>
+                <span className="text-[#66708d]">Bebas Hambatan: {activeZone.freeFlowSpeedKmh} km/jam</span>
               </div>
-              <div className="h-3 w-full rounded-full bg-slate-800 overflow-hidden">
+              <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-red-500 to-amber-500 transition-all duration-500"
                   style={{ width: `${(activeZone.currentSpeedKmh / activeZone.freeFlowSpeedKmh) * 100}%` }}
@@ -264,18 +253,18 @@ export function TrafficCongestionView() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-2">
-              <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-                <AlertTriangle size={14} /> Penyebab Kemacetan:
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 space-y-1.5">
+              <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                <AlertTriangle size={14} className="text-amber-600" /> Faktor Hambatan:
               </span>
-              <p className="text-xs leading-relaxed text-slate-300">{activeZone.bottleneckCause}</p>
+              <p className="text-xs leading-relaxed text-amber-950">{activeZone.bottleneckCause}</p>
             </div>
 
-            <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/30 p-4 space-y-2">
-              <span className="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+            <div className="rounded-2xl border border-[#118ab2]/25 bg-[#f0f9ff] p-4 space-y-1.5">
+              <span className="text-xs font-bold text-[#118ab2] flex items-center gap-1.5">
                 <Sparkles size={14} /> Rekomendasi Rute Pejalan Kaki / Bypass Multimoda:
               </span>
-              <p className="text-xs leading-relaxed text-slate-200">{activeZone.suggestedDetour}</p>
+              <p className="text-xs leading-relaxed text-[#464b71]">{activeZone.suggestedDetour}</p>
             </div>
           </div>
         </div>
@@ -291,35 +280,35 @@ export function MultimodalTransitView() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-slate-950 via-indigo-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-300 border border-indigo-500/30">
-          <Plane size={14} className="text-indigo-400" /> Perjalanan Lintas Moda Terpadu
+      <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
+          <Plane size={14} className="text-[#118ab2]" /> Perjalanan Lintas Moda Terpadu
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Perencana Rute Lintas Batas Global
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Koneksi mulus antarmoda transportasi internasional: kereta cepat, metro bawah tanah, jalur sepeda, dan penyeberangan pejalan kaki ramah lingkungan.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-3">
-          <h3 className="text-sm font-bold text-slate-200">Rute Internasional Unggulan</h3>
+          <h3 className="text-sm font-black text-[#464b71]">Rute Internasional Unggulan</h3>
           {MULTIMODAL_ROUTES.map((r) => (
             <button
               key={r.id}
               type="button"
               onClick={() => setActiveRouteId(r.id)}
-              className={`w-full text-left rounded-xl p-4 transition border ${
+              className={`w-full text-left rounded-2xl p-4 transition border ${
                 activeRouteId === r.id
-                  ? "bg-indigo-950/50 border-indigo-500/50 text-white shadow"
-                  : "bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800/80"
+                  ? "bg-[#f0f9ff] border-[#118ab2] text-[#464b71] shadow-sm ring-1 ring-[#118ab2]"
+                  : "bg-white border-[#464b71]/15 text-[#464b71] hover:bg-[#f8fafc]"
               }`}
             >
-              <div className="font-bold text-xs">{r.name}</div>
-              <div className="text-[11px] text-slate-400 mt-1">{r.origin} ➔ {r.destination}</div>
-              <div className="mt-2 flex items-center justify-between text-[11px] text-cyan-400 font-mono">
+              <div className="font-black text-xs text-[#464b71]">{r.name}</div>
+              <div className="text-[11px] text-[#66708d] mt-1">{r.origin} ➔ {r.destination}</div>
+              <div className="mt-2 flex items-center justify-between text-[11px] text-[#118ab2] font-bold">
                 <span>⏱️ {r.totalDurationMin} min</span>
                 <span>🌱 {r.totalCarbonKg} kg CO₂</span>
               </div>
@@ -328,16 +317,16 @@ export function MultimodalTransitView() {
         </div>
 
         <div className="lg:col-span-2 space-y-4">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div className="rounded-3xl border border-[#464b71]/15 bg-white p-6 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#464b71]/10 pb-4">
               <div>
-                <h2 className="text-lg font-bold text-white">{activeRoute.name}</h2>
-                <p className="text-xs text-slate-400">{activeRoute.origin} menuju {activeRoute.destination}</p>
+                <h2 className="text-lg font-black text-[#464b71]">{activeRoute.name}</h2>
+                <p className="text-xs text-[#66708d]">{activeRoute.origin} menuju {activeRoute.destination}</p>
               </div>
               <div className="flex gap-4">
                 <div className="text-right">
-                  <span className="text-[10px] text-slate-400">Total Tarif</span>
-                  <p className="text-sm font-bold text-emerald-400">{activeRoute.totalCost}</p>
+                  <span className="text-[10px] text-[#66708d] uppercase font-bold">Total Tarif</span>
+                  <p className="text-sm font-black text-emerald-600">{activeRoute.totalCost}</p>
                 </div>
               </div>
             </div>
@@ -347,19 +336,19 @@ export function MultimodalTransitView() {
               {activeRoute.steps.map((s, idx) => (
                 <div key={idx} className="flex gap-4 items-start">
                   <div className="flex flex-col items-center">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500/20 border border-indigo-500/40 text-xs font-bold text-indigo-300">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#118ab2]/10 border border-[#118ab2]/30 text-xs font-bold text-[#118ab2]">
                       {idx + 1}
                     </span>
-                    {idx < activeRoute.steps.length - 1 && <div className="h-10 w-0.5 bg-slate-800 my-1" />}
+                    {idx < activeRoute.steps.length - 1 && <div className="h-10 w-0.5 bg-slate-200 my-1" />}
                   </div>
-                  <div className="flex-1 rounded-xl border border-slate-800 bg-slate-950 p-3.5">
+                  <div className="flex-1 rounded-2xl border border-[#464b71]/10 bg-[#f8fafc] p-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-[#464b71] flex items-center gap-1.5">
                         {s.mode === "WALK" ? "🚶 Jalan Kaki" : s.mode === "RAIL" ? "🚆 Kereta JR/Express" : s.mode === "METRO" ? "🚇 MRT/Subway" : "🚲 Sepeda"}
                       </span>
-                      <span className="text-[11px] text-slate-400">{s.durationMinutes} min ({s.distanceKm} km)</span>
+                      <span className="text-[11px] text-[#66708d]">{s.durationMinutes} min ({s.distanceKm} km)</span>
                     </div>
-                    <p className="text-xs text-slate-300 mt-1">{s.instruction}</p>
+                    <p className="text-xs text-[#464b71] mt-1">{s.instruction}</p>
                   </div>
                 </div>
               ))}
@@ -375,34 +364,34 @@ export function MultimodalTransitView() {
 export function MicromobilityView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-slate-950 via-emerald-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/30">
-          <Bike size={14} className="text-emerald-400" /> Mikromobilitas & Armada Berbagi
+      <header className="rounded-3xl border border-[#62d6c8]/30 bg-gradient-to-br from-white via-[#f0fdfa] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-500/20">
+          <Bike size={14} className="text-emerald-600" /> Mikromobilitas & Armada Berbagi
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Ketersediaan Sepeda & Skuter Listrik Global
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Peta sebaran dock sepeda dan e-scooter multi-operator di sekitar simpul transit, persentase sisa baterai, dan estimasi biaya per menit.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {MICROMOBILITY_HUBS.map((hub) => (
-          <div key={hub.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl space-y-4 hover:border-emerald-500/40 transition">
+          <div key={hub.id} className="rounded-3xl border border-[#464b71]/15 bg-white p-5 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-4 hover:border-[#118ab2]/40 transition">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-emerald-400 font-mono">{hub.operator}</span>
-              <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300 uppercase">{hub.city}</span>
+              <span className="text-xs font-bold text-[#118ab2] font-mono">{hub.operator}</span>
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-[#464b71] uppercase">{hub.city}</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-300">
+            <div className="flex items-center justify-between text-xs text-[#66708d]">
               <span>Unit Tersedia:</span>
-              <span className="text-base font-black text-white">{hub.availableVehicles} Unit</span>
+              <span className="text-base font-black text-[#464b71]">{hub.availableVehicles} Unit</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-300">
+            <div className="flex items-center justify-between text-xs text-[#66708d]">
               <span>Rata-rata Baterai:</span>
-              <span className="font-bold text-cyan-400">{hub.avgBatteryPct}%</span>
+              <span className="font-bold text-emerald-600">{hub.avgBatteryPct}%</span>
             </div>
-            <div className="border-t border-slate-800 pt-3 text-[11px] text-slate-400 flex justify-between">
+            <div className="border-t border-[#464b71]/10 pt-3 text-[11px] text-[#66708d] flex justify-between">
               <span>Buka Kunci: {hub.unlockCost}</span>
               <span>Tarif: {hub.perMinuteCost}</span>
             </div>
@@ -417,36 +406,36 @@ export function MicromobilityView() {
 export function GtfsRealtimeView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-sky-500/30 bg-gradient-to-r from-slate-950 via-sky-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-500/20 px-3 py-1 text-xs font-semibold text-sky-300 border border-sky-500/30">
-          <Train size={14} className="text-sky-400" /> GTFS Realtime Protocol
+      <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
+          <Train size={14} className="text-[#118ab2]" /> GTFS Realtime Protocol
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Pelacak Posisi Bus & Kereta Live Feed
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Telemetri live armada transportasi publik dunia berbasis standar terbuka GTFS-RT dengan perkiraan keterlambatan milidetik.
         </p>
       </header>
 
       <div className="space-y-4">
         {GTFS_VEHICLES.map((v) => (
-          <div key={v.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+          <div key={v.id} className="rounded-3xl border border-[#464b71]/15 bg-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="rounded-lg bg-sky-500/20 border border-sky-500/30 px-2 py-0.5 text-xs font-bold text-sky-300 font-mono">
+                <span className="rounded-lg bg-[#118ab2]/10 border border-[#118ab2]/30 px-2.5 py-0.5 text-xs font-bold text-[#118ab2] font-mono">
                   {v.routeId}
                 </span>
-                <span className="font-bold text-sm text-white">{v.headsign}</span>
+                <span className="font-bold text-sm text-[#464b71]">{v.headsign}</span>
               </div>
-              <p className="text-xs text-slate-400">Pemberhentian Berikut: {v.nextStop} ({v.city.toUpperCase()})</p>
+              <p className="text-xs text-[#66708d]">Pemberhentian Berikut: {v.nextStop} ({v.city.toUpperCase()})</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <div className="text-xs text-slate-400">Estimasi Tiba</div>
-                <div className="text-lg font-black text-cyan-400">{v.etaMinutes} menit</div>
+                <div className="text-xs text-[#66708d]">Estimasi Tiba</div>
+                <div className="text-lg font-black text-[#118ab2]">{v.etaMinutes} menit</div>
               </div>
-              <span className={`rounded-full px-3 py-1 text-xs font-bold ${v.congestion === "RUNNING_ON_TIME" ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"}`}>
+              <span className={`rounded-full px-3 py-1 text-xs font-bold ${v.congestion === "RUNNING_ON_TIME" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>
                 {v.congestion === "RUNNING_ON_TIME" ? "Tepat Waktu" : `Terlambat +${v.delaySeconds}s`}
               </span>
             </div>
@@ -461,14 +450,14 @@ export function GtfsRealtimeView() {
 export function CommuterCrowdingView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-purple-500/30 bg-gradient-to-r from-slate-950 via-purple-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 px-3 py-1 text-xs font-semibold text-purple-300 border border-purple-500/30">
-          <Users2 size={14} className="text-purple-400" /> Sensor Beban Gerbong Kereta
+      <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
+          <Users2 size={14} className="text-[#118ab2]" /> Sensor Beban Gerbong Kereta
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Prediksi Kepadatan Gerbong Kereta Live
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Visualisasi kepadatan penumpang per nomor gerbong untuk membantu pejalan kaki memilih titik tunggu peron yang paling lapang.
         </p>
       </header>
@@ -477,28 +466,28 @@ export function CommuterCrowdingView() {
         {CARRIAGE_CROWDING.map((c) => (
           <div
             key={c.carriageNumber}
-            className={`rounded-2xl border p-4 text-center space-y-3 ${
+            className={`rounded-3xl border p-4 text-center space-y-3 shadow-sm ${
               c.recommendedBoarding
-                ? "border-emerald-500/50 bg-emerald-950/30 shadow-lg shadow-emerald-500/10"
-                : "border-slate-800 bg-slate-900/60"
+                ? "border-emerald-300 bg-emerald-50/70"
+                : "border-[#464b71]/15 bg-white"
             }`}
           >
-            <div className="text-xs text-slate-400 font-mono">Gerbong #{c.carriageNumber}</div>
-            <div className="text-xl font-black text-white">{c.passengerCountEst} Org</div>
+            <div className="text-xs text-[#66708d] font-mono">Gerbong #{c.carriageNumber}</div>
+            <div className="text-xl font-black text-[#464b71]">{c.passengerCountEst} Org</div>
             <span
-              className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold ${
+              className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
                 c.densityLevel === "SEATS_AVAILABLE"
-                  ? "bg-emerald-500/20 text-emerald-300"
+                  ? "bg-emerald-100 text-emerald-800"
                   : c.densityLevel === "STANDING_ROOM_ONLY"
-                  ? "bg-yellow-500/20 text-yellow-300"
-                  : "bg-red-500/20 text-red-400"
+                  ? "bg-amber-100 text-amber-800"
+                  : "bg-red-100 text-red-700"
               }`}
             >
               {c.densityLevel}
             </span>
             {c.recommendedBoarding && (
-              <div className="text-[11px] font-bold text-emerald-400 flex items-center justify-center gap-1">
-                <CheckCircle2 size={12} /> Direkomendasikan
+              <div className="text-[11px] font-bold text-emerald-700 flex items-center justify-center gap-1">
+                <CheckCircle2 size={12} /> Disarankan
               </div>
             )}
           </div>
@@ -512,31 +501,31 @@ export function CommuterCrowdingView() {
 export function PedestrianBridgesView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-teal-500/30 bg-gradient-to-r from-slate-950 via-teal-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 px-3 py-1 text-xs font-semibold text-teal-300 border border-teal-500/30">
-          <Layers size={14} className="text-teal-400" /> Infrastruktur Penyeberangan Tak Sebidang
+      <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
+          <Layers size={14} className="text-[#118ab2]" /> Infrastruktur Penyeberangan Tak Sebidang
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Jembatan Penyeberangan Orang & Skywalk Interkoneksi
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Jaringan jembatan penyeberangan ikonik dan skywalk terlindung cuaca yang menghubungkan stasiun transit langsung ke pusat belanja.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {PEDESTRIAN_BRIDGES.map((b) => (
-          <div key={b.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl space-y-4">
+          <div key={b.id} className="rounded-3xl border border-[#464b71]/15 bg-white p-6 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-base text-white">{b.name}</h3>
-              <span className="rounded bg-teal-500/20 text-teal-300 px-2 py-0.5 text-xs font-mono">{b.lengthMeters} Meter</span>
+              <h3 className="font-black text-base text-[#464b71]">{b.name}</h3>
+              <span className="rounded-full bg-[#118ab2]/10 text-[#118ab2] px-3 py-0.5 text-xs font-mono font-bold">{b.lengthMeters} Meter</span>
             </div>
-            <p className="text-xs text-slate-400">Interkoneksi: {b.interconnectedStation}</p>
+            <p className="text-xs text-[#66708d]">Interkoneksi: {b.interconnectedStation}</p>
             <div className="flex flex-wrap gap-2 text-[11px]">
-              <span className={`rounded px-2 py-1 ${b.hasElevator ? "bg-emerald-500/20 text-emerald-300" : "bg-slate-800 text-slate-500"}`}>
+              <span className={`rounded-full px-2.5 py-1 font-bold ${b.hasElevator ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-500"}`}>
                 🛗 Lift: {b.hasElevator ? "Tersedia" : "Tidak"}
               </span>
-              <span className={`rounded px-2 py-1 ${b.isCoveredWeatherProof ? "bg-cyan-500/20 text-cyan-300" : "bg-slate-800 text-slate-500"}`}>
+              <span className={`rounded-full px-2.5 py-1 font-bold ${b.isCoveredWeatherProof ? "bg-sky-100 text-sky-800" : "bg-slate-100 text-slate-500"}`}>
                 ☂️ Pelindung Hujan: {b.isCoveredWeatherProof ? "Ada" : "Terbuka"}
               </span>
             </div>
@@ -551,30 +540,30 @@ export function PedestrianBridgesView() {
 export function AirportExpressView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-2xl border border-blue-500/30 bg-gradient-to-r from-slate-950 via-blue-950/70 to-slate-950 p-6 text-white shadow-xl backdrop-blur-md">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-300 border border-blue-500/30">
-          <PlaneTakeoff size={14} className="text-blue-400" /> City Airport Express Intermodal
+      <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
+          <PlaneTakeoff size={14} className="text-[#118ab2]" /> City Airport Express Intermodal
         </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-white">
+        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Hub Kereta Bandara & City Check-in Internasional
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
           Integrasi jadwal penerbangan langsung di stasiun pusat kota, penyerahan bagasi di stasiun (in-town check-in), dan waktu tempuh presisi ke terminal bandara.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
         {AIRPORT_EXPRESS_DATA.map((exp) => (
-          <div key={exp.airportCode} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl space-y-4">
+          <div key={exp.airportCode} className="rounded-3xl border border-[#464b71]/15 bg-white p-5 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-black text-cyan-400 font-mono">{exp.airportCode}</span>
-              <span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-300 uppercase">{exp.city}</span>
+              <span className="text-2xl font-black text-[#118ab2] font-mono">{exp.airportCode}</span>
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-[#464b71] font-bold uppercase">{exp.city}</span>
             </div>
-            <h3 className="font-bold text-sm text-white">{exp.trainName}</h3>
-            <div className="space-y-1 text-xs text-slate-300">
+            <h3 className="font-bold text-sm text-[#464b71]">{exp.trainName}</h3>
+            <div className="space-y-1 text-xs text-[#66708d]">
               <div className="flex justify-between">
                 <span>Waktu Tempuh:</span>
-                <span className="font-bold text-white">{exp.travelTimeMinutes} Menit</span>
+                <span className="font-bold text-[#464b71]">{exp.travelTimeMinutes} Menit</span>
               </div>
               <div className="flex justify-between">
                 <span>Frekuensi:</span>
@@ -582,11 +571,11 @@ export function AirportExpressView() {
               </div>
               <div className="flex justify-between">
                 <span>Tarif Tiket:</span>
-                <span className="font-bold text-emerald-400">{exp.fareAmount}</span>
+                <span className="font-bold text-emerald-600">{exp.fareAmount}</span>
               </div>
             </div>
-            <div className="border-t border-slate-800 pt-3 text-[11px]">
-              <span className={`inline-block rounded px-2 py-0.5 ${exp.hasLuggageCheckin ? "bg-emerald-500/20 text-emerald-300" : "bg-slate-800 text-slate-400"}`}>
+            <div className="border-t border-[#464b71]/10 pt-3 text-[11px]">
+              <span className={`inline-block rounded-full px-2.5 py-0.5 font-bold ${exp.hasLuggageCheckin ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-500"}`}>
                 🧳 City Check-in: {exp.hasLuggageCheckin ? "Tersedia" : "Hanya di Bandara"}
               </span>
             </div>

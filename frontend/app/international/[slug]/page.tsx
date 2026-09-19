@@ -144,7 +144,7 @@ export default async function InternationalFeaturePage({
       eyebrow="GETRA Smart City & Global GIS"
       title={feature.title}
       description={feature.description}
-      tone="general"
+      tone="community"
     >
       {renderView()}
     </GetraAppShell>

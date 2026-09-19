@@ -43,6 +43,8 @@ export interface CctvFeed {
   vehicleCount: number;
   congestionLevel: "LOW" | "MODERATE" | "HIGH" | "SEVERE";
   streamType: "simulated_hls" | "optical_flow";
+  resolution?: string;
+  protocol?: string;
 }
 
 // 2. Traffic Congestion

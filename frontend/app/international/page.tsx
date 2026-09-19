@@ -13,7 +13,7 @@ export default function InternationalPortalPage() {
       eyebrow="GETRA Global Engine"
       title="Portal Smart City & WebGIS Internasional"
       description="Katalog 50 fitur pemetaan geospasial tingkat dunia untuk kota cerdas dan mobilitas pejalan kaki berstandar global."
-      tone="general"
+      tone="community"
     >
       <InternationalPortalView />
     </GetraAppShell>
