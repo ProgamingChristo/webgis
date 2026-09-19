@@ -65,6 +65,16 @@ export const AiIntentEnum = z.enum([
   "PROMOTION_INVOICE",
   "UMKM_LOCATION",
   "UMKM_EDIT",
+
+  // Master Extreme 14-Taxonomy Alignments
+  "SEARCH_UMKM",
+  "ROUTE",
+  "TRANSIT",
+  "PROMOTION",
+  "CCTV",
+  "TRAFFIC",
+  "ENVIRONMENT",
+  "OWNER",
 ]);
 
 export type AiIntent = z.infer<typeof AiIntentEnum>;

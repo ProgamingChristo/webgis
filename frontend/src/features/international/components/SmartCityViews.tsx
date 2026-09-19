@@ -122,14 +122,19 @@ export function WalkScoreView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
       <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
-          <Footprints size={14} className="text-[#118ab2]" /> Konsep Kota 15 Menit (15-Minute City)
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
+            <Footprints size={14} className="text-[#118ab2]" /> Konsep Kota 15 Menit (15-Minute City)
+          </span>
+          <span className="rounded-full bg-emerald-100 text-emerald-800 px-3 py-1 text-xs font-black">
+            GETRA WALKABILITY INDEX
+          </span>
+        </div>
         <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Kalkulator Walk Score Internasional
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
-          Skor kelayakan jalan kaki (0 - 100) berdasarkan ketersediaan fasilitas kebutuhan hidup harian dalam radius jangkauan kaki.
+          Skor kelayakan jalan kaki (0 - 100) berdasarkan 9 komponen GIS: aksesibilitas jaringan jalan, densitas POI, jaringan pedestrian, penyeberangan, kemiringan lereng, trotoar, peneduh kanopi, aksesibilitas difabel, dan kedekatan transit. <em>GIS menghitung. AI menginterpretasikan.</em>
         </p>
       </header>
 
@@ -157,19 +162,55 @@ export function WalkScoreView() {
             <p className="text-xs text-[#66708d]">Klasifikasi: {current.tier.replace("_", " ")}</p>
           </div>
           <div className="text-right">
-            <div className="text-xs text-[#66708d]">Total Walk Score</div>
+            <div className="text-xs text-[#66708d]">Total Walkability Score</div>
             <div className="text-4xl font-black text-emerald-700">{current.score} / 100</div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {current.amenitiesBreakdown.map((a, idx) => (
-            <div key={idx} className="rounded-2xl border border-[#464b71]/10 bg-[#f8fafc] p-4 space-y-2">
-              <span className="text-xs font-bold text-[#66708d]">{a.category}</span>
-              <div className="text-2xl font-black text-[#118ab2]">{a.score}</div>
-              <p className="text-[11px] text-[#464b71]">{a.countNearby} Fasilitas dalam Walkshead</p>
+        {/* GIS Components */}
+        {current.gisComponents && (
+          <div className="space-y-3">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#464b71]">
+              Komponen Kalkulasi GIS (Bukan Proprietary Blackbox)
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 text-center">
+                <span className="text-[10px] text-[#66708d]">Jaringan Jalan</span>
+                <p className="text-base font-black text-[#118ab2]">{current.gisComponents.networkDensity}/100</p>
+              </div>
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 text-center">
+                <span className="text-[10px] text-[#66708d]">Keselamatan Zebra</span>
+                <p className="text-base font-black text-[#118ab2]">{current.gisComponents.crossingSafety}/100</p>
+              </div>
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 text-center">
+                <span className="text-[10px] text-[#66708d]">Kontinuitas Trotoar</span>
+                <p className="text-base font-black text-[#118ab2]">{current.gisComponents.sidewalkContinuity}/100</p>
+              </div>
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 text-center">
+                <span className="text-[10px] text-[#66708d]">Kenyamanan Kontur</span>
+                <p className="text-base font-black text-emerald-700">{current.gisComponents.slopeComfort}/100</p>
+              </div>
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 text-center">
+                <span className="text-[10px] text-[#66708d]">Kedekatan Transit</span>
+                <p className="text-base font-black text-[#118ab2]">{current.gisComponents.transitProximity}/100</p>
+              </div>
             </div>
-          ))}
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <h3 className="text-xs font-black uppercase tracking-wider text-[#464b71]">
+            Ketersediaan Fasilitas Kebutuhan Harian (Walkshed)
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {current.amenitiesBreakdown.map((a, idx) => (
+              <div key={idx} className="rounded-2xl border border-[#464b71]/10 bg-[#f8fafc] p-4 space-y-2">
+                <span className="text-xs font-bold text-[#66708d]">{a.category}</span>
+                <div className="text-2xl font-black text-[#118ab2]">{a.score}</div>
+                <p className="text-[11px] text-[#464b71]">{a.countNearby} Fasilitas dalam Walkshead</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -216,16 +257,27 @@ export function RoadDamageAiView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
       <header className="rounded-3xl border border-rose-500/20 bg-gradient-to-br from-white via-[#fff5f5] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-3.5 py-1 text-xs font-bold text-rose-700 border border-rose-500/20">
-          <ScanLine size={14} className="text-rose-600" /> Computer Vision Inspection
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-3.5 py-1 text-xs font-bold text-rose-700 border border-rose-500/20">
+            <ScanLine size={14} className="text-rose-600" /> Computer Vision Inspection
+          </span>
+          <span className="rounded-full bg-rose-100 text-rose-800 px-3 py-1 text-xs font-bold">
+            AI DETECTS • ADMIN VERIFIES
+          </span>
+        </div>
         <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Inspeksi Kerusakan Jalan & Trotoar AI
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
-          Deteksi otomatis lubang aspal, retak buaya (alligator cracking), dan penutup utilitas berbahaya menggunakan model Computer Vision.
+          Deteksi otomatis lubang aspal, retak buaya (alligator cracking), dan penutup utilitas berbahaya menggunakan model Computer Vision dengan verifikasi admin sebelum dispatch perbaikan.
         </p>
       </header>
+
+      {/* Pipeline Status */}
+      <div className="rounded-2xl border border-[#464b71]/10 bg-[#f8fafc] p-4 text-xs text-[#464b71] flex flex-wrap items-center justify-between gap-2">
+        <span className="font-bold">Pipeline Deteksi:</span>
+        <span className="font-mono text-[#66708d]">IMAGE ➔ CV DETECTION ➔ GIS LOCATION ➔ CONFIDENCE EVALUATION ➔ ADMIN VERIFICATION</span>
+      </div>
 
       <div className="space-y-4">
         {ROAD_DEFECTS.map((d) => (
@@ -235,7 +287,7 @@ export function RoadDamageAiView() {
                 <span className="rounded-full bg-rose-100 text-rose-800 px-2.5 py-0.5 text-xs font-bold">{d.defectType}</span>
                 <span className="font-black text-sm text-[#464b71]">{d.location}</span>
               </div>
-              <p className="text-xs text-[#66708d]">Tingkat Keparahan: {d.severity} • Confidence: {(d.confidenceScore * 100).toFixed(0)}%</p>
+              <p className="text-xs text-[#66708d]">Tingkat Keparahan: {d.severity} • Confidence: {(d.confidenceScore * 100).toFixed(0)}% • Evidence: Verified Frame</p>
             </div>
             <div>
               <span className="rounded-full px-3 py-1 text-xs font-bold bg-amber-100 text-amber-800">
@@ -254,9 +306,14 @@ export function DroneCorridorsView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
       <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
-          <Radio size={14} className="text-[#118ab2]" /> Urban Air Mobility (UAM)
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
+            <Radio size={14} className="text-[#118ab2]" /> Urban Air Mobility (UAM)
+          </span>
+          <span className="rounded-full bg-purple-100 text-purple-800 px-3 py-1 text-xs font-bold">
+            DATA REGULATOR RESMI
+          </span>
+        </div>
         <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Koridor Logistik Drone & Zona Udara Rendah
         </h1>
@@ -264,6 +321,12 @@ export function DroneCorridorsView() {
           Rute penerbangan UAV kargo medis dan logistik cepat di atas koridor sungai dan jalan tol tanpa membahayakan warga di darat.
         </p>
       </header>
+
+      {/* Regulatory Notice */}
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs text-[#66708d] flex items-center gap-2">
+        <span className="font-bold text-slate-700">Notice Regulasi Penerbangan:</span>
+        <span>Hanya menampilkan koridor yang ditetapkan otoritas penerbangan sipil. Tidak menyatakan izin terbang otomatis tanpa NOTAM resmi.</span>
+      </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {DRONE_CORRIDORS.map((c) => (

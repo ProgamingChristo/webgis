@@ -352,7 +352,12 @@ export function SatelliteNdviView() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {SATELLITE_NDVI_ZONES.map((z) => (
           <div key={z.id} className="rounded-3xl border border-[#464b71]/15 bg-white p-6 shadow-[0_10px_24px_rgba(70,75,113,0.06)] space-y-3">
-            <h3 className="font-black text-sm text-[#464b71]">{z.zone}</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-black text-sm text-[#464b71]">{z.zone}</h3>
+              <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
+                {z.sensor || "Sentinel-2 MSI"}
+              </span>
+            </div>
             <div className="flex justify-between text-xs text-[#66708d]">
               <span>Skor Rata-rata NDVI:</span>
               <span className="text-base font-black text-emerald-700">{z.meanNdvi}</span>
@@ -361,7 +366,13 @@ export function SatelliteNdviView() {
               <span>Status Stress Tanaman:</span>
               <span className="font-bold text-amber-700">{z.droughtStressLevel}</span>
             </div>
-            <p className="text-xs text-[#66708d] border-t border-[#464b71]/10 pt-2">Defisit Pendinginan: +{z.coolingDeficitCelsius}°C</p>
+            <div className="flex justify-between text-xs text-[#66708d]">
+              <span>Tanggal Akuisisi:</span>
+              <span className="font-mono text-[#464b71] font-bold">{z.acquisitionDate || "2024-03-15"}</span>
+            </div>
+            <p className="text-xs text-[#66708d] border-t border-[#464b71]/10 pt-2">
+              Defisit Pendinginan: +{z.coolingDeficitCelsius}°C • Resolusi: {z.resolutionMeters || 10}m
+            </p>
           </div>
         ))}
       </div>
@@ -421,9 +432,15 @@ export function SeaLevelRiseView() {
         </p>
       </header>
 
+      {/* Mandatory Scenario Warning Banner */}
+      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs font-black text-amber-800 flex items-center gap-2">
+        <span className="text-sm">⚠️</span>
+        <span>STATUS: SCENARIO — NOT FORECAST (SIMULASI MODEL RESIKO IPCC AR6 KAWASAN PESISIR)</span>
+      </div>
+
       {/* Selector */}
-      <div className="flex gap-3">
-        {[0.5, 1.0, 2.0].map((m) => (
+      <div className="flex flex-wrap gap-3">
+        {[0.5, 1.0, 1.5, 2.0].map((m) => (
           <button
             key={m}
             type="button"

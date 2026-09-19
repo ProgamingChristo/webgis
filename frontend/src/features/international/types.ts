@@ -20,6 +20,33 @@ export type InternationalFeatureCategory =
   | "logistics"
   | "governance";
 
+export type DataState =
+  | "REAL"
+  | "AUTHORIZED"
+  | "DERIVED"
+  | "USER_SUBMITTED"
+  | "SIMULATION"
+  | "DATA_UNAVAILABLE"
+  | "UNIMPLEMENTED";
+
+export interface DataProvenance {
+  source_name: string;
+  source_type:
+    | "GOVERNMENT_PORTAL"
+    | "OFFICIAL_API"
+    | "TELEMETRY_SENSOR"
+    | "SATELLITE_REMOTE_SENSING"
+    | "VALHALLA_GIS_ENGINE"
+    | "COMMUNITY_SURVEY"
+    | "ACADEMIC_MODEL"
+    | "SCENARIO_SIMULATION";
+  source_url?: string;
+  license: string;
+  last_verified_at: string;
+  freshness_cadence: "REALTIME" | "HOURLY" | "DAILY" | "PERIODIC" | "HISTORICAL" | "STATIC";
+  limitations: string[];
+}
+
 export interface InternationalFeatureMeta {
   slug: string;
   title: string;
@@ -28,21 +55,26 @@ export interface InternationalFeatureMeta {
   iconName: string;
   badge: string;
   featuredCity?: GlobalCityId;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
-// 1. CCTV
+// Export CCTV registry types & canonical schema
+export * from "./cctv-registry";
+
+// 1. CCTV Feed (Legacy & Adapter interface)
 export interface CctvFeed {
   id: string;
   name: string;
   city: GlobalCityId;
   location: string;
-  status: "ONLINE" | "INTERMITTENT" | "MAINTENANCE";
-  fps: number;
-  latencyMs: number;
-  pedestrianCount: number;
-  vehicleCount: number;
-  congestionLevel: "LOW" | "MODERATE" | "HIGH" | "SEVERE";
-  streamType: "simulated_hls" | "optical_flow";
+  status: "ONLINE" | "INTERMITTENT" | "MAINTENANCE" | "OFFLINE";
+  fps?: number | null;
+  latencyMs?: number | null;
+  pedestrianCount?: number | null;
+  vehicleCount?: number | null;
+  congestionLevel: "LOW" | "MODERATE" | "HIGH" | "SEVERE" | "UNKNOWN";
+  streamType: "simulated_hls" | "optical_flow" | "hls" | "snapshot_polling" | "unavailable";
   resolution?: string;
   protocol?: string;
 }
@@ -58,6 +90,8 @@ export interface CongestionZone {
   level: "FREE" | "MODERATE" | "HEAVY" | "GRIDLOCK";
   bottleneckCause: string;
   suggestedDetour: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 3. Multimodal
@@ -79,6 +113,8 @@ export interface MultimodalRoute {
   totalCost: string;
   totalCarbonKg: number;
   steps: MultimodalStep[];
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 4. AQI Microclimate
@@ -93,6 +129,8 @@ export interface AqiStation {
   tempCelsius: number;
   humidityPct: number;
   dominantPollutant: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 5. Urban Heat Island
@@ -105,6 +143,10 @@ export interface HeatIslandZone {
   treeCanopyPct: number;
   coolingAmenity: string;
   thermalRisk: "COMFORTABLE" | "MILD_STRESS" | "HIGH_STRESS" | "EXTREME";
+  acquisitionDate?: string;
+  sensor?: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 6. Elevation Profile
@@ -121,11 +163,13 @@ export interface SmartParkingLot {
   name: string;
   city: GlobalCityId;
   totalSpots: number;
-  availableSpots: number;
+  availableSpots: number | null;
   evChargingSpots: number;
   disabledSpots: number;
   hourlyRate: string;
-  occupancyTrend: "FILLING_UP" | "STABLE" | "EMPTYING";
+  occupancyTrend: "FILLING_UP" | "STABLE" | "EMPTYING" | "UNKNOWN";
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 8. EV Charging
@@ -138,6 +182,8 @@ export interface EvChargingHub {
   plugs: { type: "CCS2" | "CHAdeMO" | "Type2" | "Tesla"; available: number; total: number }[];
   pricePerKwh: string;
   status: "AVAILABLE" | "BUSY" | "OFFLINE";
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 9. Noise Pollution
@@ -149,6 +195,8 @@ export interface NoiseStation {
   limitDb: number;
   classification: "QUIET" | "MODERATE" | "NOISY" | "EXCESSIVE";
   primaryNoiseSource: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 10. Flood Monitoring
@@ -163,6 +211,9 @@ export interface FloodStation {
   dangerLevelMeters: number;
   status: "NORMAL" | "ALERT_3" | "ALERT_2" | "ALERT_1";
   trend: "RISING" | "STABLE" | "RECEDING";
+  pumpStatus?: "OPERATIONAL" | "STANDBY" | "MAINTENANCE";
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 11. Solar Radiation
@@ -174,6 +225,8 @@ export interface SolarShadowZone {
   shadowCoveragePct: number;
   solarIrradianceWm2: number;
   recommendedTime: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 12. Emergency Evacuation
@@ -186,6 +239,8 @@ export interface EvacuationHub {
   hazardsCovered: string[];
   distanceMeters: number;
   status: "ACTIVE" | "STANDBY";
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 13. Micromobility
@@ -194,10 +249,12 @@ export interface MicromobilityHub {
   operator: string;
   type: "BIKE" | "E_BIKE" | "E_SCOOTER";
   city: GlobalCityId;
-  availableVehicles: number;
-  avgBatteryPct: number;
+  availableVehicles: number | null;
+  avgBatteryPct: number | null;
   unlockCost: string;
   perMinuteCost: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 14. GTFS Realtime
@@ -210,15 +267,27 @@ export interface GtfsVehiclePosition {
   etaMinutes: number;
   delaySeconds: number;
   congestion: "RUNNING_ON_TIME" | "SLIGHT_DELAY" | "MAJOR_DELAY";
+  timestamp?: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
-// 15. Walk Score
+// 15. Walk Score (GETRA WALKABILITY INDEX)
 export interface CityWalkScore {
   address: string;
   city: GlobalCityId;
   score: number;
   tier: "WALKERS_PARADISE" | "VERY_WALKABLE" | "SOMEWHAT_WALKABLE" | "CAR_DEPENDENT";
   amenitiesBreakdown: { category: string; score: number; countNearby: number }[];
+  gisComponents?: {
+    networkDensity: number;
+    crossingSafety: number;
+    transitProximity: number;
+    sidewalkContinuity: number;
+    slopeComfort: number;
+  };
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 16. Tourist Audio Guide
@@ -231,6 +300,8 @@ export interface AudioTourSpot {
   snippet: string;
   rating: number;
   photoUrl: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 17. Currency & Tax Refund
@@ -241,6 +312,8 @@ export interface TaxRefundItem {
   minPurchaseAmount: number;
   refundMethod: string;
   nearestRefundCounter: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 18. Market Translator
@@ -262,6 +335,8 @@ export interface CarbonListing {
   pricePerTonUsd: number;
   availableTons: number;
   impactType: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 20. 3D Digital Twin
@@ -273,6 +348,8 @@ export interface DigitalTwinModel {
   buildingCount: number;
   avgHeightMeters: number;
   solarRooftopPotentialGwh: number;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 21. Road Damage AI
@@ -284,6 +361,8 @@ export interface RoadDefect {
   severity: "LOW" | "MEDIUM" | "CRITICAL";
   confidenceScore: number;
   repairStatus: "REPORTED" | "WORK_ORDER_ISSUED" | "REPAIRED";
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 22. Drone Corridor
@@ -295,6 +374,9 @@ export interface DroneCorridor {
   maxAltitudeMeters: number;
   airspaceClass: "G_UNCONTROLLED" | "RESTRICTED" | "AUTHORIZATION_REQUIRED";
   currentTrafficUav: number;
+  regulatoryAuthority?: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 23. Port Logistics
@@ -306,6 +388,8 @@ export interface PortLogisticsTerminal {
   currentVesselCount: number;
   avgBerthWaitHours: number;
   railConnectivity: boolean;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 24. Historical Map
@@ -314,6 +398,10 @@ export interface HistoricalTimeSlice {
   urbanAreaSqKm: number;
   populationMillions: number;
   keyMilestone: string;
+  satelliteSensor?: string;
+  acquisitionDate?: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 25. Spatial Demographics
@@ -325,6 +413,8 @@ export interface DemographicZone {
   medianIncomeAnnualUsd: number;
   daytimeCommuterInflux: number;
   youthPopulationPct: number;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 26. Public Wi-Fi
@@ -336,6 +426,9 @@ export interface PublicWifiSpot {
   speedMbps: number;
   status: "ACTIVE" | "LIMITED" | "DOWN";
   isFree: boolean;
+  provider?: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 27. Green Spaces
@@ -347,6 +440,8 @@ export interface GreenSpace {
   ndviScore: number;
   treeCanopyCoverPct: number;
   amenities: string[];
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 28. Cultural Heritage
@@ -358,6 +453,8 @@ export interface HeritageSite {
   yearBuilt: number;
   architecturalStyle: string;
   visitorGuidelines: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 29. Water Refill
@@ -369,6 +466,9 @@ export interface WaterRefillPoint {
   bottlesSavedTotal: number;
   isChilled: boolean;
   isAccessible: boolean;
+  lastTestedAt?: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
 // 30. Accessible Restroom
@@ -381,9 +481,11 @@ export interface AccessibleRestroom {
   hasBabyChangingTable: boolean;
   cleanlinessScore: number;
   hours: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
-// 31-50 Additional Types
+// 31. Street Lighting
 export interface StreetLightingPole {
   id: string;
   poleNumber: string;
@@ -392,8 +494,11 @@ export interface StreetLightingPole {
   lumensOutput: number;
   status: "OPTIMAL" | "DIMMED" | "FAULTY";
   solarPowered: boolean;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 32. Incident Dispatch
 export interface IncidentDispatchAlert {
   id: string;
   incidentType: "MEDICAL" | "TRAFFIC_ACCIDENT" | "FIRE" | "INFRASTRUCTURE_FAILURE";
@@ -402,8 +507,11 @@ export interface IncidentDispatchAlert {
   priority: "CRITICAL" | "HIGH" | "MEDIUM";
   respondingUnits: string[];
   etaMinutes: number;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 33. Commuter Crowding
 export interface CarriageCrowding {
   carriageNumber: number;
   densityLevel: "SEATS_AVAILABLE" | "STANDING_ROOM_ONLY" | "HIGH_CROWDING" | "FULL";
@@ -411,13 +519,17 @@ export interface CarriageCrowding {
   recommendedBoarding: boolean;
 }
 
+// 34. Weather Radar
 export interface DopplerRadarFrame {
   timestamp: string;
   precipitationMmPerHour: number;
   stormCellIntensity: "NONE" | "LIGHT_RAIN" | "HEAVY_DOWNPOUR" | "THUNDERSTORM";
   windGustKmh: number;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 35. Curbside Management
 export interface CurbsideZone {
   id: string;
   street: string;
@@ -425,8 +537,11 @@ export interface CurbsideZone {
   activeMode: "COMMERCIAL_LOADING" | "OUTDOOR_DINING" | "TAXI_PICKUP" | "MICRO_MOBILITY";
   ratePerHourUsd: number;
   occupancyPct: number;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 36. Smart Waste
 export interface SmartWasteBin {
   id: string;
   location: string;
@@ -435,8 +550,11 @@ export interface SmartWasteBin {
   binType: "GENERAL" | "RECYCLABLE" | "ORGANIC" | "E_WASTE";
   lastEmptiedHoursAgo: number;
   status: "NORMAL" | "NEEDS_COLLECTION" | "OVERFLOW_RISK";
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 37. Pedestrian Bridges
 export interface PedestrianBridge {
   id: string;
   name: string;
@@ -446,8 +564,11 @@ export interface PedestrianBridge {
   hasEscalator: boolean;
   isCoveredWeatherProof: boolean;
   interconnectedStation: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 38. Nightlife
 export interface NightlifeDistrict {
   id: string;
   districtName: string;
@@ -456,8 +577,11 @@ export interface NightlifeDistrict {
   safetyScore: number;
   lateNightTransitLines: string[];
   vibe: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 39. Street Performers
 export interface BuskingSpot {
   id: string;
   spotName: string;
@@ -466,8 +590,11 @@ export interface BuskingSpot {
   genre?: string;
   permitStatus: "PERMITTED" | "OPEN_ACCESS" | "AUDITION_REQUIRED";
   upcomingSchedule: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 40. Freight Delivery
 export interface CargoBikeDeliveryHub {
   id: string;
   hubName: string;
@@ -476,8 +603,11 @@ export interface CargoBikeDeliveryHub {
   parcelsDispatchedToday: number;
   co2SavedKgToday: number;
   coverageRadiusKm: number;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 41. Airport Express
 export interface AirportExpressSchedule {
   city: GlobalCityId;
   airportCode: string;
@@ -486,8 +616,11 @@ export interface AirportExpressSchedule {
   travelTimeMinutes: number;
   fareAmount: string;
   hasLuggageCheckin: boolean;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 42. Pedestrian Flow AI
 export interface PedestrianFlowModel {
   nodeId: string;
   city: GlobalCityId;
@@ -495,16 +628,22 @@ export interface PedestrianFlowModel {
   pedestriansPerMinute: number;
   socialDensityRating: "COMFORTABLE" | "DENSE" | "CRUSH_RISK";
   flowVelocityMps: number;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 43. Cross Border Tariffs
 export interface CustomsTariffItem {
   hsCode: string;
   productDescription: string;
   baseDutyPct: number;
   importVatPct: number;
   artisanExemptionAvailable: boolean;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 44. Medical Tourism
 export interface MedicalTourismFacility {
   id: string;
   hospitalName: string;
@@ -513,8 +652,11 @@ export interface MedicalTourismFacility {
   specialties: string[];
   multilingualStaff: string[];
   distanceToTransitKm: number;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 45. Satellite NDVI
 export interface SatelliteNdviZone {
   id: string;
   zone: string;
@@ -522,8 +664,14 @@ export interface SatelliteNdviZone {
   meanNdvi: number;
   droughtStressLevel: "HEALTHY" | "MILD_STRESS" | "SEVERE_STRESS";
   coolingDeficitCelsius: number;
+  acquisitionDate?: string;
+  sensor?: string;
+  resolutionMeters?: number;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 46. Wildlife Corridors
 export interface WildlifeCorridor {
   id: string;
   corridorName: string;
@@ -531,16 +679,23 @@ export interface WildlifeCorridor {
   targetSpecies: string[];
   canopyContinuityPct: number;
   crossingStructures: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 47. Sea Level Rise
 export interface SeaLevelRiseSimulation {
   riseMeters: number;
   inundatedAreaSqKm: number;
   affectedPopulation: number;
   criticalAssetsAtRisk: string[];
   defenseWallStatus: string;
+  scenarioType: "SCENARIO_NOT_FORECAST";
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 48. Vernacular Heritage
 export interface VernacularHeritageBuilding {
   id: string;
   buildingName: string;
@@ -548,8 +703,11 @@ export interface VernacularHeritageBuilding {
   constructionEra: string;
   preservationStatus: "PRISTINE" | "MONITORED" | "AT_RISK";
   architecturalStyle: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 49. Diplomatic Mission
 export interface DiplomaticMission {
   id: string;
   countryRepresented: string;
@@ -558,8 +716,11 @@ export interface DiplomaticMission {
   address: string;
   emergencyHotline: string;
   consularHours: string;
+  state?: DataState;
+  provenance?: DataProvenance;
 }
 
+// 50. Open Basemaps
 export interface OpenBasemapProvider {
   id: string;
   name: string;
@@ -568,4 +729,6 @@ export interface OpenBasemapProvider {
   attribution: string;
   maxZoom: number;
   isDarkThemeRecommended: boolean;
+  state?: DataState;
+  provenance?: DataProvenance;
 }

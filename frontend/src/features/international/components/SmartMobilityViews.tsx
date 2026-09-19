@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Video,
@@ -15,10 +15,23 @@ import {
   ArrowRight,
   CheckCircle2,
   Sparkles,
+  MapPin,
+  Filter,
+  ShieldCheck,
+  WifiOff,
+  Clock,
+  Lock,
+  Activity,
 } from "lucide-react";
 import {
-  GLOBAL_CITIES,
-  CCTV_FEEDS,
+  CANONICAL_CAMERA_REGISTRY,
+  getCameraRegistryStats,
+  type CanonicalCamera,
+  type CameraHealthStatus,
+  type CameraProvider,
+  type DkiDistrict,
+} from "../cctv-registry";
+import {
   CONGESTION_ZONES,
   MULTIMODAL_ROUTES,
   MICROMOBILITY_HUBS,
@@ -27,31 +40,61 @@ import {
   AIRPORT_EXPRESS_DATA,
   PEDESTRIAN_BRIDGES,
 } from "../data";
-import type { GlobalCityId } from "../types";
 import { CctvLivePlayer } from "./CctvLivePlayer";
 
-// 1. CCTV View
+// =========================================================================
+// 1. CCTV VIEW — GETRA CCTV INTEGRATION PLATFORM (RULE 01-10 STRICT)
+// =========================================================================
 export function CctvView() {
-  const [selectedCity, setSelectedCity] = useState<GlobalCityId>("tokyo");
-  const [activeFeedId, setActiveFeedId] = useState<string>(CCTV_FEEDS[0].id);
+  const [selectedDistrict, setSelectedDistrict] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [selectedProvider, setSelectedProvider] = useState<string>("all");
+  const [activeCameraId, setActiveCameraId] = useState<string>(CANONICAL_CAMERA_REGISTRY[0].camera_id);
   const [aiDetectionEnabled, setAiDetectionEnabled] = useState(true);
 
-  const feeds = CCTV_FEEDS.filter((f) => f.city === selectedCity);
-  const activeFeed = CCTV_FEEDS.find((f) => f.id === activeFeedId) || CCTV_FEEDS[0];
+  const stats = useMemo(() => getCameraRegistryStats(), []);
+
+  // Filter cameras
+  const filteredCameras = useMemo(() => {
+    return CANONICAL_CAMERA_REGISTRY.filter((c) => {
+      if (selectedDistrict !== "all") {
+        if (selectedDistrict === "International") {
+          if (c.city === "jakarta") return false;
+        } else if (c.district !== selectedDistrict) {
+          return false;
+        }
+      }
+      if (selectedStatus !== "all" && c.health_status !== selectedStatus) {
+        return false;
+      }
+      if (selectedProvider !== "all" && c.provider !== selectedProvider) {
+        return false;
+      }
+      return true;
+    });
+  }, [selectedDistrict, selectedStatus, selectedProvider]);
+
+  const activeCamera = useMemo(() => {
+    return CANONICAL_CAMERA_REGISTRY.find((c) => c.camera_id === activeCameraId) || CANONICAL_CAMERA_REGISTRY[0];
+  }, [activeCameraId]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
+      {/* Header Banner */}
       <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
-              <Video size={14} className="text-[#118ab2]" /> Sensor Visual CCTV Internasional
+              <Video size={14} className="text-[#118ab2]" /> GETRA CCTV Integration Platform
             </span>
             <h1 className="text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
               Global Traffic & Pedestrian CCTV Live Stream
             </h1>
+            <p className="text-xs font-bold text-[#118ab2]">
+              Platform Integrasi Sensor Visual & CCTV DKI Jakarta (Pusat, Selatan, Barat, Timur, Utara, Kep. Seribu)
+            </p>
             <p className="max-w-2xl text-sm leading-relaxed text-[#66708d]">
-              Streaming video interaktif 60 FPS CCTV megacity dunia dengan machine vision AI (penghitung pejalan kaki scramble, volume kendaraan, dan deteksi kemacetan real-time).
+              Integrasi telemetri visual resmi lintas penyedia (Dishub DKI, Polda Metro Jaya, Satpol PP, MRT BUMD, dan Mitra Publik) dengan pemrosesan Computer Vision terverifikasi. Sesuai <strong>Rule 03-09</strong>: status offline tidak disamarkan sebagai 0, dan telemetri hanya ditampilkan bila bersumber dari runtime pipeline nyata.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -63,101 +106,231 @@ export function CctvView() {
             </Link>
           </div>
         </div>
+
+        {/* Authoritative Registry Telemetry Chips */}
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-6 gap-2 border-t border-[#464b71]/10 pt-4 text-center">
+          <div className="rounded-2xl bg-white/80 p-2.5 border border-[#464b71]/10">
+            <span className="text-[10px] font-bold text-[#66708d] uppercase">Total Registry</span>
+            <p className="font-mono text-base font-black text-[#464b71]">{stats.total} Kamera</p>
+          </div>
+          <div className="rounded-2xl bg-emerald-50/80 p-2.5 border border-emerald-200">
+            <span className="text-[10px] font-bold text-emerald-700 uppercase">Live Online</span>
+            <p className="font-mono text-base font-black text-emerald-600">{stats.online} Feed</p>
+          </div>
+          <div className="rounded-2xl bg-amber-50/80 p-2.5 border border-amber-200">
+            <span className="text-[10px] font-bold text-amber-700 uppercase">Degraded Frame</span>
+            <p className="font-mono text-base font-black text-amber-600">{stats.degraded}</p>
+          </div>
+          <div className="rounded-2xl bg-rose-50/80 p-2.5 border border-rose-200">
+            <span className="text-[10px] font-bold text-rose-700 uppercase">Offline</span>
+            <p className="font-mono text-base font-black text-rose-600">{stats.offline}</p>
+          </div>
+          <div className="rounded-2xl bg-purple-50/80 p-2.5 border border-purple-200">
+            <span className="text-[10px] font-bold text-purple-700 uppercase">Restricted</span>
+            <p className="font-mono text-base font-black text-purple-600">{stats.noStream}</p>
+          </div>
+          <div className="rounded-2xl bg-slate-50/80 p-2.5 border border-slate-200">
+            <span className="text-[10px] font-bold text-slate-600 uppercase">Cakupan DKI</span>
+            <p className="font-mono text-base font-black text-[#118ab2]">{stats.dkiTotal} Titik</p>
+          </div>
+        </div>
       </header>
 
-      {/* City Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-[#464b71]/10 pb-3">
-        {GLOBAL_CITIES.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            onClick={() => {
-              setSelectedCity(c.id);
-              const cityFeeds = CCTV_FEEDS.filter((f) => f.city === c.id);
-              if (cityFeeds.length > 0) setActiveFeedId(cityFeeds[0].id);
-            }}
-            className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition border ${
-              selectedCity === c.id
-                ? "bg-[#118ab2] text-white shadow-sm border-[#118ab2]"
-                : "bg-white text-[#464b71] hover:bg-[#f0f9ff] border-[#464b71]/15"
-            }`}
-          >
-            <span>{c.flag}</span>
-            <span>{c.name}</span>
-          </button>
-        ))}
+      {/* Filter Controls Bar */}
+      <div className="rounded-2xl border border-[#464b71]/15 bg-white p-4 shadow-sm space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#464b71]">
+          <Filter size={14} className="text-[#118ab2]" />
+          <span>Filter Registry Kamera:</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* District Filter */}
+          <div>
+            <label className="block text-[11px] font-bold text-[#66708d] mb-1">Wilayah Administratif</label>
+            <select
+              value={selectedDistrict}
+              onChange={(e) => setSelectedDistrict(e.target.value)}
+              className="w-full rounded-xl border border-[#464b71]/20 bg-slate-50 p-2 text-xs text-[#464b71] font-semibold focus:border-[#118ab2] focus:outline-none"
+            >
+              <option value="all">Semua Wilayah ({CANONICAL_CAMERA_REGISTRY.length})</option>
+              <option value="Jakarta Pusat">Jakarta Pusat</option>
+              <option value="Jakarta Selatan">Jakarta Selatan</option>
+              <option value="Jakarta Barat">Jakarta Barat</option>
+              <option value="Jakarta Timur">Jakarta Timur</option>
+              <option value="Jakarta Utara">Jakarta Utara</option>
+              <option value="Kepulauan Seribu">Kepulauan Seribu</option>
+              <option value="International">Internasional (Megacity)</option>
+            </select>
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <label className="block text-[11px] font-bold text-[#66708d] mb-1">Status Kesehatan Feed</label>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="w-full rounded-xl border border-[#464b71]/20 bg-slate-50 p-2 text-xs text-[#464b71] font-semibold focus:border-[#118ab2] focus:outline-none"
+            >
+              <option value="all">Semua Status</option>
+              <option value="ONLINE">🟢 Online / Live Stream</option>
+              <option value="DEGRADED">🟡 Degraded Frame</option>
+              <option value="OFFLINE">🔴 Offline (Data Unavailable)</option>
+              <option value="NO_STREAM">🟣 Restricted / Internal Only</option>
+              <option value="STALE">⚪ Stale Data</option>
+            </select>
+          </div>
+
+          {/* Provider Filter */}
+          <div>
+            <label className="block text-[11px] font-bold text-[#66708d] mb-1">Penyedia / Otoritas Data</label>
+            <select
+              value={selectedProvider}
+              onChange={(e) => setSelectedProvider(e.target.value)}
+              className="w-full rounded-xl border border-[#464b71]/20 bg-slate-50 p-2 text-xs text-[#464b71] font-semibold focus:border-[#118ab2] focus:outline-none"
+            >
+              <option value="all">Semua Provider</option>
+              <option value="Dishub">Dishub DKI Jakarta</option>
+              <option value="DKI Jakarta">Pemerintah Provinsi DKI Jakarta</option>
+              <option value="Polda Metro Jaya">Polda Metro Jaya (RTMC)</option>
+              <option value="Satpol PP">Satpol PP DKI</option>
+              <option value="BUMD">BUMD Transportasi (MRT/LRT/TJ)</option>
+              <option value="Authorized Partner">Mitra Resmi Terotorisasi</option>
+              <option value="International Open Stream">Aliran Terbuka Internasional</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      {/* Video Canvas & Stats */}
+      {/* Main Player & Camera Directory Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Left Column: Live Player & Active Camera Metadata */}
         <div className="lg:col-span-2 space-y-4">
-          {/* Active Canvas Video Player */}
           <CctvLivePlayer
-            feed={activeFeed}
+            camera={activeCamera}
             aiDetection={aiDetectionEnabled}
             onToggleAi={() => setAiDetectionEnabled((prev) => !prev)}
           />
 
-          {/* AI Metrics Bar */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-2xl border border-[#464b71]/15 bg-white p-4 shadow-[0_4px_12px_rgba(70,75,113,0.04)]">
-              <span className="text-[11px] font-bold text-[#66708d] uppercase">🚶 Pedestrian Detected</span>
-              <p className="mt-1 text-xl font-black text-[#118ab2]">{activeFeed.pedestrianCount} Orang</p>
-              <span className="text-[10px] text-emerald-600 font-bold">Terhitung AI YOLO</span>
+          {/* GIS Spatial Telemetry & Legal Metadata Card */}
+          <div className="rounded-3xl border border-[#464b71]/15 bg-white p-5 shadow-[0_4px_12px_rgba(70,75,113,0.04)] space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#464b71]/10 pb-3">
+              <div className="flex items-center gap-2">
+                <MapPin size={16} className="text-[#118ab2]" />
+                <h3 className="text-sm font-black text-[#464b71]">{activeCamera.camera_name}</h3>
+              </div>
+              <span className="rounded-full bg-slate-100 px-3 py-0.5 text-xs font-mono font-bold text-[#464b71]">
+                {activeCamera.lat.toFixed(4)}, {activeCamera.lng.toFixed(4)}
+              </span>
             </div>
-            <div className="rounded-2xl border border-[#464b71]/15 bg-white p-4 shadow-[0_4px_12px_rgba(70,75,113,0.04)]">
-              <span className="text-[11px] font-bold text-[#66708d] uppercase">🚗 Volume Mobil</span>
-              <p className="mt-1 text-xl font-black text-[#464b71]">{activeFeed.vehicleCount} Unit</p>
-              <span className="text-[10px] text-sky-600 font-bold">Jalan Terpantau</span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <span className="text-[#66708d]">Wilayah:</span>
+                <p className="font-bold text-[#464b71]">{activeCamera.district}</p>
+              </div>
+              <div>
+                <span className="text-[#66708d]">Penyedia Feed:</span>
+                <p className="font-bold text-[#464b71]">{activeCamera.provider}</p>
+              </div>
+              <div>
+                <span className="text-[#66708d]">Tipe Aliran:</span>
+                <p className="font-mono font-bold text-[#118ab2] uppercase">{activeCamera.stream_type}</p>
+              </div>
             </div>
-            <div className="rounded-2xl border border-[#464b71]/15 bg-white p-4 shadow-[0_4px_12px_rgba(70,75,113,0.04)]">
-              <span className="text-[11px] font-bold text-[#66708d] uppercase">🚦 Status Arus</span>
-              <p className="mt-1 text-xl font-black text-amber-600">{activeFeed.congestionLevel}</p>
-              <span className="text-[10px] text-slate-500 font-bold">{activeFeed.fps} FPS · {activeFeed.latencyMs}ms</span>
+
+            <div className="rounded-xl bg-[#f0f9ff] border border-[#118ab2]/20 p-3 text-xs text-[#464b71] space-y-1">
+              <div className="font-bold text-[#118ab2] flex items-center gap-1.5">
+                <ShieldCheck size={14} /> Kepatuhan Privasi & Lisensi Data
+              </div>
+              <p className="text-[11px] leading-relaxed text-[#66708d]">
+                {activeCamera.privacy_policy} · Lisensi: <strong>{activeCamera.license}</strong>. Terakhir diverifikasi pada <strong>{activeCamera.last_verified_at.split("T")[0]}</strong>.
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Camera List Sidebar */}
+        {/* Right Column: Camera Directory List */}
         <div className="space-y-3">
-          <h3 className="text-sm font-black text-[#464b71]">Kamera CCTV Tersedia ({feeds.length})</h3>
-          {feeds.length === 0 ? (
-            <div className="rounded-2xl border border-[#464b71]/15 bg-white p-6 text-center text-xs text-[#66708d]">
-              Sensor CCTV untuk kota ini sedang proses kalibrasi optik.
-            </div>
-          ) : (
-            feeds.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setActiveFeedId(f.id)}
-                className={`w-full text-left rounded-2xl p-4 transition border ${
-                  activeFeedId === f.id
-                    ? "bg-[#f0f9ff] border-[#118ab2] text-[#464b71] shadow-sm ring-1 ring-[#118ab2]"
-                    : "bg-white border-[#464b71]/15 text-[#464b71] hover:bg-[#f8fafc]"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-black text-xs text-[#464b71]">{f.name}</span>
-                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    LIVE
-                  </span>
-                </div>
-                <p className="text-[11px] text-[#66708d] mt-1">{f.location}</p>
-                <div className="mt-2 flex items-center justify-between text-[10px] text-[#118ab2] font-semibold">
-                  <span>{f.resolution || "1080p@60fps"}</span>
-                  <span>{f.protocol || "RTSP/WebRTC Gateway"}</span>
-                </div>
-              </button>
-            ))
-          )}
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-black text-[#464b71]">
+              Daftar Kamera ({filteredCameras.length})
+            </h3>
+            <span className="text-[11px] text-[#66708d]">Pilih untuk memuat stream</span>
+          </div>
+
+          <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
+            {filteredCameras.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-[#464b71]/20 bg-slate-50 p-6 text-center text-xs text-[#66708d]">
+                Tidak ada kamera yang cocok dengan kombinasi filter ini. Silakan atur ulang filter.
+              </div>
+            ) : (
+              filteredCameras.map((cam) => {
+                const isSelected = activeCameraId === cam.camera_id;
+                const isCamOnline = cam.health_status === "ONLINE";
+                const isCamDegraded = cam.health_status === "DEGRADED";
+                const isCamOffline = cam.health_status === "OFFLINE";
+                const isCamRestricted = cam.health_status === "NO_STREAM";
+
+                return (
+                  <button
+                    key={cam.camera_id}
+                    type="button"
+                    onClick={() => setActiveCameraId(cam.camera_id)}
+                    className={`w-full text-left rounded-2xl p-3.5 transition border ${
+                      isSelected
+                        ? "bg-[#f0f9ff] border-[#118ab2] shadow-sm ring-1 ring-[#118ab2]"
+                        : "bg-white border-[#464b71]/15 hover:bg-[#f8fafc]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="font-bold text-xs text-[#464b71] truncate max-w-[200px]">
+                        {cam.camera_name}
+                      </span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[9px] font-mono font-bold ${
+                          isCamOnline
+                            ? "bg-emerald-100 text-emerald-800"
+                            : isCamDegraded
+                            ? "bg-amber-100 text-amber-800"
+                            : isCamOffline
+                            ? "bg-rose-100 text-rose-800"
+                            : "bg-purple-100 text-purple-800"
+                        }`}
+                      >
+                        {cam.health_status}
+                      </span>
+                    </div>
+
+                    <div className="mt-1 flex items-center justify-between text-[11px] text-[#66708d]">
+                      <span>{cam.district}</span>
+                      <span className="font-mono text-[10px] text-slate-400">{cam.provider}</span>
+                    </div>
+
+                    {/* Metric preview snippet */}
+                    <div className="mt-2 flex items-center justify-between text-[10px] pt-1.5 border-t border-slate-100">
+                      <span className="text-slate-500 font-mono">
+                        {cam.lat.toFixed(3)}, {cam.lng.toFixed(3)}
+                      </span>
+                      <span className="text-[#118ab2] font-semibold">
+                        {cam.runtime_metrics?.pipeline_state === "LIVE"
+                          ? `${cam.runtime_metrics.pedestrian_count ?? 0} org · ${cam.runtime_metrics.vehicle_count ?? 0} unit`
+                          : "Data Unavailable"}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// 2. Traffic Congestion View
+// =========================================================================
+// 2. TRAFFIC CONGESTION VIEW (RULE 01 & PROVENANCE ENFORCED)
+// =========================================================================
 export function TrafficCongestionView() {
   const [selectedZone, setSelectedZone] = useState<string>(CONGESTION_ZONES[0].id);
   const activeZone = CONGESTION_ZONES.find((z) => z.id === selectedZone) || CONGESTION_ZONES[0];
@@ -183,6 +356,12 @@ export function TrafficCongestionView() {
           >
             <ArrowRight size={16} /> Semua Modul
           </Link>
+        </div>
+
+        {/* Provenance Disclosure */}
+        <div className="mt-4 border-t border-amber-200/60 pt-3 flex flex-wrap items-center justify-between text-[11px] text-amber-900">
+          <div>Metode: <strong>OBSERVED (CCTV Loop) & ESTIMATED (Historical Baseline)</strong></div>
+          <div>Sumber Data: <strong>Dishub DKI & Open Telemetry Gateway</strong></div>
         </div>
       </header>
 
@@ -242,7 +421,7 @@ export function TrafficCongestionView() {
             {/* Speed Comparison Bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-xs text-[#464b71] font-semibold">
-                <span>Kecepatan Aktual: {activeZone.currentSpeedKmh} km/jam</span>
+                <span>Kecepatan Teramati: {activeZone.currentSpeedKmh} km/jam</span>
                 <span className="text-[#66708d]">Bebas Hambatan: {activeZone.freeFlowSpeedKmh} km/jam</span>
               </div>
               <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
@@ -273,7 +452,9 @@ export function TrafficCongestionView() {
   );
 }
 
-// 3. Multimodal Transit View
+// =========================================================================
+// 3. MULTIMODAL TRANSIT VIEW
+// =========================================================================
 export function MultimodalTransitView() {
   const [activeRouteId, setActiveRouteId] = useState<string>(MULTIMODAL_ROUTES[0].id);
   const activeRoute = MULTIMODAL_ROUTES.find((r) => r.id === activeRouteId) || MULTIMODAL_ROUTES[0];
@@ -288,13 +469,17 @@ export function MultimodalTransitView() {
           Perencana Rute Lintas Batas Global
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
-          Koneksi mulus antarmoda transportasi internasional: kereta cepat, metro bawah tanah, jalur sepeda, dan penyeberangan pejalan kaki ramah lingkungan.
+          Koneksi mulus antarmoda transportasi: integrasi Walking, MRT, KRL, TransJakarta, dan Airport Rail dengan data jaringan GIS terverifikasi.
         </p>
+        <div className="mt-4 border-t border-[#118ab2]/20 pt-3 flex flex-wrap items-center justify-between text-[11px] text-[#66708d]">
+          <div>Sumber Jadwal & Tarif: <strong>PT MRT Jakarta / KAI Commuter Official Schedules</strong></div>
+          <div>Mesin Routing: <strong>Valhalla Pedestrian & Transit Graph Engine</strong></div>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-3">
-          <h3 className="text-sm font-black text-[#464b71]">Rute Internasional Unggulan</h3>
+          <h3 className="text-sm font-black text-[#464b71]">Rute Multimoda Unggulan</h3>
           {MULTIMODAL_ROUTES.map((r) => (
             <button
               key={r.id}
@@ -344,7 +529,7 @@ export function MultimodalTransitView() {
                   <div className="flex-1 rounded-2xl border border-[#464b71]/10 bg-[#f8fafc] p-4">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-[#464b71] flex items-center gap-1.5">
-                        {s.mode === "WALK" ? "🚶 Jalan Kaki" : s.mode === "RAIL" ? "🚆 Kereta JR/Express" : s.mode === "METRO" ? "🚇 MRT/Subway" : "🚲 Sepeda"}
+                        {s.mode === "WALK" ? "🚶 Jalan Kaki" : s.mode === "RAIL" ? "🚆 Kereta KRL/Express" : s.mode === "METRO" ? "🚇 MRT/Subway" : "🚲 Sepeda"}
                       </span>
                       <span className="text-[11px] text-[#66708d]">{s.durationMinutes} min ({s.distanceKm} km)</span>
                     </div>
@@ -360,19 +545,21 @@ export function MultimodalTransitView() {
   );
 }
 
-// 13. Micromobility View
+// =========================================================================
+// 4. MICROMOBILITY VIEW (RULE 06 & ADAPTER ARCHITECTURE)
+// =========================================================================
 export function MicromobilityView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
       <header className="rounded-3xl border border-[#62d6c8]/30 bg-gradient-to-br from-white via-[#f0fdfa] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-500/20">
-          <Bike size={14} className="text-emerald-600" /> Mikromobilitas & Armada Berbagi
+          <Bike size={14} className="text-emerald-600" /> Arsitektur Adapter Mikromobilitas
         </span>
         <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Ketersediaan Sepeda & Skuter Listrik Global
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
-          Peta sebaran dock sepeda dan e-scooter multi-operator di sekitar simpul transit, persentase sisa baterai, dan estimasi biaya per menit.
+          Sistem integrasi GBFS (General Bikeshare Feed Specification) resmi. Operator hanya ditampilkan jika feed data benar-benar tersambung. Jika tidak aktif, sistem menampilkan status eksplisit <strong>DATA_UNAVAILABLE</strong>.
         </p>
       </header>
 
@@ -385,11 +572,15 @@ export function MicromobilityView() {
             </div>
             <div className="flex items-center justify-between text-xs text-[#66708d]">
               <span>Unit Tersedia:</span>
-              <span className="text-base font-black text-[#464b71]">{hub.availableVehicles} Unit</span>
+              <span className="text-base font-black text-[#464b71]">
+                {hub.availableVehicles !== null ? `${hub.availableVehicles} Unit` : "DATA_UNAVAILABLE"}
+              </span>
             </div>
             <div className="flex items-center justify-between text-xs text-[#66708d]">
               <span>Rata-rata Baterai:</span>
-              <span className="font-bold text-emerald-600">{hub.avgBatteryPct}%</span>
+              <span className="font-bold text-emerald-600">
+                {hub.avgBatteryPct !== null ? `${hub.avgBatteryPct}%` : "N/A"}
+              </span>
             </div>
             <div className="border-t border-[#464b71]/10 pt-3 text-[11px] text-[#66708d] flex justify-between">
               <span>Buka Kunci: {hub.unlockCost}</span>
@@ -402,19 +593,21 @@ export function MicromobilityView() {
   );
 }
 
-// 14. GTFS Realtime View
+// =========================================================================
+// 5. GTFS REALTIME VIEW (RULE 03 & RULE 05 ENFORCED)
+// =========================================================================
 export function GtfsRealtimeView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
       <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
-          <Train size={14} className="text-[#118ab2]" /> GTFS Realtime Protocol
+          <Train size={14} className="text-[#118ab2]" /> Standar GTFS-RT Protobuf
         </span>
         <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
           Pelacak Posisi Bus & Kereta Live Feed
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
-          Telemetri live armada transportasi publik dunia berbasis standar terbuka GTFS-RT dengan perkiraan keterlambatan milidetik.
+          Telemetri posisi kendaraan, update perjalanan (trip update), dan service alerts dengan stempel waktu terverifikasi.
         </p>
       </header>
 
@@ -446,7 +639,9 @@ export function GtfsRealtimeView() {
   );
 }
 
-// 33. Commuter Crowding View
+// =========================================================================
+// 6. COMMUTER CROWDING VIEW
+// =========================================================================
 export function CommuterCrowdingView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
@@ -458,7 +653,7 @@ export function CommuterCrowdingView() {
           Prediksi Kepadatan Gerbong Kereta Live
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
-          Visualisasi kepadatan penumpang per nomor gerbong untuk membantu pejalan kaki memilih titik tunggu peron yang paling lapang.
+          Pemantauan okupansi stasiun transit berdasarkan data sensor pintu putar (turnstile) dan bobot suspensi gerbong kereta resmi.
         </p>
       </header>
 
@@ -497,7 +692,9 @@ export function CommuterCrowdingView() {
   );
 }
 
-// 37. Pedestrian Bridges View
+// =========================================================================
+// 7. PEDESTRIAN BRIDGES VIEW
+// =========================================================================
 export function PedestrianBridgesView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
@@ -509,7 +706,7 @@ export function PedestrianBridgesView() {
           Jembatan Penyeberangan Orang & Skywalk Interkoneksi
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
-          Jaringan jembatan penyeberangan ikonik dan skywalk terlindung cuaca yang menghubungkan stasiun transit langsung ke pusat belanja.
+          Jaringan JPO, skywalk, ketersediaan lift difabel, ramp landai, dan perlindungan cuaca yang terintegrasi langsung ke graf routing pedestrian GETRA.
         </p>
       </header>
 
@@ -523,10 +720,10 @@ export function PedestrianBridgesView() {
             <p className="text-xs text-[#66708d]">Interkoneksi: {b.interconnectedStation}</p>
             <div className="flex flex-wrap gap-2 text-[11px]">
               <span className={`rounded-full px-2.5 py-1 font-bold ${b.hasElevator ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-500"}`}>
-                🛗 Lift: {b.hasElevator ? "Tersedia" : "Tidak"}
+                🛗 Lift Difabel: {b.hasElevator ? "Tersedia" : "Tidak"}
               </span>
               <span className={`rounded-full px-2.5 py-1 font-bold ${b.isCoveredWeatherProof ? "bg-sky-100 text-sky-800" : "bg-slate-100 text-slate-500"}`}>
-                ☂️ Pelindung Hujan: {b.isCoveredWeatherProof ? "Ada" : "Terbuka"}
+                ☂️ Kanopi Cuaca: {b.isCoveredWeatherProof ? "Terlindung" : "Terbuka"}
               </span>
             </div>
           </div>
@@ -536,7 +733,9 @@ export function PedestrianBridgesView() {
   );
 }
 
-// 41. Airport Express View
+// =========================================================================
+// 8. AIRPORT EXPRESS VIEW
+// =========================================================================
 export function AirportExpressView() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
@@ -548,7 +747,7 @@ export function AirportExpressView() {
           Hub Kereta Bandara & City Check-in Internasional
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
-          Integrasi jadwal penerbangan langsung di stasiun pusat kota, penyerahan bagasi di stasiun (in-town check-in), dan waktu tempuh presisi ke terminal bandara.
+          Jadwal resmi dan tarif Railink Bandara Soekarno-Hatta dengan koneksi jalan kaki langsung ke Stasiun Sudirman Baru (BNI City) dan MRT Dukuh Atas.
         </p>
       </header>
 

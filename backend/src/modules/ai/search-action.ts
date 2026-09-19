@@ -163,7 +163,7 @@ export function extractDeterministicSearchAction(request: AiAskRequest) {
   // Routing, explanations, and ordinary questions continue through the main
   // AI orchestration path. This fallback only creates executable searches.
   if (
-    /\b(rute|route|navigasi|berapa lama|jalan kaki dari|menuju)\b/u.test(normalized)
+    (/\b(rute|route|navigasi|berapa lama|jalan kaki dari|menuju)\b/u.test(normalized) && !/^(?:tolong\s+)?(?:cari|carikan|temukan|rekomendasikan)\b/iu.test(normalized))
     || (/^(apa|apakah|bagaimana|kenapa|mengapa|siapa|kapan|cara|gimana|gmn)\b/u.test(normalized) && !/^(?:apa|apakah)\s+ada\b/iu.test(normalized))
     || /\b(cara buat|cara bikin|cara daftar|cara daftarin|cara promosi|cara pasang|cara klaim|cara claim|buat umkm|daftar umkm|bikin umkm|daftr umk|gmn bikin|iklan|iklanin|promosi|promo)\b/u.test(normalized)
     || /\b(aksesibilitas|accessibility|disabilitas|kursi roda|wheelchair)\b/u.test(normalized)

@@ -58,6 +58,14 @@ export const DETERMINISTIC_PRODUCT_KNOWLEDGE_INTENTS: readonly AiIntent[] = [
   "INVESTOR_MODE",
   "FILTER_DIAGNOSIS",
   "BUSINESS_SPACE",
+  "CCTV",
+  "TRAFFIC",
+  "ENVIRONMENT",
+  "SEARCH_UMKM",
+  "ROUTE",
+  "TRANSIT",
+  "PROMOTION",
+  "OWNER",
 ];
 
 export class AiService {
@@ -98,7 +106,10 @@ export class AiService {
       );
 
     // 2. Guardrail: Unauthorized Privilege Escalation & Admin/Owner Action Refusal
-    if (/\b(approve|setujui|verifikasi)\s+(?:merchant|toko|usaha|warung|pengajuan|submission|umkm)\b/iu.test(normalizedQuestion)) {
+    if (
+      /\b(?:approve|setujui)\s+(?:merchant|toko|usaha|warung|pengajuan|submission|umkm)\b/iu.test(normalizedQuestion) ||
+      (/\bverifikasi\s+(?:merchant|toko|usaha|warung|pengajuan|submission|umkm)\b/iu.test(normalizedQuestion) && !/\b(?:status|kenapa|mengapa|kapan|cek)\b/iu.test(normalizedQuestion))
+    ) {
       return {
         answer:
           "Persetujuan pendaftaran UMKM hanya dapat dilakukan oleh Administrator berwenang melalui dashboard Admin (/admin). GETRA AI beroperasi dengan pemisahan hak akses dan tidak memiliki kewenangan mengubah status kurasi merchant.",
@@ -707,7 +718,7 @@ export class AiService {
       };
     }
 
-    if (/\b(?:cara buat posting|bagaimana membuat laporan|buat laporan|laporan warga)\b/iu.test(normalizedQuestion) || /\bapakah ada laporan warga atau observasi komunitas\b/iu.test(normalizedQuestion)) {
+    if ((/\b(?:cara buat posting|bagaimana membuat laporan|buat laporan|laporan warga)\b/iu.test(normalizedQuestion) && !/\badmin\b/iu.test(normalizedQuestion)) || /\bapakah ada laporan warga atau observasi komunitas\b/iu.test(normalizedQuestion)) {
       return {
         answer:
           "Observasi komunitas GETRA menampung laporan warga mengenai kondisi akses jalan dan fasilitas. Untuk membuat laporan atau postingan baru, buka menu Komunitas (/community) dan tekan 'Buat Postingan Baru'. Catatan ini bersifat waktu-terbatas dan dimoderasi secara berkala.",
@@ -2625,9 +2636,10 @@ function classifyIntentDeterministically(
   }
 
   const isLandmarkQuery =
-    /^(bundaran hi|bundaran hotel indonesia|monas|monumen nasional|sarinah|gbk|gelora bung karno|kota tua|blok m|dukuh atas|lapangan banteng|grand indonesia|plaza indonesia)$/iu.test(
+    !/\b(terdekat|paling dekat|dekat|nearest)\b/iu.test(normalized) &&
+    (/^(bundaran hi|bundaran hotel indonesia|monas|monumen nasional|sarinah|gbk|gelora bung karno|kota tua|blok m|dukuh atas|lapangan banteng|grand indonesia|plaza indonesia)$/iu.test(
       normalized,
-    ) || /^(stasiun|halte|terminal)\s+[a-z0-9\s.]+$/iu.test(normalized);
+    ) || /^(stasiun|halte|terminal)\s+[a-z0-9\s.]+$/iu.test(normalized));
 
   if (isLandmarkQuery) {
     if (/^(stasiun|halte|terminal)/iu.test(normalized)) {
@@ -2748,6 +2760,14 @@ function classifyIntentDeterministically(
     return "PROMOTION_CREATE";
   }
 
+  // 7b. Admin & System Management
+  if (
+    /\badmin\b/iu.test(normalized) &&
+    !/\b(beda user dan admin|perbedaan user dan admin|apa bedanya user dan admin)\b/iu.test(normalized)
+  ) {
+    return "ADMIN";
+  }
+
   // 8. UMKM Onboarding, Claim & Status
   if (
     /\b(?:daftar|daftarkan|buat|membuat|bikin|tambah|daftarin|masukin|submit)\s+(?:umkm|usaha|toko|warung)\b/iu.test(normalized) ||
@@ -2770,7 +2790,13 @@ function classifyIntentDeterministically(
 
   // 9. Community & Citizen Reports
   if (
-    /\b(buat post|buat posting|buat postingan|komentar|komentari|reaction|reaksi|report post|laporkan postingan|laporan warga|komunitas|kontribusi warga|observasi komunitas|laporan masyarakat|bagaimana membuat laporan|buat laporan|bikin laporan|aktivitas komunitas|informasi terbaru di area ini)\b/iu.test(normalized)
+    /\b(report post|laporkan postingan|laporkan post|laporkan warga|bagaimana cara report)\b/iu.test(normalized)
+  ) {
+    return "COMMUNITY_REPORT";
+  }
+
+  if (
+    /\b(buat post|buat posting|buat postingan|komentar|komentari|reaction|reaksi|laporan warga|komunitas|kontribusi warga|observasi komunitas|laporan masyarakat|bagaimana membuat laporan|buat laporan|bikin laporan|aktivitas komunitas|informasi terbaru di area ini)\b/iu.test(normalized)
   ) {
     return "COMMUNITY_OBSERVATION";
   }
@@ -2791,9 +2817,30 @@ function classifyIntentDeterministically(
 
   // 12. Admin & System Management
   if (
-    /\b(dashboard admin|halaman admin|menu admin|fitur admin|persetujuan admin|kurasi admin)\b/iu.test(normalized)
+    /\b(dashboard admin|halaman admin|menu admin|fitur admin|persetujuan admin|kurasi admin|wewenang.*admin|admin meninjau)\b/iu.test(normalized)
   ) {
     return "ADMIN";
+  }
+
+  // 12b. CCTV & Camera Monitoring
+  if (
+    /\b(cctv|kamera|live camera|pantau jalan|kamera lalin|kamera dishub|stream cctv|live streaming jalan|kamera lalu lintas|kamera dki)\b/iu.test(normalized)
+  ) {
+    return "CCTV";
+  }
+
+  // 12c. Traffic Congestion & Road Network
+  if (
+    /\b(macet|kemacetan|arus lalu lintas|kepadatan jalan|kondisi jalan|kondisi lalin|antrean kendaraan|kecepatan lalu lintas)\b/iu.test(normalized)
+  ) {
+    return "TRAFFIC";
+  }
+
+  // 12d. Environment, Air Quality, Flood & Urban Heat
+  if (
+    /\b(kualitas udara|aqi|polusi udara|pm2\.5|tinggi muka air|pintu air|banjir|genangan|radiasi matahari|suhu permukaan|urban heat|tutupan pohon|ndvi|kenaikan muka air laut)\b/iu.test(normalized)
+  ) {
+    return "ENVIRONMENT";
   }
 
   // 13. Route requests take precedence
@@ -2803,7 +2850,16 @@ function classifyIntentDeterministically(
     return "WALKING_ROUTE";
   }
 
-  // 13b. Proximity / Nearest follow-up or query
+  // 13b. Explicit nearest-transit requests (prioritized over generic proximity)
+  if (
+    /\b(stasiun|halte|transit)\b.*\b(dekat|terdekat|nearest)\b/u.test(normalized) ||
+    /\b(paling dekat|terdekat|nearest)\b.*\b(stasiun|halte|transit)\b/u.test(normalized) ||
+    /\b(transit)\s+(?:point|simpul|terdekat)\b/iu.test(normalized)
+  ) {
+    return "NEAREST_TRANSIT";
+  }
+
+  // 13c. Proximity / Nearest follow-up or query
   if (
     /\b(yang paling dekat|paling dekat|terdekat|yang terdekat|mana yang lebih dekat|paling dket|terdkat)\b/iu.test(normalized)
   ) {
@@ -2811,14 +2867,6 @@ function classifyIntentDeterministically(
       return "NEAREST_TRANSIT";
     }
     return "MERCHANT_SEARCH";
-  }
-
-  // 14. Explicit nearest-transit requests
-  if (
-    /\b(stasiun|halte|transit)\b.*\b(dekat|terdekat|nearest)\b/u.test(normalized) ||
-    /\b(paling dekat|terdekat|nearest)\b.*\b(stasiun|halte|transit)\b/u.test(normalized)
-  ) {
-    return "NEAREST_TRANSIT";
   }
 
   // 15. Demand-Supply Analysis
@@ -3129,8 +3177,9 @@ export function determineApplicationAction(
   ];
 
   const isStandaloneLandmark =
-    CANONICAL_LANDMARKS_LIST.includes(normalized) ||
-    /^(stasiun|halte|terminal|taman|pasar|gedung|mall|plaza)\s+[a-z0-9\s.]+$/iu.test(normalized);
+    !/\b(terdekat|paling dekat|dekat|nearest)\b/iu.test(normalized) &&
+    (CANONICAL_LANDMARKS_LIST.includes(normalized) ||
+    /^(stasiun|halte|terminal|taman|pasar|gedung|mall|plaza)\s+[a-z0-9\s.]+$/iu.test(normalized));
 
   if (isStandaloneLandmark) {
     if (/\b(tempat mana yang ingin anda tuju|tujuannya belum unik)\b/iu.test(lastAssistantMsg)) {
@@ -3235,6 +3284,49 @@ export function determineApplicationAction(
       type: "NAVIGATE",
       path: "/profile",
       label: "Buka Profil Pengguna",
+    };
+  }
+
+  // 1b. CCTV & Video Monitoring Platform
+  if (
+    /\b(cctv|kamera|live camera|pantau jalan|kamera lalin|kamera dishub|stream cctv|kamera dki)\b/iu.test(normalized)
+  ) {
+    return {
+      type: "NAVIGATE",
+      path: "/international/cctv",
+      label: "Buka CCTV Integration Platform",
+    };
+  }
+
+  // 1c. Traffic Congestion & Road Network
+  if (
+    /\b(macet|kemacetan|arus lalu lintas|kepadatan jalan|kondisi jalan|kondisi lalin|antrean kendaraan|kecepatan lalu lintas)\b/iu.test(normalized)
+  ) {
+    return {
+      type: "NAVIGATE",
+      path: "/international/traffic-congestion",
+      label: "Buka Peta Kemacetan Lalu Lintas",
+    };
+  }
+
+  // 1d. Environmental Telemetry
+  if (
+    /\b(kualitas udara|aqi|polusi udara|pm2\.5)\b/iu.test(normalized)
+  ) {
+    return {
+      type: "NAVIGATE",
+      path: "/international/air-quality",
+      label: "Buka Pemantauan Kualitas Udara",
+    };
+  }
+
+  if (
+    /\b(banjir|genangan|tinggi muka air|pintu air|elevasi air)\b/iu.test(normalized)
+  ) {
+    return {
+      type: "NAVIGATE",
+      path: "/international/flood-monitoring",
+      label: "Buka Pemantauan Banjir & Elevasi Air",
     };
   }
 
@@ -3811,8 +3903,8 @@ function formatDeterministicAnswer(
   }
 
   if (
-    intent ===
-    "MERCHANT_SEARCH"
+    intent === "MERCHANT_SEARCH" ||
+    intent === "SEARCH_UMKM"
   ) {
     if (question && /\b(cari|carikan|temukan|rekomendasi|tempat makan|kopi|umkm|toko)\b/iu.test(question)) {
       return "GETRA siap mencari tempat atau UMKM terdaftar sesuai kebutuhan Anda pada peta Fair Discovery. Gunakan filter pencarian untuk melihat lokasi terdekat.";
@@ -3820,11 +3912,39 @@ function formatDeterministicAnswer(
     return "Sebutkan jenis tempat, makanan, atau kebutuhan yang ingin Anda cari agar GETRA dapat menampilkan hasil yang relevan.";
   }
 
+  if (intent === "CCTV") {
+    return "GETRA CCTV Integration Platform menyediakan integrasi kamera lalu lintas dan pemantauan pedestrian kota DKI Jakarta dan simpul internasional dengan status stream riil (LIVE, DEGRADED, OFFLINE) dan telemetri Computer Vision terotentikasi tanpa metrik sintetis. Buka halaman CCTV (/international/cctv) untuk eksplorasi kamera aktif.";
+  }
+
+  if (intent === "TRAFFIC") {
+    return "Sistem pemantauan kemacetan lalu lintas GETRA menggabungkan observasi telemetri CCTV riil dengan jaringan jalan GIS, membedakan secara ketat antara status OBSERVED, ESTIMATED, dan PREDICTED tanpa rekayasa kecepatan instan. Lihat peta kemacetan pada (/international/traffic-congestion).";
+  }
+
+  if (intent === "ENVIRONMENT") {
+    return "GETRA memonitor indikator lingkungan perkotaan secara faktual: kualitas udara (AQI, PM2.5, PM10), stasiun telemetri banjir & tinggi muka air pintu air, radiasi bayangan surya, serta NDVI kanopi hijau satelit Sentinel-2 / Landsat dengan tanggal akuisisi sensor resmi.";
+  }
+
+  if (intent === "ROUTE") {
+    return "GETRA menghitung rute perjalanan pejalan kaki dan kendaraan secara presisi menggunakan mesin GIS Valhalla dan data elevasi DEM riil. Tentukan titik awal dan tujuan pada peta untuk menghitung rute akurat.";
+  }
+
+  if (intent === "TRANSIT") {
+    return "GETRA menyajikan jaringan simpul transportasi publik multimoda (KRL Commuter Line, MRT Jakarta, LRT, TransJakarta, dan Railink Bandara) berbasis data statis & GTFS-RT resmi dengan jarak jangkau pedestrian nyata.";
+  }
+
+  if (intent === "PROMOTION") {
+    return "Pemilik UMKM terverifikasi dapat mengaktifkan kampanye promosi lokal berbasis radius spasial dengan jaminan transparansi Fair Discovery dan transaksi aman Midtrans Sandbox. Kelola promosi melalui (/umkm/advertising).";
+  }
+
+  if (intent === "OWNER") {
+    return "Kepemilikan UMKM di GETRA memerlukan verifikasi dokumen legalitas resmi oleh Administrator. Pemilik terverifikasi (OWNER) berhak mengedit data usaha dan menjalankan kampanye promosi lokal.";
+  }
+
   if (
     intent ===
     "UNKNOWN"
   ) {
-    return "Saya belum memahami informasi yang Anda perlukan. Coba tanyakan pencarian tempat, rute, transit terdekat, kondisi area, atau usaha pada titik peta.";
+    return "Saya belum memahami informasi yang Anda perlukan. Coba tanyakan pencarian tempat atau landmark kota (misal: Bundaran HI, Monas), rute navigasi GIS, integrasi CCTV publik, pemantauan kualitas udara/banjir, atau panduan pendaftaran usaha.";
   }
 
   if (intent === "ACCESSIBILITY") {
