@@ -34,7 +34,11 @@ export function GetraAppShell({ actions, children, description, eyebrow = "GETRA
             {contextualNav.map((item) => {
               const Icon = item.icon;
               const path = item.href.split("#")[0];
-              const active = item.href.includes("#") ? false : "exact" in item && item.exact ? pathname === path : pathname === path || pathname.startsWith(`${path}/`);
+              const active = item.href.includes("#")
+                ? false
+                : "exact" in item && item.exact
+                ? pathname === path
+                : Boolean(pathname && (pathname === path || pathname.startsWith(`${path}/`)));
               return (
                 <Link aria-current={active ? "page" : undefined} className={active ? "getra-context-nav__item--active" : ""} href={item.href} key={item.href}>
                   <Icon size={15} />{item.label}

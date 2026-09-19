@@ -100,10 +100,31 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
           <button aria-expanded={utilityOpen} className="getra-utility-menu__trigger" onClick={() => setUtilityOpen((open) => !open)} type="button">Fitur</button>
           {utilityOpen ? (
             <div className="getra-utility-menu__panel">
-              <Link href="/business-space" onClick={closeMenus}><Building2 size={16} />Ruang Usaha</Link>
+              <span className="getra-utility-menu__label">Transit & Komuter</span>
+              <Link href="/transit" onClick={closeMenus}><MapPinned size={16} />Simpul Transit</Link>
+              <Link href="/accessibility" onClick={closeMenus}><ShieldCheck size={16} />Aksesibilitas</Link>
+              <Link href="/eco-walk" onClick={closeMenus}><RefreshCw size={16} />Langkah Hijau & CO2</Link>
+              <Link href="/safety" onClick={closeMenus}><ShieldCheck size={16} />Peta Keamanan Malam</Link>
+
+              <span className="getra-utility-menu__label">UMKM & Komersial</span>
+              <Link href="/directory" onClick={closeMenus}><Store size={16} />Direktori UMKM</Link>
+              <Link href="/deals" onClick={closeMenus}><Store size={16} />Promo Kilat UMKM</Link>
+              <Link href="/culinary-trails" onClick={closeMenus}><MapPinned size={16} />Wisata Kuliner</Link>
+              <Link href="/business-space" onClick={closeMenus}><Building2 size={16} />Ruang Usaha Investor</Link>
+              <Link href="/umkm/insights" onClick={closeMenus}><Building2 size={16} />Wawasan Usaha</Link>
+
+              <span className="getra-utility-menu__label">Warga & Transparansi</span>
+              <Link href="/quests" onClick={closeMenus}><UsersRound size={16} />Misi Pemetaan</Link>
+              <Link href="/reports/new" onClick={closeMenus}><ShieldCheck size={16} />Lapor Trotoar</Link>
+              <Link href="/transparency/status" onClick={closeMenus}><RefreshCw size={16} />Status Sistem</Link>
+              <Link href="/developers/open-data" onClick={closeMenus}><Database size={16} />Portal Data Terbuka</Link>
+
               {isAdmin ? (
                 <>
-                  <span className="getra-utility-menu__label">Admin</span>
+                  <span className="getra-utility-menu__label">Admin & Kebijakan</span>
+                  <Link href="/government/equity" onClick={closeMenus}><Building2 size={16} />Ekuitas Spasial</Link>
+                  <Link href="/government/infrastructure" onClick={closeMenus}><Database size={16} />Audit Trotoar</Link>
+                  <Link href="/government/closures" onClick={closeMenus}><RefreshCw size={16} />Simulasi Penutupan</Link>
                   <Link href="/admin/umkm" onClick={closeMenus}><Store size={16} />Pemeriksaan UMKM</Link>
                   <Link href="/admin/mission-data" onClick={closeMenus}><RefreshCw size={16} />Data Lapangan</Link>
                   <Link href="/admin/import" onClick={closeMenus}><Database size={16} />Impor Data</Link>
@@ -135,9 +156,20 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
                   </Link>
                 );
               })}
+              <Link href="/transit" onClick={closeMenus}><MapPinned size={17} />Simpul Transit</Link>
+              <Link href="/accessibility" onClick={closeMenus}><ShieldCheck size={17} />Aksesibilitas</Link>
+              <Link href="/eco-walk" onClick={closeMenus}><RefreshCw size={17} />Langkah Hijau</Link>
+              <Link href="/directory" onClick={closeMenus}><Store size={17} />Direktori UMKM</Link>
+              <Link href="/deals" onClick={closeMenus}><Store size={17} />Promo Kilat</Link>
+              <Link href="/culinary-trails" onClick={closeMenus}><MapPinned size={17} />Wisata Kuliner</Link>
               <Link href="/business-space" onClick={closeMenus}><Building2 size={17} />Ruang Usaha</Link>
+              <Link href="/quests" onClick={closeMenus}><UsersRound size={17} />Misi Pemetaan</Link>
+              <Link href="/reports/new" onClick={closeMenus}><ShieldCheck size={17} />Lapor Trotoar</Link>
+              <Link href="/transparency/status" onClick={closeMenus}><RefreshCw size={17} />Status Sistem</Link>
+              <Link href="/developers/open-data" onClick={closeMenus}><Database size={17} />Portal Data Terbuka</Link>
               {isAdmin ? (
                 <>
+                  <Link href="/government/equity" onClick={closeMenus}><Building2 size={17} />Ekuitas Spasial</Link>
                   <Link href="/admin/umkm" onClick={closeMenus}><Store size={17} />Pemeriksaan UMKM</Link>
                   <Link href="/admin/mission-data" onClick={closeMenus}><RefreshCw size={17} />Data Lapangan</Link>
                   <Link href="/admin/import" onClick={closeMenus}><Database size={17} />Impor Data</Link>

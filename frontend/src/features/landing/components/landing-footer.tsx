@@ -14,11 +14,24 @@ const footerGroups = [
     ],
   },
   {
+    title: "Kawasan & Fitur",
+    links: [
+      ["Simpul Transit", "/transit"],
+      ["Aksesibilitas", "/accessibility"],
+      ["Langkah Hijau & CO2", "/eco-walk"],
+      ["Keamanan Malam", "/safety"],
+      ["Direktori UMKM", "/directory"],
+      ["Promo Kilat UMKM", "/deals"],
+      ["Data Terbuka", "/developers/open-data"],
+    ],
+  },
+  {
     title: "Bantuan",
     links: [
       ["FAQ", "#faq"],
       ["Masuk", "/login"],
       ["Daftar GETRA", "/signup"],
+      ["Status Sistem", "/transparency/status"],
       ["Kembali ke atas", "#top"],
     ],
   },
