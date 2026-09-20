@@ -1,4 +1,5 @@
 "use client";
+import { GlobalDataCenter } from "./GlobalDataCenter";
 
 import { useState } from "react";
 import {
@@ -12,8 +13,6 @@ import {
   Lightbulb,
   Maximize2,
   Activity,
-  Map,
-  CheckCircle2,
 } from "lucide-react";
 import {
   SMART_PARKING_LOTS,
@@ -26,7 +25,6 @@ import {
   STREET_LIGHTING_POLES,
   CURBSIDE_ZONES,
   PEDESTRIAN_FLOW_MODELS,
-  OPEN_BASEMAP_PROVIDERS,
 } from "../data";
 
 // 7. Smart Parking View
@@ -486,51 +484,4 @@ export function PedestrianFlowAiView() {
 }
 
 // 50. Open Basemaps View
-export function OpenBasemapsView() {
-  const [selectedBasemap, setSelectedBasemap] = useState<string>(OPEN_BASEMAP_PROVIDERS[0].id);
-  const currentProvider = OPEN_BASEMAP_PROVIDERS.find((p) => p.id === selectedBasemap) || OPEN_BASEMAP_PROVIDERS[0];
-
-  return (
-    <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
-          <Map size={14} className="text-[#118ab2]" /> Multi-Engine Vector & Raster Switcher
-        </span>
-        <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
-          Universal Multi-Engine Basemap Switcher
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#66708d]">
-          Bebas beralih penyedia peta dasar kelas dunia: OpenStreetMap, Carto Dark Matter, Positron Light, dan Esri Satellite tanpa terikat satu vendor.
-        </p>
-      </header>
-
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {OPEN_BASEMAP_PROVIDERS.map((bp) => (
-          <button
-            key={bp.id}
-            type="button"
-            onClick={() => setSelectedBasemap(bp.id)}
-            className={`text-left rounded-3xl border p-5 transition space-y-3 ${
-              selectedBasemap === bp.id
-                ? "border-[#118ab2] bg-[#f0f9ff] shadow-md ring-1 ring-[#118ab2] text-[#464b71]"
-                : "border-[#464b71]/15 bg-white text-[#464b71] hover:bg-[#f8fafc]"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-xs text-[#118ab2]">{bp.provider}</span>
-              {selectedBasemap === bp.id && <CheckCircle2 size={16} className="text-[#118ab2]" />}
-            </div>
-            <h3 className="font-black text-sm text-[#464b71]">{bp.name}</h3>
-            <p className="text-[11px] text-[#66708d] font-mono truncate">{bp.tileUrl}</p>
-          </button>
-        ))}
-      </div>
-
-      <div className="rounded-3xl border border-[#464b71]/15 bg-white p-6 space-y-3 shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
-        <h3 className="font-black text-base text-[#464b71]">Peta Aktif: {currentProvider.name}</h3>
-        <p className="text-xs text-[#66708d]">Attribution: {currentProvider.attribution}</p>
-        <p className="text-xs text-[#118ab2] font-semibold">Max Zoom: {currentProvider.maxZoom} • Rekomendasi Mode: {currentProvider.isDarkThemeRecommended ? "Dark Spatial" : "Light Minimalist"}</p>
-      </div>
-    </div>
-  );
-}
+export function OpenBasemapsView() { return <GlobalDataCenter basemapOnly />; }

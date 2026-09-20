@@ -101,7 +101,7 @@ describe("GETRA International GIS & Smart City Suite (50 Features)", () => {
 
   it("verifies generateStaticParams returns all 50 slugs", () => {
     const params = generateStaticParams();
-    expect(params.length).toBe(50);
+    expect(params.length).toBe(65);
     expect(params.map((p) => p.slug)).toContain("cctv");
     expect(params.map((p) => p.slug)).toContain("open-basemaps");
   });
@@ -117,9 +117,9 @@ describe("GETRA International GIS & Smart City Suite (50 Features)", () => {
   // Group 1: Mobility
   it("renders CctvView with live stream simulator and AI counters", () => {
     const html = renderToStaticMarkup(<CctvView />);
-    expect(html).toContain("Global Traffic &amp; Pedestrian CCTV Live Stream");
-    expect(html).toContain("Shibuya Scramble Crossing");
-    expect(html).toContain("Pedestrian Detected");
+    expect(html).toContain("Global CCTV &amp; Urban Sensors");
+    expect(html).toContain("jakcctv.jakarta.go.id/publik");
+    expect(html).toContain("REAL CAMERA");
   });
 
   it("renders TrafficCongestionView with corridor bottleneck metrics", () => {
@@ -279,8 +279,8 @@ describe("GETRA International GIS & Smart City Suite (50 Features)", () => {
 
   it("renders OpenBasemapsView with multi-engine basemap switcher", () => {
     const html = renderToStaticMarkup(<OpenBasemapsView />);
-    expect(html).toContain("Universal Multi-Engine Basemap Switcher");
-    expect(html).toContain("CartoDB Dark Matter");
+    expect(html).toContain("Basemap Engine");
+    expect(html).toContain("Carto Dark");
     expect(html).toContain("OpenStreetMap");
   });
 
@@ -389,7 +389,7 @@ describe("GETRA International GIS & Smart City Suite (50 Features)", () => {
   // App Router Integration
   it("renders the master InternationalPortalPage in App Router with GetraAppShell", () => {
     const html = renderToStaticMarkup(<InternationalPortalPage />);
-    expect(html).toContain("Portal Smart City &amp; WebGIS Internasional");
+    expect(html).toContain("GLOBAL DATA CENTER");
   });
 
   it("renders InternationalFeaturePage dynamically for /international/cctv", async () => {
@@ -397,7 +397,7 @@ describe("GETRA International GIS & Smart City Suite (50 Features)", () => {
       params: Promise.resolve({ slug: "cctv" }),
     });
     const html = renderToStaticMarkup(pageElement);
-    expect(html).toContain("Global Traffic &amp; Pedestrian CCTV Live Stream");
+    expect(html).toContain("Global CCTV &amp; Urban Sensors");
   });
 
   it("renders InternationalFeaturePage dynamically for /international/open-basemaps", async () => {
@@ -405,6 +405,6 @@ describe("GETRA International GIS & Smart City Suite (50 Features)", () => {
       params: Promise.resolve({ slug: "open-basemaps" }),
     });
     const html = renderToStaticMarkup(pageElement);
-    expect(html).toContain("Universal Multi-Engine Basemap Switcher");
+    expect(html).toContain("Basemap Engine");
   });
 });

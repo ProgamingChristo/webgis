@@ -7,27 +7,23 @@ const catalog = readFileSync(resolve(root, "lib/mapid.ts"), "utf8");
 const mainMap = readFileSync(resolve(root, "components/getra-map.tsx"), "utf8");
 
 describe("MAPID GL Style basemap catalog", () => {
-  it("defines exactly the five approved MAPID styles", () => {
-    const ids = [...new Set([...catalog.matchAll(/id:\s*"(mapid-[^"]+)"/g)].map((match) => match[1]))];
+  it("defines the canonical provider catalog", () => {
+    const ids = [...new Set([...catalog.matchAll(/id:\s*"([^"]+)"/g)].map((match) => match[1]))];
     expect(ids).toEqual([
-      "mapid-basic",
-      "mapid-street-2d-building",
-      "mapid-satellite",
-      "mapid-dark",
-      "mapid-light",
+      "mapid-default", "osm", "carto-light", "carto-dark", "esri-satellite",
     ]);
   });
 
-  it("builds GL Style URLs rather than TileJSON, WMTS, or raster XYZ URLs", () => {
-    expect(catalog).toContain("https://basemap.mapid.io/styles/${styleId}/style.json?key=");
-    expect(catalog).not.toMatch(/wmts\.xml|\/styles\/512\/|\{z\}\/\{x\}\/\{y\}/i);
-    expect(catalog).not.toMatch(/[a-f0-9]{24}/i);
+  it("keeps MAPID credentials behind the server proxy", () => {
+    expect(catalog).toContain("/api/basemap/mapid/styles/default/style.json");
+    expect(catalog).not.toContain("NEXT_PUBLIC_MAPID_BASEMAP_KEY");
+    expect(catalog).not.toContain("?key=");
   });
 
   it("exposes an accessible switcher and persists the selected option", () => {
     expect(mainMap).toMatch(/BASEMAP_OPTIONS\.map/);
     expect(mainMap).toMatch(/aria-pressed=/);
-    expect(mainMap).toMatch(/persistBasemapPreference\(option\.id\)/);
+    expect(mainMap).toMatch(/useBasemap\(\)/);
     expect(catalog).toMatch(/localStorage\.setItem\(BASEMAP_PREFERENCE_STORAGE_KEY/);
   });
 

@@ -5,6 +5,8 @@ import {
 } from "@/src/lib/supabase/browser";
 import { getGetraApiUrl } from "@/src/lib/api-base-url";
 
+import { switchBasemap } from "@/lib/basemap-state";
+
 const AUTH_OPERATION_TIMEOUT_MS = 10_000;
 
 export class AuthSessionError extends Error {
@@ -62,6 +64,7 @@ export async function persistAuthSession(
       "Sesi masuk belum dapat disimpan. Coba lagi.",
     );
   }
+  switchBasemap("mapid-default");
 }
 
 export async function getAccessToken():
@@ -138,6 +141,7 @@ Promise<void> {
       "Sesi pada perangkat belum dapat diakhiri. Coba lagi.",
     );
   }
+  switchBasemap("mapid-default");
 }
 
 export interface UserContext {

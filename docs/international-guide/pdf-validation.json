@@ -1,0 +1,182 @@
+{
+  "generated_at": "2026-09-20T07:28:50.707Z",
+  "manualPages": 35,
+  "layoutChecks": [
+    {
+      "page": 1,
+      "title": "Basemap & Global Data Center",
+      "overflow": false
+    },
+    {
+      "page": 2,
+      "title": "URL resmi & ruang lingkup",
+      "overflow": false
+    },
+    {
+      "page": 3,
+      "title": "Daftar isi",
+      "overflow": false
+    },
+    {
+      "page": 4,
+      "title": "Login dan membuka fitur",
+      "overflow": false
+    },
+    {
+      "page": 5,
+      "title": "Dari lokasi ke data",
+      "overflow": false
+    },
+    {
+      "page": 6,
+      "title": "Ganti peta tanpa kehilangan konteks",
+      "overflow": false
+    },
+    {
+      "page": 7,
+      "title": "Provider, imagery dan fallback",
+      "overflow": false
+    },
+    {
+      "page": 8,
+      "title": "Mobile dan tablet",
+      "overflow": false
+    },
+    {
+      "page": 9,
+      "title": "Rute, merchant dan Active Journey",
+      "overflow": false
+    },
+    {
+      "page": 10,
+      "title": "Sumber, freshness dan interpretasi AI",
+      "overflow": false
+    },
+    {
+      "page": 11,
+      "title": "Global Weather Now",
+      "overflow": false
+    },
+    {
+      "page": 12,
+      "title": "Global Earthquake Live",
+      "overflow": false
+    },
+    {
+      "page": 13,
+      "title": "Active Fire / Hotspot",
+      "overflow": false
+    },
+    {
+      "page": 14,
+      "title": "Global Air Quality",
+      "overflow": false
+    },
+    {
+      "page": 15,
+      "title": "Global Place / Geocoding",
+      "overflow": false
+    },
+    {
+      "page": 16,
+      "title": "Global Elevation Query",
+      "overflow": false
+    },
+    {
+      "page": 17,
+      "title": "Global Timezone / Sun",
+      "overflow": false
+    },
+    {
+      "page": 18,
+      "title": "OpenStreetMap POI Explorer",
+      "overflow": false
+    },
+    {
+      "page": 19,
+      "title": "Accessible Facility Finder",
+      "overflow": false
+    },
+    {
+      "page": 20,
+      "title": "Drinking Water Map",
+      "overflow": false
+    },
+    {
+      "page": 21,
+      "title": "Global Bike Share",
+      "overflow": false
+    },
+    {
+      "page": 22,
+      "title": "Shared Micromobility",
+      "overflow": false
+    },
+    {
+      "page": 23,
+      "title": "EV Charging Map",
+      "overflow": false
+    },
+    {
+      "page": 24,
+      "title": "Global Public Transit POI",
+      "overflow": false
+    },
+    {
+      "page": 25,
+      "title": "DKI Public Transport",
+      "overflow": false
+    },
+    {
+      "page": 26,
+      "title": "DKI Flood & Water Level",
+      "overflow": false
+    },
+    {
+      "page": 27,
+      "title": "DKI Disaster Map",
+      "overflow": false
+    },
+    {
+      "page": 28,
+      "title": "BMKG Weather Radar",
+      "overflow": false
+    },
+    {
+      "page": 29,
+      "title": "BMKG Satellite Weather",
+      "overflow": false
+    },
+    {
+      "page": 30,
+      "title": "Global Open Data Explorer",
+      "overflow": false
+    },
+    {
+      "page": 31,
+      "title": "Matriks sumber pada screenshot",
+      "overflow": false
+    },
+    {
+      "page": 32,
+      "title": "Matriks sumber pada screenshot",
+      "overflow": false
+    },
+    {
+      "page": 33,
+      "title": "Konfigurasi sumber data",
+      "overflow": false
+    },
+    {
+      "page": 34,
+      "title": "Jika hasil tidak seperti yang diharapkan",
+      "overflow": false
+    },
+    {
+      "page": 35,
+      "title": "Bukti pengujian dan file pendamping",
+      "overflow": false
+    }
+  ],
+  "allImagesLoaded": true
+}

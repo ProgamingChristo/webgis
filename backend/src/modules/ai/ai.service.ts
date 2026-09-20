@@ -1,3 +1,4 @@
+import { answerInternational } from "@/src/features/international/interpret";
 import {
   extractSearchAction,
   normalizeSlangAndTypos,
@@ -173,6 +174,9 @@ export class AiService {
         provider: "deterministic",
       };
     }
+
+    const internationalAnswer = await answerInternational(req);
+    if (internationalAnswer) return internationalAnswer;
 
     // 2b. Fair Discovery & Superlative Claims Guardrails
     if (/\b(?:kenapa|mengapa)\s+(?:toko|merchant|usaha)\s+(?:ini\s+)?(?:muncul|tampil|ada di atas)\b/iu.test(normalizedQuestion)) {

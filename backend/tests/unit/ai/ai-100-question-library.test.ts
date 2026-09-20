@@ -883,7 +883,7 @@ describe("GETRA AI Section 58 — Master 100-Question Library Benchmark", () => 
 
       // 2. If expected action type is specified, verify action matches
       if (item.expectedActionType) {
-        expect(response.action.type).toBe(item.expectedActionType);
+        expect(response.action?.type).toBe(item.expectedActionType);
       }
 
       // 3. Verify answer is non-empty, truthful, and contains no raw hallucinations
@@ -894,7 +894,7 @@ describe("GETRA AI Section 58 — Master 100-Question Library Benchmark", () => 
 
       // 4. Verify suggestion chips are generated for continuous interaction
       expect(Array.isArray(response.suggestion_chips)).toBe(true);
-      expect(response.suggestion_chips.length).toBeGreaterThan(0);
+      expect(response.suggestion_chips?.length).toBeGreaterThan(0);
     });
   });
 });

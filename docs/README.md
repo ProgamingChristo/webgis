@@ -2,6 +2,16 @@
 
 This directory contains the definitive references for the GETRA system as captured in the Phase 13 Integration Baseline.
 
+## Basemap dan Global Data Center — September 2026
+
+- [Panduan bergambar dan langkah penggunaan 20 fitur](international-guide/README.md)
+- [Panduan penggunaan PDF](international-guide/GETRA_BASEMAP_GLOBAL_DATA_CENTER.pdf)
+- [Laporan teknis A–I PDF](international-guide/GETRA_LAPORAN_TEKNIS_A-I.pdf)
+- [Laporan teknis sumber dan batasan implementasi](INTERNATIONAL_DATA_REPORT.md)
+- Frontend: https://getra-routing-api.tail0ed517.ts.net:8443
+- Login: https://getra-routing-api.tail0ed517.ts.net:8443/login
+- Backend health: https://getra-routing-api.tail0ed517.ts.net/api/health
+
 ## Master Documentation (PDF)
 - 📄 **[GETRA Final System Documentation (PDF)](GETRA_Final_System_Documentation.pdf)** - The complete, consolidated handbook, architecture diagrams, and system overview. *(Generated from `GETRA_Final_System_Documentation.md`)*
 

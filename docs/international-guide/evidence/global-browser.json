@@ -1,0 +1,240 @@
+{
+  "base": "https://getra-routing-api.tail0ed517.ts.net:8443",
+  "started": "2026-09-20T02:56:58.143Z",
+  "switches": [
+    {
+      "id": "osm",
+      "sameInstance": true,
+      "center": [
+        106.856186,
+        -6.221441
+      ],
+      "zoom": 13,
+      "bearing": 12,
+      "pitch": 20,
+      "style": "osm",
+      "sources": [
+        "osm",
+        "getra-international"
+      ],
+      "overlayCount": 1,
+      "visiblePoints": 1,
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "carto-light",
+      "status": "AUTH_REQUIRED",
+      "fallback": "mapid-default",
+      "unavailable": true
+    },
+    {
+      "id": "carto-dark",
+      "status": "AUTH_REQUIRED",
+      "fallback": "mapid-default",
+      "unavailable": true
+    },
+    {
+      "id": "esri-satellite",
+      "sameInstance": true,
+      "center": [
+        106.856186,
+        -6.221441
+      ],
+      "zoom": 13,
+      "bearing": 12,
+      "pitch": 20,
+      "style": "esri-satellite",
+      "sources": [
+        "esri-satellite",
+        "getra-international"
+      ],
+      "overlayCount": 1,
+      "visiblePoints": 1,
+      "attribution": "© Esri and contributors"
+    },
+    {
+      "id": "mapid-default",
+      "sameInstance": true,
+      "center": [
+        106.856186,
+        -6.221441
+      ],
+      "zoom": 13,
+      "bearing": 12,
+      "pitch": 20,
+      "style": "Street Mapid",
+      "sources": [
+        "mapidtiles",
+        "natural_earth_shaded_relief",
+        "getra-international"
+      ],
+      "overlayCount": 1,
+      "visiblePoints": 1,
+      "attribution": "© MAPID Maps © OpenMapTiles © OpenStreetMap contributors"
+    },
+    {
+      "id": "osm",
+      "sameInstance": true,
+      "center": [
+        106.856186,
+        -6.221441
+      ],
+      "zoom": 13,
+      "bearing": 12,
+      "pitch": 20,
+      "style": "osm",
+      "sources": [
+        "osm",
+        "getra-international"
+      ],
+      "overlayCount": 1,
+      "visiblePoints": 1,
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "mapid-default",
+      "sameInstance": true,
+      "center": [
+        106.856186,
+        -6.221441
+      ],
+      "zoom": 13,
+      "bearing": 12,
+      "pitch": 20,
+      "style": "Street Mapid",
+      "sources": [
+        "mapidtiles",
+        "natural_earth_shaded_relief",
+        "getra-international"
+      ],
+      "overlayCount": 1,
+      "visiblePoints": 1,
+      "attribution": "© MAPID Maps © OpenMapTiles © OpenStreetMap contributors"
+    }
+  ],
+  "responsive": [
+    {
+      "name": "mobile",
+      "viewport": 390,
+      "scrollWidth": 390,
+      "canvas": 364
+    },
+    {
+      "name": "tablet",
+      "viewport": 820,
+      "scrollWidth": 820,
+      "canvas": 562
+    },
+    {
+      "name": "desktop",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "canvas": 841
+    }
+  ],
+  "errors": [],
+  "providerAvailability": {
+    "mapid-default": "CONFIGURED",
+    "carto-light": "AUTH_REQUIRED",
+    "carto-dark": "AUTH_REQUIRED",
+    "osm": "PUBLIC",
+    "esri-satellite": "PUBLIC"
+  },
+  "reloadPersists": true,
+  "mobileSheet": {
+    "open": true,
+    "position": "fixed",
+    "bottom": 844,
+    "viewport": 844
+  },
+  "routes": [
+    {
+      "route": "weather",
+      "status": 200
+    },
+    {
+      "route": "earthquakes",
+      "status": 200
+    },
+    {
+      "route": "active-fire",
+      "status": 200
+    },
+    {
+      "route": "air-quality",
+      "status": 200
+    },
+    {
+      "route": "places",
+      "status": 200
+    },
+    {
+      "route": "elevation",
+      "status": 200
+    },
+    {
+      "route": "timezone",
+      "status": 200
+    },
+    {
+      "route": "poi",
+      "status": 200
+    },
+    {
+      "route": "accessibility",
+      "status": 200
+    },
+    {
+      "route": "water-refill",
+      "status": 200
+    },
+    {
+      "route": "bikeshare",
+      "status": 200
+    },
+    {
+      "route": "micromobility",
+      "status": 200
+    },
+    {
+      "route": "ev-charging",
+      "status": 200
+    },
+    {
+      "route": "transit-stops",
+      "status": 200
+    },
+    {
+      "route": "jakarta-transit",
+      "status": 200
+    },
+    {
+      "route": "flood",
+      "status": 200
+    },
+    {
+      "route": "disaster",
+      "status": 200
+    },
+    {
+      "route": "weather-radar",
+      "status": 200
+    },
+    {
+      "route": "weather-satellite",
+      "status": 200
+    },
+    {
+      "route": "open-data",
+      "status": 200
+    }
+  ],
+  "openDataFilter": {
+    "lat": "-6.2",
+    "lon": "106.82",
+    "radius": "10000",
+    "category": "pharmacy",
+    "source": "poi"
+  },
+  "passed": true
+}

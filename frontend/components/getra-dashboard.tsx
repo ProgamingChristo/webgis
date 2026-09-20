@@ -1165,6 +1165,19 @@ function GeneralGetraDashboard() {
   const [manualRouteDestination, setManualRouteDestination] = useState<Coordinate | null>(null);
   const [manualRouteDestinationLabel, setManualRouteDestinationLabel] = useState("Titik tujuan di peta");
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("destination_lat") || !params.has("destination_lon")) return;
+    const latitude = Number(params.get("destination_lat"));
+    const longitude = Number(params.get("destination_lon"));
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return;
+    // URL handoff is an external input applied once after browser hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setManualRouteDestination({ latitude, longitude });
+    setManualRouteDestinationLabel("Lokasi dari Global Data Center");
+    setSidebarMode("route");
+  }, []);
+
   const [
     locating,
     setLocating,

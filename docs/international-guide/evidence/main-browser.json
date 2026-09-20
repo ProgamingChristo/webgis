@@ -1,0 +1,180 @@
+{
+  "base": "https://getra-routing-api.tail0ed517.ts.net:8443",
+  "switches": [
+    {
+      "id": "osm",
+      "same": true,
+      "center": [
+        106.78916100000004,
+        -6.259920000000037
+      ],
+      "zoom": 16,
+      "pitch": 0,
+      "bearing": 0,
+      "sources": [
+        {
+          "id": "walking-route",
+          "count": 1
+        },
+        {
+          "id": "route-alternatives",
+          "count": 0
+        },
+        {
+          "id": "jakarta-admin-boundaries",
+          "count": 0
+        },
+        {
+          "id": "getra-context-property",
+          "count": 0
+        },
+        {
+          "id": "getra-context-transaction",
+          "count": 0
+        },
+        {
+          "id": "getra-context-activity",
+          "count": 0
+        }
+      ],
+      "merchantMarkers": 107,
+      "journeyOpen": "false",
+      "selectedPopup": "GETRA×2ND BITE BAKERYROTIJALAN RADIO DALAM RAYA 87Kisaran harga SedangJam buka belum tersediaLihat detailRute ke sini",
+      "stored": "osm",
+      "style": "osm"
+    },
+    {
+      "id": "esri-satellite",
+      "same": true,
+      "center": [
+        106.78916100000004,
+        -6.259920000000037
+      ],
+      "zoom": 16,
+      "pitch": 0,
+      "bearing": 0,
+      "sources": [
+        {
+          "id": "walking-route",
+          "count": 1
+        },
+        {
+          "id": "route-alternatives",
+          "count": 0
+        },
+        {
+          "id": "jakarta-admin-boundaries",
+          "count": 0
+        },
+        {
+          "id": "getra-context-property",
+          "count": 0
+        },
+        {
+          "id": "getra-context-transaction",
+          "count": 0
+        },
+        {
+          "id": "getra-context-activity",
+          "count": 0
+        }
+      ],
+      "merchantMarkers": 107,
+      "journeyOpen": "false",
+      "selectedPopup": "GETRA×2ND BITE BAKERYROTIJALAN RADIO DALAM RAYA 87Kisaran harga SedangJam buka belum tersediaLihat detailRute ke sini",
+      "stored": "esri-satellite",
+      "style": "esri-satellite"
+    },
+    {
+      "id": "mapid-default",
+      "same": true,
+      "center": [
+        106.78916100000004,
+        -6.259920000000037
+      ],
+      "zoom": 16,
+      "pitch": 0,
+      "bearing": 0,
+      "sources": [
+        {
+          "id": "walking-route",
+          "count": 1
+        },
+        {
+          "id": "route-alternatives",
+          "count": 0
+        },
+        {
+          "id": "jakarta-admin-boundaries",
+          "count": 0
+        },
+        {
+          "id": "getra-context-property",
+          "count": 0
+        },
+        {
+          "id": "getra-context-transaction",
+          "count": 0
+        },
+        {
+          "id": "getra-context-activity",
+          "count": 0
+        }
+      ],
+      "merchantMarkers": 107,
+      "journeyOpen": "false",
+      "selectedPopup": "GETRA×2ND BITE BAKERYROTIJALAN RADIO DALAM RAYA 87Kisaran harga SedangJam buka belum tersediaLihat detailRute ke sini",
+      "stored": "mapid-default",
+      "style": "Street Mapid"
+    }
+  ],
+  "errors": [],
+  "loginDefault": {
+    "stored": "mapid-default",
+    "style": "Street Mapid"
+  },
+  "merchantSelected": true,
+  "before": {
+    "same": true,
+    "center": [
+      106.78916100000004,
+      -6.259920000000037
+    ],
+    "zoom": 16,
+    "pitch": 0,
+    "bearing": 0,
+    "sources": [
+      {
+        "id": "walking-route",
+        "count": 1
+      },
+      {
+        "id": "route-alternatives",
+        "count": 0
+      },
+      {
+        "id": "jakarta-admin-boundaries",
+        "count": 0
+      },
+      {
+        "id": "getra-context-property",
+        "count": 0
+      },
+      {
+        "id": "getra-context-transaction",
+        "count": 0
+      },
+      {
+        "id": "getra-context-activity",
+        "count": 0
+      }
+    ],
+    "merchantMarkers": 107,
+    "journeyOpen": "false",
+    "selectedPopup": "GETRA×2ND BITE BAKERYROTIJALAN RADIO DALAM RAYA 87Kisaran harga SedangJam buka belum tersediaLihat detailRute ke sini",
+    "stored": "mapid-default",
+    "style": "Street Mapid"
+  },
+  "logoutResets": true,
+  "passed": true
+}

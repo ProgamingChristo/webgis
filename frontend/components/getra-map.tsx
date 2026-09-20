@@ -60,9 +60,9 @@ import {
   FALLBACK_MAP_STYLE,
   getBasemapOption,
   getDefaultBasemapId,
-  getPreferredBasemapId,
-  persistBasemapPreference,
 } from "@/lib/mapid";
+import { useBasemap } from "@/lib/basemap-state";
+import { applyBasemap } from "@/lib/basemap-engine";
 import {
   computeMapSafeArea,
   isInRightSafeZone,
@@ -736,16 +736,17 @@ export function GetraMap({
   analyticsMode = "DEMAND",
   onSelectAnalyticsRegion,
 }: GetraMapProps) {
-  const [
-    activeBasemapId,
-    setActiveBasemapId,
-  ] =
-    useState<BasemapId>(
-      getDefaultBasemapId(),
-    );
+  const [activeBasemapId, setActiveBasemapId] = useBasemap();
 
   const [styleRevision, setStyleRevision] = useState(0);
-  const [basemapStatus, setBasemapStatus] = useState<"LOADING" | "READY" | "ERROR">("LOADING");
+  const [basemapStatus, setBasemapStatus] = useState<"LOADING" | "READY" | "ERROR" | "FALLBACK">("LOADING");
+  const [basemapFailure, setBasemapFailure] = useState<string | null>(null);
+  const [basemapProviders, setBasemapProviders] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch("/api/basemap/status", { signal: controller.signal }).then(response => response.json()).then(setBasemapProviders).catch(() => {});
+    return () => controller.abort();
+  }, []);
   const [basemapRetryRevision, setBasemapRetryRevision] = useState(0);
   const basemapReadyRef = useRef(false);
   const appliedBasemapRef = useRef<{
@@ -753,17 +754,6 @@ export function GetraMap({
     retryRevision: number;
   } | null>(null);
 
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      const preferred = getPreferredBasemapId();
-      if (preferred !== getDefaultBasemapId()) {
-        basemapReadyRef.current = false;
-        setBasemapStatus("LOADING");
-        setActiveBasemapId(preferred);
-      }
-    }, 0);
-    return () => window.clearTimeout(timeoutId);
-  }, []);
   const [renderedClusterFeatureCount, setRenderedClusterFeatureCount] = useState(0);
   const [clusterSourceFeatureCount, setClusterSourceFeatureCount] = useState(0);
   const [boundaryLayersReady, setBoundaryLayersReady] = useState(false);
@@ -1341,92 +1331,34 @@ export function GetraMap({
       return;
     }
 
+    const controller = new AbortController();
     basemapReadyRef.current = false;
     setBasemapStatus("LOADING");
-    appliedBasemapRef.current = {
-      id: activeBasemap.id,
-      retryRevision: basemapRetryRevision,
+    appliedBasemapRef.current = { id: activeBasemap.id, retryRevision: basemapRetryRevision };
+    const restoreLayers = () => {
+      addJakartaAdminBoundaries(map, importBoundariesRef.current);
+      syncAdministrativeBoundaryLayers(map, administrativeBoundariesRef.current);
+      syncContextualObservationLayers(map, contextualLayerDataRef.current, contextualLayerVisibilityRef.current);
+      addDatasetExtent(map, datasetBoundsRef.current);
+      syncWalkingRoute(map, routeGeometryRef.current);
+      syncWalkingServiceArea(map, serviceAreaGeometryRef.current);
+      setBoundaryLayersReady(true);
+      setStyleRevision(revision => revision + 1);
     };
-    map.setStyle(
-      activeBasemap.style,
-    );
-
-    const syncBasemapOverlays = () => {
-      try {
-        addJakartaAdminBoundaries(
-          map,
-          importBoundariesRef.current,
-        );
-        syncAdministrativeBoundaryLayers(map, administrativeBoundariesRef.current);
-        syncContextualObservationLayers(
-          map,
-          contextualLayerDataRef.current,
-          contextualLayerVisibilityRef.current,
-        );
-        setBoundaryLayersReady(true);
-
-        addDatasetExtent(
-          map,
-          datasetBoundsRef.current,
-        );
-        syncWalkingRoute(
-          map,
-          routeGeometryRef.current,
-        );
-        syncWalkingServiceArea(map, serviceAreaGeometryRef.current);
-        setStyleRevision((revision) => revision + 1);
-      } catch (error) {
-        console.error(
-          "[GETRA MAP ERROR] Failed to sync map overlays.",
-          error,
-        );
-      }
-    };
-
-    const timeoutId =
-      window.setTimeout(
-        syncBasemapOverlays,
-        150,
-      );
-
-    const failureTimeoutId = window.setTimeout(() => {
-      if (!basemapReadyRef.current) setBasemapStatus("ERROR");
-    }, 12_000);
-
-    const markBasemapReady = () => {
+    void applyBasemap(map, activeBasemap.id, controller.signal, restoreLayers).then(() => {
+      if (controller.signal.aborted) return;
       basemapReadyRef.current = true;
       setBasemapStatus("READY");
-      syncBasemapOverlays();
-    };
-
-    map.once(
-      "style.load",
-      markBasemapReady,
-    );
-
-    map.once(
-      "idle",
-      markBasemapReady,
-    );
-
-    return () => {
-      window.clearTimeout(
-        timeoutId,
-      );
-      window.clearTimeout(failureTimeoutId);
-      map.off(
-        "style.load",
-        markBasemapReady,
-      );
-      map.off(
-        "idle",
-        markBasemapReady,
-      );
-    };
-  }, [
-    activeBasemapId,
-    basemapRetryRevision,
-  ]);
+    }).catch(() => {
+      if (controller.signal.aborted) return;
+      setBasemapFailure(`${activeBasemap.label}: Basemap gagal dimuat.`);
+      if (activeBasemap.id !== "mapid-default") {
+        setBasemapStatus("FALLBACK");
+        setActiveBasemapId("mapid-default");
+      } else setBasemapStatus("ERROR");
+    });
+    return () => controller.abort();
+  }, [activeBasemapId, basemapRetryRevision, setActiveBasemapId]);
 
   /*
    * Active dataset extent and center marker
@@ -2479,9 +2411,9 @@ export function GetraMap({
         <div className="map-basemap-state" data-state={basemapStatus} role={basemapStatus === "ERROR" ? "alert" : "status"}>
           <div>
             <Layers size={22} aria-hidden="true" />
-            <strong>{basemapStatus === "ERROR" ? "Peta dasar belum dapat dimuat" : "Memuat peta dasar…"}</strong>
+            <strong>{basemapStatus === "ERROR" ? "Basemap gagal dimuat." : "Memuat peta dasar…"}</strong>
             {basemapStatus === "ERROR" ? <span>Periksa koneksi atau coba muat ulang peta dasar.</span> : null}
-            {basemapStatus === "ERROR" ? <button type="button" onClick={() => { basemapReadyRef.current = false; setBasemapStatus("LOADING"); setBasemapRetryRevision((revision) => revision + 1); }}>Coba lagi</button> : null}
+            {basemapStatus === "ERROR" ? <button type="button" onClick={() => { basemapReadyRef.current = false; setBasemapStatus("LOADING"); setActiveBasemapId("mapid-default"); setBasemapRetryRevision((revision) => revision + 1); }}>Gunakan MAPID Default</button> : null}
           </div>
         </div>
       ) : null}
@@ -2505,6 +2437,7 @@ export function GetraMap({
                 activeBasemapId,
             )?.description ?? "Peta MAPID"}
           </span>
+          {basemapFailure ? <span role="alert">{basemapFailure} MAPID Default digunakan.</span> : null}
         </div>
       </div> : null}
 
@@ -2525,12 +2458,13 @@ export function GetraMap({
         onChange={onContextualLayerChange}
       />
 
-      <details className={journeyActive ? "navigation-basemap" : "planning-basemap"} open={journeyActive ? undefined : true}>
-      <summary hidden={!journeyActive} aria-label="Tampilan peta" title="Tampilan peta"><Layers size={20} /></summary>
+      <details className={journeyActive ? "navigation-basemap" : "planning-basemap"}>
+      <summary aria-label="Basemap" title="Tampilan peta"><Layers size={20} /> Basemap</summary>
       <div
         className="basemap-switcher"
         aria-label="Pilih jenis peta"
       >
+        <button type="button" className="basemap-button" onClick={() => { setBasemapFailure(null); setActiveBasemapId("mapid-default"); setBasemapRetryRevision(revision => revision + 1); }}>Reset ke MAPID</button>
         {BASEMAP_OPTIONS.map(
           (option) => (
             <button
@@ -2543,11 +2477,10 @@ export function GetraMap({
                   : "basemap-button"
               }
               aria-pressed={option.id === activeBasemapId}
-              title={option.description}
+              title={`${option.provider} · ${option.type} · ${option.attribution}`}
               onClick={() => {
-                basemapReadyRef.current = false;
-                setBasemapStatus("LOADING");
-                persistBasemapPreference(option.id);
+                setBasemapFailure(null);
+                if (option.id === activeBasemapId) setBasemapRetryRevision(revision => revision + 1);
                 setActiveBasemapId(option.id);
               }}
             >
@@ -2557,6 +2490,7 @@ export function GetraMap({
               <small style={{ color: "#94a3b8" }}>
                 {option.description}
               </small>
+              <small>{option.provider} · {option.type} · {basemapProviders[option.id] ?? "CHECKING"}</small>
             </button>
           ),
         )}

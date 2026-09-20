@@ -102,7 +102,7 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
           {utilityOpen ? (
             <div className="getra-utility-menu__panel">
               <span className="getra-utility-menu__label">Smart City & Global (50 Fitur)</span>
-              <Link href="/international" onClick={closeMenus}><Globe size={16} />Portal Global Hub</Link>
+              <Link href="/international" onClick={closeMenus}><Globe size={16} />Global Data Center</Link>
               <Link href="/cctv" onClick={closeMenus}><Video size={16} />CCTV & Sensor Platform</Link>
               <Link href="/international/traffic-congestion" onClick={closeMenus}><Car size={16} />Deteksi Macet AI</Link>
               <Link href="/international/multimodal-transit" onClick={closeMenus}><Plane size={16} />Rute Multimoda</Link>
@@ -166,7 +166,7 @@ export function GetraGlobalHeader({ contextActions, utilities }: { contextAction
                   </Link>
                 );
               })}
-              <Link href="/international" onClick={closeMenus}><Globe size={17} />Portal Global (50 Modul)</Link>
+              <Link href="/international" onClick={closeMenus}><Globe size={17} />Global Data Center</Link>
               <Link href="/cctv" onClick={closeMenus}><Video size={17} />CCTV & Sensor Platform</Link>
               <Link href="/international/traffic-congestion" onClick={closeMenus}><Car size={17} />Deteksi Macet AI</Link>
               <Link href="/transit" onClick={closeMenus}><MapPinned size={17} />Simpul Transit</Link>

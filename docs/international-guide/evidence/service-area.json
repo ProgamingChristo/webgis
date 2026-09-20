@@ -1,0 +1,8 @@
+{
+  "base": "https://getra-routing-api.tail0ed517.ts.net:8443",
+  "errors": [],
+  "switches": [],
+  "apiFailures": [],
+  "failure": "Waiting failed: 60000ms exceeded",
+  "text": "GETRA\nPeta Cerdas Kota\nPeta\nUMKM\nKomunitas\nGlobal\nFitur\nCU\nCOMMUTER Updated Name\nPengguna\nMode Umum\nUmum\nCari\nRute\n0 tempat ditemukan\nPeta\nLokasi saya\nGanti area\nCari tempat\nFilter\nRadius Area peta\nJalan maks. 10 mnt\nCari di area peta ini\n\nJangkauan jalan kaki belum tersedia dari titik awal ini.\n\nBelum ada tempat yang sesuai dengan semua filter.\nGETRA tidak mengubah filter Anda secara otomatis. Ubah anggaran, status buka, atau batas waktu berjalan untuk memperluas hasil.\nHapus batas berjalan\nHasil pencarian\n0 tempat ditemukan\nBuka\n\nBerdasarkan data tempat yang tersedia\n\nUrutkan\nRelevansi\nTerdekat\nHarga terendah\nALL\nTempat\nAccessibility\nPenelusuran Adil\nDaftar Data\nAnalisis\nRute Perjalanan\nPilih asal dan tujuan untuk memulai\nTanya GETRA\nLokasi saya\nA · ASAL\n5 km\nMapLibre | © MAPID Maps © OpenMapTiles © OpenStreetMap contributors\nJENIS PETA\nDefault GETRA basemap\nLapisan\nBasemap"
+}

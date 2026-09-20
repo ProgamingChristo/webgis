@@ -169,14 +169,14 @@ describe("commuter browser safety", () => {
 
       expect(
         basemap,
-      ).toContain(
+      ).not.toContain(
         "NEXT_PUBLIC_MAPID_BASEMAP_KEY",
       );
 
       expect(
         basemap,
       ).toContain(
-        "tiles.openfreemap.org",
+        "/api/basemap/mapid/styles/default/style.json",
       );
     },
   );

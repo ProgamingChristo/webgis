@@ -1,0 +1,179 @@
+{
+  "base": "https://getra-routing-api.tail0ed517.ts.net:8443",
+  "switches": [
+    {
+      "id": "osm",
+      "same": true,
+      "center": [
+        106.68299000000002,
+        -6.2141200000000225
+      ],
+      "zoom": 15.5,
+      "pitch": 22,
+      "bearing": 0,
+      "sources": [
+        {
+          "id": "walking-route",
+          "count": 1
+        },
+        {
+          "id": "route-alternatives",
+          "count": 0
+        },
+        {
+          "id": "jakarta-admin-boundaries",
+          "count": 0
+        },
+        {
+          "id": "getra-context-property",
+          "count": 0
+        },
+        {
+          "id": "getra-context-transaction",
+          "count": 0
+        },
+        {
+          "id": "getra-context-activity",
+          "count": 0
+        }
+      ],
+      "merchantMarkers": 0,
+      "journeyOpen": "true",
+      "selectedPopup": null,
+      "stored": "osm",
+      "style": "osm"
+    },
+    {
+      "id": "esri-satellite",
+      "same": true,
+      "center": [
+        106.68299000000002,
+        -6.2141200000000225
+      ],
+      "zoom": 15.5,
+      "pitch": 22,
+      "bearing": 0,
+      "sources": [
+        {
+          "id": "walking-route",
+          "count": 1
+        },
+        {
+          "id": "route-alternatives",
+          "count": 0
+        },
+        {
+          "id": "jakarta-admin-boundaries",
+          "count": 0
+        },
+        {
+          "id": "getra-context-property",
+          "count": 0
+        },
+        {
+          "id": "getra-context-transaction",
+          "count": 0
+        },
+        {
+          "id": "getra-context-activity",
+          "count": 0
+        }
+      ],
+      "merchantMarkers": 0,
+      "journeyOpen": "true",
+      "selectedPopup": null,
+      "stored": "esri-satellite",
+      "style": "esri-satellite"
+    },
+    {
+      "id": "mapid-default",
+      "same": true,
+      "center": [
+        106.68299000000002,
+        -6.2141200000000225
+      ],
+      "zoom": 15.5,
+      "pitch": 22,
+      "bearing": 0,
+      "sources": [
+        {
+          "id": "walking-route",
+          "count": 1
+        },
+        {
+          "id": "route-alternatives",
+          "count": 0
+        },
+        {
+          "id": "jakarta-admin-boundaries",
+          "count": 0
+        },
+        {
+          "id": "getra-context-property",
+          "count": 0
+        },
+        {
+          "id": "getra-context-transaction",
+          "count": 0
+        },
+        {
+          "id": "getra-context-activity",
+          "count": 0
+        }
+      ],
+      "merchantMarkers": 0,
+      "journeyOpen": "true",
+      "selectedPopup": null,
+      "stored": "mapid-default",
+      "style": "Street Mapid"
+    }
+  ],
+  "errors": [],
+  "loginDefault": {
+    "stored": "mapid-default",
+    "style": "Street Mapid"
+  },
+  "merchantSelected": false,
+  "before": {
+    "same": true,
+    "center": [
+      106.68299000000002,
+      -6.2141200000000225
+    ],
+    "zoom": 15.5,
+    "pitch": 22,
+    "bearing": 0,
+    "sources": [
+      {
+        "id": "walking-route",
+        "count": 1
+      },
+      {
+        "id": "route-alternatives",
+        "count": 0
+      },
+      {
+        "id": "jakarta-admin-boundaries",
+        "count": 0
+      },
+      {
+        "id": "getra-context-property",
+        "count": 0
+      },
+      {
+        "id": "getra-context-transaction",
+        "count": 0
+      },
+      {
+        "id": "getra-context-activity",
+        "count": 0
+      }
+    ],
+    "merchantMarkers": 0,
+    "journeyOpen": "true",
+    "selectedPopup": null,
+    "stored": "mapid-default",
+    "style": "Street Mapid"
+  },
+  "passed": true
+}

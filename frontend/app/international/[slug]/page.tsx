@@ -1,3 +1,5 @@
+import { INTERNATIONAL_LAYERS, isInternationalLayer } from "@/types/international";
+import { GlobalDataCenter } from "@/src/features/international/components/GlobalDataCenter";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { GetraAppShell } from "@/src/components/getra-ui";
@@ -56,7 +58,7 @@ import {
 } from "@/src/features/international";
 
 export function generateStaticParams() {
-  return INTERNATIONAL_FEATURES.map((f) => ({ slug: f.slug }));
+  return [...new Set([...INTERNATIONAL_FEATURES.map(f => f.slug), ...INTERNATIONAL_LAYERS.map(f => f[0])])].map(slug => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -66,6 +68,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const feature = INTERNATIONAL_FEATURES.find((f) => f.slug === slug);
+  const liveFeature = INTERNATIONAL_LAYERS.find(f => f[0] === slug);
+  if (liveFeature) return { title: `${liveFeature[1]} ? GETRA Global Data Center` };
   if (!feature) return { title: "Fitur Internasional — GETRA" };
 
   return {
@@ -80,6 +84,7 @@ export default async function InternationalFeaturePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  if (isInternationalLayer(slug) || slug === "open-basemaps") return <GetraAppShell tone="community" fullWidth><GlobalDataCenter initialLayer={isInternationalLayer(slug) ? slug : "weather"} basemapOnly={slug === "open-basemaps"} /></GetraAppShell>;
   const feature = INTERNATIONAL_FEATURES.find((f) => f.slug === slug);
   if (!feature) notFound();
 

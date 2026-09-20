@@ -2,6 +2,17 @@
 
 Welcome to GETRA. This project operates on the **GETRA Integration Baseline (v1.0)**, establishing a highly robust, secure, and geospatially-aware web application architecture.
 
+## URL produksi dan panduan fitur terbaru
+
+- Frontend: [https://getra-routing-api.tail0ed517.ts.net:8443](https://getra-routing-api.tail0ed517.ts.net:8443)
+- Login: [https://getra-routing-api.tail0ed517.ts.net:8443/login](https://getra-routing-api.tail0ed517.ts.net:8443/login)
+- Backend health: [https://getra-routing-api.tail0ed517.ts.net/api/health](https://getra-routing-api.tail0ed517.ts.net/api/health)
+- [Panduan penggunaan basemap dan 20 fitur Global Data Center, dengan screenshot](docs/international-guide/README.md)
+- [Dokumentasi PDF](docs/international-guide/GETRA_BASEMAP_GLOBAL_DATA_CENTER.pdf)
+- [Laporan teknis A–I dan batasan integrasi](docs/INTERNATIONAL_DATA_REPORT.md)
+
+URL di atas tetap menjadi referensi produksi. Alamat localhost di bawah hanya untuk pengembangan lokal.
+
 ## System Overview
 
 GETRA seamlessly bridges Public Transit, Pedestrian Networking, and Retail/UMKM analytics through a unified interface.

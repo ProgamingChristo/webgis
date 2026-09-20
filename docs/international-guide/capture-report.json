@@ -1,0 +1,361 @@
+{
+  "captured_at": "2026-09-20T07:18:35.049Z",
+  "base": "https://getra-routing-api.tail0ed517.ts.net:8443",
+  "references": [
+    {
+      "name": "frontend",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443",
+      "http": 200
+    },
+    {
+      "name": "login",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/login",
+      "http": 200
+    },
+    {
+      "name": "health",
+      "url": "https://getra-routing-api.tail0ed517.ts.net/api/health",
+      "http": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "database": "connected",
+          "service": "getra-api",
+          "status": "ok"
+        },
+        "request_id": "a19d258c-202b-4578-946d-612141a87fa5"
+      }
+    },
+    {
+      "name": "frontend",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443",
+      "http": 200
+    },
+    {
+      "name": "login",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/login",
+      "http": 200
+    },
+    {
+      "name": "health",
+      "url": "https://getra-routing-api.tail0ed517.ts.net/api/health",
+      "http": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "database": "connected",
+          "service": "getra-api",
+          "status": "ok"
+        },
+        "request_id": "5e11f373-8032-450f-aa30-c5365e091496"
+      }
+    },
+    {
+      "name": "frontend",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443",
+      "http": 200
+    },
+    {
+      "name": "login",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/login",
+      "http": 200
+    },
+    {
+      "name": "health",
+      "url": "https://getra-routing-api.tail0ed517.ts.net/api/health",
+      "http": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "database": "connected",
+          "service": "getra-api",
+          "status": "ok"
+        },
+        "request_id": "b989f68e-a448-4438-96e3-f61e3f409329"
+      }
+    }
+  ],
+  "features": [
+    {
+      "id": "earthquakes",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/earthquakes",
+      "errors": [],
+      "http": 200,
+      "status": "LIVE",
+      "count": 83,
+      "provider": "USGS",
+      "updated": "2026-09-20T07:18:16.000Z",
+      "message": null,
+      "ttl": 60,
+      "truncated": false,
+      "screenshot": "screenshots/earthquakes.jpg"
+    },
+    {
+      "id": "active-fire",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/active-fire",
+      "errors": [],
+      "http": 200,
+      "status": "AUTH_REQUIRED",
+      "count": 0,
+      "provider": "NASA FIRMS",
+      "updated": null,
+      "message": "PARTIAL — SOURCE CREDENTIAL REQUIRED: NASA_FIRMS_MAP_KEY",
+      "ttl": 900,
+      "truncated": false,
+      "screenshot": "screenshots/active-fire.jpg"
+    },
+    {
+      "id": "air-quality",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/air-quality",
+      "errors": [],
+      "http": 200,
+      "status": "AUTH_REQUIRED",
+      "count": 0,
+      "provider": "OpenAQ",
+      "updated": null,
+      "message": "PARTIAL — SOURCE CREDENTIAL REQUIRED: OPENAQ_API_KEY",
+      "ttl": 3600,
+      "truncated": false,
+      "screenshot": "screenshots/air-quality.jpg"
+    },
+    {
+      "id": "places",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/places",
+      "errors": [],
+      "http": 200,
+      "status": "AUTH_REQUIRED",
+      "count": 0,
+      "provider": "GeoNames",
+      "updated": null,
+      "message": "PARTIAL — SOURCE CREDENTIAL REQUIRED: GEONAMES_USERNAME",
+      "ttl": 86400,
+      "truncated": false,
+      "screenshot": "screenshots/places.jpg"
+    },
+    {
+      "id": "elevation",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/elevation",
+      "errors": [],
+      "http": 200,
+      "status": "AUTH_REQUIRED",
+      "count": 0,
+      "provider": "GeoNames",
+      "updated": null,
+      "message": "PARTIAL — SOURCE CREDENTIAL REQUIRED: GEONAMES_USERNAME",
+      "ttl": 86400,
+      "truncated": false,
+      "screenshot": "screenshots/elevation.jpg"
+    },
+    {
+      "id": "timezone",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/timezone",
+      "errors": [],
+      "http": 200,
+      "status": "AUTH_REQUIRED",
+      "count": 0,
+      "provider": "GeoNames",
+      "updated": null,
+      "message": "PARTIAL — SOURCE CREDENTIAL REQUIRED: GEONAMES_USERNAME",
+      "ttl": 86400,
+      "truncated": false,
+      "screenshot": "screenshots/timezone.jpg"
+    },
+    {
+      "id": "poi",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/poi",
+      "errors": [],
+      "http": 200,
+      "status": "LIVE",
+      "count": 70,
+      "provider": "OpenStreetMap contributors",
+      "updated": "2026-09-20T07:18:21.000Z",
+      "message": null,
+      "ttl": 3600,
+      "truncated": false,
+      "screenshot": "screenshots/poi.jpg"
+    },
+    {
+      "id": "accessibility",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/accessibility",
+      "errors": [],
+      "http": 200,
+      "status": "LIVE",
+      "count": 0,
+      "provider": "OpenStreetMap contributors",
+      "updated": "2026-09-20T07:18:21.000Z",
+      "message": null,
+      "ttl": 3600,
+      "truncated": false,
+      "screenshot": "screenshots/accessibility.jpg"
+    },
+    {
+      "id": "water-refill",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/water-refill",
+      "errors": [],
+      "http": 200,
+      "status": "LIVE",
+      "count": 2,
+      "provider": "OpenStreetMap contributors",
+      "updated": "2026-09-20T07:18:21.000Z",
+      "message": null,
+      "ttl": 3600,
+      "truncated": false,
+      "screenshot": "screenshots/water-refill.jpg"
+    },
+    {
+      "id": "bikeshare",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/bikeshare",
+      "errors": [],
+      "http": 200,
+      "status": "LIVE",
+      "count": 2520,
+      "provider": "MobilityData / GBFS operators",
+      "updated": "2026-09-20T07:19:27.000Z",
+      "message": null,
+      "ttl": 60,
+      "truncated": false,
+      "screenshot": "screenshots/bikeshare.jpg"
+    },
+    {
+      "id": "micromobility",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/micromobility",
+      "errors": [],
+      "http": 200,
+      "status": "LIVE",
+      "count": 3000,
+      "provider": "MobilityData / GBFS operators",
+      "updated": "2026-09-20T07:20:08.000Z",
+      "message": null,
+      "ttl": 300,
+      "truncated": true,
+      "screenshot": "screenshots/micromobility.jpg"
+    },
+    {
+      "id": "ev-charging",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/ev-charging",
+      "errors": [],
+      "http": 200,
+      "status": "LIVE",
+      "count": 10,
+      "provider": "OpenStreetMap contributors",
+      "updated": "2026-09-20T07:19:21.000Z",
+      "message": null,
+      "ttl": 3600,
+      "truncated": false,
+      "screenshot": "screenshots/ev-charging.jpg"
+    },
+    {
+      "id": "transit-stops",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/transit-stops",
+      "errors": [],
+      "http": 200,
+      "status": "LIVE",
+      "count": 50,
+      "provider": "OpenStreetMap contributors",
+      "updated": "2026-09-20T07:19:21.000Z",
+      "message": null,
+      "ttl": 3600,
+      "truncated": false,
+      "screenshot": "screenshots/transit-stops.jpg"
+    },
+    {
+      "id": "jakarta-transit",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/jakarta-transit",
+      "errors": [],
+      "http": 200,
+      "status": "LIVE",
+      "count": 4,
+      "provider": "Jakarta Satu / DKI Jakarta",
+      "updated": null,
+      "message": null,
+      "ttl": 86400,
+      "truncated": false,
+      "screenshot": "screenshots/jakarta-transit.jpg"
+    },
+    {
+      "id": "flood",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/flood",
+      "errors": [],
+      "http": 200,
+      "status": "UNAVAILABLE",
+      "count": 0,
+      "provider": "Pemprov DKI Jakarta / DSDA",
+      "updated": null,
+      "message": "DATA SOURCE NOT CONNECTED — verified official feed required (DKI_FLOOD_GEOJSON_URL).",
+      "ttl": 300,
+      "truncated": false,
+      "screenshot": "screenshots/flood.jpg"
+    },
+    {
+      "id": "disaster",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/disaster",
+      "errors": [],
+      "http": 200,
+      "status": "UNAVAILABLE",
+      "count": 0,
+      "provider": "BPBD DKI Jakarta",
+      "updated": null,
+      "message": "DATA SOURCE NOT CONNECTED — verified official feed required (DKI_DISASTER_GEOJSON_URL).",
+      "ttl": 86400,
+      "truncated": false,
+      "screenshot": "screenshots/disaster.jpg"
+    },
+    {
+      "id": "weather-radar",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/weather-radar",
+      "errors": [],
+      "http": 200,
+      "status": "ERROR",
+      "count": 0,
+      "provider": "BMKG",
+      "updated": null,
+      "message": "Provider HTTP 522",
+      "ttl": 600,
+      "truncated": false,
+      "screenshot": "screenshots/weather-radar.jpg"
+    },
+    {
+      "id": "weather-satellite",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/weather-satellite",
+      "errors": [],
+      "http": 200,
+      "status": "UNAVAILABLE",
+      "count": 0,
+      "provider": "BMKG",
+      "updated": null,
+      "message": "DATA SOURCE NOT CONNECTED — verified official feed required (BMKG_SATELLITE_MANIFEST_URL).",
+      "ttl": 600,
+      "truncated": false,
+      "screenshot": "screenshots/weather-satellite.jpg"
+    },
+    {
+      "id": "open-data",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/open-data",
+      "errors": [],
+      "http": 200,
+      "status": "LIVE",
+      "count": 84,
+      "provider": "USGS",
+      "updated": "2026-09-20T07:24:16.000Z",
+      "message": null,
+      "ttl": 60,
+      "truncated": false,
+      "screenshot": "screenshots/open-data.jpg"
+    },
+    {
+      "id": "weather",
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/international/weather",
+      "errors": [],
+      "http": 200,
+      "status": "LIVE",
+      "count": 1,
+      "provider": "Open-Meteo",
+      "updated": "2026-09-20T07:15:00.000Z",
+      "message": null,
+      "ttl": 900,
+      "truncated": false,
+      "screenshot": "screenshots/weather.jpg"
+    }
+  ],
+  "finished_at": "2026-09-20T07:28:02.963Z"
+}
