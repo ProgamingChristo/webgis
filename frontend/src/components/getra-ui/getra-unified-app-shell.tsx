@@ -6,8 +6,18 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { GetraGlobalHeader } from "./getra-global-header";
 
-type AppShellTone = "general" | "community" | "umkm" | "admin" | "profile";
-type GetraAppShellProps = { children: ReactNode; eyebrow?: string; title?: string; description?: string; tone?: AppShellTone; actions?: ReactNode; utilities?: ReactNode; showContextNavigation?: boolean };
+type AppShellTone = "general" | "community" | "umkm" | "admin" | "profile" | "cctv-full";
+type GetraAppShellProps = {
+  children: ReactNode;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  tone?: AppShellTone;
+  actions?: ReactNode;
+  utilities?: ReactNode;
+  showContextNavigation?: boolean;
+  fullWidth?: boolean;
+};
 
 const UMKM_NAV = [
   { href: "/umkm", label: "Ruang Kelola", icon: Store, exact: true },
@@ -31,17 +41,17 @@ const INTERNATIONAL_NAV = [
   { href: "/international/open-basemaps", label: "Multi-Basemap", icon: Map, exact: true },
 ];
 
-export function GetraAppShell({ actions, children, description, eyebrow = "GETRA", title, tone = "general", utilities, showContextNavigation = true }: GetraAppShellProps) {
+export function GetraAppShell({ actions, children, description, eyebrow = "GETRA", title, tone = "general", utilities, showContextNavigation = true, fullWidth = false }: GetraAppShellProps) {
   const pathname = usePathname();
   const contextualNav = tone === "umkm"
     ? UMKM_NAV
     : tone === "admin"
     ? ADMIN_NAV
-    : Boolean(pathname && pathname.startsWith("/international"))
+    : Boolean(pathname && (pathname.startsWith("/international") || pathname === "/cctv" || pathname.startsWith("/cctv/")))
     ? INTERNATIONAL_NAV
     : [];
   return (
-    <main className={`getra-app-shell getra-app-shell--${tone}`}>
+    <main className={`getra-app-shell getra-app-shell--${tone}${fullWidth ? " getra-app-shell--full-width" : ""}`}>
       <GetraGlobalHeader utilities={utilities} />
       {showContextNavigation && contextualNav.length > 0 ? (
         <nav className="getra-context-nav" aria-label={tone === "umkm" ? "Navigasi UMKM" : "Navigasi admin"}>

@@ -198,7 +198,7 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
       {/* ------------------------------------------------------------------ */}
       {/* Main Content Area — 16:9 aspect ratio                              */}
       {/* ------------------------------------------------------------------ */}
-      <div className="relative aspect-video w-full bg-slate-100 flex items-center justify-center overflow-hidden">
+      <div className="relative aspect-video w-full min-h-[360px] sm:min-h-[460px] xl:min-h-[580px] bg-slate-900 flex items-center justify-center overflow-hidden">
 
         {/* ── MODE A: DKI Public Portal iframe ── */}
         {renderMode === "iframe" && camera.embed_url && (

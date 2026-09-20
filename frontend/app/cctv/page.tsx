@@ -10,12 +10,7 @@ export const metadata: Metadata = {
 
 export default function CctvPlatformPage() {
   return (
-    <GetraAppShell
-      eyebrow="GETRA CCTV Platform"
-      title="Global CCTV & Urban Sensors"
-      description="Kamera publik DKI Jakarta, AI Vision, dan sensor kota dalam satu platform geospasial."
-      tone="community"
-    >
+    <GetraAppShell tone="cctv-full" fullWidth={true}>
       <CctvPlatformShell />
     </GetraAppShell>
   );

@@ -41,134 +41,13 @@ import {
   PEDESTRIAN_BRIDGES,
 } from "../data";
 import { CctvLivePlayer } from "./CctvLivePlayer";
+import { CctvPlatformShell } from "../../cctv-platform";
 
 // =========================================================================
-// 1. CCTV VIEW — GETRA CCTV INTEGRATION PLATFORM
-//
-// NOTE: The full CCTV platform has been moved to /cctv (CctvPlatformShell).
-// This component is a lightweight bridge for backward compatibility.
-// The old fake canvas implementation has been removed (violated NO FAKE VIDEO rule).
+// 1. CCTV VIEW — GETRA CCTV INTEGRATION PLATFORM (FULL PAGE)
 // =========================================================================
 export function CctvView() {
-  const stats = useMemo(() => getCameraRegistryStats(), []);
-  const [activeCameraId, setActiveCameraId] = useState<string>(
-    CANONICAL_CAMERA_REGISTRY[0]?.camera_id ?? "",
-  );
-
-  const activeCamera = useMemo(
-    () =>
-      CANONICAL_CAMERA_REGISTRY.find((c) => c.camera_id === activeCameraId) ??
-      CANONICAL_CAMERA_REGISTRY[0],
-    [activeCameraId],
-  );
-
-  return (
-    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
-      {/* Bridge notice — old view redirects to new platform */}
-      <div className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-sm">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
-              <Video size={14} />GETRA CCTV Platform
-            </span>
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
-              Global CCTV &amp; Urban Sensors
-            </h1>
-            <p className="max-w-2xl text-sm leading-relaxed text-[#66708d]">
-              Platform CCTV GETRA telah diperbarui ke versi baru dengan pemisahan tegas:
-              <strong className="text-[#464b71]"> REAL CAMERA ≠ AI ANALYTICS ≠ SENSOR</strong>.
-              Sumber utama: portal resmi DKI Jakarta.
-            </p>
-
-            {/* Registry stats — from actual data */}
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <div className="rounded-xl bg-white border border-[#464b71]/10 p-2.5 text-center">
-                <p className="text-[10px] text-[#66708d] font-bold uppercase">Terdaftar</p>
-                <p className="text-lg font-black text-[#464b71]">{stats.total}</p>
-              </div>
-              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-2.5 text-center">
-                <p className="text-[10px] text-emerald-700 font-bold uppercase">Online</p>
-                <p className="text-lg font-black text-emerald-600">{stats.online}</p>
-              </div>
-              <div className="rounded-xl bg-amber-50 border border-amber-200 p-2.5 text-center">
-                <p className="text-[10px] text-amber-700 font-bold uppercase">Degraded</p>
-                <p className="text-lg font-black text-amber-600">{stats.degraded}</p>
-              </div>
-              <div className="rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-center">
-                <p className="text-[10px] text-slate-600 font-bold uppercase">Unknown</p>
-                <p className="text-lg font-black text-slate-500">{stats.unknown}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 shrink-0">
-            <Link
-              href="/cctv"
-              className="inline-flex items-center gap-2 rounded-2xl bg-[#118ab2] px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#0d7495] transition"
-            >
-              <ArrowRight size={16} /> Buka Platform CCTV Baru
-            </Link>
-            <a
-              href="https://jakcctv.jakarta.go.id/publik"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-2xl border border-[#118ab2]/30 bg-white px-5 py-2.5 text-xs font-bold text-[#118ab2] hover:bg-[#f0f9ff] transition"
-            >
-              <ArrowRight size={14} /> Portal Resmi DKI Jakarta
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* Camera list — quick preview */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="space-y-2">
-          <h3 className="text-xs font-bold text-[#464b71] uppercase tracking-wider">
-            Registry Kamera ({CANONICAL_CAMERA_REGISTRY.length})
-          </h3>
-          <div className="space-y-2 max-h-[480px] overflow-y-auto">
-            {CANONICAL_CAMERA_REGISTRY.map((cam) => (
-              <button
-                key={cam.camera_id}
-                type="button"
-                onClick={() => setActiveCameraId(cam.camera_id)}
-                className={`w-full text-left rounded-xl p-3 transition border ${
-                  activeCameraId === cam.camera_id
-                    ? "bg-[#f0f9ff] border-[#118ab2] ring-1 ring-[#118ab2]/20"
-                    : "bg-white border-[#464b71]/15 hover:bg-[#f8fafc]"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-1">
-                  <span className="font-bold text-xs text-[#464b71] truncate max-w-[200px]">
-                    {cam.camera_name}
-                  </span>
-                  <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
-                    cam.health_status === "ONLINE"
-                      ? "bg-green-100 text-green-700"
-                      : cam.health_status === "DEGRADED"
-                      ? "bg-amber-100 text-amber-700"
-                      : cam.health_status === "OFFLINE"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-slate-100 text-slate-500"
-                  }`}>
-                    {cam.health_status}
-                  </span>
-                </div>
-                <div className="mt-0.5 text-[10px] text-[#66708d]">
-                  {cam.district} · {cam.provider}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Active camera player */}
-        <div className="lg:col-span-2">
-          {activeCamera && <CctvLivePlayer camera={activeCamera} />}
-        </div>
-      </div>
-    </div>
-  );
+  return <CctvPlatformShell />;
 }
 
 

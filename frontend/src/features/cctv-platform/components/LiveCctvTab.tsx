@@ -274,9 +274,9 @@ export function LiveCctvTab() {
       </div>
 
       {/* ================================================================== */}
-      {/* Main content: Camera list + Player                                  */}
+      {/* Main content: Camera list + Player (Full Page Immersive)             */}
       {/* ================================================================== */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_1fr]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[380px_1fr] lg:grid-cols-[340px_1fr]">
 
         {/* Camera list panel */}
         <div className="flex flex-col gap-2">
@@ -295,7 +295,7 @@ export function LiveCctvTab() {
           </div>
 
           <div className={`flex flex-col gap-2 overflow-y-auto ${listCollapsed ? "hidden lg:flex" : ""}`}
-            style={{ maxHeight: "520px" }}
+            style={{ maxHeight: "calc(100vh - 250px)", minHeight: "560px" }}
           >
             {filteredCameras.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">

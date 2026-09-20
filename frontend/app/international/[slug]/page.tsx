@@ -139,12 +139,15 @@ export default async function InternationalFeaturePage({
     }
   }
 
+  const isCctv = slug === "cctv";
+
   return (
     <GetraAppShell
-      eyebrow="GETRA Smart City & Global GIS"
-      title={feature.title}
-      description={feature.description}
-      tone="community"
+      eyebrow={isCctv ? undefined : "GETRA Smart City & Global GIS"}
+      title={isCctv ? undefined : feature.title}
+      description={isCctv ? undefined : feature.description}
+      tone={isCctv ? "cctv-full" : "community"}
+      fullWidth={isCctv}
     >
       {renderView()}
     </GetraAppShell>
