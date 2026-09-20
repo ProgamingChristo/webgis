@@ -4,7 +4,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY package.json package-lock.json ./
 COPY frontend/package.json ./frontend/package.json
 COPY backend/package.json ./backend/package.json
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci --prefer-offline --no-audit
 
 FROM deps AS frontend-build
 COPY . .

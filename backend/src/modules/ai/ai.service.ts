@@ -1239,6 +1239,11 @@ export class AiService {
         deterministicAction;
     }
 
+    // A "di mana panduan penggunaan" help question is not a place to geocode.
+    if (intent === "GENERAL_HELP" && action.type === "FOCUS_PLACE") {
+      action = { type: "ANSWER_ONLY" };
+    }
+
     if (
       action.type !==
       "ANSWER_ONLY" &&
@@ -2690,7 +2695,7 @@ function classifyIntentDeterministically(
 
   // 3. General Help / Platform Overview
   if (
-    /\b(apa itu getra|getra bisa apa|getra bisa buat apa|fitur getra apa saja|apa saja fitur getra|bagaimana menggunakan getra|cara pakai getra|saya harus mulai dari mana|mulai dari mana|panduan getra|apa fungsi getra|tentang getra|keunggulan getra)\b/iu.test(normalized)
+    /\b(apa itu getra|getra bisa apa|getra bisa buat apa|fitur getra apa saja|apa saja fitur getra|bagaimana menggunakan getra|cara pakai getra|saya harus mulai dari mana|mulai dari mana|panduan getra|panduan penggunaan|petunjuk penggunaan|getra user guide|apa fungsi getra|tentang getra|keunggulan getra)\b/iu.test(normalized)
   ) {
     return "GENERAL_HELP";
   }

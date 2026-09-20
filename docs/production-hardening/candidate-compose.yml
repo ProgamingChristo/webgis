@@ -1,0 +1,6 @@
+# Additional origin policy for the isolated VM candidate reached through SSH.
+# Production continues to use docs/qa/phase10d/compose.yml without this override.
+services:
+  getra-backend-full:
+    environment:
+      FRONTEND_ALLOWED_ORIGINS: "https://getra-routing-api.tail0ed517.ts.net:8443,http://localhost:3100,http://127.0.0.1:3100"

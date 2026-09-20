@@ -242,6 +242,11 @@ describe("GETRA AI — 100x Intelligence Improvement & Domain Mastery", () => {
   // 3. GENERAL GETRA KNOWLEDGE
   // ============================================================
   describe("General GETRA Knowledge", () => {
+    it("routes a usage-guide question to help instead of a geographic search", async () => {
+      const res = await aiService.handleAskRequest({ question: "Di mana panduan penggunaan?", active_experience: "GENERAL" });
+      expect(res.intent).toBe("GENERAL_HELP");
+      expect(res.answer).toContain("GETRA");
+    });
     it("explains 'apa itu GETRA?' accurately", async () => {
       const res = await aiService.handleAskRequest({
         question: "apa itu GETRA?",
