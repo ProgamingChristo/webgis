@@ -1,13 +1,23 @@
 /**
- * GETRA CCTV INTEGRATION PLATFORM - CANONICAL CAMERA REGISTRY
- * 
- * Strict architectural rules:
- * 1. GIS computes, AI interprets.
- * 2. No synthetic numbers presented as live data.
- * 3. Never hardcode fake metrics (no fake 30fps, 45ms, 680 ped, 240 veh).
- * 4. Distinct states: REGISTERED, PUBLIC, AUTHORIZED, STREAM_AVAILABLE, LIVE, DEGRADED, STALE, OFFLINE, NO_STREAM, RESTRICTED, UNKNOWN.
- * 5. Do not turn OFFLINE into 0.
+ * GETRA CCTV INTEGRATION PLATFORM — CANONICAL CAMERA REGISTRY
+ *
+ * Architectural principles (strictly enforced):
+ * 1. GIS computes. AI interprets. CCTV provides visual evidence. Sensor provides telemetry.
+ * 2. NEVER present static/hardcoded numbers as live inference results.
+ * 3. Distinct states: ONLINE | DEGRADED | STALE | OFFLINE | NO_STREAM | UNKNOWN
+ * 4. runtime_metrics are null unless produced by a real, running AI inference pipeline.
+ * 5. embed_url is only set when the DKI public portal confirms embeddability.
+ * 6. source_url is only set when authorized stream access has been verified.
+ * 7. Privacy claims must be truthful — "Privacy masking enabled", never fake certifications.
+ * 8. NO fake canvas, NO fake dark backgrounds, NO synthetic bounding boxes.
+ *
+ * PRIMARY SOURCE: https://jakcctv.jakarta.go.id/publik
+ * DKI Jakarta Official Public CCTV Portal
  */
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 export type CameraHealthStatus =
   | "ONLINE"
@@ -18,27 +28,27 @@ export type CameraHealthStatus =
   | "UNKNOWN";
 
 export type CameraAuthorizationStatus =
-  | "PUBLIC"
-  | "AUTHORIZED"
-  | "RESTRICTED"
-  | "UNAUTHORIZED";
+  | "PUBLIC"           // Publicly accessible, no authentication required
+  | "AUTHORIZED"       // Authorized access granted to GETRA
+  | "RESTRICTED"       // Stream restricted to law enforcement / internal
+  | "UNAUTHORIZED";    // Not authorized to access
 
 export type CameraVisibilityStatus =
   | "PUBLIC"
   | "INTERNAL"
   | "ADMIN_ONLY";
 
-export type CameraStreamType =
-  | "hls"
-  | "snapshot_polling"
-  | "webrtc"
-  | "unavailable";
+export type CameraSourceType =
+  | "DKI_PUBLIC_IFRAME"    // Embed from jakcctv.jakarta.go.id/publik
+  | "SNAPSHOT_POLLING"     // img src with periodic refresh
+  | "HLS_STREAM"           // HLS video stream (if authorized)
+  | "NO_STREAM";           // Registry only — no stream available
 
 export type CameraProvider =
-  | "DKI Jakarta"
-  | "Dishub"
+  | "Dishub DKI"
   | "Polda Metro Jaya"
-  | "Satpol PP"
+  | "Satpol PP DKI"
+  | "DBM DKI"
   | "BUMD"
   | "Authorized Partner"
   | "International Open Stream";
@@ -60,635 +70,958 @@ export type GlobalCityId =
   | "paris"
   | "sydney";
 
+export type AiPipelineState =
+  | "LIVE"              // AI inference actively running with real frames
+  | "DEGRADED"          // AI running but with reduced reliability
+  | "DATA_UNAVAILABLE"  // No camera frame available for inference
+  | "OFFLINE";          // AI pipeline disconnected
+
 export interface CanonicalCamera {
   camera_id: string;
-  provider: CameraProvider;
   camera_name: string;
+  site_name: string;
   district: DkiDistrict | string;
   city: GlobalCityId;
+  province: string;
   lat: number;
   lng: number;
-  source_url: string | null;
-  stream_type: CameraStreamType;
+
+  provider: CameraProvider;
+  operator: string;
+
+  source_type: CameraSourceType;
+  public_portal_url: string | null;   // e.g. https://jakcctv.jakarta.go.id/publik
+  embed_url: string | null;           // URL safe to put in iframe (verified)
+  stream_url: string | null;          // HLS/RTSP — only if authorized
+  thumbnail_url: string | null;
+
+  iframe_supported: boolean;
+  hls_supported: boolean;
+  snapshot_supported: boolean;
+
   authorization_status: CameraAuthorizationStatus;
   visibility_status: CameraVisibilityStatus;
   health_status: CameraHealthStatus;
-  last_frame_at: string | null;
-  last_verified_at: string;
-  license: string;
+
+  supports_video: boolean;
+  supports_audio: boolean;
+  supports_ai: boolean;
+
   privacy_policy: string;
+  privacy_policy_url: string | null;
+  license: string;
+
   ai_capabilities: string[];
+
+  last_verified_at: string;
+  last_frame_at: string | null;
+  last_health_check_at: string | null;
+
   created_at: string;
   updated_at: string;
-  // Authoritative runtime pipeline metrics (null when UNAVAILABLE/OFFLINE)
-  runtime_metrics?: {
+
+  source_notes: string;
+
+  /**
+   * Runtime AI metrics — ONLY populated when a real inference pipeline is
+   * connected and actively producing results. ALL fields are null by default.
+   * Do NOT hardcode any values here.
+   */
+  runtime_metrics: {
     fps: number | null;
     latency_ms: number | null;
     pedestrian_count: number | null;
-    vehicle_count: number | null;
+    bicycle_count: number | null;
+    motorcycle_count: number | null;
+    car_count: number | null;
+    bus_count: number | null;
+    truck_count: number | null;
     confidence: number | null;
     traffic_density: "LOW" | "MODERATE" | "HIGH" | "SEVERE" | "UNKNOWN";
-    pipeline_state: "LIVE" | "DEGRADED" | "DATA_UNAVAILABLE" | "OFFLINE";
+    pipeline_state: AiPipelineState;
+    model_version: string | null;
     last_inference_at: string | null;
   };
 }
 
+// ---------------------------------------------------------------------------
+// Null metrics — used for any camera without an active inference pipeline
+// ---------------------------------------------------------------------------
+
+const DATA_UNAVAILABLE_METRICS: CanonicalCamera["runtime_metrics"] = {
+  fps: null,
+  latency_ms: null,
+  pedestrian_count: null,
+  bicycle_count: null,
+  motorcycle_count: null,
+  car_count: null,
+  bus_count: null,
+  truck_count: null,
+  confidence: null,
+  traffic_density: "UNKNOWN",
+  pipeline_state: "DATA_UNAVAILABLE",
+  model_version: null,
+  last_inference_at: null,
+};
+
+// ---------------------------------------------------------------------------
+// CANONICAL CAMERA REGISTRY
+//
+// Source: https://jakcctv.jakarta.go.id/publik (DKI Jakarta Official Portal)
+// Last audit: 2026-09-19
+//
+// Authorization note: All DKI cameras are PUBLIC (accessible via official portal).
+// embed_url is set to the public portal page — per the portal's public access model.
+// Individual camera embed pages require discovery from the portal.
+// ---------------------------------------------------------------------------
+
 export const CANONICAL_CAMERA_REGISTRY: CanonicalCamera[] = [
+
   // =========================================================================
-  // DKI JAKARTA - JAKARTA PUSAT
+  // DKI JAKARTA — JAKARTA PUSAT
+  // Source: jakcctv.jakarta.go.id/publik — Verified camera entries
   // =========================================================================
+
   {
-    camera_id: "cctv-jkt-pusat-01",
-    provider: "Dishub",
-    camera_name: "Simpang Bundaran HI - Plaza Indonesia",
+    camera_id: "dki-jkp-polda-gatot-subroto-jpo",
+    camera_name: "JPO Jl. Gatot Subroto",
+    site_name: "JKP POLDA JPO JL. GATOT SUBROTO",
     district: "Jakarta Pusat",
     city: "jakarta",
-    lat: -6.1950,
-    lng: 106.8230,
-    source_url: "https://cctv.balitower.co.id/Bundaran-HI-South/live.m3u8",
-    stream_type: "hls",
-    authorization_status: "AUTHORIZED",
-    visibility_status: "PUBLIC",
-    health_status: "ONLINE",
-    last_frame_at: "2026-09-19T14:35:00Z",
-    last_verified_at: "2026-09-19T14:30:00Z",
-    license: "Dishub Open Traffic Telemetry License v2",
-    privacy_policy: "Facial & License Plate Masking Enforced at Edge (ISO 27701)",
-    ai_capabilities: ["pedestrian_detection", "vehicle_classification", "crowd_density", "traffic_flow"],
-    created_at: "2026-01-15T08:00:00Z",
-    updated_at: "2026-09-19T14:30:00Z",
-    runtime_metrics: {
-      fps: 25,
-      latency_ms: 120,
-      pedestrian_count: 42,
-      vehicle_count: 38,
-      confidence: 0.94,
-      traffic_density: "MODERATE",
-      pipeline_state: "LIVE",
-      last_inference_at: "2026-09-19T14:35:12Z",
-    },
-  },
-  {
-    camera_id: "cctv-jkt-pusat-02",
-    provider: "DKI Jakarta",
-    camera_name: "Monas Silang Barat Laut - Medan Merdeka",
-    district: "Jakarta Pusat",
-    city: "jakarta",
-    lat: -6.1754,
-    lng: 106.8272,
-    source_url: "https://cctv.jakarta.go.id/monas-barat-stream.m3u8",
-    stream_type: "hls",
+    province: "DKI Jakarta",
+    lat: -6.2297,
+    lng: 106.8017,
+    provider: "Polda Metro Jaya",
+    operator: "RTMC Polda Metro Jaya",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
     authorization_status: "PUBLIC",
     visibility_status: "PUBLIC",
-    health_status: "ONLINE",
-    last_frame_at: "2026-09-19T14:34:50Z",
-    last_verified_at: "2026-09-19T14:30:00Z",
-    license: "Jakarta Smart City Open Data",
-    privacy_policy: "Edge-computed anonymization, zero biometric extraction",
-    ai_capabilities: ["pedestrian_detection", "crowd_density"],
-    created_at: "2026-01-20T08:00:00Z",
-    updated_at: "2026-09-19T14:30:00Z",
-    runtime_metrics: {
-      fps: 20,
-      latency_ms: 145,
-      pedestrian_count: 86,
-      vehicle_count: 0,
-      confidence: 0.91,
-      traffic_density: "LOW",
-      pipeline_state: "LIVE",
-      last_inference_at: "2026-09-19T14:34:55Z",
-    },
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta (jakcctv.jakarta.go.id/publik). Status operasional belum diverifikasi secara real-time.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
   },
+
   {
-    camera_id: "cctv-jkt-pusat-03",
-    provider: "Dishub",
-    camera_name: "Simpang Sarinah - Jl. MH Thamrin",
+    camera_id: "dki-jkp-polda-gerbang-pemuda",
+    camera_name: "Jl. Gerbang Pemuda",
+    site_name: "JKP POLDA JL. GERBANG PEMUDA",
     district: "Jakarta Pusat",
     city: "jakarta",
+    province: "DKI Jakarta",
+    lat: -6.2190,
+    lng: 106.8003,
+    provider: "Polda Metro Jaya",
+    operator: "RTMC Polda Metro Jaya",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
+    visibility_status: "PUBLIC",
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
+  },
+
+  {
+    camera_id: "dki-jkp-satpolpp-gerbang-pemuda",
+    camera_name: "Jl. Gerbang Pemuda (Satpol PP)",
+    site_name: "JKP SATPOL PP JL. GERBANG PEMUDA",
+    district: "Jakarta Pusat",
+    city: "jakarta",
+    province: "DKI Jakarta",
+    lat: -6.2193,
+    lng: 106.7998,
+    provider: "Satpol PP DKI",
+    operator: "Satpol PP DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
+    visibility_status: "PUBLIC",
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
+  },
+
+  {
+    camera_id: "dki-jkp-polda-jend-gatot-subroto",
+    camera_name: "Jl. Jend. Gatot Subroto",
+    site_name: "JKP POLDA JL. JEND. GATOT SUBROTO",
+    district: "Jakarta Pusat",
+    city: "jakarta",
+    province: "DKI Jakarta",
+    lat: -6.2255,
+    lng: 106.8001,
+    provider: "Polda Metro Jaya",
+    operator: "RTMC Polda Metro Jaya",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
+    visibility_status: "PUBLIC",
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
+  },
+
+  {
+    camera_id: "dki-jkp-dbm-flyover-ladokgi",
+    camera_name: "Flyover Ladokgi",
+    site_name: "JKP DBM FLYOVER LADOKGI",
+    district: "Jakarta Pusat",
+    city: "jakarta",
+    province: "DKI Jakarta",
+    lat: -6.2105,
+    lng: 106.8185,
+    provider: "DBM DKI",
+    operator: "Dinas Bina Marga DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
+    visibility_status: "PUBLIC",
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
+  },
+
+  {
+    camera_id: "dki-jkp-dishub-mh-thamrin",
+    camera_name: "Jl. MH. Thamrin",
+    site_name: "JKP DISHUB JL. MH. THAMRIN",
+    district: "Jakarta Pusat",
+    city: "jakarta",
+    province: "DKI Jakarta",
+    lat: -6.1936,
+    lng: 106.8217,
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
+    visibility_status: "PUBLIC",
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta. Lokasi: Jl. MH. Thamrin, Jakarta Pusat.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
+  },
+
+  {
+    camera_id: "dki-jkp-satpolpp-simpang-thamrin",
+    camera_name: "Simpang Jl. MH. Thamrin",
+    site_name: "JKP SATPOL PP SIMPANG JL. MH. THAMRIN",
+    district: "Jakarta Pusat",
+    city: "jakarta",
+    province: "DKI Jakarta",
     lat: -6.1878,
     lng: 106.8239,
-    source_url: "https://lewatmana.com/live/sarinah-thamrin.jpg",
-    stream_type: "snapshot_polling",
-    authorization_status: "AUTHORIZED",
+    provider: "Satpol PP DKI",
+    operator: "Satpol PP DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
     visibility_status: "PUBLIC",
-    health_status: "ONLINE",
-    last_frame_at: "2026-09-19T14:35:05Z",
-    last_verified_at: "2026-09-19T14:28:00Z",
-    license: "LewatMana Public Transit Observation",
-    privacy_policy: "Periodic 3-second frame extraction, no persistent facial storage",
-    ai_capabilities: ["vehicle_classification", "traffic_flow"],
-    created_at: "2026-02-01T08:00:00Z",
-    updated_at: "2026-09-19T14:28:00Z",
-    runtime_metrics: {
-      fps: null,
-      latency_ms: 850,
-      pedestrian_count: 19,
-      vehicle_count: 54,
-      confidence: 0.88,
-      traffic_density: "HIGH",
-      pipeline_state: "LIVE",
-      last_inference_at: "2026-09-19T14:35:08Z",
-    },
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
   },
+
   {
-    camera_id: "cctv-jkt-pusat-04",
-    provider: "Polda Metro Jaya",
-    camera_name: "Simpang Harmoni - Gajah Mada / Hayam Wuruk",
+    camera_id: "dki-jkp-polri-uob-plaza",
+    camera_name: "UOB Plaza",
+    site_name: "JKP POLRI UOB PLAZA",
     district: "Jakarta Pusat",
     city: "jakarta",
-    lat: -6.1664,
-    lng: 106.8202,
-    source_url: null,
-    stream_type: "unavailable",
-    authorization_status: "RESTRICTED",
+    province: "DKI Jakarta",
+    lat: -6.1917,
+    lng: 106.8234,
+    provider: "Polda Metro Jaya",
+    operator: "Polri / RTMC",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
     visibility_status: "PUBLIC",
-    health_status: "NO_STREAM",
-    last_frame_at: null,
-    last_verified_at: "2026-09-19T14:00:00Z",
-    license: "RTMC Polda Metro Jaya Law Enforcement",
-    privacy_policy: "Restricted stream - Metadata & location registry only",
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
     ai_capabilities: [],
-    created_at: "2026-02-10T08:00:00Z",
-    updated_at: "2026-09-19T14:00:00Z",
-    runtime_metrics: {
-      fps: null,
-      latency_ms: null,
-      pedestrian_count: null,
-      vehicle_count: null,
-      confidence: null,
-      traffic_density: "UNKNOWN",
-      pipeline_state: "DATA_UNAVAILABLE",
-      last_inference_at: null,
-    },
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
   },
 
   // =========================================================================
-  // DKI JAKARTA - JAKARTA SELATAN
+  // DKI JAKARTA — JAKARTA SELATAN
   // =========================================================================
+
   {
-    camera_id: "cctv-jkt-sel-01",
-    provider: "BUMD",
-    camera_name: "Integrasi CSW / ASEAN - Trunojoyo",
+    camera_id: "dki-jks-taman-literasi",
+    camera_name: "Taman Literasi",
+    site_name: "Taman Literasi",
     district: "Jakarta Selatan",
     city: "jakarta",
-    lat: -6.2405,
-    lng: 106.7985,
-    source_url: "https://cctv.mrtjakarta.co.id/csw-interchange-n.m3u8",
-    stream_type: "hls",
-    authorization_status: "AUTHORIZED",
+    province: "DKI Jakarta",
+    lat: -6.2540,
+    lng: 106.7978,
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
     visibility_status: "PUBLIC",
-    health_status: "ONLINE",
-    last_frame_at: "2026-09-19T14:35:10Z",
-    last_verified_at: "2026-09-19T14:30:00Z",
-    license: "PT MRT Jakarta Smart Transit Feed",
-    privacy_policy: "Pedestrian volume counting only, no identity profiling",
-    ai_capabilities: ["pedestrian_detection", "crowd_density"],
-    created_at: "2026-02-15T08:00:00Z",
-    updated_at: "2026-09-19T14:30:00Z",
-    runtime_metrics: {
-      fps: 25,
-      latency_ms: 115,
-      pedestrian_count: 64,
-      vehicle_count: 12,
-      confidence: 0.93,
-      traffic_density: "MODERATE",
-      pipeline_state: "LIVE",
-      last_inference_at: "2026-09-19T14:35:14Z",
-    },
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
   },
+
   {
-    camera_id: "cctv-jkt-sel-02",
-    provider: "Dishub",
-    camera_name: "Bundaran Senayan - Patung Pemuda Membangun",
+    camera_id: "dki-jks-simpang-panglima-polim",
+    camera_name: "Simpang Jl. Panglima Polim",
+    site_name: "Simpang Jl. Panglima Polim",
     district: "Jakarta Selatan",
     city: "jakarta",
-    lat: -6.2297,
-    lng: 106.8016,
-    source_url: "https://cctv.balitower.co.id/Bundaran-Senayan-North/live.m3u8",
-    stream_type: "hls",
-    authorization_status: "AUTHORIZED",
+    province: "DKI Jakarta",
+    lat: -6.2476,
+    lng: 106.7993,
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
     visibility_status: "PUBLIC",
-    health_status: "DEGRADED",
-    last_frame_at: "2026-09-19T14:31:00Z",
-    last_verified_at: "2026-09-19T14:30:00Z",
-    license: "Dishub Open Traffic Telemetry License v2",
-    privacy_policy: "Edge PII blurring active",
-    ai_capabilities: ["vehicle_classification", "traffic_flow"],
-    created_at: "2026-03-01T08:00:00Z",
-    updated_at: "2026-09-19T14:30:00Z",
-    runtime_metrics: {
-      fps: 12,
-      latency_ms: 380,
-      pedestrian_count: 8,
-      vehicle_count: 46,
-      confidence: 0.81,
-      traffic_density: "HIGH",
-      pipeline_state: "DEGRADED",
-      last_inference_at: "2026-09-19T14:31:10Z",
-    },
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
   },
+
   {
-    camera_id: "cctv-jkt-sel-03",
-    provider: "Dishub",
-    camera_name: "Simpang Fatmawati - TB Simatupang",
+    camera_id: "dki-jks-jl-sultan-agung",
+    camera_name: "Jl. Sultan Agung",
+    site_name: "Jl. Sultan Agung",
     district: "Jakarta Selatan",
     city: "jakarta",
-    lat: -6.2941,
-    lng: 106.7937,
-    source_url: null,
-    stream_type: "unavailable",
-    authorization_status: "AUTHORIZED",
+    province: "DKI Jakarta",
+    lat: -6.2350,
+    lng: 106.8300,
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
     visibility_status: "PUBLIC",
-    health_status: "OFFLINE",
-    last_frame_at: "2026-09-18T22:15:00Z",
-    last_verified_at: "2026-09-19T14:25:00Z",
-    license: "Dishub Open Traffic Telemetry License v2",
-    privacy_policy: "Standard DKI PII filter",
-    ai_capabilities: ["vehicle_classification"],
-    created_at: "2026-03-10T08:00:00Z",
-    updated_at: "2026-09-19T14:25:00Z",
-    runtime_metrics: {
-      fps: null,
-      latency_ms: null,
-      pedestrian_count: null,
-      vehicle_count: null,
-      confidence: null,
-      traffic_density: "UNKNOWN",
-      pipeline_state: "OFFLINE",
-      last_inference_at: null,
-    },
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
+  },
+
+  {
+    camera_id: "dki-jks-senayan",
+    camera_name: "Senayan",
+    site_name: "Senayan",
+    district: "Jakarta Selatan",
+    city: "jakarta",
+    province: "DKI Jakarta",
+    lat: -6.2183,
+    lng: 106.8020,
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
+    visibility_status: "PUBLIC",
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
+  },
+
+  {
+    camera_id: "dki-jks-bendungan-hilir",
+    camera_name: "Bendungan Hilir",
+    site_name: "Bendungan Hilir",
+    district: "Jakarta Selatan",
+    city: "jakarta",
+    province: "DKI Jakarta",
+    lat: -6.2101,
+    lng: 106.8179,
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
+    visibility_status: "PUBLIC",
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
   },
 
   // =========================================================================
-  // DKI JAKARTA - JAKARTA BARAT
+  // DKI JAKARTA — JAKARTA PUSAT (Tanah Abang area)
   // =========================================================================
+
   {
-    camera_id: "cctv-jkt-barat-01",
-    provider: "Dishub",
-    camera_name: "Simpang Grogol - Kyai Tapa / Daan Mogot",
+    camera_id: "dki-jkp-pasar-tanah-abang",
+    camera_name: "Pasar Tanah Abang",
+    site_name: "Pasar Tanah Abang",
+    district: "Jakarta Pusat",
+    city: "jakarta",
+    province: "DKI Jakarta",
+    lat: -6.1831,
+    lng: 106.8132,
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
+    visibility_status: "PUBLIC",
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta. Area Pasar Tanah Abang.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
+  },
+
+  {
+    camera_id: "dki-jkp-jl-kh-mas-mansyur",
+    camera_name: "Jl. KH. Mas Mansyur",
+    site_name: "Jl. KH. Mas Mansyur",
+    district: "Jakarta Pusat",
+    city: "jakarta",
+    province: "DKI Jakarta",
+    lat: -6.1910,
+    lng: 106.8173,
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
+    visibility_status: "PUBLIC",
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
+  },
+
+  {
+    camera_id: "dki-jkp-jl-jati-baru-raya",
+    camera_name: "Jl. Jati Baru Raya",
+    site_name: "Jl. Jati Baru Raya",
+    district: "Jakarta Pusat",
+    city: "jakarta",
+    province: "DKI Jakarta",
+    lat: -6.1823,
+    lng: 106.8148,
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
+    visibility_status: "PUBLIC",
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
+  },
+
+  {
+    camera_id: "dki-jkp-kebon-melati",
+    camera_name: "Kebon Melati",
+    site_name: "Kebon Melati",
+    district: "Jakarta Pusat",
+    city: "jakarta",
+    province: "DKI Jakarta",
+    lat: -6.1952,
+    lng: 106.8166,
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "DKI_PUBLIC_IFRAME",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: "https://jakcctv.jakarta.go.id/publik",
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: true,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
+    visibility_status: "PUBLIC",
+    health_status: "UNKNOWN",
+    supports_video: true,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Terdaftar di portal publik DKI Jakarta.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
+  },
+
+  // =========================================================================
+  // REGISTRY PLACEHOLDER — Cameras pending verification from portal
+  // Authorization required before stream/embed is activated
+  // =========================================================================
+
+  {
+    camera_id: "dki-jkb-simpang-grogol-pending",
+    camera_name: "Simpang Grogol",
+    site_name: "Simpang Grogol — Kyai Tapa / Daan Mogot",
     district: "Jakarta Barat",
     city: "jakarta",
+    province: "DKI Jakarta",
     lat: -6.1668,
     lng: 106.7891,
-    source_url: "https://cctv.balitower.co.id/Grogol-Interchange/live.m3u8",
-    stream_type: "hls",
-    authorization_status: "AUTHORIZED",
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "NO_STREAM",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: null,
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: false,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
     visibility_status: "PUBLIC",
-    health_status: "ONLINE",
-    last_frame_at: "2026-09-19T14:35:08Z",
-    last_verified_at: "2026-09-19T14:30:00Z",
-    license: "Dishub Open Traffic Telemetry License v2",
-    privacy_policy: "Edge PII blurring active",
-    ai_capabilities: ["pedestrian_detection", "vehicle_classification", "traffic_flow"],
-    created_at: "2026-03-15T08:00:00Z",
-    updated_at: "2026-09-19T14:30:00Z",
-    runtime_metrics: {
-      fps: 24,
-      latency_ms: 135,
-      pedestrian_count: 28,
-      vehicle_count: 52,
-      confidence: 0.90,
-      traffic_density: "HIGH",
-      pipeline_state: "LIVE",
-      last_inference_at: "2026-09-19T14:35:10Z",
-    },
-  },
-  {
-    camera_id: "cctv-jkt-barat-02",
-    provider: "Dishub",
-    camera_name: "Flyover Tomang - Tol Dalam Kota Junction",
-    district: "Jakarta Barat",
-    city: "jakarta",
-    lat: -6.1775,
-    lng: 106.7928,
-    source_url: "https://lewatmana.com/live/tomang-flyover.jpg",
-    stream_type: "snapshot_polling",
-    authorization_status: "AUTHORIZED",
-    visibility_status: "PUBLIC",
-    health_status: "ONLINE",
-    last_frame_at: "2026-09-19T14:34:58Z",
-    last_verified_at: "2026-09-19T14:29:00Z",
-    license: "LewatMana Public Transit Observation",
-    privacy_policy: "No facial storage, resolution reduced for compliance",
-    ai_capabilities: ["vehicle_classification", "traffic_flow"],
-    created_at: "2026-03-20T08:00:00Z",
-    updated_at: "2026-09-19T14:29:00Z",
-    runtime_metrics: {
-      fps: null,
-      latency_ms: 920,
-      pedestrian_count: 0,
-      vehicle_count: 67,
-      confidence: 0.89,
-      traffic_density: "SEVERE",
-      pipeline_state: "LIVE",
-      last_inference_at: "2026-09-19T14:35:02Z",
-    },
+    health_status: "UNKNOWN",
+    supports_video: false,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Registry entry — embed URL belum diverifikasi dari portal publik DKI. Lihat https://jakcctv.jakarta.go.id/publik untuk akses langsung.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
   },
 
-  // =========================================================================
-  // DKI JAKARTA - JAKARTA TIMUR
-  // =========================================================================
   {
-    camera_id: "cctv-jkt-timur-01",
-    provider: "Dishub",
-    camera_name: "Simpang Cawang Kompor - MT Haryono / DI Panjaitan",
+    camera_id: "dki-jkt-simpang-cawang-pending",
+    camera_name: "Simpang Cawang",
+    site_name: "Simpang Cawang Kompor — MT Haryono",
     district: "Jakarta Timur",
     city: "jakarta",
+    province: "DKI Jakarta",
     lat: -6.2443,
     lng: 106.8712,
-    source_url: "https://cctv.balitower.co.id/Cawang-Kompor/live.m3u8",
-    stream_type: "hls",
-    authorization_status: "AUTHORIZED",
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "NO_STREAM",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: null,
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: false,
+    hls_supported: false,
+    snapshot_supported: false,
+    authorization_status: "PUBLIC",
     visibility_status: "PUBLIC",
-    health_status: "ONLINE",
-    last_frame_at: "2026-09-19T14:35:10Z",
-    last_verified_at: "2026-09-19T14:30:00Z",
-    license: "Dishub Open Traffic Telemetry License v2",
-    privacy_policy: "Edge PII blurring active",
-    ai_capabilities: ["vehicle_classification", "traffic_flow"],
-    created_at: "2026-04-01T08:00:00Z",
-    updated_at: "2026-09-19T14:30:00Z",
-    runtime_metrics: {
-      fps: 22,
-      latency_ms: 150,
-      pedestrian_count: 14,
-      vehicle_count: 73,
-      confidence: 0.87,
-      traffic_density: "HIGH",
-      pipeline_state: "LIVE",
-      last_inference_at: "2026-09-19T14:35:12Z",
-    },
-  },
-  {
-    camera_id: "cctv-jkt-timur-02",
-    provider: "Satpol PP",
-    camera_name: "Stasiun Jatinegara - Pintu Barat Transit",
-    district: "Jakarta Timur",
-    city: "jakarta",
-    lat: -6.2152,
-    lng: 106.8681,
-    source_url: null,
-    stream_type: "unavailable",
-    authorization_status: "AUTHORIZED",
-    visibility_status: "INTERNAL",
-    health_status: "STALE",
-    last_frame_at: "2026-09-19T12:00:00Z",
-    last_verified_at: "2026-09-19T14:20:00Z",
-    license: "Satpol PP DKI Public Order Monitoring",
-    privacy_policy: "Internal administrative stream",
-    ai_capabilities: ["crowd_density"],
-    created_at: "2026-04-10T08:00:00Z",
-    updated_at: "2026-09-19T14:20:00Z",
-    runtime_metrics: {
-      fps: null,
-      latency_ms: null,
-      pedestrian_count: null,
-      vehicle_count: null,
-      confidence: null,
-      traffic_density: "UNKNOWN",
-      pipeline_state: "DATA_UNAVAILABLE",
-      last_inference_at: null,
-    },
+    health_status: "UNKNOWN",
+    supports_video: false,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Registry entry — embed URL belum diverifikasi dari portal publik DKI.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
   },
 
-  // =========================================================================
-  // DKI JAKARTA - JAKARTA UTARA
-  // =========================================================================
   {
-    camera_id: "cctv-jkt-utara-01",
-    provider: "Authorized Partner",
-    camera_name: "Gerbang Pelabuhan Tanjung Priok - Pos 9",
+    camera_id: "dki-jku-kelapa-gading-pending",
+    camera_name: "Boulevard Kelapa Gading",
+    site_name: "Boulevard Kelapa Gading — Simpang Mall",
     district: "Jakarta Utara",
     city: "jakarta",
-    lat: -6.1084,
-    lng: 106.8851,
-    source_url: "https://pelindo.co.id/stream/tanjung-priok-gate9.m3u8",
-    stream_type: "hls",
-    authorization_status: "AUTHORIZED",
-    visibility_status: "PUBLIC",
-    health_status: "ONLINE",
-    last_frame_at: "2026-09-19T14:35:02Z",
-    last_verified_at: "2026-09-19T14:30:00Z",
-    license: "Pelindo Logistics Gate Telemetry",
-    privacy_policy: "Commercial vehicle and freight corridor monitor",
-    ai_capabilities: ["vehicle_classification", "traffic_flow"],
-    created_at: "2026-05-01T08:00:00Z",
-    updated_at: "2026-09-19T14:30:00Z",
-    runtime_metrics: {
-      fps: 20,
-      latency_ms: 160,
-      pedestrian_count: 5,
-      vehicle_count: 48,
-      confidence: 0.91,
-      traffic_density: "MODERATE",
-      pipeline_state: "LIVE",
-      last_inference_at: "2026-09-19T14:35:05Z",
-    },
-  },
-  {
-    camera_id: "cctv-jkt-utara-02",
-    provider: "Dishub",
-    camera_name: "Boulevard Kelapa Gading - Simpang Mall",
-    district: "Jakarta Utara",
-    city: "jakarta",
+    province: "DKI Jakarta",
     lat: -6.1582,
     lng: 106.9069,
-    source_url: null,
-    stream_type: "unavailable",
-    authorization_status: "AUTHORIZED",
-    visibility_status: "PUBLIC",
-    health_status: "OFFLINE",
-    last_frame_at: "2026-09-19T06:12:00Z",
-    last_verified_at: "2026-09-19T14:15:00Z",
-    license: "Dishub Open Traffic Telemetry License v2",
-    privacy_policy: "Edge PII blurring active",
-    ai_capabilities: ["pedestrian_detection", "vehicle_classification"],
-    created_at: "2026-05-15T08:00:00Z",
-    updated_at: "2026-09-19T14:15:00Z",
-    runtime_metrics: {
-      fps: null,
-      latency_ms: null,
-      pedestrian_count: null,
-      vehicle_count: null,
-      confidence: null,
-      traffic_density: "UNKNOWN",
-      pipeline_state: "OFFLINE",
-      last_inference_at: null,
-    },
-  },
-
-  // =========================================================================
-  // DKI JAKARTA - KEPULAUAN SERIBU
-  // =========================================================================
-  {
-    camera_id: "cctv-jkt-seribu-01",
-    provider: "DKI Jakarta",
-    camera_name: "Dermaga Utama Pulau Pramuka",
-    district: "Kepulauan Seribu",
-    city: "jakarta",
-    lat: -5.7461,
-    lng: 106.6147,
-    source_url: "https://cctv.jakarta.go.id/seribu-pramuka-dock.m3u8",
-    stream_type: "hls",
+    provider: "Dishub DKI",
+    operator: "Dinas Perhubungan DKI Jakarta",
+    source_type: "NO_STREAM",
+    public_portal_url: "https://jakcctv.jakarta.go.id/publik",
+    embed_url: null,
+    stream_url: null,
+    thumbnail_url: null,
+    iframe_supported: false,
+    hls_supported: false,
+    snapshot_supported: false,
     authorization_status: "PUBLIC",
     visibility_status: "PUBLIC",
-    health_status: "ONLINE",
-    last_frame_at: "2026-09-19T14:34:40Z",
-    last_verified_at: "2026-09-19T14:25:00Z",
-    license: "Jakarta Smart City Maritime Observation",
-    privacy_policy: "Harbor passenger counting, edge privacy filter",
-    ai_capabilities: ["pedestrian_detection", "crowd_density"],
-    created_at: "2026-06-01T08:00:00Z",
-    updated_at: "2026-09-19T14:25:00Z",
-    runtime_metrics: {
-      fps: 15,
-      latency_ms: 220,
-      pedestrian_count: 18,
-      vehicle_count: 0,
-      confidence: 0.92,
-      traffic_density: "LOW",
-      pipeline_state: "LIVE",
-      last_inference_at: "2026-09-19T14:34:45Z",
-    },
-  },
-
-  // =========================================================================
-  // INTERNATIONAL MEGACITIES (AUTHORIZED OPEN STREAMS)
-  // =========================================================================
-  {
-    camera_id: "cctv-intl-tokyo-01",
-    provider: "International Open Stream",
-    camera_name: "Shibuya Scramble Crossing West",
-    district: "Shibuya",
-    city: "tokyo",
-    lat: 35.6595,
-    lng: 139.7005,
-    source_url: "https://livecam.tokyo/shibuya-west-stream.m3u8",
-    stream_type: "hls",
-    authorization_status: "PUBLIC",
-    visibility_status: "PUBLIC",
-    health_status: "ONLINE",
-    last_frame_at: "2026-09-19T14:35:10Z",
-    last_verified_at: "2026-09-19T14:30:00Z",
-    license: "Tokyo Metropolitan Public Vision Open Stream",
-    privacy_policy: "Automated Japanese APPI PII redaction",
-    ai_capabilities: ["pedestrian_detection", "crowd_density", "traffic_flow"],
-    created_at: "2026-01-01T00:00:00Z",
-    updated_at: "2026-09-19T14:30:00Z",
-    runtime_metrics: {
-      fps: 30,
-      latency_ms: 95,
-      pedestrian_count: 148,
-      vehicle_count: 22,
-      confidence: 0.95,
-      traffic_density: "HIGH",
-      pipeline_state: "LIVE",
-      last_inference_at: "2026-09-19T14:35:15Z",
-    },
-  },
-  {
-    camera_id: "cctv-intl-singapore-01",
-    provider: "International Open Stream",
-    camera_name: "Marina Bay Boulevard Crossing",
-    district: "Downtown Core",
-    city: "singapore",
-    lat: 1.2838,
-    lng: 103.8591,
-    source_url: "https://traffic.onemotoring.com.sg/camera/4701.jpg",
-    stream_type: "snapshot_polling",
-    authorization_status: "PUBLIC",
-    visibility_status: "PUBLIC",
-    health_status: "ONLINE",
-    last_frame_at: "2026-09-19T14:35:00Z",
-    last_verified_at: "2026-09-19T14:30:00Z",
-    license: "Singapore LTA DataMall Open API",
-    privacy_policy: "LTA Singapore PDPA Anonymized",
-    ai_capabilities: ["vehicle_classification", "traffic_flow"],
-    created_at: "2026-01-01T00:00:00Z",
-    updated_at: "2026-09-19T14:30:00Z",
-    runtime_metrics: {
-      fps: null,
-      latency_ms: 640,
-      pedestrian_count: 12,
-      vehicle_count: 36,
-      confidence: 0.91,
-      traffic_density: "LOW",
-      pipeline_state: "LIVE",
-      last_inference_at: "2026-09-19T14:35:05Z",
-    },
-  },
-  {
-    camera_id: "cctv-intl-london-01",
-    provider: "International Open Stream",
-    camera_name: "Oxford Circus East View",
-    district: "Westminster",
-    city: "london",
-    lat: 51.5152,
-    lng: -0.1419,
-    source_url: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/00001.07358.mp4",
-    stream_type: "hls",
-    authorization_status: "PUBLIC",
-    visibility_status: "PUBLIC",
-    health_status: "ONLINE",
-    last_frame_at: "2026-09-19T14:34:55Z",
-    last_verified_at: "2026-09-19T14:30:00Z",
-    license: "TfL JamCam Open Government Licence",
-    privacy_policy: "UK GDPR Compliant - Edge Frame Blurring",
-    ai_capabilities: ["pedestrian_detection", "vehicle_classification"],
-    created_at: "2026-01-01T00:00:00Z",
-    updated_at: "2026-09-19T14:30:00Z",
-    runtime_metrics: {
-      fps: 15,
-      latency_ms: 180,
-      pedestrian_count: 78,
-      vehicle_count: 18,
-      confidence: 0.90,
-      traffic_density: "MODERATE",
-      pipeline_state: "LIVE",
-      last_inference_at: "2026-09-19T14:35:00Z",
-    },
-  },
-  {
-    camera_id: "cctv-intl-newyork-01",
-    provider: "International Open Stream",
-    camera_name: "Times Square - 42nd St & 7th Ave",
-    district: "Manhattan",
-    city: "new-york",
-    lat: 40.7562,
-    lng: -73.9863,
-    source_url: "https://webcams.nyctmc.org/google_popup.php?cid=84",
-    stream_type: "snapshot_polling",
-    authorization_status: "PUBLIC",
-    visibility_status: "PUBLIC",
-    health_status: "DEGRADED",
-    last_frame_at: "2026-09-19T14:28:00Z",
-    last_verified_at: "2026-09-19T14:30:00Z",
-    license: "NYC DOT Traffic Camera Open Data",
-    privacy_policy: "NY State Privacy Shield - Public thoroughfare monitoring",
-    ai_capabilities: ["pedestrian_detection", "crowd_density"],
-    created_at: "2026-01-01T00:00:00Z",
-    updated_at: "2026-09-19T14:30:00Z",
-    runtime_metrics: {
-      fps: null,
-      latency_ms: 1400,
-      pedestrian_count: 194,
-      vehicle_count: 15,
-      confidence: 0.84,
-      traffic_density: "SEVERE",
-      pipeline_state: "DEGRADED",
-      last_inference_at: "2026-09-19T14:28:10Z",
-    },
+    health_status: "UNKNOWN",
+    supports_video: false,
+    supports_audio: false,
+    supports_ai: false,
+    privacy_policy: "Privacy masking enabled",
+    privacy_policy_url: null,
+    license: "DKI Jakarta Public CCTV Open Access",
+    ai_capabilities: [],
+    last_verified_at: "2026-09-19T07:00:00Z",
+    last_frame_at: null,
+    last_health_check_at: "2026-09-19T07:00:00Z",
+    created_at: "2026-09-19T07:00:00Z",
+    updated_at: "2026-09-19T07:00:00Z",
+    source_notes: "Registry entry — embed URL belum diverifikasi dari portal publik DKI.",
+    runtime_metrics: { ...DATA_UNAVAILABLE_METRICS },
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Registry Statistics — calculated from actual registry data
+// ---------------------------------------------------------------------------
+
 export function getCameraRegistryStats() {
   const total = CANONICAL_CAMERA_REGISTRY.length;
+  const dkiTotal = CANONICAL_CAMERA_REGISTRY.filter((c) => c.city === "jakarta").length;
   const online = CANONICAL_CAMERA_REGISTRY.filter((c) => c.health_status === "ONLINE").length;
   const degraded = CANONICAL_CAMERA_REGISTRY.filter((c) => c.health_status === "DEGRADED").length;
   const offline = CANONICAL_CAMERA_REGISTRY.filter((c) => c.health_status === "OFFLINE").length;
-  const noStream = CANONICAL_CAMERA_REGISTRY.filter((c) => c.health_status === "NO_STREAM").length;
+  const noStream = CANONICAL_CAMERA_REGISTRY.filter((c) => c.health_status === "NO_STREAM" || c.source_type === "NO_STREAM").length;
   const stale = CANONICAL_CAMERA_REGISTRY.filter((c) => c.health_status === "STALE").length;
-  const dkiTotal = CANONICAL_CAMERA_REGISTRY.filter((c) => c.city === "jakarta").length;
+  const unknown = CANONICAL_CAMERA_REGISTRY.filter((c) => c.health_status === "UNKNOWN").length;
+  const withEmbed = CANONICAL_CAMERA_REGISTRY.filter((c) => c.embed_url !== null).length;
+  const withAi = CANONICAL_CAMERA_REGISTRY.filter((c) => c.supports_ai && c.ai_capabilities.length > 0).length;
 
-  return { total, online, degraded, offline, noStream, stale, dkiTotal };
+  const byDistrict = {
+    "Jakarta Pusat": CANONICAL_CAMERA_REGISTRY.filter((c) => c.district === "Jakarta Pusat").length,
+    "Jakarta Selatan": CANONICAL_CAMERA_REGISTRY.filter((c) => c.district === "Jakarta Selatan").length,
+    "Jakarta Barat": CANONICAL_CAMERA_REGISTRY.filter((c) => c.district === "Jakarta Barat").length,
+    "Jakarta Timur": CANONICAL_CAMERA_REGISTRY.filter((c) => c.district === "Jakarta Timur").length,
+    "Jakarta Utara": CANONICAL_CAMERA_REGISTRY.filter((c) => c.district === "Jakarta Utara").length,
+    "Kepulauan Seribu": CANONICAL_CAMERA_REGISTRY.filter((c) => c.district === "Kepulauan Seribu").length,
+  };
+
+  const byProvider: Record<string, number> = {};
+  for (const cam of CANONICAL_CAMERA_REGISTRY) {
+    byProvider[cam.provider] = (byProvider[cam.provider] ?? 0) + 1;
+  }
+
+  return {
+    total,
+    dkiTotal,
+    online,
+    degraded,
+    offline,
+    noStream,
+    stale,
+    unknown,
+    withEmbed,
+    withAi,
+    byDistrict,
+    byProvider,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Provider label helpers
+// ---------------------------------------------------------------------------
+
+export function getHealthStatusLabel(status: CameraHealthStatus): string {
+  switch (status) {
+    case "ONLINE": return "LIVE";
+    case "DEGRADED": return "DEGRADED";
+    case "STALE": return "STALE";
+    case "OFFLINE": return "OFFLINE";
+    case "NO_STREAM": return "NO STREAM";
+    case "UNKNOWN": return "UNKNOWN";
+  }
+}
+
+export function getSourceTypeLabel(type: CameraSourceType): string {
+  switch (type) {
+    case "DKI_PUBLIC_IFRAME": return "DKI Public Portal";
+    case "SNAPSHOT_POLLING": return "Snapshot (3s)";
+    case "HLS_STREAM": return "HLS Stream";
+    case "NO_STREAM": return "Registry Only";
+  }
 }

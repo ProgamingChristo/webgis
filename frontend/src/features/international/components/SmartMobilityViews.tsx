@@ -43,290 +43,139 @@ import {
 import { CctvLivePlayer } from "./CctvLivePlayer";
 
 // =========================================================================
-// 1. CCTV VIEW — GETRA CCTV INTEGRATION PLATFORM (RULE 01-10 STRICT)
+// 1. CCTV VIEW — GETRA CCTV INTEGRATION PLATFORM
+//
+// NOTE: The full CCTV platform has been moved to /cctv (CctvPlatformShell).
+// This component is a lightweight bridge for backward compatibility.
+// The old fake canvas implementation has been removed (violated NO FAKE VIDEO rule).
 // =========================================================================
 export function CctvView() {
-  const [selectedDistrict, setSelectedDistrict] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [selectedProvider, setSelectedProvider] = useState<string>("all");
-  const [activeCameraId, setActiveCameraId] = useState<string>(CANONICAL_CAMERA_REGISTRY[0].camera_id);
-  const [aiDetectionEnabled, setAiDetectionEnabled] = useState(true);
-
   const stats = useMemo(() => getCameraRegistryStats(), []);
+  const [activeCameraId, setActiveCameraId] = useState<string>(
+    CANONICAL_CAMERA_REGISTRY[0]?.camera_id ?? "",
+  );
 
-  // Filter cameras
-  const filteredCameras = useMemo(() => {
-    return CANONICAL_CAMERA_REGISTRY.filter((c) => {
-      if (selectedDistrict !== "all") {
-        if (selectedDistrict === "International") {
-          if (c.city === "jakarta") return false;
-        } else if (c.district !== selectedDistrict) {
-          return false;
-        }
-      }
-      if (selectedStatus !== "all" && c.health_status !== selectedStatus) {
-        return false;
-      }
-      if (selectedProvider !== "all" && c.provider !== selectedProvider) {
-        return false;
-      }
-      return true;
-    });
-  }, [selectedDistrict, selectedStatus, selectedProvider]);
-
-  const activeCamera = useMemo(() => {
-    return CANONICAL_CAMERA_REGISTRY.find((c) => c.camera_id === activeCameraId) || CANONICAL_CAMERA_REGISTRY[0];
-  }, [activeCameraId]);
+  const activeCamera = useMemo(
+    () =>
+      CANONICAL_CAMERA_REGISTRY.find((c) => c.camera_id === activeCameraId) ??
+      CANONICAL_CAMERA_REGISTRY[0],
+    [activeCameraId],
+  );
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-4 sm:p-6 lg:p-8">
-      {/* Header Banner */}
-      <header className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-[0_10px_24px_rgba(70,75,113,0.06)]">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
+      {/* Bridge notice — old view redirects to new platform */}
+      <div className="rounded-3xl border border-[#118ab2]/20 bg-gradient-to-br from-white via-[#f0f9ff] to-[#f8fafc] p-6 text-[#464b71] shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#118ab2]/10 px-3.5 py-1 text-xs font-bold text-[#118ab2] border border-[#118ab2]/20">
-              <Video size={14} className="text-[#118ab2]" /> GETRA CCTV Integration Platform
+              <Video size={14} />GETRA CCTV Platform
             </span>
             <h1 className="text-2xl font-black tracking-tight sm:text-3xl text-[#464b71]">
-              Global Traffic & Pedestrian CCTV Live Stream
+              Global CCTV &amp; Urban Sensors
             </h1>
-            <p className="text-xs font-bold text-[#118ab2]">
-              Platform Integrasi Sensor Visual & CCTV DKI Jakarta (Pusat, Selatan, Barat, Timur, Utara, Kep. Seribu)
-            </p>
             <p className="max-w-2xl text-sm leading-relaxed text-[#66708d]">
-              Integrasi telemetri visual resmi lintas penyedia (Dishub DKI, Polda Metro Jaya, Satpol PP, MRT BUMD, dan Mitra Publik) dengan pemrosesan Computer Vision terverifikasi. Sesuai <strong>Rule 03-09</strong>: status offline tidak disamarkan sebagai 0, dan telemetri hanya ditampilkan bila bersumber dari runtime pipeline nyata.
+              Platform CCTV GETRA telah diperbarui ke versi baru dengan pemisahan tegas:
+              <strong className="text-[#464b71]"> REAL CAMERA ≠ AI ANALYTICS ≠ SENSOR</strong>.
+              Sumber utama: portal resmi DKI Jakarta.
             </p>
+
+            {/* Registry stats — from actual data */}
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="rounded-xl bg-white border border-[#464b71]/10 p-2.5 text-center">
+                <p className="text-[10px] text-[#66708d] font-bold uppercase">Terdaftar</p>
+                <p className="text-lg font-black text-[#464b71]">{stats.total}</p>
+              </div>
+              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-2.5 text-center">
+                <p className="text-[10px] text-emerald-700 font-bold uppercase">Online</p>
+                <p className="text-lg font-black text-emerald-600">{stats.online}</p>
+              </div>
+              <div className="rounded-xl bg-amber-50 border border-amber-200 p-2.5 text-center">
+                <p className="text-[10px] text-amber-700 font-bold uppercase">Degraded</p>
+                <p className="text-lg font-black text-amber-600">{stats.degraded}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-center">
+                <p className="text-[10px] text-slate-600 font-bold uppercase">Unknown</p>
+                <p className="text-lg font-black text-slate-500">{stats.unknown}</p>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+
+          <div className="flex flex-col gap-2 shrink-0">
             <Link
-              href="/international"
-              className="inline-flex items-center gap-2 rounded-2xl bg-[#118ab2] px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[#0d7495] transition"
+              href="/cctv"
+              className="inline-flex items-center gap-2 rounded-2xl bg-[#118ab2] px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#0d7495] transition"
             >
-              <ArrowRight size={16} /> Katalog 50 Fitur
+              <ArrowRight size={16} /> Buka Platform CCTV Baru
             </Link>
-          </div>
-        </div>
-
-        {/* Authoritative Registry Telemetry Chips */}
-        <div className="mt-6 grid grid-cols-2 sm:grid-cols-6 gap-2 border-t border-[#464b71]/10 pt-4 text-center">
-          <div className="rounded-2xl bg-white/80 p-2.5 border border-[#464b71]/10">
-            <span className="text-[10px] font-bold text-[#66708d] uppercase">Total Registry</span>
-            <p className="font-mono text-base font-black text-[#464b71]">{stats.total} Kamera</p>
-          </div>
-          <div className="rounded-2xl bg-emerald-50/80 p-2.5 border border-emerald-200">
-            <span className="text-[10px] font-bold text-emerald-700 uppercase">Live Online</span>
-            <p className="font-mono text-base font-black text-emerald-600">{stats.online} Feed</p>
-          </div>
-          <div className="rounded-2xl bg-amber-50/80 p-2.5 border border-amber-200">
-            <span className="text-[10px] font-bold text-amber-700 uppercase">Degraded Frame</span>
-            <p className="font-mono text-base font-black text-amber-600">{stats.degraded}</p>
-          </div>
-          <div className="rounded-2xl bg-rose-50/80 p-2.5 border border-rose-200">
-            <span className="text-[10px] font-bold text-rose-700 uppercase">Offline</span>
-            <p className="font-mono text-base font-black text-rose-600">{stats.offline}</p>
-          </div>
-          <div className="rounded-2xl bg-purple-50/80 p-2.5 border border-purple-200">
-            <span className="text-[10px] font-bold text-purple-700 uppercase">Restricted</span>
-            <p className="font-mono text-base font-black text-purple-600">{stats.noStream}</p>
-          </div>
-          <div className="rounded-2xl bg-slate-50/80 p-2.5 border border-slate-200">
-            <span className="text-[10px] font-bold text-slate-600 uppercase">Cakupan DKI</span>
-            <p className="font-mono text-base font-black text-[#118ab2]">{stats.dkiTotal} Titik</p>
-          </div>
-        </div>
-      </header>
-
-      {/* Filter Controls Bar */}
-      <div className="rounded-2xl border border-[#464b71]/15 bg-white p-4 shadow-sm space-y-3">
-        <div className="flex items-center gap-2 text-xs font-bold text-[#464b71]">
-          <Filter size={14} className="text-[#118ab2]" />
-          <span>Filter Registry Kamera:</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {/* District Filter */}
-          <div>
-            <label className="block text-[11px] font-bold text-[#66708d] mb-1">Wilayah Administratif</label>
-            <select
-              value={selectedDistrict}
-              onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="w-full rounded-xl border border-[#464b71]/20 bg-slate-50 p-2 text-xs text-[#464b71] font-semibold focus:border-[#118ab2] focus:outline-none"
+            <a
+              href="https://jakcctv.jakarta.go.id/publik"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-2xl border border-[#118ab2]/30 bg-white px-5 py-2.5 text-xs font-bold text-[#118ab2] hover:bg-[#f0f9ff] transition"
             >
-              <option value="all">Semua Wilayah ({CANONICAL_CAMERA_REGISTRY.length})</option>
-              <option value="Jakarta Pusat">Jakarta Pusat</option>
-              <option value="Jakarta Selatan">Jakarta Selatan</option>
-              <option value="Jakarta Barat">Jakarta Barat</option>
-              <option value="Jakarta Timur">Jakarta Timur</option>
-              <option value="Jakarta Utara">Jakarta Utara</option>
-              <option value="Kepulauan Seribu">Kepulauan Seribu</option>
-              <option value="International">Internasional (Megacity)</option>
-            </select>
-          </div>
-
-          {/* Status Filter */}
-          <div>
-            <label className="block text-[11px] font-bold text-[#66708d] mb-1">Status Kesehatan Feed</label>
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full rounded-xl border border-[#464b71]/20 bg-slate-50 p-2 text-xs text-[#464b71] font-semibold focus:border-[#118ab2] focus:outline-none"
-            >
-              <option value="all">Semua Status</option>
-              <option value="ONLINE">🟢 Online / Live Stream</option>
-              <option value="DEGRADED">🟡 Degraded Frame</option>
-              <option value="OFFLINE">🔴 Offline (Data Unavailable)</option>
-              <option value="NO_STREAM">🟣 Restricted / Internal Only</option>
-              <option value="STALE">⚪ Stale Data</option>
-            </select>
-          </div>
-
-          {/* Provider Filter */}
-          <div>
-            <label className="block text-[11px] font-bold text-[#66708d] mb-1">Penyedia / Otoritas Data</label>
-            <select
-              value={selectedProvider}
-              onChange={(e) => setSelectedProvider(e.target.value)}
-              className="w-full rounded-xl border border-[#464b71]/20 bg-slate-50 p-2 text-xs text-[#464b71] font-semibold focus:border-[#118ab2] focus:outline-none"
-            >
-              <option value="all">Semua Provider</option>
-              <option value="Dishub">Dishub DKI Jakarta</option>
-              <option value="DKI Jakarta">Pemerintah Provinsi DKI Jakarta</option>
-              <option value="Polda Metro Jaya">Polda Metro Jaya (RTMC)</option>
-              <option value="Satpol PP">Satpol PP DKI</option>
-              <option value="BUMD">BUMD Transportasi (MRT/LRT/TJ)</option>
-              <option value="Authorized Partner">Mitra Resmi Terotorisasi</option>
-              <option value="International Open Stream">Aliran Terbuka Internasional</option>
-            </select>
+              <ArrowRight size={14} /> Portal Resmi DKI Jakarta
+            </a>
           </div>
         </div>
       </div>
 
-      {/* Main Player & Camera Directory Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left Column: Live Player & Active Camera Metadata */}
-        <div className="lg:col-span-2 space-y-4">
-          <CctvLivePlayer
-            camera={activeCamera}
-            aiDetection={aiDetectionEnabled}
-            onToggleAi={() => setAiDetectionEnabled((prev) => !prev)}
-          />
-
-          {/* GIS Spatial Telemetry & Legal Metadata Card */}
-          <div className="rounded-3xl border border-[#464b71]/15 bg-white p-5 shadow-[0_4px_12px_rgba(70,75,113,0.04)] space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#464b71]/10 pb-3">
-              <div className="flex items-center gap-2">
-                <MapPin size={16} className="text-[#118ab2]" />
-                <h3 className="text-sm font-black text-[#464b71]">{activeCamera.camera_name}</h3>
-              </div>
-              <span className="rounded-full bg-slate-100 px-3 py-0.5 text-xs font-mono font-bold text-[#464b71]">
-                {activeCamera.lat.toFixed(4)}, {activeCamera.lng.toFixed(4)}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div>
-                <span className="text-[#66708d]">Wilayah:</span>
-                <p className="font-bold text-[#464b71]">{activeCamera.district}</p>
-              </div>
-              <div>
-                <span className="text-[#66708d]">Penyedia Feed:</span>
-                <p className="font-bold text-[#464b71]">{activeCamera.provider}</p>
-              </div>
-              <div>
-                <span className="text-[#66708d]">Tipe Aliran:</span>
-                <p className="font-mono font-bold text-[#118ab2] uppercase">{activeCamera.stream_type}</p>
-              </div>
-            </div>
-
-            <div className="rounded-xl bg-[#f0f9ff] border border-[#118ab2]/20 p-3 text-xs text-[#464b71] space-y-1">
-              <div className="font-bold text-[#118ab2] flex items-center gap-1.5">
-                <ShieldCheck size={14} /> Kepatuhan Privasi & Lisensi Data
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#66708d]">
-                {activeCamera.privacy_policy} · Lisensi: <strong>{activeCamera.license}</strong>. Terakhir diverifikasi pada <strong>{activeCamera.last_verified_at.split("T")[0]}</strong>.
-              </p>
-            </div>
+      {/* Camera list — quick preview */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="space-y-2">
+          <h3 className="text-xs font-bold text-[#464b71] uppercase tracking-wider">
+            Registry Kamera ({CANONICAL_CAMERA_REGISTRY.length})
+          </h3>
+          <div className="space-y-2 max-h-[480px] overflow-y-auto">
+            {CANONICAL_CAMERA_REGISTRY.map((cam) => (
+              <button
+                key={cam.camera_id}
+                type="button"
+                onClick={() => setActiveCameraId(cam.camera_id)}
+                className={`w-full text-left rounded-xl p-3 transition border ${
+                  activeCameraId === cam.camera_id
+                    ? "bg-[#f0f9ff] border-[#118ab2] ring-1 ring-[#118ab2]/20"
+                    : "bg-white border-[#464b71]/15 hover:bg-[#f8fafc]"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-1">
+                  <span className="font-bold text-xs text-[#464b71] truncate max-w-[200px]">
+                    {cam.camera_name}
+                  </span>
+                  <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
+                    cam.health_status === "ONLINE"
+                      ? "bg-green-100 text-green-700"
+                      : cam.health_status === "DEGRADED"
+                      ? "bg-amber-100 text-amber-700"
+                      : cam.health_status === "OFFLINE"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-slate-100 text-slate-500"
+                  }`}>
+                    {cam.health_status}
+                  </span>
+                </div>
+                <div className="mt-0.5 text-[10px] text-[#66708d]">
+                  {cam.district} · {cam.provider}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Right Column: Camera Directory List */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-black text-[#464b71]">
-              Daftar Kamera ({filteredCameras.length})
-            </h3>
-            <span className="text-[11px] text-[#66708d]">Pilih untuk memuat stream</span>
-          </div>
-
-          <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
-            {filteredCameras.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-[#464b71]/20 bg-slate-50 p-6 text-center text-xs text-[#66708d]">
-                Tidak ada kamera yang cocok dengan kombinasi filter ini. Silakan atur ulang filter.
-              </div>
-            ) : (
-              filteredCameras.map((cam) => {
-                const isSelected = activeCameraId === cam.camera_id;
-                const isCamOnline = cam.health_status === "ONLINE";
-                const isCamDegraded = cam.health_status === "DEGRADED";
-                const isCamOffline = cam.health_status === "OFFLINE";
-                const isCamRestricted = cam.health_status === "NO_STREAM";
-
-                return (
-                  <button
-                    key={cam.camera_id}
-                    type="button"
-                    onClick={() => setActiveCameraId(cam.camera_id)}
-                    className={`w-full text-left rounded-2xl p-3.5 transition border ${
-                      isSelected
-                        ? "bg-[#f0f9ff] border-[#118ab2] shadow-sm ring-1 ring-[#118ab2]"
-                        : "bg-white border-[#464b71]/15 hover:bg-[#f8fafc]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-1">
-                      <span className="font-bold text-xs text-[#464b71] truncate max-w-[200px]">
-                        {cam.camera_name}
-                      </span>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[9px] font-mono font-bold ${
-                          isCamOnline
-                            ? "bg-emerald-100 text-emerald-800"
-                            : isCamDegraded
-                            ? "bg-amber-100 text-amber-800"
-                            : isCamOffline
-                            ? "bg-rose-100 text-rose-800"
-                            : "bg-purple-100 text-purple-800"
-                        }`}
-                      >
-                        {cam.health_status}
-                      </span>
-                    </div>
-
-                    <div className="mt-1 flex items-center justify-between text-[11px] text-[#66708d]">
-                      <span>{cam.district}</span>
-                      <span className="font-mono text-[10px] text-slate-400">{cam.provider}</span>
-                    </div>
-
-                    {/* Metric preview snippet */}
-                    <div className="mt-2 flex items-center justify-between text-[10px] pt-1.5 border-t border-slate-100">
-                      <span className="text-slate-500 font-mono">
-                        {cam.lat.toFixed(3)}, {cam.lng.toFixed(3)}
-                      </span>
-                      <span className="text-[#118ab2] font-semibold">
-                        {cam.runtime_metrics?.pipeline_state === "LIVE"
-                          ? `${cam.runtime_metrics.pedestrian_count ?? 0} org · ${cam.runtime_metrics.vehicle_count ?? 0} unit`
-                          : "Data Unavailable"}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })
-            )}
-          </div>
+        {/* Active camera player */}
+        <div className="lg:col-span-2">
+          {activeCamera && <CctvLivePlayer camera={activeCamera} />}
         </div>
       </div>
     </div>
   );
 }
+
+
+
+
+
+
 
 // =========================================================================
 // 2. TRAFFIC CONGESTION VIEW (RULE 01 & PROVENANCE ENFORCED)
