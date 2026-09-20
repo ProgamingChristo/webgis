@@ -157,13 +157,21 @@ export function CctvPlatformShell() {
       {/* Tab Navigation                                                       */}
       {/* ================================================================== */}
       <nav
-        className="flex overflow-x-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xs gap-1"
+        className="flex overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xs gap-2"
         role="tablist"
         aria-label="CCTV Platform tabs"
       >
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
+
+          let tabStyle = "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100";
+          if (isActive) {
+            if (tab.id === "live") tabStyle = "bg-emerald-600 text-white border-emerald-600 shadow-sm";
+            else if (tab.id === "ai-vision") tabStyle = "bg-blue-600 text-white border-blue-600 shadow-sm";
+            else if (tab.id === "sensors") tabStyle = "bg-purple-600 text-white border-purple-600 shadow-sm";
+          }
+
           return (
             <button
               key={tab.id}
@@ -171,19 +179,15 @@ export function CctvPlatformShell() {
               role="tab"
               aria-selected={isActive}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-1 min-w-[100px] items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold transition-all whitespace-nowrap ${
-                isActive
-                  ? `${tab.activeBg} ${tab.activeBorder} ${tab.activeColor}`
-                  : `border-transparent bg-transparent ${tab.color} hover:bg-slate-50`
-              }`}
+              className={`flex flex-1 min-w-[120px] items-center justify-center gap-2 rounded-xl border px-5 py-3 text-xs font-bold transition-all whitespace-nowrap ${tabStyle}`}
             >
-              <Icon size={14} />
-              <span>{tab.label}</span>
-              {isActive && (
-                <span className="hidden sm:inline text-[9px] font-normal opacity-60 border border-current rounded px-1">
-                  {tab.description.split("—")[1]?.trim()}
-                </span>
-              )}
+              <Icon size={15} />
+              <span className="text-sm font-bold">{tab.label}</span>
+              <span className={`text-[10px] font-bold rounded-full px-2 py-0.5 uppercase ${
+                isActive ? "bg-white/20 text-white" : "bg-slate-200/70 text-slate-600"
+              }`}>
+                {tab.id === "live" ? "REAL CAMERA" : tab.id === "ai-vision" ? "AI ANALYSIS" : "SENSOR DATA"}
+              </span>
             </button>
           );
         })}
