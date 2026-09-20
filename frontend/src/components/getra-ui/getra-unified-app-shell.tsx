@@ -23,7 +23,7 @@ const ADMIN_NAV = [
 ];
 const INTERNATIONAL_NAV = [
   { href: "/international", label: "Portal Global (50)", icon: Globe, exact: true },
-  { href: "/international/cctv", label: "CCTV AI", icon: Video, exact: true },
+  { href: "/cctv", label: "CCTV & Sensor", icon: Video, exact: true },
   { href: "/international/traffic-congestion", label: "Deteksi Macet", icon: Car, exact: true },
   { href: "/international/multimodal-transit", label: "Rute Multimoda", icon: Plane, exact: true },
   { href: "/international/air-quality", label: "Sensor Udara", icon: Wind, exact: true },

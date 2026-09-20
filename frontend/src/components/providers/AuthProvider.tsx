@@ -63,7 +63,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
 
         const isAuthEntryRoute = ["/login", "/signup"].includes(pathname);
-        const isPublicRoute = pathname === "/" || isAuthEntryRoute;
+        const isPublicRoute =
+          pathname === "/" ||
+          isAuthEntryRoute ||
+          pathname === "/cctv" ||
+          pathname.startsWith("/cctv/") ||
+          pathname.startsWith("/international");
         const isApiRoute = pathname.startsWith("/api");
         const isAdminRoute = pathname.startsWith("/admin");
 
