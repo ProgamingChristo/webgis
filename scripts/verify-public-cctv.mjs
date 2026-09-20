@@ -97,6 +97,9 @@ async function main() {
     await page.setViewport({ width: 1440, height: 900 });
 
     await page.goto(`${BASE_WEB}/cctv`, { waitUntil: 'networkidle2', timeout: 35000 });
+    // Wait for React hydration
+    await page.waitForSelector('button', { timeout: 15000 });
+    await new Promise(r => setTimeout(r, 2000));
 
     const pageTitle = await page.title();
     console.log('Page Title:', pageTitle);

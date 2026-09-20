@@ -1,5 +1,6 @@
 import type { Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
 import { getBasemapOption, type BasemapId } from "./mapid";
+import { createSnapshotRegistry } from "./map-layer-registry";
 
 const retained = new WeakMap<MapLibreMap, ReturnType<typeof captureMapLayers>>();
 
@@ -12,8 +13,8 @@ export function captureMapLayers(map: MapLibreMap) {
   return { sources, layers };
 }
 export function rehydrateMapLayers(map: MapLibreMap, overlays: ReturnType<typeof captureMapLayers>) {
-  for (const [id, source] of Object.entries(overlays.sources)) if (!map.getSource(id)) map.addSource(id, source);
-  for (const layer of overlays.layers) if (!map.getLayer(layer.id)) map.addLayer(layer);
+  const result = createSnapshotRegistry(map, overlays.sources, overlays.layers).rehydrateAll();
+  if (result.failures.length) throw new Error(`Layer peta gagal dipulihkan: ${result.failures.map(f => f.id).join(", ")}`);
 }
 
 /** Register listeners BEFORE setStyle; abort prevents older switches committing state. */
