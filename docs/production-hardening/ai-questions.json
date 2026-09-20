@@ -1,0 +1,772 @@
+[
+  {
+    "id": "route-1",
+    "question": "Buat rute jalan kaki ke Monas",
+    "expected_intent": "ROUTE"
+  },
+  {
+    "id": "route-2",
+    "question": "Rute naik motor ke stasiun",
+    "expected_intent": "ROUTE"
+  },
+  {
+    "id": "route-3",
+    "question": "Rute naik mobil dari rumah",
+    "expected_intent": "ROUTE"
+  },
+  {
+    "id": "route-4",
+    "question": "Bagaimana memulai navigasi?",
+    "expected_intent": "ROUTE"
+  },
+  {
+    "id": "route-5",
+    "question": "Jelaskan rute aktif saya",
+    "expected_intent": "ROUTE"
+  },
+  {
+    "id": "route-6",
+    "question": "Apa itu Active Journey?",
+    "expected_intent": "ROUTE"
+  },
+  {
+    "id": "route-7",
+    "question": "Kapan rute perlu dihitung ulang?",
+    "expected_intent": "ROUTE"
+  },
+  {
+    "id": "route-8",
+    "question": "Bagaimana mengganti moda rute?",
+    "expected_intent": "ROUTE"
+  },
+  {
+    "id": "route-9",
+    "question": "Rute ini berapa meter?",
+    "expected_intent": "ROUTE"
+  },
+  {
+    "id": "route-10",
+    "question": "Hentikan navigasi",
+    "expected_intent": "ROUTE"
+  },
+  {
+    "id": "route-11",
+    "question": "Mengapa rute tidak tersedia?",
+    "expected_intent": "ROUTE"
+  },
+  {
+    "id": "umkm-1",
+    "question": "Cari UMKM terdekat",
+    "expected_intent": "UMKM"
+  },
+  {
+    "id": "umkm-2",
+    "question": "Cara mendaftarkan usaha",
+    "expected_intent": "UMKM"
+  },
+  {
+    "id": "umkm-3",
+    "question": "Bagaimana klaim merchant?",
+    "expected_intent": "UMKM"
+  },
+  {
+    "id": "umkm-4",
+    "question": "Ubah profil toko saya",
+    "expected_intent": "UMKM"
+  },
+  {
+    "id": "umkm-5",
+    "question": "Apakah warung ini sudah buka?",
+    "expected_intent": "UMKM"
+  },
+  {
+    "id": "umkm-6",
+    "question": "Cari bakso dekat sini",
+    "expected_intent": "UMKM"
+  },
+  {
+    "id": "umkm-7",
+    "question": "UMKM milik saya belum tampil",
+    "expected_intent": "UMKM"
+  },
+  {
+    "id": "umkm-8",
+    "question": "Bagaimana verifikasi usaha?",
+    "expected_intent": "UMKM"
+  },
+  {
+    "id": "umkm-9",
+    "question": "Cara mengedit lokasi merchant",
+    "expected_intent": "UMKM"
+  },
+  {
+    "id": "umkm-10",
+    "question": "Apa syarat pemilik usaha?",
+    "expected_intent": "UMKM"
+  },
+  {
+    "id": "umkm-11",
+    "question": "Mengapa restoran saya belum terlihat?",
+    "expected_intent": "UMKM"
+  },
+  {
+    "id": "cctv-1",
+    "question": "Ada CCTV di Bundaran HI?",
+    "expected_intent": "CCTV"
+  },
+  {
+    "id": "cctv-2",
+    "question": "Tampilkan kamera Gatot Subroto",
+    "expected_intent": "CCTV"
+  },
+  {
+    "id": "cctv-3",
+    "question": "Apakah CCTV sedang live?",
+    "expected_intent": "CCTV"
+  },
+  {
+    "id": "cctv-4",
+    "question": "Berapa FPS kamera ini?",
+    "expected_intent": "CCTV"
+  },
+  {
+    "id": "cctv-5",
+    "question": "Hitung orang dari CCTV sekarang",
+    "expected_intent": "CCTV"
+  },
+  {
+    "id": "cctv-6",
+    "question": "Apa model AI Vision yang aktif?",
+    "expected_intent": "CCTV"
+  },
+  {
+    "id": "cctv-7",
+    "question": "Kapan frame kamera diperbarui?",
+    "expected_intent": "CCTV"
+  },
+  {
+    "id": "cctv-8",
+    "question": "Bagaimana membuka kamera resmi?",
+    "expected_intent": "CCTV"
+  },
+  {
+    "id": "cctv-9",
+    "question": "Cari CCTV Jakarta Selatan",
+    "expected_intent": "CCTV"
+  },
+  {
+    "id": "cctv-10",
+    "question": "Mengapa preview kamera gagal?",
+    "expected_intent": "CCTV"
+  },
+  {
+    "id": "cctv-11",
+    "question": "Berapa kendaraan di kamera ini?",
+    "expected_intent": "CCTV"
+  },
+  {
+    "id": "weather-1",
+    "question": "Cuaca di sini sekarang?",
+    "expected_intent": "WEATHER"
+  },
+  {
+    "id": "weather-2",
+    "question": "Bagaimana weather sekarang?",
+    "expected_intent": "WEATHER"
+  },
+  {
+    "id": "weather-3",
+    "question": "Prakiraan cuaca lokasi ini",
+    "expected_intent": "WEATHER"
+  },
+  {
+    "id": "weather-4",
+    "question": "Cuaca hari ini tersedia?",
+    "expected_intent": "WEATHER"
+  },
+  {
+    "id": "weather-5",
+    "question": "Baca data cuaca terbaru",
+    "expected_intent": "WEATHER"
+  },
+  {
+    "id": "weather-6",
+    "question": "Cuaca dari BMKG atau model?",
+    "expected_intent": "WEATHER"
+  },
+  {
+    "id": "weather-7",
+    "question": "Mengapa cuaca kedaluwarsa?",
+    "expected_intent": "WEATHER"
+  },
+  {
+    "id": "weather-8",
+    "question": "Tampilkan cuaca sekitar sini",
+    "expected_intent": "WEATHER"
+  },
+  {
+    "id": "weather-9",
+    "question": "Apa sumber cuaca ini?",
+    "expected_intent": "WEATHER"
+  },
+  {
+    "id": "weather-10",
+    "question": "Kapan cuaca diperbarui?",
+    "expected_intent": "WEATHER"
+  },
+  {
+    "id": "weather-11",
+    "question": "Cuaca Jakarta hari ini",
+    "expected_intent": "WEATHER"
+  },
+  {
+    "id": "earthquake-1",
+    "question": "Gempa terbaru di sini?",
+    "expected_intent": "EARTHQUAKE"
+  },
+  {
+    "id": "earthquake-2",
+    "question": "Tampilkan earthquake terbaru",
+    "expected_intent": "EARTHQUAKE"
+  },
+  {
+    "id": "earthquake-3",
+    "question": "Gempa dekat Jakarta?",
+    "expected_intent": "EARTHQUAKE"
+  },
+  {
+    "id": "earthquake-4",
+    "question": "Apa magnitudo gempa terakhir?",
+    "expected_intent": "EARTHQUAKE"
+  },
+  {
+    "id": "earthquake-5",
+    "question": "Kapan gempa diperbarui?",
+    "expected_intent": "EARTHQUAKE"
+  },
+  {
+    "id": "earthquake-6",
+    "question": "Gempa dalam radius peta",
+    "expected_intent": "EARTHQUAKE"
+  },
+  {
+    "id": "earthquake-7",
+    "question": "Apa sumber data gempa?",
+    "expected_intent": "EARTHQUAKE"
+  },
+  {
+    "id": "earthquake-8",
+    "question": "Apakah data gempa lama?",
+    "expected_intent": "EARTHQUAKE"
+  },
+  {
+    "id": "earthquake-9",
+    "question": "Berapa kedalaman gempa?",
+    "expected_intent": "EARTHQUAKE"
+  },
+  {
+    "id": "earthquake-10",
+    "question": "Ada gempa hari ini?",
+    "expected_intent": "EARTHQUAKE"
+  },
+  {
+    "id": "earthquake-11",
+    "question": "Jelaskan gempa yang dipilih",
+    "expected_intent": "EARTHQUAKE"
+  },
+  {
+    "id": "fire-1",
+    "question": "Titik panas di sini?",
+    "expected_intent": "FIRE"
+  },
+  {
+    "id": "fire-2",
+    "question": "Tampilkan active fire",
+    "expected_intent": "FIRE"
+  },
+  {
+    "id": "fire-3",
+    "question": "Hotspot terbaru dekat sini",
+    "expected_intent": "FIRE"
+  },
+  {
+    "id": "fire-4",
+    "question": "Apa sumber hotspot?",
+    "expected_intent": "FIRE"
+  },
+  {
+    "id": "fire-5",
+    "question": "Hotspot dengan confidence tinggi",
+    "expected_intent": "FIRE"
+  },
+  {
+    "id": "fire-6",
+    "question": "Kapan titik panas diamati?",
+    "expected_intent": "FIRE"
+  },
+  {
+    "id": "fire-7",
+    "question": "Mengapa hotspot belum tersedia?",
+    "expected_intent": "FIRE"
+  },
+  {
+    "id": "fire-8",
+    "question": "Titik panas dalam radius peta",
+    "expected_intent": "FIRE"
+  },
+  {
+    "id": "fire-9",
+    "question": "Apakah hotspot berarti kebakaran pasti?",
+    "expected_intent": "FIRE"
+  },
+  {
+    "id": "fire-10",
+    "question": "Hotspot berasal dari satelit apa?",
+    "expected_intent": "FIRE"
+  },
+  {
+    "id": "fire-11",
+    "question": "Apa arti confidence hotspot?",
+    "expected_intent": "FIRE"
+  },
+  {
+    "id": "air_quality-1",
+    "question": "Kualitas udara di sini?",
+    "expected_intent": "AIR_QUALITY"
+  },
+  {
+    "id": "air_quality-2",
+    "question": "Air quality sekarang",
+    "expected_intent": "AIR_QUALITY"
+  },
+  {
+    "id": "air_quality-3",
+    "question": "Berapa PM2.5 di sini?",
+    "expected_intent": "AIR_QUALITY"
+  },
+  {
+    "id": "air_quality-4",
+    "question": "Apa sumber kualitas udara?",
+    "expected_intent": "AIR_QUALITY"
+  },
+  {
+    "id": "air_quality-5",
+    "question": "Kualitas udara terbaru dekat sini",
+    "expected_intent": "AIR_QUALITY"
+  },
+  {
+    "id": "air_quality-6",
+    "question": "Kapan kualitas udara diperbarui?",
+    "expected_intent": "AIR_QUALITY"
+  },
+  {
+    "id": "air_quality-7",
+    "question": "Apakah kualitas udara kedaluwarsa?",
+    "expected_intent": "AIR_QUALITY"
+  },
+  {
+    "id": "air_quality-8",
+    "question": "Mengapa air quality tidak tersedia?",
+    "expected_intent": "AIR_QUALITY"
+  },
+  {
+    "id": "air_quality-9",
+    "question": "Tampilkan stasiun kualitas udara",
+    "expected_intent": "AIR_QUALITY"
+  },
+  {
+    "id": "air_quality-10",
+    "question": "Jelaskan kualitas udara dari OpenAQ",
+    "expected_intent": "AIR_QUALITY"
+  },
+  {
+    "id": "air_quality-11",
+    "question": "Cuaca dan kualitas udara di sini",
+    "expected_intent": "AIR_QUALITY"
+  },
+  {
+    "id": "flood-1",
+    "question": "Ada banjir di sini?",
+    "expected_intent": "FLOOD"
+  },
+  {
+    "id": "flood-2",
+    "question": "Tampilkan flood terbaru",
+    "expected_intent": "FLOOD"
+  },
+  {
+    "id": "flood-3",
+    "question": "Banjir dekat Jakarta?",
+    "expected_intent": "FLOOD"
+  },
+  {
+    "id": "flood-4",
+    "question": "Berapa tinggi muka air?",
+    "expected_intent": "FLOOD"
+  },
+  {
+    "id": "flood-5",
+    "question": "Apa sumber data banjir?",
+    "expected_intent": "FLOOD"
+  },
+  {
+    "id": "flood-6",
+    "question": "Kapan banjir diperbarui?",
+    "expected_intent": "FLOOD"
+  },
+  {
+    "id": "flood-7",
+    "question": "Apakah banjir sudah diverifikasi?",
+    "expected_intent": "FLOOD"
+  },
+  {
+    "id": "flood-8",
+    "question": "Mengapa data banjir belum tersedia?",
+    "expected_intent": "FLOOD"
+  },
+  {
+    "id": "flood-9",
+    "question": "Banjir dalam radius peta",
+    "expected_intent": "FLOOD"
+  },
+  {
+    "id": "flood-10",
+    "question": "Jelaskan catatan banjir",
+    "expected_intent": "FLOOD"
+  },
+  {
+    "id": "flood-11",
+    "question": "Apakah banjir ini observasi resmi?",
+    "expected_intent": "FLOOD"
+  },
+  {
+    "id": "accessibility-1",
+    "question": "Cari fasilitas aksesibel",
+    "expected_intent": "ACCESSIBILITY"
+  },
+  {
+    "id": "accessibility-2",
+    "question": "Toilet untuk kursi roda",
+    "expected_intent": "ACCESSIBILITY"
+  },
+  {
+    "id": "accessibility-3",
+    "question": "Apakah aksesibilitas sudah terverifikasi?",
+    "expected_intent": "ACCESSIBILITY"
+  },
+  {
+    "id": "accessibility-4",
+    "question": "Wheelchair access di sini",
+    "expected_intent": "ACCESSIBILITY"
+  },
+  {
+    "id": "accessibility-5",
+    "question": "Tampilkan ramp terdekat",
+    "expected_intent": "ACCESSIBILITY"
+  },
+  {
+    "id": "accessibility-6",
+    "question": "Bagaimana mencari trotoar?",
+    "expected_intent": "ACCESSIBILITY"
+  },
+  {
+    "id": "accessibility-7",
+    "question": "Fasilitas disabilitas sekitar sini",
+    "expected_intent": "ACCESSIBILITY"
+  },
+  {
+    "id": "accessibility-8",
+    "question": "Toilet aksesibel dekat sini",
+    "expected_intent": "ACCESSIBILITY"
+  },
+  {
+    "id": "accessibility-9",
+    "question": "Sumber data aksesibilitas",
+    "expected_intent": "ACCESSIBILITY"
+  },
+  {
+    "id": "accessibility-10",
+    "question": "Apakah trotoar ini dapat dilewati?",
+    "expected_intent": "ACCESSIBILITY"
+  },
+  {
+    "id": "accessibility-11",
+    "question": "Cari pintu masuk wheelchair",
+    "expected_intent": "ACCESSIBILITY"
+  },
+  {
+    "id": "international-1",
+    "question": "Cari stasiun sepeda",
+    "expected_intent": "INTERNATIONAL"
+  },
+  {
+    "id": "international-2",
+    "question": "Tampilkan GBFS",
+    "expected_intent": "INTERNATIONAL"
+  },
+  {
+    "id": "international-3",
+    "question": "Skuter dekat sini",
+    "expected_intent": "INTERNATIONAL"
+  },
+  {
+    "id": "international-4",
+    "question": "EV charging di sini",
+    "expected_intent": "INTERNATIONAL"
+  },
+  {
+    "id": "international-5",
+    "question": "Tempat water refill",
+    "expected_intent": "INTERNATIONAL"
+  },
+  {
+    "id": "international-6",
+    "question": "Berapa elevasi lokasi ini?",
+    "expected_intent": "INTERNATIONAL"
+  },
+  {
+    "id": "international-7",
+    "question": "Zona waktu lokasi ini",
+    "expected_intent": "INTERNATIONAL"
+  },
+  {
+    "id": "international-8",
+    "question": "Buka open data",
+    "expected_intent": "INTERNATIONAL"
+  },
+  {
+    "id": "international-9",
+    "question": "Cari OSM POI",
+    "expected_intent": "INTERNATIONAL"
+  },
+  {
+    "id": "international-10",
+    "question": "Data terbuka apa tersedia?",
+    "expected_intent": "INTERNATIONAL"
+  },
+  {
+    "id": "international-11",
+    "question": "Apakah SPKLU punya slot kosong?",
+    "expected_intent": "INTERNATIONAL"
+  },
+  {
+    "id": "community-1",
+    "question": "Bagaimana membuat postingan?",
+    "expected_intent": "COMMUNITY"
+  },
+  {
+    "id": "community-2",
+    "question": "Buka komunitas",
+    "expected_intent": "COMMUNITY"
+  },
+  {
+    "id": "community-3",
+    "question": "Cara melaporkan postingan",
+    "expected_intent": "COMMUNITY"
+  },
+  {
+    "id": "community-4",
+    "question": "Bagaimana menulis komentar?",
+    "expected_intent": "COMMUNITY"
+  },
+  {
+    "id": "community-5",
+    "question": "Hapus postingan milik saya",
+    "expected_intent": "COMMUNITY"
+  },
+  {
+    "id": "community-6",
+    "question": "Apa sumber laporan warga?",
+    "expected_intent": "COMMUNITY"
+  },
+  {
+    "id": "community-7",
+    "question": "Bagaimana kontribusi warga ditinjau?",
+    "expected_intent": "COMMUNITY"
+  },
+  {
+    "id": "community-8",
+    "question": "Komunitas dapat berbagi lokasi?",
+    "expected_intent": "COMMUNITY"
+  },
+  {
+    "id": "community-9",
+    "question": "Cari posting komunitas",
+    "expected_intent": "COMMUNITY"
+  },
+  {
+    "id": "community-10",
+    "question": "Cara mengunggah foto postingan",
+    "expected_intent": "COMMUNITY"
+  },
+  {
+    "id": "community-11",
+    "question": "Laporan warga belum ditampilkan",
+    "expected_intent": "COMMUNITY"
+  },
+  {
+    "id": "admin-1",
+    "question": "Buka admin",
+    "expected_intent": "ADMIN"
+  },
+  {
+    "id": "admin-2",
+    "question": "Siapa yang boleh melakukan moderasi?",
+    "expected_intent": "ADMIN"
+  },
+  {
+    "id": "admin-3",
+    "question": "Cara kurasi merchant",
+    "expected_intent": "ADMIN"
+  },
+  {
+    "id": "admin-4",
+    "question": "Apa hak akses saya?",
+    "expected_intent": "ADMIN"
+  },
+  {
+    "id": "admin-5",
+    "question": "Bagaimana admin meninjau laporan?",
+    "expected_intent": "ADMIN"
+  },
+  {
+    "id": "admin-6",
+    "question": "Bolehkah moderator menghapus posting?",
+    "expected_intent": "ADMIN"
+  },
+  {
+    "id": "admin-7",
+    "question": "Approve pendaftaran UMKM",
+    "expected_intent": "ADMIN"
+  },
+  {
+    "id": "admin-8",
+    "question": "Admin dapat memeriksa klaim?",
+    "expected_intent": "ADMIN"
+  },
+  {
+    "id": "admin-9",
+    "question": "Jadikan saya admin",
+    "expected_intent": "ADMIN"
+  },
+  {
+    "id": "admin-10",
+    "question": "Bagaimana admin memverifikasi usaha?",
+    "expected_intent": "ADMIN"
+  },
+  {
+    "id": "admin-11",
+    "question": "Apa fungsi dashboard admin?",
+    "expected_intent": "ADMIN"
+  },
+  {
+    "id": "promotion-1",
+    "question": "Cara membuat promosi",
+    "expected_intent": "PROMOTION"
+  },
+  {
+    "id": "promotion-2",
+    "question": "Apa syarat kampanye?",
+    "expected_intent": "PROMOTION"
+  },
+  {
+    "id": "promotion-3",
+    "question": "Buka invoice iklan",
+    "expected_intent": "PROMOTION"
+  },
+  {
+    "id": "promotion-4",
+    "question": "Pembayaran Midtrans gagal",
+    "expected_intent": "PROMOTION"
+  },
+  {
+    "id": "promotion-5",
+    "question": "Bagaimana jadwal promosi?",
+    "expected_intent": "PROMOTION"
+  },
+  {
+    "id": "promotion-6",
+    "question": "Statistik promosi saya",
+    "expected_intent": "PROMOTION"
+  },
+  {
+    "id": "promotion-7",
+    "question": "Kapan campaign mulai aktif?",
+    "expected_intent": "PROMOTION"
+  },
+  {
+    "id": "promotion-8",
+    "question": "Apakah promo sudah dibayar?",
+    "expected_intent": "PROMOTION"
+  },
+  {
+    "id": "promotion-9",
+    "question": "Cara membatalkan iklan",
+    "expected_intent": "PROMOTION"
+  },
+  {
+    "id": "promotion-10",
+    "question": "Promosi butuh usaha terverifikasi?",
+    "expected_intent": "PROMOTION"
+  },
+  {
+    "id": "promotion-11",
+    "question": "Apa sumber analitik campaign?",
+    "expected_intent": "PROMOTION"
+  },
+  {
+    "id": "general_help-1",
+    "question": "GETRA itu apa?",
+    "expected_intent": "GENERAL_HELP"
+  },
+  {
+    "id": "general_help-2",
+    "question": "Apa yang bisa kamu lakukan?",
+    "expected_intent": "GENERAL_HELP"
+  },
+  {
+    "id": "general_help-3",
+    "question": "Bagaimana menggunakan aplikasi?",
+    "expected_intent": "GENERAL_HELP"
+  },
+  {
+    "id": "general_help-4",
+    "question": "Halo",
+    "expected_intent": "GENERAL_HELP"
+  },
+  {
+    "id": "general_help-5",
+    "question": "Tolong jelaskan menu utama",
+    "expected_intent": "GENERAL_HELP"
+  },
+  {
+    "id": "general_help-6",
+    "question": "Bagaimana keluar akun?",
+    "expected_intent": "GENERAL_HELP"
+  },
+  {
+    "id": "general_help-7",
+    "question": "Cara mengganti bahasa",
+    "expected_intent": "GENERAL_HELP"
+  },
+  {
+    "id": "general_help-8",
+    "question": "Apakah data selalu tersedia?",
+    "expected_intent": "GENERAL_HELP"
+  },
+  {
+    "id": "general_help-9",
+    "question": "Apa arti data kedaluwarsa?",
+    "expected_intent": "GENERAL_HELP"
+  },
+  {
+    "id": "general_help-10",
+    "question": "Bagaimana membaca sumber data?",
+    "expected_intent": "GENERAL_HELP"
+  },
+  {
+    "id": "general_help-11",
+    "question": "Di mana panduan penggunaan?",
+    "expected_intent": "GENERAL_HELP"
+  }
+]

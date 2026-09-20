@@ -664,7 +664,9 @@ function syncWalkingServiceArea(
   map: MapLibreMap,
   geometry?: GeoJSON.MultiLineString | null,
 ) {
-  if (!map.isStyleLoaded()) return;
+  // Route updates immediately above can mark sources as loading even though the
+  // style is ready to accept layers. Do not drop this overlay during that window.
+  if (!map.getStyle()?.layers) return;
   const data: GeoJSON.FeatureCollection = {
     type: "FeatureCollection",
     features: geometry ? [{ type: "Feature", properties: {}, geometry }] : [],
@@ -1323,6 +1325,15 @@ export function GetraMap({
     if (!activeBasemap) {
       return;
     }
+    if (basemapProviders[activeBasemap.id] === "AUTH_REQUIRED") {
+      let cancelled = false;
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setBasemapFailure(`${activeBasemap.label}: Basemap gagal dimuat. Kredensial provider diperlukan.`);
+        setBasemapStatus("FALLBACK"); setActiveBasemapId("mapid-default");
+      });
+      return () => { cancelled = true; };
+    }
 
     if (
       appliedBasemapRef.current?.id === activeBasemap.id &&
@@ -1334,7 +1345,6 @@ export function GetraMap({
     const controller = new AbortController();
     basemapReadyRef.current = false;
     setBasemapStatus("LOADING");
-    appliedBasemapRef.current = { id: activeBasemap.id, retryRevision: basemapRetryRevision };
     const restoreLayers = () => {
       addJakartaAdminBoundaries(map, importBoundariesRef.current);
       syncAdministrativeBoundaryLayers(map, administrativeBoundariesRef.current);
@@ -1347,6 +1357,7 @@ export function GetraMap({
     };
     void applyBasemap(map, activeBasemap.id, controller.signal, restoreLayers).then(() => {
       if (controller.signal.aborted) return;
+      appliedBasemapRef.current = { id: activeBasemap.id, retryRevision: basemapRetryRevision };
       basemapReadyRef.current = true;
       setBasemapStatus("READY");
     }).catch(() => {
@@ -1358,7 +1369,7 @@ export function GetraMap({
       } else setBasemapStatus("ERROR");
     });
     return () => controller.abort();
-  }, [activeBasemapId, basemapRetryRevision, setActiveBasemapId]);
+  }, [activeBasemapId, basemapRetryRevision, setActiveBasemapId, basemapProviders]);
 
   /*
    * Active dataset extent and center marker

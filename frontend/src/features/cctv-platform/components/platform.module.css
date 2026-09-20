@@ -1,0 +1,23 @@
+.platform input,
+.platform select,
+.platform button {
+  color: #334155;
+}
+
+.platform button[aria-selected="true"],
+.platform button[class*="text-white"] {
+  color: #fff;
+}
+
+.platform input::placeholder {
+  color: #475569;
+  opacity: 1;
+}
+
+.platform button:focus-visible,
+.platform a:focus-visible,
+.platform input:focus-visible,
+.platform select:focus-visible {
+  outline: 3px solid #075985;
+  outline-offset: 3px;
+}

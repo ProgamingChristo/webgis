@@ -1,13 +1,10 @@
 "use client";
 
 import {
-  Camera,
   Clock,
   ExternalLink,
-  Lock,
   MapPin,
   ShieldCheck,
-  WifiOff,
 } from "lucide-react";
 import type { CanonicalCamera, CameraHealthStatus } from "../../international/cctv-registry";
 import { getHealthStatusLabel } from "../../international/cctv-registry";
@@ -24,9 +21,9 @@ function StatusChip({ status }: { status: CameraHealthStatus }) {
     DEGRADED: { bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-200", dot: "bg-amber-500", pulse: false },
     STALE: { bg: "bg-slate-100", text: "text-slate-600", border: "border-slate-200", dot: "bg-slate-400", pulse: false },
     OFFLINE: { bg: "bg-red-100", text: "text-red-700", border: "border-red-200", dot: "bg-red-500", pulse: false },
-    NO_STREAM: { bg: "bg-slate-100", text: "text-slate-500", border: "border-slate-200", dot: "bg-slate-300", pulse: false },
-    UNKNOWN: { bg: "bg-slate-100", text: "text-slate-500", border: "border-slate-200", dot: "bg-slate-300", pulse: false },
-  }[status] ?? { bg: "bg-slate-100", text: "text-slate-500", border: "border-slate-200", dot: "bg-slate-300", pulse: false };
+    NO_STREAM: { bg: "bg-slate-100", text: "text-slate-600", border: "border-slate-200", dot: "bg-slate-300", pulse: false },
+    UNKNOWN: { bg: "bg-slate-100", text: "text-slate-600", border: "border-slate-200", dot: "bg-slate-300", pulse: false },
+  }[status] ?? { bg: "bg-slate-100", text: "text-slate-600", border: "border-slate-200", dot: "bg-slate-300", pulse: false };
 
   return (
     <span
@@ -49,9 +46,7 @@ export function CameraCard({ camera, isSelected, onClick }: CameraCardProps) {
   };
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <article
       className={`w-full text-left rounded-xl border p-3 transition-all ${
         isSelected
           ? "border-[#118ab2] bg-[#f0f9ff] shadow-sm ring-1 ring-[#118ab2]/20"
@@ -61,10 +56,10 @@ export function CameraCard({ camera, isSelected, onClick }: CameraCardProps) {
       <div className="flex items-start justify-between gap-2">
         {/* Left: camera info */}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-slate-800 leading-snug">
+          <button type="button" onClick={onClick} aria-pressed={isSelected} className="block w-full truncate text-left text-sm font-bold text-slate-800 leading-snug">
             {camera.camera_name}
-          </p>
-          <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-slate-500">
+          </button>
+          <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-slate-600">
             <MapPin size={10} className="shrink-0" />
             <span className="truncate">{camera.district}</span>
           </div>
@@ -76,8 +71,8 @@ export function CameraCard({ camera, isSelected, onClick }: CameraCardProps) {
 
       {/* Provider & source row */}
       <div className="mt-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
-          <ShieldCheck size={10} className="text-slate-400" />
+        <div className="flex items-center gap-1.5 text-[10px] text-slate-600">
+          <ShieldCheck size={10} className="text-slate-600" />
           <span>{camera.provider}</span>
         </div>
 
@@ -92,7 +87,7 @@ export function CameraCard({ camera, isSelected, onClick }: CameraCardProps) {
               SNAPSHOT
             </span>
           ) : (
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-400 font-semibold border border-slate-200">
+            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-600 font-semibold border border-slate-200">
               NO STREAM
             </span>
           )}
@@ -101,7 +96,7 @@ export function CameraCard({ camera, isSelected, onClick }: CameraCardProps) {
 
       {/* Verified timestamp */}
       {camera.last_verified_at && (
-        <div className="mt-1.5 flex items-center gap-1 text-[10px] text-slate-400">
+        <div className="mt-1.5 flex items-center gap-1 text-[10px] text-slate-600">
           <Clock size={9} />
           <span>
             Diverifikasi{" "}
@@ -118,7 +113,7 @@ export function CameraCard({ camera, isSelected, onClick }: CameraCardProps) {
       <div className="mt-2 flex items-center gap-2">
         {/* Open camera in selected state */}
         {isSelected && (
-          <span className="text-[10px] font-semibold text-[#118ab2]">
+          <span className="text-[10px] font-semibold text-[#08758f]">
             ● Dipilih
           </span>
         )}
@@ -133,6 +128,6 @@ export function CameraCard({ camera, isSelected, onClick }: CameraCardProps) {
           Sumber Resmi
         </button>
       </div>
-    </button>
+    </article>
   );
 }

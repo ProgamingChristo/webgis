@@ -10,6 +10,7 @@ import { useBasemap } from "@/lib/basemap-state";
 import { applyBasemap } from "@/lib/basemap-engine";
 import { INTERNATIONAL_LAYERS, type InternationalLayer, type InternationalResult, type InternationalRecord } from "@/types/international";
 import styles from "./global-data-center.module.css";
+import { datasetLegend } from "../legend";
 
 const CATEGORIES = ["restaurant", "cafe", "hospital", "pharmacy", "school", "library", "park", "toilet", "drinking_water", "charging_station", "fuel", "police", "fire_station", "bus_stop", "railway_station"];
 const EMPTY = { type: "FeatureCollection" as const, features: [] };
@@ -22,6 +23,7 @@ function syncData(map: MapLibreMap, result: InternationalResult | null, opacity:
   else map.addSource("getra-international", { type: "geojson", data: result?.data ?? EMPTY, cluster: true, clusterRadius: 42, clusterMaxZoom: 13 });
   if (!map.getLayer("getra-international-points")) map.addLayer({ id: "getra-international-points", type: "circle", source: "getra-international", paint: { "circle-color": ["case", ["has", "point_count"], "#0e7490", ["==", ["get", "freshness"], "STALE"], "#b45309", "#0369a1"], "circle-radius": ["case", ["has", "point_count"], 17, 7], "circle-stroke-color": "#fff", "circle-stroke-width": 2 } });
   if (!map.getLayer("getra-international-clusters")) map.addLayer({ id: "getra-international-clusters", type: "symbol", source: "getra-international", filter: ["has", "point_count"], layout: { "text-field": ["get", "point_count_abbreviated"], "text-font": ["Noto Sans Regular"], "text-size": 12 }, paint: { "text-color": "#ffffff" } });
+  map.setPaintProperty("getra-international-points", "circle-color", datasetLegend(result?.layer ?? "weather").color);
   if (map.getLayer("getra-international-image")) map.removeLayer("getra-international-image");
   if (map.getSource("getra-international-image")) map.removeSource("getra-international-image");
   if (result?.imagery) {
@@ -99,8 +101,17 @@ export function GlobalDataCenter({ initialLayer = "weather", basemapOnly = false
 
   useEffect(() => {
     const map = mapRef.current; if (!map || !mapReady) return;
+    if (providerStatus[basemapId] === "AUTH_REQUIRED") {
+      let cancelled = false;
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setBasemapError(`${getBasemapOption(basemapId).label}: Basemap gagal dimuat. Kredensial provider diperlukan.`);
+        setBasemapState("FALLBACK"); switchBasemap(getDefaultBasemapId());
+      });
+      return () => { cancelled = true; };
+    }
     const controller = new AbortController();
-    setBasemapState("LOADING");
+    queueMicrotask(() => { if (!controller.signal.aborted) setBasemapState("LOADING"); });
     void applyBasemap(map, basemapId, controller.signal, () => syncData(map, resultRef.current, opacityRef.current)).then(() => {
       if (!controller.signal.aborted) setBasemapState("READY");
     }).catch(() => {
@@ -112,7 +123,14 @@ export function GlobalDataCenter({ initialLayer = "weather", basemapOnly = false
     return () => controller.abort();
   }, [basemapId, retryMap, mapReady, switchBasemap, providerStatus]);
 
-  useEffect(() => { const map = mapRef.current; if (map) syncData(map, result, opacity); }, [result, opacity, basemapState]);
+  useEffect(() => {
+    const map = mapRef.current; if (!map) return;
+    const update = () => syncData(map, result, opacity);
+    // Camera movement can make isStyleLoaded false while data arrives. Retry once
+    // after tiles settle instead of leaving a populated detail panel on an empty map.
+    if (map.isStyleLoaded()) update(); else map.once("idle", update);
+    return () => { map.off("idle", update); };
+  }, [result, opacity, basemapState]);
 
   const load = useCallback(async () => {
     requestRef.current?.abort(); const controller = new AbortController(); requestRef.current = controller;
@@ -129,7 +147,7 @@ export function GlobalDataCenter({ initialLayer = "weather", basemapOnly = false
     if (until) params.set("until", new Date(until).toISOString());
     if (datasetLayer === "elevation" && profile) params.set("points", profile);
     try {
-      const response = await fetch(`/api/international/${layer}?${params}`, { signal: controller.signal });
+      const response = await fetch(`/api/international/${layer}?${params}`, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(55000)]) });
       if (!response.ok) throw new Error(response.status === 429 ? "Batas permintaan tercapai. Coba lagi dalam satu menit." : "Permintaan data gagal. Periksa koordinat dan filter.");
       const next: InternationalResult = await response.json();
       if (controller.signal.aborted) return;
@@ -189,7 +207,10 @@ export function GlobalDataCenter({ initialLayer = "weather", basemapOnly = false
         {state === "LOADING" && <p role="status">Menghubungi sumber data…</p>}
         {error && <p role="alert">{error}</p>}
         {result && <>
-          <strong className={styles.status}>{actualState === "LIVE" ? "READY — provider responded" : actualState}</strong>
+          <strong className={styles.status}>{actualState === "LIVE" ? "READY — data sumber dimuat" : actualState}</strong>
+          {result.quality && <p>Kualitas data: <strong>{result.quality.status}</strong> · {result.quality.accepted_records} catatan valid · {result.quality.rejected_records} disembunyikan</p>}
+          <p>Cakupan: {result.source.coverage}</p>
+          <div aria-label="Legenda peta">{datasetLegend(datasetLayer).values.map(item => <p key={item.label}><span aria-hidden="true" style={{ display: "inline-block", width: 12, height: 12, borderRadius: "50%", marginRight: 6, background: item.color }} />{item.label}</p>)}</div>
           {result.message && <p>{result.message}</p>}
           {!result.data.features.length && !result.imagery && !result.systems && <p>No live data available / Tidak ada data untuk kueri ini.</p>}
           <dl><dt>Source</dt><dd><a href={result.source.endpoint} target="_blank" rel="noreferrer">{result.source.provider}</a></dd><dt>Dataset</dt><dd>{result.source.name}</dd><dt>Updated</dt><dd>{formatTime(result.last_updated)}</dd><dt>Fetched</dt><dd>{formatTime(result.fetched_at)}</dd><dt>Last successful update</dt><dd>{formatTime(result.source.last_success)}</dd><dt>TTL</dt><dd>{result.ttl} detik</dd><dt>License</dt><dd>{result.source.license}</dd></dl>
@@ -198,7 +219,7 @@ export function GlobalDataCenter({ initialLayer = "weather", basemapOnly = false
           {result.imagery && <><label>Opasitas<input type="range" min="0" max="1" step="0.05" value={opacity} onChange={e => setOpacity(Number(e.target.value))} /></label><p>Citra: {formatTime(result.imagery.timestamp)}</p>{result.imagery.legend.map(l => <p key={l.label}>{/* Provider legend is an actual image, not reconstructed colors. */}<Image unoptimized src={l.image} alt={l.label} width={24} height={20} /> {l.label}</p>)}</>}
           {selected && <><button onClick={() => setSelected(null)}>← Semua hasil</button><dl>{Object.entries({ ...selected.properties, freshness: freshness(selected.properties) }).filter(([, v]) => v !== undefined).map(([key, value]) => <div key={key}><dt>{key.replaceAll("_", " ")}</dt><dd>{value === null ? "Tidak dipublikasikan" : typeof value === "object" ? <details><summary>Lihat data</summary><pre>{JSON.stringify(value, null, 2)}</pre></details> : String(value)}</dd></div>)}</dl>{coordinate && <Link href={`/app?destination_lat=${coordinate[1]}&destination_lon=${coordinate[0]}`}>Rute ke lokasi ini →</Link>}</>}
           {!selected && <><h3>{result.data.features.length} hasil spasial</h3><ul className={styles.records}>{result.data.features.slice(0, 100).map(f => <li key={f.id}><button onClick={() => { setSelected(f); if (f.geometry.type === "Point") mapRef.current?.easeTo({ center: f.geometry.coordinates as [number,number], zoom: 15 }); }}><strong>{f.properties.name}</strong><small>{freshness(f.properties)} · {formatTime(f.properties.timestamp)}</small></button></li>)}</ul>{result.data.features.length > 100 && <p>100 hasil pertama ditampilkan; semua hasil dimuat di peta.</p>}</>}
-          <button type="button" disabled={!result.fetched_at} onClick={async () => { setInterpretation("Meminta interpretasi data…"); try { const response = await fetch("/api/international/interpret", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ layer, query: loadedQueryRef.current }) }); const body = await response.json(); setInterpretation(body.answer ?? body.error ?? "Interpretasi tidak tersedia."); } catch { setInterpretation("Interpretasi tidak tersedia."); } }}>Interpretasi berbasis data</button>
+          <button type="button" disabled={!result.fetched_at} onClick={async () => { setInterpretation("Meminta interpretasi data…"); try { const response = await fetch("/api/international/interpret", { method: "POST", signal: AbortSignal.timeout(55000), headers: { "Content-Type": "application/json" }, body: JSON.stringify({ layer, query: loadedQueryRef.current }) }); const body = await response.json(); setInterpretation(body.answer ?? body.error ?? "Interpretasi tidak tersedia."); } catch { setInterpretation("Interpretasi tidak tersedia."); } }}>Interpretasi berbasis data</button>
           {interpretation && <p>{interpretation}</p>}
         </>}
       </aside>}

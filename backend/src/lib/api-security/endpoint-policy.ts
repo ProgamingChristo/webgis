@@ -56,6 +56,14 @@ const AUTH_MERCHANT_GET_HEADERS = [
 ] as const;
 
 export const API_ENDPOINT_POLICIES: readonly ApiEndpointPolicy[] = [
+  {
+    method: "GET", path: "/api/international/[layer]", classification: "PUBLIC", role: "NONE",
+    rateLimit: "spatial", cors: "allowlist", allowedRequestHeaders: ["x-request-id"], purpose: "Normalized public data and source registry",
+  },
+  {
+    method: "POST", path: "/api/international/interpret", classification: "PUBLIC", role: "NONE",
+    rateLimit: "spatial", cors: "allowlist", allowedRequestHeaders: CONTENT_HEADERS, purpose: "Grounded interpretation of public data",
+  },
   // Public
   {
     method: "GET",

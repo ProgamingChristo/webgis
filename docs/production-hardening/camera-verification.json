@@ -1,0 +1,125 @@
+{
+  "portal": "https://jakcctv.jakarta.go.id/publik",
+  "checked_at": "2026-09-20T07:52:38.352Z",
+  "results": [
+    {
+      "camera_id": "dki-jkp-polda-gatot-subroto-jpo",
+      "site": "JKP POLDA JPO JL. GATOT SUBROTO",
+      "embed": "https://dki-jkt.balitower.co.id:7028/502045_JKP_POLDA_JPO-JL.-GATOT-SUBROTO-7_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:37.380Z"
+    },
+    {
+      "camera_id": "dki-jkp-polda-gerbang-pemuda",
+      "site": "JKP POLDA JL. GERBANG PEMUDA",
+      "embed": "https://dki-jkt.balitower.co.id:7028/502155_JKP_POLDA_JL.-GERBANG-PEMUDA-C02_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:37.570Z"
+    },
+    {
+      "camera_id": "dki-jkp-satpolpp-gerbang-pemuda",
+      "site": "JKP SATPOL PP JL. GERBANG PEMUDA",
+      "embed": "https://dki-jkt.balitower.co.id:7028/502506_JKP_SATPOL-PP_JL.-GERBANG-PEMUDA-C04_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:37.630Z"
+    },
+    {
+      "camera_id": "dki-jkp-polda-jend-gatot-subroto",
+      "site": "JKP POLDA JL. JEND. GATOT SUBROTO",
+      "embed": "https://dki-jkt.balitower.co.id:7028/503300_JKP_POLDA_JL.-JEND.-GATOT-SUBROTO-C13_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:37.674Z"
+    },
+    {
+      "camera_id": "dki-jkp-dbm-flyover-ladokgi",
+      "site": "JKP DBM FLYOVER LADOKGI",
+      "embed": "https://dki-jkt.balitower.co.id:7028/503536_JKP_DBM_FLYOVER-LADOKGI-C01_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:37.720Z"
+    },
+    {
+      "camera_id": "dki-jkp-dishub-mh-thamrin",
+      "site": "JKP DISHUB JL. MH. THAMRIN",
+      "embed": "https://dki-jkt.balitower.co.id:7028/501844_JKP_DISHUB_JL.-MH.-THAMRIN-C01_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:37.739Z"
+    },
+    {
+      "camera_id": "dki-jkp-satpolpp-simpang-thamrin",
+      "site": "JKP SATPOL PP SIMPANG JL. MH. THAMRIN",
+      "embed": "https://dki-jkt.balitower.co.id:7028/502491_JKP_SATPOL-PP_SIMPANG-JL.-MH.-THAMRIN-C07_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:37.766Z"
+    },
+    {
+      "camera_id": "dki-jkp-polri-uob-plaza",
+      "site": "JKP POLRI UOB PLAZA",
+      "embed": "https://dki-jkt.balitower.co.id:7028/504866_JKP_POLRI_UOB-PLAZA-C01_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:37.783Z"
+    },
+    {
+      "camera_id": "dki-jks-taman-literasi",
+      "site": "Taman Literasi",
+      "embed": "https://dki-jkt.balitower.co.id:7028/501478_JKS_SATPOLPP_TAMAN-LITERASI-C01_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:37.806Z"
+    },
+    {
+      "camera_id": "dki-jks-simpang-panglima-polim",
+      "site": "Simpang Jl. Panglima Polim",
+      "embed": "https://dki-jkt.balitower.co.id:7028/501493_JKP_SATPOLPP_PASAR-TANAH-ABANG-C02_CCTV-02/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:37.824Z"
+    },
+    {
+      "camera_id": "dki-jks-jl-sultan-agung",
+      "site": "Jl. Sultan Agung",
+      "embed": "https://dki-jkt.balitower.co.id:7028/501594_JKS_DISGULKARMAT_JL.-MANGGARAI-UTARA-2-C01_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:37.851Z"
+    },
+    {
+      "camera_id": "dki-jks-senayan",
+      "site": "Senayan",
+      "embed": "https://cctv-jsc.balitower.co.id:8011/Senayan-018-705979_2/embed.html?proto=hls",
+      "http": 200,
+      "verified": "2026-09-20T07:52:38.079Z"
+    },
+    {
+      "camera_id": "dki-jks-bendungan-hilir",
+      "site": "Bendungan Hilir",
+      "embed": "https://cctv-jsc.balitower.co.id:8011/Bendungan-Hilir-003-700014_1/embed.html?proto=hls",
+      "http": 200,
+      "verified": "2026-09-20T07:52:38.200Z"
+    },
+    {
+      "camera_id": "dki-jkp-pasar-tanah-abang",
+      "site": "Pasar Tanah Abang",
+      "embed": "https://dki-jkt.balitower.co.id:7028/502540_JKB_SATPOL-PP_SIMPANG-JL.-LETJEN.-S.-PARMAN-C02_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:38.238Z"
+    },
+    {
+      "camera_id": "dki-jkp-jl-kh-mas-mansyur",
+      "site": "Jl. KH. Mas Mansyur",
+      "embed": "https://dki-jkt.balitower.co.id:7028/503343_JKP_DBM_JPO-JL.-CIDENG-TIMUR-C02_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:38.278Z"
+    },
+    {
+      "camera_id": "dki-jkp-jl-jati-baru-raya",
+      "site": "Jl. Jati Baru Raya",
+      "embed": "https://dki-jkt.balitower.co.id:7028/503675_JKP_BAKESBANGPOL_JL.-JATI-BARU-RAYA-C02_CCTV-01/embed.html",
+      "http": 200,
+      "verified": "2026-09-20T07:52:38.318Z"
+    },
+    {
+      "camera_id": "dki-jkp-kebon-melati",
+      "site": "Kebon Melati",
+      "embed": "https://cctv-jsc.balitower.co.id:8011/Kebon-Melati-010-700332_2/embed.html?proto=hls",
+      "http": 200,
+      "verified": "2026-09-20T07:52:38.351Z"
+    }
+  ]
+}

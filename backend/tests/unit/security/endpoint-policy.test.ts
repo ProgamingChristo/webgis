@@ -152,7 +152,7 @@ describe("API endpoint policy matrix", () => {
     );
   });
 
-  it("classifies only readiness and authentication entry points as public", () => {
+  it("classifies readiness, auth and explicitly public data endpoints", () => {
     const publicEndpoints =
       API_ENDPOINT_POLICIES
         .filter(
@@ -169,8 +169,10 @@ describe("API endpoint policy matrix", () => {
     expect(publicEndpoints).toEqual(
       [
         "GET /api/health",
+        "GET /api/international/[layer]",
         "POST /api/auth/login",
         "POST /api/auth/register",
+        "POST /api/international/interpret",
         "POST /api/payments/midtrans/notification",
       ].sort(),
     );

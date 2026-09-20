@@ -14,6 +14,14 @@ export const INTERNATIONAL_LAYERS = [
 ] as const;
 export type InternationalLayer = typeof INTERNATIONAL_LAYERS[number][0];
 export type SourceStatus = "LIVE" | "STALE" | "ERROR" | "AUTH_REQUIRED" | "UNAVAILABLE";
+export interface DataQuality {
+  status: "FRESH" | "STALE" | "PARTIAL" | "INVALID" | "UNAVAILABLE";
+  freshness: "FRESH" | "STALE" | "UNKNOWN";
+  completeness: number | null; validity: number | null;
+  source_reliability: "PROVIDER_REPORTED";
+  timestamp_quality: "PRESENT" | "UNKNOWN" | "PARTIAL" | "NO_RECORDS";
+  accepted_records: number; rejected_records: number;
+}
 export interface InternationalSource {
   id: string; name: string; provider: string; endpoint: string; source_type: string;
   coverage: string; requires_key: boolean; env_key: string | null; license: string;
@@ -29,6 +37,8 @@ export interface InternationalResult {
   source: InternationalSource; fetched_at: string | null; last_updated: string | null;
   ttl: number; data: FeatureCollection<Geometry, InternationalRecord>;
   truncated: boolean; warnings: string[];
+  quality?: DataQuality;
+  cache_status?: "HIT" | "MISS" | "DEDUP";
   imagery?: { url: string; coordinates: [[number, number], [number, number], [number, number], [number, number]]; timestamp: string | null; legend: { label: string; image: string }[] };
   systems?: { id: string; name: string; country: string; location: string }[];
 }

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
-  Video,
   Car,
   Plane,
   Bike,
@@ -15,22 +14,7 @@ import {
   ArrowRight,
   CheckCircle2,
   Sparkles,
-  MapPin,
-  Filter,
-  ShieldCheck,
-  WifiOff,
-  Clock,
-  Lock,
-  Activity,
 } from "lucide-react";
-import {
-  CANONICAL_CAMERA_REGISTRY,
-  getCameraRegistryStats,
-  type CanonicalCamera,
-  type CameraHealthStatus,
-  type CameraProvider,
-  type DkiDistrict,
-} from "../cctv-registry";
 import {
   CONGESTION_ZONES,
   MULTIMODAL_ROUTES,
@@ -40,7 +24,6 @@ import {
   AIRPORT_EXPRESS_DATA,
   PEDESTRIAN_BRIDGES,
 } from "../data";
-import { CctvLivePlayer } from "./CctvLivePlayer";
 import { CctvPlatformShell } from "../../cctv-platform";
 
 // =========================================================================

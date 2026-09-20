@@ -4,6 +4,7 @@ import { isInternationalLayer } from "@/types/international";
 import { international_data_sources, layerSources } from "./registry";
 import { runAdapter } from "./adapters";
 import { SourceFailure } from "./http";
+import { assessQuality } from "./quality";
 
 export const querySchema = z.object({
   lat: z.coerce.number().finite().min(-90).max(90), lon: z.coerce.number().finite().min(-180).max(180),
@@ -17,8 +18,12 @@ export const querySchema = z.object({
 
 const cache = new Map<string, { expires: number; data: InternationalResult }>();
 const pending = new Map<string, Promise<InternationalResult>>();
+function remember(key: string, entry: { expires: number; data: InternationalResult }) {
+  if (!cache.has(key) && cache.size >= 200) cache.delete(cache.keys().next().value!);
+  cache.set(key, entry);
+}
 export function clearInternationalCache() { cache.clear(); pending.clear(); }
-export function sourceRegistry() { return Object.values(international_data_sources).map(s => ({ ...s, status: s.env_key && !process.env[s.env_key] ? "AUTH_REQUIRED" : s.status === "LIVE" && s.last_success && Date.now() > Date.parse(s.last_success) + s.refresh_interval * 1000 ? "STALE" : s.status })); }
+export function sourceRegistry() { return Object.values(international_data_sources).map(s => ({ ...s, category: Object.keys(layerSources).filter(layer => layerSources[layer] === s.id), requires_auth: s.requires_key, credential_env: s.env_key, ttl: s.refresh_interval, status: s.env_key && !process.env[s.env_key]?.trim() ? "AUTH_REQUIRED" : s.status === "LIVE" && s.last_success && Date.now() > Date.parse(s.last_success) + s.refresh_interval * 1000 ? "STALE" : s.status })); }
 
 export async function queryInternational(layer: InternationalLayer, input: InternationalQuery): Promise<InternationalResult> {
   const q = querySchema.parse(input);
@@ -30,8 +35,8 @@ export async function queryInternational(layer: InternationalLayer, input: Inter
   const source = international_data_sources[sourceId];
   const key = JSON.stringify([layer, q]);
   const prior = cache.get(key);
-  if (prior && prior.expires > Date.now()) return refreshFreshness(prior.data);
-  if (pending.has(key)) return pending.get(key)!;
+  if (prior && prior.expires > Date.now()) return { ...refreshFreshness(prior.data), cache_status: "HIT" };
+  if (pending.has(key)) return { ...await pending.get(key)!, cache_status: "DEDUP" };
   const work = (async (): Promise<InternationalResult> => {
     const attempt = new Date().toISOString();
     try {
@@ -47,18 +52,18 @@ export async function queryInternational(layer: InternationalLayer, input: Inter
       source.last_success = attempt; source.last_verified = attempt; source.status = staleFeed ? "STALE" : "LIVE";
       const data: InternationalResult = { layer, source: { ...source }, status: source.status, message: staleFeed ? "Provider data is older than its refresh interval." : null, fetched_at: attempt, last_updated: result.updated, ttl, data: { type: "FeatureCollection", features: result.features }, warnings: result.warnings ?? [], truncated: result.truncated ?? false, imagery: result.imagery, systems: result.systems };
       if (cache.size >= 200) cache.delete(cache.keys().next().value!);
-      cache.set(key, { expires: Date.now() + ttl * 1000, data });
-      return refreshFreshness(data);
+      remember(key, { expires: Date.now() + ttl * 1000, data });
+      return { ...refreshFreshness(data), cache_status: "MISS" };
     } catch (error) {
       source.last_failure = attempt;
       source.status = error instanceof SourceFailure ? error.status : "ERROR";
       const message = error instanceof SourceFailure ? error.message : "Provider request failed or returned invalid data.";
       if (prior?.data.fetched_at && Date.now() - Date.parse(prior.data.fetched_at) < 86400000) {
         const stale = { ...refreshFreshness(prior.data), status: "STALE" as const, source: { ...source, status: "STALE" as const }, message: `Refresh failed. ${message}` };
-        cache.set(key, { expires: Date.now() + 30000, data: stale }); return stale;
+        remember(key, { expires: Date.now() + 30000, data: stale }); return stale;
       }
       const data: InternationalResult = { layer, status: source.status, message, source: { ...source }, fetched_at: null, last_updated: null, ttl: source.refresh_interval, data: { type: "FeatureCollection", features: [] }, warnings: [], truncated: false };
-      cache.set(key, { expires: Date.now() + 30000, data }); return data;
+      remember(key, { expires: Date.now() + 30000, data }); return refreshFreshness(data);
     }
   })();
   pending.set(key, work);
@@ -67,5 +72,5 @@ export async function queryInternational(layer: InternationalLayer, input: Inter
 function refreshFreshness(data: InternationalResult): InternationalResult {
   const expired = [data.fetched_at, data.last_updated].some(time => time !== null && Date.now() > Date.parse(time) + data.ttl * 1000);
   const status = expired && data.status === "LIVE" ? "STALE" : data.status;
-  return { ...data, status, source: { ...data.source, status }, data: { ...data.data, features: data.data.features.map(feature => ({ ...feature, properties: { ...feature.properties, freshness: feature.properties.freshness === "STATIC" ? "STATIC" : !feature.properties.timestamp ? "UNKNOWN" : Date.now() > Date.parse(feature.properties.timestamp) + data.ttl * 1000 ? "STALE" : "CURRENT" } })) } };
+  return assessQuality({ ...data, status, source: { ...data.source, status }, data: { ...data.data, features: data.data.features.map(feature => ({ ...feature, properties: { ...feature.properties, freshness: feature.properties.freshness === "STATIC" ? "STATIC" : !feature.properties.timestamp ? "UNKNOWN" : Date.now() > Date.parse(feature.properties.timestamp) + data.ttl * 1000 ? "STALE" : "CURRENT" } })) } });
 }

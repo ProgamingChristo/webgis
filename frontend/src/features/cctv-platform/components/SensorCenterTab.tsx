@@ -51,7 +51,7 @@ const STATUS_CONFIG: Record<SensorStatus, { label: string; chip: string }> = {
   LIVE: { label: "LIVE", chip: "bg-green-100 text-green-700 border-green-200" },
   STALE: { label: "STALE", chip: "bg-amber-100 text-amber-700 border-amber-200" },
   OFFLINE: { label: "OFFLINE", chip: "bg-red-100 text-red-700 border-red-200" },
-  UNKNOWN: { label: "UNKNOWN", chip: "bg-slate-100 text-slate-500 border-slate-200" },
+  UNKNOWN: { label: "UNKNOWN", chip: "bg-slate-100 text-slate-600 border-slate-200" },
 };
 
 const SENSOR_CATEGORIES: Array<{ value: SensorType | "ALL"; label: string }> = [
@@ -93,7 +93,7 @@ export function SensorCenterTab() {
             </div>
             <h2 className="text-base font-black text-purple-900">Sensor Center</h2>
             <p className="mt-0.5 text-xs text-purple-700 leading-relaxed">
-              Data sensor kota Jakarta dari sumber resmi: ISPU (Dinas Lingkungan Hidup DKI), 
+              Data sensor kota Jakarta dari sumber resmi: ISPU (Dinas Lingkungan Hidup DKI),
               BMKG (cuaca), BPBD DKI (banjir). Sensor ditampilkan terpisah dari CCTV dan AI.
             </p>
           </div>
@@ -106,19 +106,19 @@ export function SensorCenterTab() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs text-center">
           <p className="text-xl font-black text-slate-800">{stats.total}</p>
-          <span className="text-[10px] text-slate-500 font-semibold">Total Sensor</span>
+          <span className="text-[10px] text-slate-600 font-semibold">Total Sensor</span>
         </div>
         <div className="rounded-2xl border border-green-200 bg-green-50 p-3 shadow-xs text-center">
           <p className="text-xl font-black text-green-700">{stats.live}</p>
-          <span className="text-[10px] text-green-600 font-semibold">Live</span>
+          <span className="text-[10px] text-green-800 font-semibold">Live</span>
         </div>
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 shadow-xs text-center">
           <p className="text-xl font-black text-amber-700">{stats.stale}</p>
-          <span className="text-[10px] text-amber-600 font-semibold">Stale</span>
+          <span className="text-[10px] text-amber-800 font-semibold">Stale</span>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-slate-100 p-3 shadow-xs text-center">
           <p className="text-xl font-black text-slate-600">{stats.unknown}</p>
-          <span className="text-[10px] text-slate-500 font-semibold">Unknown</span>
+          <span className="text-[10px] text-slate-600 font-semibold">Unknown</span>
         </div>
       </div>
 
@@ -127,9 +127,9 @@ export function SensorCenterTab() {
         <AlertCircle size={14} className="shrink-0 mt-0.5" />
         <div>
           <p className="font-bold">Status Sensor: Belum Terhubung ke API Real-time</p>
-          <p className="text-amber-600 mt-0.5">
-            Data sensor di bawah menampilkan registry lokasi sensor DKI Jakarta dari sumber resmi. 
-            Nilai aktual (ISPU, tinggi muka air, suhu) menampilkan DATA UNAVAILABLE karena GETRA 
+          <p className="text-amber-800 mt-0.5">
+            Data sensor di bawah menampilkan registry lokasi sensor DKI Jakarta dari sumber resmi.
+            Nilai aktual (ISPU, tinggi muka air, suhu) menampilkan DATA UNAVAILABLE karena GETRA
             belum memiliki koneksi API aktif ke portal sensor. Lihat sumber resmi di masing-masing kartu sensor.
           </p>
         </div>
@@ -152,7 +152,7 @@ export function SensorCenterTab() {
           >
             {cat.label}
             {cat.value !== "ALL" && (
-              <span className="ml-1 text-[10px] text-slate-400">
+              <span className="ml-1 text-[10px] text-slate-600">
                 ({SENSOR_REGISTRY.filter((s) => s.sensor_type === cat.value).length})
               </span>
             )}
@@ -199,7 +199,7 @@ export function SensorCenterTab() {
 
               {/* Location */}
               <p className="mt-2 text-[11px] text-slate-600">{sensor.location}</p>
-              <p className="text-[10px] text-slate-500">{sensor.district}, {sensor.city}</p>
+              <p className="text-[10px] text-slate-600">{sensor.district}, {sensor.city}</p>
 
               {/* Value */}
               <div className="mt-3 flex items-end gap-2">
@@ -219,8 +219,8 @@ export function SensorCenterTab() {
                   </>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <span className="text-lg font-black text-slate-400">—</span>
-                    <span className="text-xs font-bold text-slate-400">DATA UNAVAILABLE</span>
+                    <span className="text-lg font-black text-slate-600">—</span>
+                    <span className="text-xs font-bold text-slate-600">DATA UNAVAILABLE</span>
                   </div>
                 )}
               </div>
@@ -233,12 +233,12 @@ export function SensorCenterTab() {
               {/* Footer: provider + timestamp + source */}
               <div className="mt-3 space-y-1.5 border-t border-white/50 pt-2">
                 <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-slate-500">Provider</span>
+                  <span className="text-slate-600">Provider</span>
                   <span className="font-semibold text-slate-700">{sensor.provider}</span>
                 </div>
                 <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-slate-500">Timestamp</span>
-                  <span className={`font-mono font-semibold ${sensor.timestamp ? "text-slate-700" : "text-slate-400"}`}>
+                  <span className="text-slate-600">Timestamp</span>
+                  <span className={`font-mono font-semibold ${sensor.timestamp ? "text-slate-700" : "text-slate-600"}`}>
                     {sensor.timestamp
                       ? new Date(sensor.timestamp).toLocaleString("id-ID", {
                           timeZone: "Asia/Jakarta",
@@ -252,7 +252,7 @@ export function SensorCenterTab() {
                 </div>
                 {sensor.source_url && (
                   <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-slate-500">Sumber</span>
+                    <span className="text-slate-600">Sumber</span>
                     <a
                       href={sensor.source_url}
                       target="_blank"
@@ -265,20 +265,20 @@ export function SensorCenterTab() {
                   </div>
                 )}
                 <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-slate-500">Diverifikasi</span>
-                  <span className="font-mono text-slate-500">
-                    {new Date(sensor.last_verified_at).toLocaleDateString("id-ID", {
+                  <span className="text-slate-600">Diverifikasi</span>
+                  <span className="font-mono text-slate-600">
+                    {sensor.last_verified_at ? new Date(sensor.last_verified_at).toLocaleDateString("id-ID", {
                       day: "2-digit",
                       month: "short",
                       year: "numeric",
                       timeZone: "Asia/Jakarta",
-                    })}
+                    }) : "Belum diverifikasi"}
                   </span>
                 </div>
               </div>
 
               {/* Source notes */}
-              <p className="mt-2 text-[10px] italic text-slate-500 leading-relaxed">
+              <p className="mt-2 text-[10px] italic text-slate-600 leading-relaxed">
                 {sensor.source_notes}
               </p>
             </div>
@@ -287,12 +287,12 @@ export function SensorCenterTab() {
       </div>
 
       {/* Data truth footer */}
-      <div className="flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
-        <Info size={14} className="shrink-0 mt-0.5 text-slate-400" />
+      <div className="flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+        <Info size={14} className="shrink-0 mt-0.5 text-slate-600" />
         <p>
-          <strong className="text-slate-600">Integritas Data Sensor:</strong> GETRA hanya menampilkan 
-          nilai sensor yang bersumber dari API publik yang terverifikasi. Nilai "DATA UNAVAILABLE" 
-          bukan angka nol — artinya data belum diterima dari sumber resmi. Sensor tidak dapat digunakan 
+          <strong className="text-slate-600">Integritas Data Sensor:</strong> GETRA hanya menampilkan
+          nilai sensor yang bersumber dari API publik yang terverifikasi. Nilai &quot;DATA UNAVAILABLE&quot;
+          bukan angka nol — artinya data belum diterima dari sumber resmi. Sensor tidak dapat digunakan
           sebagai pengganti data CCTV, dan sebaliknya.
         </p>
       </div>

@@ -12,6 +12,7 @@ try {
   await page.waitForFunction(() => document.querySelector('[data-basemap-status]')?.textContent === "READY", { timeout: 45000 });
   await page.click('form button[type="submit"]');
   await page.waitForFunction(() => document.body.innerText.includes("1 hasil spasial"), { timeout: 45000 });
+  await page.waitForFunction(() => window.__getraGlobalMap?.getStyle().sources["getra-international"]?.data?.features?.length === 1, { timeout: 20000 });
   await page.evaluate(() => { window.__qaMap = window.__getraGlobalMap; window.__qaMap.jumpTo({ center: window.__qaMap.getStyle().sources["getra-international"].data.features[0].geometry.coordinates, zoom: 13, bearing: 12, pitch: 20 }); document.querySelector('details[class*="basemaps"]').open = true; });
   const providers = await page.evaluate(() => fetch("/api/basemap/status").then(r => r.json()));
   report.providerAvailability = providers;

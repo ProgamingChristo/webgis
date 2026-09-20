@@ -51,7 +51,6 @@ import type {
   VernacularHeritageBuilding,
   DiplomaticMission,
   OpenBasemapProvider,
-  DataProvenance,
 } from "./types";
 
 export { CANONICAL_CAMERA_REGISTRY, getCameraRegistryStats } from "./cctv-registry";

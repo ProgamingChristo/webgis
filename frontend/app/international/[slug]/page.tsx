@@ -1,5 +1,6 @@
 import { INTERNATIONAL_LAYERS, isInternationalLayer } from "@/types/international";
 import { GlobalDataCenter } from "@/src/features/international/components/GlobalDataCenter";
+import { SimulationGate } from "@/src/features/international/components/SimulationGate";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { GetraAppShell } from "@/src/components/getra-ui";
@@ -154,7 +155,7 @@ export default async function InternationalFeaturePage({
       tone={isCctv ? "cctv-full" : "community"}
       fullWidth={isCctv}
     >
-      {renderView()}
+      {isCctv ? renderView() : <SimulationGate>{renderView()}</SimulationGate>}
     </GetraAppShell>
   );
 }

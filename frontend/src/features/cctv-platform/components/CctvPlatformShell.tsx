@@ -12,9 +12,9 @@
  * - Source provenance always visible
  */
 
+import styles from "./platform.module.css";
 import { useState } from "react";
 import {
-  Activity,
   Bot,
   Camera,
   ExternalLink,
@@ -74,7 +74,7 @@ export function CctvPlatformShell() {
   const [activeTab, setActiveTab] = useState<CctvPlatformTab>("live");
 
   return (
-    <div className="w-full space-y-4">
+    <div className={`${styles.platform} w-full space-y-4`}>
 
       {/* ================================================================== */}
       {/* Platform Header                                                      */}
@@ -87,11 +87,11 @@ export function CctvPlatformShell() {
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="flex items-center gap-1.5 rounded-full border border-[#118ab2]/20 bg-[#118ab2]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#118ab2]">
+                <span className="flex items-center gap-1.5 rounded-full border border-[#118ab2]/20 bg-[#118ab2]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#08758f]">
                   <Globe size={12} />
                   GETRA Urban Intelligence
                 </span>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold text-slate-500">
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold text-slate-600">
                   v2.0 — GIS First
                 </span>
               </div>
@@ -110,21 +110,21 @@ export function CctvPlatformShell() {
 
               {/* Primary source citation */}
               <div className="flex flex-wrap items-center gap-3 pt-1">
-                <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                <div className="flex items-center gap-1.5 text-xs text-slate-600">
                   <ShieldCheck size={13} className="text-green-500" />
                   <span>Sumber utama:</span>
                   <a
                     href="https://jakcctv.jakarta.go.id/publik"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 font-semibold text-[#118ab2] underline hover:text-[#0d7495]"
+                    className="flex items-center gap-1 font-semibold text-[#08758f] underline hover:text-[#0d7495]"
                   >
                     jakcctv.jakarta.go.id/publik
                     <ExternalLink size={10} />
                   </a>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  <Info size={13} className="text-slate-400" />
+                <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                  <Info size={13} className="text-slate-600" />
                   <span>Portal resmi CCTV Publik DKI Jakarta</span>
                 </div>
               </div>
@@ -167,7 +167,7 @@ export function CctvPlatformShell() {
 
           let tabStyle = "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100";
           if (isActive) {
-            if (tab.id === "live") tabStyle = "bg-emerald-600 text-white border-emerald-600 shadow-sm";
+            if (tab.id === "live") tabStyle = "bg-emerald-700 text-white border-emerald-600 shadow-sm";
             else if (tab.id === "ai-vision") tabStyle = "bg-blue-600 text-white border-blue-600 shadow-sm";
             else if (tab.id === "sensors") tabStyle = "bg-purple-600 text-white border-purple-600 shadow-sm";
           }
@@ -205,7 +205,7 @@ export function CctvPlatformShell() {
       {/* ================================================================== */}
       {/* Global footer                                                        */}
       {/* ================================================================== */}
-      <footer className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-[11px] text-slate-500">
+      <footer className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-[11px] text-slate-600">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <p className="font-bold text-slate-600">Ketentuan Penggunaan Data</p>
@@ -217,7 +217,7 @@ export function CctvPlatformShell() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <ShieldCheck size={16} className="text-green-500" />
-            <span className="font-semibold text-slate-600">Privacy masking enabled</span>
+            <span className="font-semibold text-slate-600">Kebijakan privasi mengikuti penyedia</span>
           </div>
         </div>
       </footer>

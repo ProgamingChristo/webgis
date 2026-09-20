@@ -17,8 +17,6 @@ import {
   ChevronUp,
   ExternalLink,
   Filter,
-  MapPin,
-  RefreshCw,
   Search,
   ShieldCheck,
   X,
@@ -27,7 +25,6 @@ import {
   CANONICAL_CAMERA_REGISTRY,
   getCameraRegistryStats,
   getHealthStatusLabel,
-  type CameraHealthStatus,
 } from "../../international/cctv-registry";
 import { CameraPlayer } from "./CameraPlayer";
 import { CameraCard } from "./CameraCard";
@@ -62,12 +59,12 @@ const STATUS_OPTIONS = [
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  ONLINE: "text-green-600",
-  DEGRADED: "text-amber-600",
-  STALE: "text-slate-500",
-  OFFLINE: "text-red-600",
-  NO_STREAM: "text-slate-400",
-  UNKNOWN: "text-slate-400",
+  ONLINE: "text-green-800",
+  DEGRADED: "text-amber-800",
+  STALE: "text-slate-600",
+  OFFLINE: "text-red-700",
+  NO_STREAM: "text-slate-600",
+  UNKNOWN: "text-slate-600",
 };
 
 export function LiveCctvTab() {
@@ -118,38 +115,38 @@ export function LiveCctvTab() {
       {/* ================================================================== */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">
             Terdaftar
           </span>
           <p className="mt-1 text-2xl font-black text-slate-800">{stats.total}</p>
-          <span className="text-[11px] text-slate-500">kamera DKI</span>
+          <span className="text-[11px] text-slate-600">kamera DKI</span>
         </div>
         <div className="rounded-2xl border border-green-200 bg-green-50 p-4 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-green-600">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-green-800">
             Live / Online
           </span>
           <p className="mt-1 text-2xl font-black text-green-700">
             {stats.online}
           </p>
-          <span className="text-[11px] text-green-600">kamera aktif</span>
+          <span className="text-[11px] text-green-800">kamera aktif</span>
         </div>
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800">
             Degraded
           </span>
           <p className="mt-1 text-2xl font-black text-amber-700">
             {stats.degraded}
           </p>
-          <span className="text-[11px] text-amber-600">kamera terganggu</span>
+          <span className="text-[11px] text-amber-800">kamera terganggu</span>
         </div>
         <div className="rounded-2xl border border-red-200 bg-red-50 p-4 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-red-600">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-red-700">
             Offline / No Stream
           </span>
           <p className="mt-1 text-2xl font-black text-red-700">
             {stats.offline + stats.noStream}
           </p>
-          <span className="text-[11px] text-red-600">tidak tersedia</span>
+          <span className="text-[11px] text-red-700">tidak tersedia</span>
         </div>
       </div>
 
@@ -170,7 +167,7 @@ export function LiveCctvTab() {
             >
               jakcctv.jakarta.go.id/publik
             </a>{" "}
-            — portal resmi DKI Jakarta. Status "UNKNOWN" berarti belum ada health check real-time. GETRA tidak mengklaim akses ke seluruh CCTV Jakarta; hanya kamera dari sumber publik yang diizinkan.
+            — portal resmi DKI Jakarta. Status &quot;UNKNOWN&quot; berarti belum ada health check real-time. GETRA tidak mengklaim akses ke seluruh CCTV Jakarta; hanya kamera dari sumber publik yang diizinkan.
           </p>
         </div>
       </div>
@@ -181,19 +178,21 @@ export function LiveCctvTab() {
       <div className="space-y-3">
         {/* Search bar */}
         <div className="relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
           <input
             type="text"
+            aria-label="Cari kamera"
             placeholder="Cari kamera: Bundaran HI, Thamrin, Senayan..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-10 text-sm text-slate-700 placeholder-slate-400 focus:border-[#118ab2] focus:outline-none shadow-xs"
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-10 text-sm text-slate-700 placeholder-slate-600 focus:border-[#118ab2] focus:outline-none shadow-xs"
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              aria-label="Hapus pencarian kamera"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-600"
             >
               <X size={14} />
             </button>
@@ -207,7 +206,7 @@ export function LiveCctvTab() {
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
               showFilters
-                ? "border-[#118ab2] bg-[#f0f9ff] text-[#118ab2]"
+                ? "border-[#118ab2] bg-[#f0f9ff] text-[#08758f]"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
             }`}
           >
@@ -222,13 +221,13 @@ export function LiveCctvTab() {
                 setProvider("");
                 setStatus("");
               }}
-              className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700"
+              className="flex items-center gap-1 text-xs text-slate-600 hover:text-slate-700"
             >
               <X size={12} />
               Reset filter
             </button>
           )}
-          <span className="ml-auto text-xs text-slate-400">
+          <span className="ml-auto text-xs text-slate-600">
             {filteredCameras.length} kamera
           </span>
         </div>
@@ -237,6 +236,7 @@ export function LiveCctvTab() {
         {showFilters && (
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
             <select
+              aria-label="Wilayah kamera"
               value={district}
               onChange={(e) => setDistrict(e.target.value)}
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-[#118ab2] focus:outline-none"
@@ -248,6 +248,7 @@ export function LiveCctvTab() {
               ))}
             </select>
             <select
+              aria-label="Penyedia kamera"
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-[#118ab2] focus:outline-none"
@@ -259,6 +260,7 @@ export function LiveCctvTab() {
               ))}
             </select>
             <select
+              aria-label="Status kamera"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-[#118ab2] focus:outline-none"
@@ -287,7 +289,7 @@ export function LiveCctvTab() {
             <button
               type="button"
               onClick={() => setListCollapsed(!listCollapsed)}
-              className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 lg:hidden"
+              className="flex items-center gap-1 text-xs text-slate-600 hover:text-slate-600 lg:hidden"
             >
               {listCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
               {listCollapsed ? "Tampilkan" : "Sembunyikan"}
@@ -300,7 +302,7 @@ export function LiveCctvTab() {
             {filteredCameras.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
                 <Camera size={24} className="mx-auto mb-2 text-slate-300" />
-                <p className="text-sm text-slate-500">Tidak ada kamera yang cocok</p>
+                <p className="text-sm text-slate-600">Tidak ada kamera yang cocok</p>
               </div>
             ) : (
               filteredCameras.map((cam) => (
@@ -324,60 +326,60 @@ export function LiveCctvTab() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-500">
+                      <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-600">
                         REAL CAMERA
                       </span>
-                      <span className={`text-[11px] font-bold ${STATUS_COLORS[selectedCamera.health_status] ?? "text-slate-500"}`}>
+                      <span className={`text-[11px] font-bold ${STATUS_COLORS[selectedCamera.health_status] ?? "text-slate-600"}`}>
                         {getHealthStatusLabel(selectedCamera.health_status)}
                       </span>
                     </div>
                     <h2 className="text-base font-black text-slate-800">
                       {selectedCamera.camera_name}
                     </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">{selectedCamera.site_name}</p>
+                    <p className="text-xs text-slate-600 mt-0.5">{selectedCamera.site_name}</p>
                   </div>
                   <a
                     href={selectedCamera.public_portal_url ?? "https://jakcctv.jakarta.go.id/publik"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 rounded-xl bg-[#118ab2] px-3 py-2 text-xs font-bold text-white hover:bg-[#0d7495] transition shrink-0"
+                    className="flex items-center gap-1.5 rounded-xl bg-[#08758f] px-3 py-2 text-xs font-bold text-white hover:bg-[#0d7495] transition shrink-0"
                   >
                     <ExternalLink size={13} />
-                    Buka Live
+                    Sumber resmi
                   </a>
                 </div>
 
                 {/* Metadata grid */}
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 text-xs">
                   <div className="rounded-lg bg-slate-50 p-2 border border-slate-100">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Provider</span>
+                    <span className="text-[10px] text-slate-600 font-bold uppercase">Provider</span>
                     <p className="font-semibold text-slate-700 mt-0.5 truncate">{selectedCamera.provider}</p>
                   </div>
                   <div className="rounded-lg bg-slate-50 p-2 border border-slate-100">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Wilayah</span>
+                    <span className="text-[10px] text-slate-600 font-bold uppercase">Wilayah</span>
                     <p className="font-semibold text-slate-700 mt-0.5">{selectedCamera.district}</p>
                   </div>
                   <div className="rounded-lg bg-slate-50 p-2 border border-slate-100">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Sumber</span>
+                    <span className="text-[10px] text-slate-600 font-bold uppercase">Sumber</span>
                     <p className="font-semibold text-slate-700 mt-0.5">DKI Public CCTV</p>
                   </div>
                   <div className="rounded-lg bg-slate-50 p-2 border border-slate-100">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">AI Vision</span>
-                    <p className="font-semibold text-slate-500 mt-0.5">
+                    <span className="text-[10px] text-slate-600 font-bold uppercase">AI Vision</span>
+                    <p className="font-semibold text-slate-600 mt-0.5">
                       {selectedCamera.supports_ai ? "Tersedia" : "Tidak tersedia"}
                     </p>
                   </div>
                 </div>
 
                 {/* Privacy info */}
-                <div className="mt-2 flex items-center gap-1.5 text-[10px] text-slate-400">
+                <div className="mt-2 flex items-center gap-1.5 text-[10px] text-slate-600">
                   <ShieldCheck size={11} className="text-green-500" />
                   <span>{selectedCamera.privacy_policy}</span>
                 </div>
 
                 {/* Source notes */}
                 {selectedCamera.source_notes && (
-                  <p className="mt-2 text-[10px] italic text-slate-400 leading-relaxed">
+                  <p className="mt-2 text-[10px] italic text-slate-600 leading-relaxed">
                     {selectedCamera.source_notes}
                   </p>
                 )}
@@ -389,7 +391,7 @@ export function LiveCctvTab() {
           ) : (
             <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center">
               <Camera size={32} className="mx-auto mb-3 text-slate-300" />
-              <p className="text-sm text-slate-500">Pilih kamera dari daftar</p>
+              <p className="text-sm text-slate-600">Pilih kamera dari daftar</p>
             </div>
           )}
         </div>
@@ -399,7 +401,7 @@ export function LiveCctvTab() {
       {/* Map Legend (static for now)                                         */}
       {/* ================================================================== */}
       <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-600">
           Legenda Status Kamera
         </p>
         <div className="flex flex-wrap gap-3 text-[11px]">

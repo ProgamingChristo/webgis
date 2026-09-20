@@ -36,7 +36,7 @@ export const SENSOR_REGISTRY: SensorEntry[] = [
     quality: null,
     status: "UNKNOWN",
     timestamp: null,
-    last_verified_at: "2026-09-19T07:00:00Z",
+    last_verified_at: null,
     source_notes: "Data real-time ISPU tersedia di udara.jakarta.go.id. GETRA belum memiliki koneksi API aktif ke sumber ini.",
   },
   {
@@ -56,7 +56,7 @@ export const SENSOR_REGISTRY: SensorEntry[] = [
     quality: null,
     status: "UNKNOWN",
     timestamp: null,
-    last_verified_at: "2026-09-19T07:00:00Z",
+    last_verified_at: null,
     source_notes: "Data real-time ISPU tersedia di udara.jakarta.go.id. GETRA belum memiliki koneksi API aktif ke sumber ini.",
   },
   {
@@ -76,7 +76,7 @@ export const SENSOR_REGISTRY: SensorEntry[] = [
     quality: null,
     status: "UNKNOWN",
     timestamp: null,
-    last_verified_at: "2026-09-19T07:00:00Z",
+    last_verified_at: null,
     source_notes: "Data real-time ISPU tersedia di udara.jakarta.go.id. GETRA belum memiliki koneksi API aktif ke sumber ini.",
   },
   {
@@ -96,7 +96,7 @@ export const SENSOR_REGISTRY: SensorEntry[] = [
     quality: null,
     status: "UNKNOWN",
     timestamp: null,
-    last_verified_at: "2026-09-19T07:00:00Z",
+    last_verified_at: null,
     source_notes: "Data real-time ISPU tersedia di udara.jakarta.go.id. GETRA belum memiliki koneksi API aktif ke sumber ini.",
   },
   {
@@ -116,7 +116,7 @@ export const SENSOR_REGISTRY: SensorEntry[] = [
     quality: null,
     status: "UNKNOWN",
     timestamp: null,
-    last_verified_at: "2026-09-19T07:00:00Z",
+    last_verified_at: null,
     source_notes: "Data real-time ISPU tersedia di udara.jakarta.go.id. GETRA belum memiliki koneksi API aktif ke sumber ini.",
   },
 
@@ -141,7 +141,7 @@ export const SENSOR_REGISTRY: SensorEntry[] = [
     quality: null,
     status: "UNKNOWN",
     timestamp: null,
-    last_verified_at: "2026-09-19T07:00:00Z",
+    last_verified_at: null,
     source_notes: "Data real-time tersedia di sistem Jakarta Smart City. GETRA belum memiliki koneksi API aktif ke sumber ini.",
   },
   {
@@ -161,7 +161,7 @@ export const SENSOR_REGISTRY: SensorEntry[] = [
     quality: null,
     status: "UNKNOWN",
     timestamp: null,
-    last_verified_at: "2026-09-19T07:00:00Z",
+    last_verified_at: null,
     source_notes: "Data real-time tersedia di sistem Jakarta Smart City. GETRA belum memiliki koneksi API aktif ke sumber ini.",
   },
 
@@ -186,7 +186,7 @@ export const SENSOR_REGISTRY: SensorEntry[] = [
     quality: null,
     status: "UNKNOWN",
     timestamp: null,
-    last_verified_at: "2026-09-19T07:00:00Z",
+    last_verified_at: null,
     source_notes: "Data cuaca BMKG tersedia melalui data.bmkg.go.id. GETRA belum memiliki koneksi API aktif ke sumber ini.",
   },
 
@@ -211,7 +211,7 @@ export const SENSOR_REGISTRY: SensorEntry[] = [
     quality: null,
     status: "UNKNOWN",
     timestamp: null,
-    last_verified_at: "2026-09-19T07:00:00Z",
+    last_verified_at: null,
     source_notes: "Sensor lalu lintas Dishub DKI. Tidak ada API publik yang terverifikasi tersedia saat ini.",
   },
 ];

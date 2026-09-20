@@ -70,7 +70,7 @@ function selectPolicy(identifier: string): RateLimitPolicy {
   return "api";
 }
 
-function getTrustedClientIp(req: NextRequest, config: RateLimitSecurityConfig): string | null {
+export function getTrustedClientIp(req: NextRequest, config: RateLimitSecurityConfig): string | null {
   let candidate = "";
 
   if (config.trustProxy) {

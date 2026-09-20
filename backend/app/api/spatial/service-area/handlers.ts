@@ -10,6 +10,7 @@ import { rateLimiter } from "@/src/lib/rate-limit";
 import { getRequestId } from "@/src/lib/request-id";
 import { readBoundedJsonBody } from "@/src/lib/spatial/request";
 import { getServiceRoleSupabaseClient } from "@/src/lib/supabase/server";
+import { valhallaServiceArea } from "@/src/features/routing/valhalla-service-area";
 
 export interface ServiceAreaRouteDependencies {
   authorize: typeof requireAuthenticatedUser;
@@ -20,9 +21,11 @@ export interface ServiceAreaRouteDependencies {
 const serviceAreaDependencies: ServiceAreaRouteDependencies = {
   authorize: requireAuthenticatedUser,
   checkLimit: rateLimiter.checkLimit.bind(rateLimiter),
-  serviceArea: (origin, minutes) => new CommuterNetworkRepository(
-    getServiceRoleSupabaseClient(),
-  ).serviceArea(origin, minutes),
+  serviceArea: async (origin, minutes) => {
+    const original = await new CommuterNetworkRepository(getServiceRoleSupabaseClient()).serviceArea(origin, minutes);
+    if (original.status === "READY" && original.geometry) return original;
+    try { return await valhallaServiceArea(origin, minutes); } catch { return original; }
+  },
 };
 
 export function createServiceAreaHandler(
@@ -43,8 +46,8 @@ export function createServiceAreaHandler(
 
     return createSuccessResponse(requestId, {
       ...result,
-      source: "GETRA_PEDESTRIAN_NETWORK",
-      analysis_method: "pgr_driving_distance",
+      source: result.source ?? "GETRA_PEDESTRIAN_NETWORK",
+      analysis_method: result.analysis_method ?? "pgr_driving_distance",
     });
   });
   };

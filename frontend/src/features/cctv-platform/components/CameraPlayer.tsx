@@ -127,14 +127,14 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
               REAL CAMERA
             </span>
           ) : (
-            <span className="flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-500 border border-slate-200">
+            <span className="flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-600 border border-slate-200">
               <AlertCircle size={11} />
               PREVIEW TIDAK TERSEDIA
             </span>
           )}
 
           {/* Source label */}
-          <span className="hidden sm:inline text-[11px] font-semibold text-slate-500">
+          <span className="hidden sm:inline text-[11px] font-semibold text-slate-600">
             {camera.source_type === "DKI_PUBLIC_IFRAME"
               ? "DKI PUBLIC CCTV"
               : camera.source_type === "SNAPSHOT_POLLING"
@@ -172,13 +172,13 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
             </span>
           )}
           {isNoStream && (
-            <span className="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">
+            <span className="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
               <Lock size={10} />
               NO STREAM
             </span>
           )}
           {isUnknown && (
-            <span className="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">
+            <span className="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
               UNKNOWN
             </span>
           )}
@@ -187,7 +187,7 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-600 transition"
             aria-label={isFullscreen ? "Keluar layar penuh" : "Layar penuh"}
           >
             {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
@@ -198,7 +198,7 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
       {/* ------------------------------------------------------------------ */}
       {/* Main Content Area — 16:9 aspect ratio                              */}
       {/* ------------------------------------------------------------------ */}
-      <div className="relative aspect-video w-full min-h-[360px] sm:min-h-[460px] xl:min-h-[580px] bg-slate-900 flex items-center justify-center overflow-hidden">
+      <div className="relative aspect-video w-full min-h-[360px] sm:min-h-[460px] xl:min-h-[580px] bg-slate-50 flex items-center justify-center overflow-hidden">
 
         {/* ── MODE A: DKI Public Portal iframe ── */}
         {renderMode === "iframe" && camera.embed_url && (
@@ -237,11 +237,11 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
                 <WifiOff size={28} />
               </div>
             ) : isNoStream ? (
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 border border-slate-200">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-600 border border-slate-200">
                 <Lock size={28} />
               </div>
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 border border-slate-200">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-600 border border-slate-200">
                 <Camera size={28} />
               </div>
             )}
@@ -251,7 +251,7 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
               <p className="text-sm font-bold text-slate-700">
                 Preview kamera tidak dapat disematkan
               </p>
-              <p className="text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-600 leading-relaxed">
                 {isOffline
                   ? `Kamera ${camera.camera_name} sedang offline. Periksa sumber resmi untuk status terkini.`
                   : isNoStream
@@ -265,12 +265,12 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
             {/* Source info box */}
             <div className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-left space-y-1.5 text-xs">
               <div className="flex justify-between">
-                <span className="text-slate-500">Sumber</span>
+                <span className="text-slate-600">Sumber</span>
                 <span className="font-semibold text-slate-700">DKI Public CCTV</span>
               </div>
               {camera.last_verified_at && (
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Terverifikasi</span>
+                  <span className="text-slate-600">Terverifikasi</span>
                   <span className="font-mono text-slate-600">
                     {new Date(camera.last_verified_at).toLocaleDateString("id-ID", {
                       day: "2-digit",
@@ -282,17 +282,17 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-slate-500">Status</span>
+                <span className="text-slate-600">Status</span>
                 <span className={`font-bold ${
-                  isOffline ? "text-red-600" :
-                  isNoStream ? "text-slate-500" :
+                  isOffline ? "text-red-700" :
+                  isNoStream ? "text-slate-600" :
                   "text-slate-600"
                 }`}>
                   {isOffline ? "OFFLINE" : isNoStream ? "NO_STREAM" : isUnknown ? "UNKNOWN" : camera.health_status}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Provider</span>
+                <span className="text-slate-600">Provider</span>
                 <span className="font-semibold text-slate-700">{camera.provider}</span>
               </div>
             </div>
@@ -301,7 +301,8 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
             <button
               type="button"
               onClick={openOfficialSource}
-              className="flex items-center gap-2 rounded-xl bg-[#118ab2] px-4 py-2 text-xs font-bold text-white hover:bg-[#0d7495] transition"
+            aria-label="Buka kamera di sumber resmi"
+              className="flex items-center gap-2 rounded-xl bg-[#08758f] px-4 py-2 text-xs font-bold text-white hover:bg-[#0d7495] transition"
             >
               <ExternalLink size={13} />
               Lihat di Sumber Resmi
@@ -317,7 +318,7 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
         {/* Left: camera info */}
         <div className="min-w-0">
           <p className="truncate text-xs font-bold text-slate-700">{camera.camera_name}</p>
-          <p className="text-[10px] text-slate-500 truncate">
+          <p className="text-[10px] text-slate-600 truncate">
             {camera.provider} · {camera.district}
           </p>
         </div>
@@ -329,6 +330,7 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
             <button
               type="button"
               onClick={handleManualRefresh}
+              aria-label="Perbarui snapshot kamera"
               disabled={isRefreshing}
               className="flex items-center gap-1.5 rounded-lg bg-white border border-slate-200 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 transition disabled:opacity-50"
             >
@@ -341,6 +343,7 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
           <button
             type="button"
             onClick={openOfficialSource}
+            aria-label="Buka kamera di sumber resmi"
             className="flex items-center gap-1.5 rounded-lg bg-white border border-slate-200 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 transition"
           >
             <ExternalLink size={11} />
@@ -352,7 +355,7 @@ export function CameraPlayer({ camera, className = "" }: CameraPlayerProps) {
       {/* ------------------------------------------------------------------ */}
       {/* Privacy & License Footer                                            */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex items-center gap-2 border-t border-slate-100 bg-white px-4 py-1.5 text-[10px] text-slate-400">
+      <div className="flex items-center gap-2 border-t border-slate-100 bg-white px-4 py-1.5 text-[10px] text-slate-600">
         <ShieldCheck size={11} className="shrink-0 text-green-500" />
         <span className="truncate">{camera.privacy_policy}</span>
         {lastRefreshed && renderMode === "snapshot" && (

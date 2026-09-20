@@ -55,7 +55,7 @@ const nextConfig: NextConfig = {
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob: https: *.supabase.co *.mapid.io mapidstorage.cdn.mapid.io mapid-app-chat.cdn.mapid.io",
       "connect-src 'self' https: wss: http://localhost:8080 http://localhost:8180 https://getra-routing-api.tail0ed517.ts.net https://*.supabase.co https://app.sandbox.midtrans.com https://app.midtrans.com",
-      "frame-src 'self' https://jakcctv.jakarta.go.id https://app.sandbox.midtrans.com https://app.midtrans.com",
+      "frame-src 'self' https://jakcctv.jakarta.go.id https://dki-jkt.balitower.co.id:7028 https://cctv-jsc.balitower.co.id:8011 https://app.sandbox.midtrans.com https://app.midtrans.com",
       "worker-src 'self' blob:",
       "frame-ancestors 'none'",
       "object-src 'none'",

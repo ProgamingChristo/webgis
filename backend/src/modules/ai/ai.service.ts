@@ -1,4 +1,6 @@
 import { answerInternational } from "@/src/features/international/interpret";
+import { answerCameraInventory } from "./camera-tool";
+import { routeAssistantIntent } from "./intent-router";
 import {
   extractSearchAction,
   normalizeSlangAndTypos,
@@ -78,6 +80,14 @@ export class AiService {
     req: AiAskRequest,
   ): Promise<AiAskResponse> {
     const res = await this.executeAskRequest(req);
+    // Product help fallback is explicit; it never fills gaps with external facts.
+    if (res.intent === "UNKNOWN") {
+      const plan = routeAssistantIntent(req.question);
+      if (plan.intents.includes("ROUTE")) return { answer: "Active Journey memandu perjalanan berdasarkan rute GIS yang sudah dihitung. Pilih asal, tujuan dan moda, lalu tekan Mulai Perjalanan. Jarak serta waktu hanya ditampilkan setelah hasil jaringan tersedia.", intent: "ACTIVE_JOURNEY", provider: "deterministic", evidence: [], limitations: ["Belum ada hasil rute untuk pertanyaan ini."], action: { type: "NAVIGATE", path: "/app", label: "Buka peta" } };
+      if (plan.intents.includes("ACCESSIBILITY")) return { answer: "Kondisi trotoar atau akses kursi roda tidak dapat dipastikan tanpa pengamatan terverifikasi. Gunakan pencarian fasilitas aksesibel untuk membaca tag sumber dan tanggal pengamatan; ketiadaan tag bukan bukti akses aman.", intent: "ACCESSIBILITY", provider: "deterministic", evidence: [], limitations: ["Data tersebut belum tersedia untuk objek yang dimaksud."], action: { type: "NAVIGATE", path: "/international/accessibility", label: "Cari fasilitas aksesibel" } };
+      if (plan.intents.includes("COMMUNITY")) return { answer: "Buka Komunitas untuk membuat postingan, menambahkan foto, memberi komentar, atau melaporkan konten. Tindakan pada postingan bergantung pada kepemilikan dan hak akses; asisten belum mengubah postingan Anda.", intent: "COMMUNITY", provider: "deterministic", evidence: [], limitations: [], action: { type: "NAVIGATE", path: "/community", label: "Buka Komunitas" } };
+      if (plan.intents.includes("PROMOTION")) return { answer: "Promosi memerlukan usaha yang memenuhi kelayakan dan kepemilikan terverifikasi. Buka ruang promosi untuk memeriksa kelayakan, jadwal, materi, pembayaran, dan analitik yang tercatat.", intent: "PROMOTION_SETUP", provider: "deterministic", evidence: [], limitations: ["Status pembayaran dan performa kampanye belum diperiksa."], action: { type: "NAVIGATE", path: "/umkm/advertising", label: "Buka Promosi" } };
+    }
     if (!res.suggestion_chips || res.suggestion_chips.length === 0) {
       res.suggestion_chips = getSuggestionChips(
         res.intent,
@@ -109,7 +119,7 @@ export class AiService {
     // 2. Guardrail: Unauthorized Privilege Escalation & Admin/Owner Action Refusal
     if (
       /\b(?:approve|setujui)\s+(?:merchant|toko|usaha|warung|pengajuan|submission|umkm)\b/iu.test(normalizedQuestion) ||
-      (/\bverifikasi\s+(?:merchant|toko|usaha|warung|pengajuan|submission|umkm)\b/iu.test(normalizedQuestion) && !/\b(?:status|kenapa|mengapa|kapan|cek)\b/iu.test(normalizedQuestion))
+      (/\bverifikasi\s+(?:merchant|toko|usaha|warung|pengajuan|submission|umkm)\b/iu.test(normalizedQuestion) && !/\b(?:status|kenapa|mengapa|kapan|cek|bagaimana|cara|syarat)\b/iu.test(normalizedQuestion))
     ) {
       return {
         answer:
@@ -177,6 +187,14 @@ export class AiService {
 
     const internationalAnswer = await answerInternational(req);
     if (internationalAnswer) return internationalAnswer;
+    const routed = routeAssistantIntent(req.question);
+    if (routed.intents[0] === "ADMIN" && !/\bbeda(?:nya)?\b.*\buser\b.*\badmin\b/i.test(req.question)) return { answer: "Kurasi UMKM dan moderasi konten dilakukan melalui halaman Admin oleh akun yang berwenang. Peran akun ditampilkan pada profil; asisten tidak mengubah hak akses atau menyetujui pengajuan.", intent: "ADMIN", provider: "deterministic", evidence: [], limitations: ["Otorisasi tetap diperiksa oleh backend pada setiap tindakan."], action: { type: "NAVIGATE", path: "/admin/umkm", label: "Buka Admin" } };
+    if (/\b(?:profil toko|verifikasi usaha)\b/i.test(req.question)) return { answer: "Buka ruang UMKM untuk mengedit usaha yang Anda miliki atau memeriksa kelengkapan pengajuan verifikasi. Persetujuan tetap dilakukan oleh admin; status usaha Anda belum diperiksa dalam jawaban ini.", intent: "UMKM_EDIT", provider: "deterministic", evidence: [], limitations: [], action: { type: "NAVIGATE", path: "/umkm", label: "Buka UMKM" } };
+    if (routed.intents.includes("CCTV")) {
+      const cameraAnswer = answerCameraInventory(req);
+      if (cameraAnswer) return cameraAnswer;
+    }
+    if (routed.intents.includes("SENSOR")) return { answer: "Data pengamatan sensor belum tersedia dari koneksi yang terverifikasi. Pilih sumber pada tab Sensor. Cuaca model dan hasil deteksi kamera tidak dianggap sebagai pembacaan sensor.", intent: "ENVIRONMENT", provider: "deterministic", evidence: [], limitations: ["Tidak ada nilai sensor untuk disimpulkan."], action: { type: "NAVIGATE", path: "/international/cctv", label: "Buka Sensor" } };
 
     // 2b. Fair Discovery & Superlative Claims Guardrails
     if (/\b(?:kenapa|mengapa)\s+(?:toko|merchant|usaha)\s+(?:ini\s+)?(?:muncul|tampil|ada di atas)\b/iu.test(normalizedQuestion)) {

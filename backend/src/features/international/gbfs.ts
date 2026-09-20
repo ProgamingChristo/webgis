@@ -2,7 +2,7 @@ import type { InternationalLayer, InternationalQuery, InternationalSource } from
 import type { Feature, Geometry } from "geojson";
 import type { InternationalRecord } from "@/types/international";
 import { csv, fetchJson, fetchText, list, num, obj, SourceFailure, timestamp } from "./http";
-import { point, type AdapterResult } from "./adapters";
+import { point, distanceMeters, type AdapterResult } from "./adapters";
 
 let catalog: { time: number; rows: Record<string, string>[] } | undefined;
 export async function gbfs(layer: InternationalLayer, source: InternationalSource, q: InternationalQuery): Promise<AdapterResult> {
@@ -32,7 +32,7 @@ export async function gbfs(layer: InternationalLayer, source: InternationalSourc
     for (const station of list(obj(stations.data).stations)) {
       const state = statuses.get(station.station_id);
       const p = point(s, String(station.station_id), station.lon, station.lat, { name: station.name, capacity: station.capacity ?? null, available_bikes: state?.num_vehicles_available ?? state?.num_bikes_available ?? null, available_docks: state?.num_docks_available ?? null, is_renting: state?.is_renting ?? null, is_returning: state?.is_returning ?? null, is_installed: state?.is_installed ?? null, vehicle_types_available: state?.vehicle_types_available ?? null, feed_updated: timestamp(status.last_updated), ttl, system_id: q.system }, state?.last_reported ?? null);
-      if (p) features.push(p);
+      if (p && distanceMeters(Number(station.lon), Number(station.lat), q) <= q.radius) features.push(p);
     }
     if ([...statuses.values()].length === 0) warnings.push("Station status feed contains no reports. Availability is unknown.");
     return { features: features.slice(0, 3000), updated: timestamp(status.last_updated), ttl, truncated: features.length > 3000, warnings };
@@ -46,7 +46,7 @@ export async function gbfs(layer: InternationalLayer, source: InternationalSourc
     const kind = kinds.get(vehicle.vehicle_type_id);
     if (!kind || !["scooter", "scooter_standing", "scooter_seated", "moped", "cargo_bicycle"].includes(String(kind.form_factor))) continue;
     const p = point(s, String(vehicle.vehicle_id ?? vehicle.bike_id), vehicle.lon, vehicle.lat, { name: `${selected.Name} ${kind.form_factor}`, vehicle_type: kind.form_factor, is_reserved: vehicle.is_reserved ?? null, is_disabled: vehicle.is_disabled ?? null, station_id: vehicle.station_id ?? null, current_range_meters: vehicle.current_range_meters ?? null, current_fuel_percent: vehicle.current_fuel_percent ?? null, ttl, system_id: q.system }, vehicle.last_reported ?? vehicles.last_updated);
-    if (p) features.push(p);
+    if (p && distanceMeters(Number(vehicle.lon), Number(vehicle.lat), q) <= q.radius) features.push(p);
   }
   warnings.push("Only published vehicle types and coordinates are mapped. Missing battery/availability is unknown.");
   return { features: features.slice(0, 3000), updated: timestamp(vehicles.last_updated), ttl, truncated: features.length > 3000, warnings };

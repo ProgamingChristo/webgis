@@ -1,9 +1,10 @@
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import { z } from "zod";
+import { resilientRequest } from "./resilience";
 
 export class SourceFailure extends Error {
-  constructor(public status: "ERROR" | "AUTH_REQUIRED" | "UNAVAILABLE", message: string) { super(message); }
+  constructor(public status: "ERROR" | "AUTH_REQUIRED" | "UNAVAILABLE", message: string, public httpStatus?: number) { super(message); }
 }
 // URLs originate in the fixed registry or public GBFS catalog, never arbitrary user URLs.
 // Validate every discovered host and deny redirects to prevent internal-network requests.
@@ -15,14 +16,16 @@ export async function publicUrl(input: string) {
   return u;
 }
 export async function fetchText(url: string, init?: RequestInit) {
-  await publicUrl(url);
-  const response = await fetch(url, { ...init, redirect: "error", signal: init?.signal ?? AbortSignal.timeout(30000), cache: "no-store", headers: { "User-Agent": "GETRA/1.0 (+https://github.com/ProgamingChristo/webgis)", ...init?.headers } });
-  if (!response.ok) throw new SourceFailure(response.status === 401 || response.status === 403 ? "AUTH_REQUIRED" : "ERROR", `Provider HTTP ${response.status}`);
+  const endpoint = await publicUrl(url);
+  return resilientRequest(endpoint.hostname, async signal => {
+  const response = await fetch(url, { ...init, redirect: "error", signal, cache: "no-store", headers: { "User-Agent": "GETRA/1.0 (+https://github.com/ProgamingChristo/webgis)", ...init?.headers } });
+  if (!response.ok) { await response.body?.cancel(); throw new SourceFailure(response.status === 401 || response.status === 403 ? "AUTH_REQUIRED" : "ERROR", `Provider HTTP ${response.status}`, response.status); }
   const reader = response.body?.getReader();
   if (!reader) throw new SourceFailure("ERROR", "Provider returned no body.");
   const chunks: Uint8Array[] = []; let size = 0;
   while (true) { const { done, value } = await reader.read(); if (done) break; size += value.byteLength; if (size > 8_000_000) { await reader.cancel(); throw new SourceFailure("ERROR", "Provider response exceeds size limit."); } chunks.push(value); }
   return new TextDecoder().decode(Buffer.concat(chunks));
+  }, { signal: init?.signal ?? undefined, retryable: error => !(error instanceof SourceFailure) || error.httpStatus !== undefined && (error.httpStatus >= 500 || error.httpStatus === 408) });
 }
 export async function fetchJson(url: string, init?: RequestInit): Promise<Record<string, unknown>> {
   const parsed: unknown = JSON.parse(await fetchText(url, init));

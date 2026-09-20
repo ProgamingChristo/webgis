@@ -22,16 +22,19 @@ export const INTERNATIONAL_INTENTS: [RegExp, InternationalLayer][] = [
   [/\b(kualitas udara|air quality|pm2[.,]5|polusi udara)\b/i, "air-quality"],
   [/\b(radar cuaca|weather radar)\b/i, "weather-radar"], [/\b(satelit cuaca|satellite weather|citra awan)\b/i, "weather-satellite"],
   [/\b(cuaca|weather|suhu sekarang)\b/i, "weather"], [/\b(tinggi muka air|banjir|flood)\b/i, "flood"],
-  [/\b(bencana|disaster)\b/i, "disaster"], [/\b(stasiun sepeda|bike share|bikeshare|sepeda tersedia)\b/i, "bikeshare"],
+  [/\b(bencana|disaster)\b/i, "disaster"], [/\b(stasiun sepeda|bike share|bikeshare|gbfs|sepeda tersedia)\b/i, "bikeshare"],
   [/\b(skuter|scooter|mikromobilitas|micromobility)\b/i, "micromobility"],
   [/\b(charging station|ev charging|pengisian kendaraan|spklu)\b/i, "ev-charging"],
-  [/\b(toilet.*akses|wheelchair|fasilitas aksesibel)\b/i, "accessibility"], [/\b(air minum|water refill|drinking water)\b/i, "water-refill"],
+  [/\b(toilet.*akses|wheelchair|fasilitas aksesibel|toilet aksesibel|ramp terdekat)\b/i, "accessibility"], [/\b(air minum|water refill|drinking water)\b/i, "water-refill"],
   [/\b(elevasi|elevation|ketinggian tanah)\b/i, "elevation"], [/\b(zona waktu|timezone|matahari terbit|sunrise|sunset)\b/i, "timezone"],
   [/\b(peta halte transjakarta|jakarta transit)\b/i, "jakarta-transit"], [/\b(transit stops|global transit)\b/i, "transit-stops"],
   [/\b(geocoding|geonames|cari nama tempat)\b/i, "places"], [/\b(open data|data terbuka)\b/i, "open-data"], [/\b(osm poi|fasilitas terdekat|rumah sakit terdekat|apotek terdekat)\b/i, "poi"],
 ];
 export async function answerInternational(req: AiAskRequest): Promise<AiAskResponse | null> {
-  const layer = INTERNATIONAL_INTENTS.find(([pattern]) => pattern.test(req.question))?.[1];
+  const matchedLayers = [...new Set(INTERNATIONAL_INTENTS.filter(([pattern]) => pattern.test(req.question)).map(([, layer]) => layer))];
+  // Radar/satellite are more specific than the word 'weather'.
+  const layers = matchedLayers.filter(layer => layer !== "weather" || !matchedLayers.some(l => l === "weather-radar" || l === "weather-satellite")).slice(0, 3);
+  const layer = layers[0];
   if (!layer) return null;
   let location = req.context?.origin;
   const named = req.question.match(/(?:\bdi\s+(?:sekitar\s+)?|\bdekat\s+)(.+?)(?:\s+(?:sekarang|terbaru|hari ini))?[?!.]*$/i)?.[1]?.trim();
@@ -43,6 +46,6 @@ export async function answerInternational(req: AiAskRequest): Promise<AiAskRespo
   }
   if (!location) return { answer: `Pilih lokasi pada peta /international/${layer} agar GETRA dapat memanggil sumber data untuk koordinat yang benar.`, intent: "ENVIRONMENT", provider: "deterministic", evidence: [], limitations: ["Belum ada koordinat lokasi."], action: { type: "NAVIGATE", path: `/international/${layer}`, label: "Buka layer data" } };
   if (layer === "open-data") return { answer: "Pilih dataset di /international/open-data. GETRA hanya memuat sumber yang Anda pilih dan menampilkan timestamp serta lisensinya.", intent: "ENVIRONMENT", provider: "deterministic", evidence: [], limitations: [], action: { type: "NAVIGATE", path: `/international/${layer}`, label: "Buka layer data" } };
-  const { result, answer } = await internationalDataTool(layer, { lat: location.latitude, lon: location.longitude, radius: layer === "earthquakes" || layer === "active-fire" ? 250000 : 10000, category: /apotek/i.test(req.question) ? "pharmacy" : /rumah sakit/i.test(req.question) ? "hospital" : layer === "accessibility" ? "toilet" : undefined });
-  return { answer, intent: "ENVIRONMENT", provider: "deterministic", evidence: [{ source: result.source.provider, dataset: result.source.name, description: `${result.source.endpoint}; fetched=${result.fetched_at}; updated=${result.last_updated}; status=${result.status}` }], limitations: result.warnings, action: { type: "NAVIGATE", path: `/international/${layer}`, label: "Buka layer data" } };
+  const answers = await Promise.all(layers.map(async id => internationalDataTool(id, { lat: location.latitude, lon: location.longitude, radius: id === "earthquakes" || id === "active-fire" ? 250000 : 10000, category: /apotek/i.test(req.question) ? "pharmacy" : /rumah sakit/i.test(req.question) ? "hospital" : id === "accessibility" ? "toilet" : undefined })));
+  return { answer: answers.map(a => a.answer).join("\n\n"), intent: "ENVIRONMENT", provider: "deterministic", evidence: answers.map(({ result }) => ({ source: result.source.provider, dataset: result.source.name, description: `${result.source.endpoint}; fetched=${result.fetched_at}; updated=${result.last_updated}; status=${result.status}` })), limitations: answers.flatMap(a => a.result.warnings), action: { type: "NAVIGATE", path: `/international/${layer}`, label: "Buka layer data" } };
 }

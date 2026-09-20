@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { applyBasemap, rehydrateMapLayers } from "@/lib/basemap-engine";
 import { BASEMAP_OPTIONS, DEFAULT_BASEMAP_ID, isBasemapId } from "@/lib/mapid";
+import { persistBasemapPreference, getPreferredBasemapId } from "@/lib/mapid";
 import type { Map as MapLibreMap } from "maplibre-gl";
 
 function fakeMap() {
@@ -20,6 +21,11 @@ function fakeMap() {
   return map;
 }
 describe("basemap engine transactions", () => {
+  it("does not discard the first user choice when login initialized the store", () => {
+    const storage = () => { const values = new Map<string,string>(); return { getItem: (key:string) => values.get(key) ?? null, setItem: (key:string,value:string) => values.set(key,value) }; };
+    vi.stubGlobal("window", { localStorage: storage(), sessionStorage: storage(), dispatchEvent: vi.fn() });
+    try { persistBasemapPreference("mapid-default"); persistBasemapPreference("osm"); expect(getPreferredBasemapId()).toBe("osm"); } finally { vi.unstubAllGlobals(); }
+  });
   it("uses MAPID default and five distinct actual styles", () => {
     expect(DEFAULT_BASEMAP_ID).toBe("mapid-default"); expect(BASEMAP_OPTIONS).toHaveLength(5);
     expect(new Set(BASEMAP_OPTIONS.map(o => JSON.stringify(o.style))).size).toBe(5);
@@ -38,7 +44,7 @@ describe("basemap engine transactions", () => {
   it("does not report ready just because style metadata loaded", async () => {
     const map = fakeMap(), controller = new AbortController();
     const promise = applyBasemap(map as unknown as MapLibreMap, "osm", controller.signal);
-    map.emit("error", { sourceId: "osm" });
+    map.emit("error", {});
     await expect(promise).rejects.toThrow("Basemap gagal dimuat");
   });
   it("cancels superseded transactions and removes listeners", async () => {

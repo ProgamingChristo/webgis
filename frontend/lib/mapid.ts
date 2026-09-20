@@ -38,7 +38,12 @@ export function getPreferredBasemapId(): BasemapId {
 }
 export function persistBasemapPreference(id: BasemapId): void {
   if (typeof window === "undefined" || !isBasemapId(id)) return;
-  try { window.localStorage.setItem(BASEMAP_PREFERENCE_STORAGE_KEY, id); } catch { /* Storage is optional. */ }
+  try {
+    // Login can persist MAPID before the map store's first snapshot. Mark the
+    // tab initialized now so its first user selection is not reset by subscribe.
+    window.sessionStorage.setItem(BASEMAP_PREFERENCE_STORAGE_KEY, "1");
+    window.localStorage.setItem(BASEMAP_PREFERENCE_STORAGE_KEY, id);
+  } catch { /* Storage is optional. */ }
   window.dispatchEvent(new Event("getra:basemap"));
 }
 export function getBasemapOption(id: BasemapId): BasemapOption { return BASEMAP_OPTIONS.find(option => option.id === id) ?? BASEMAP_OPTIONS[0]; }

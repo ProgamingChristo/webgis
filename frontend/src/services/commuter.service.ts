@@ -3,10 +3,10 @@ import type { Coordinate } from "@/src/types/spatial";
 
 export interface WalkingServiceArea {
   status: "READY" | "NO_NETWORK_ACCESS";
-  service_area_type?: "REACHABLE_NETWORK_EDGES";
+  service_area_type?: "REACHABLE_NETWORK_EDGES" | "NETWORK_ISOCHRONE";
   threshold_minutes?: number;
-  reachable_node_count?: number;
-  reachable_edge_count?: number;
+  reachable_node_count?: number | null;
+  reachable_edge_count?: number | null;
   geometry?: GeoJSON.MultiLineString | null;
   limitation_flags?: string[];
 }

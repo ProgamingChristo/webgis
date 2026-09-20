@@ -3867,7 +3867,9 @@ function GeneralGetraDashboard() {
             <p className="route-message" role="status">Menghitung jangkauan berjalan...</p>
           ) : primaryMode === "merchant" && serviceArea?.status === "READY" ? (
             <p className="route-message" role="status">
-              Jangkauan jaringan {serviceArea.threshold_minutes} menit: {serviceArea.reachable_edge_count ?? 0} segmen terjangkau.
+              {serviceArea.service_area_type === "NETWORK_ISOCHRONE"
+                ? `Kontur jangkauan berjalan ${serviceArea.threshold_minutes} menit dari jaringan Valhalla/OSM; bukan batas akses yang dijamin.`
+                : `Jangkauan jaringan ${serviceArea.threshold_minutes} menit${serviceArea.reachable_edge_count == null ? "; jumlah segmen belum tersedia" : `: ${serviceArea.reachable_edge_count} segmen terjangkau`}.`}
             </p>
           ) : primaryMode === "merchant" && maxWalkingMinutes ? (
             <p className="route-message" role="status">Jangkauan jalan kaki belum tersedia dari titik awal ini.</p>

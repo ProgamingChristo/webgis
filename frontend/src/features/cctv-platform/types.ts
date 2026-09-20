@@ -58,7 +58,7 @@ export interface SensorEntry {
   quality: string | null;         // e.g. "GOOD", "MODERATE", "UNHEALTHY"
   status: SensorStatus;
   timestamp: string | null;       // ISO timestamp of last reading
-  last_verified_at: string;
+  last_verified_at: string | null;
   source_notes: string;
 }
 
