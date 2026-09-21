@@ -1,6 +1,6 @@
 # QA dan release gate
 
-Dibuat 2026-09-21T03:49:29.520Z. Kandidat kode: `ee65dbf027308417a206e9c65c402becf3b502ac`. Branch: `fix/production-hardening-20260920`. Status penerimaan keseluruhan: **NOT_READY**. Build: **PASS**.
+Dibuat 2026-09-21T03:54:06.357Z. Kandidat kode: `ee65dbf027308417a206e9c65c402becf3b502ac`. Branch: `fix/production-hardening-20260920`. Status penerimaan keseluruhan: **NOT_READY**. Build: **PASS**.
 
 Frontend: https://getra-routing-api.tail0ed517.ts.net:8443
 
@@ -35,7 +35,7 @@ P0/P1 belum dapat dinyatakan nol. Tidak ada klaim READY. Kesimpulan: **NOT_READY
 
 ## Reproduksi
 
-npm test; npm run typecheck; npm run lint. scripts/verify-main-basemap-browser.mjs; verify-service-area-basemap.mjs; verify-international-browser.mjs; verify-hardening-browser.mjs; verify-hardening-accessibility.mjs; verify-hardening-security.mjs; evaluate-hardening-ai.mjs. QA-only Playwright/axe dipasang di outputs/qa-tools; tidak menambah dependency aplikasi. Variabel GETRA_QA_URL/API menentukan kandidat; jangan salah menguji backend produksi dari frontend kandidat.
+npm test; npm run typecheck; npm run lint. scripts/verify-main-basemap-browser.mjs; verify-service-area-basemap.mjs; verify-international-browser.mjs; verify-hardening-browser.mjs; verify-hardening-accessibility.mjs; verify-hardening-security.mjs; evaluate-hardening-ai.mjs. QA-only Playwright/axe dipasang dengan npm install --prefix outputs/qa-tools --no-save --package-lock=false @playwright/test @axe-core/playwright; tidak menambah dependency aplikasi. Variabel GETRA_QA_URL/API menentukan kandidat; jangan salah menguji backend produksi dari frontend kandidat.
 
 
 ## Uji image produksi di VM
