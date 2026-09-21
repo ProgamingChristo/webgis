@@ -1,0 +1,307 @@
+{
+  "base": "http://localhost:3100",
+  "switches": [
+    {
+      "id": "osm",
+      "same": true,
+      "center": [
+        106.78916099999992,
+        -6.259920000000037
+      ],
+      "zoom": 16,
+      "pitch": 0,
+      "bearing": 0,
+      "sources": [
+        {
+          "id": "walking-route",
+          "count": 1
+        },
+        {
+          "id": "route-alternatives",
+          "count": 0
+        },
+        {
+          "id": "walking-service-area",
+          "count": 0
+        },
+        {
+          "id": "jakarta-admin-boundaries",
+          "count": 0
+        }
+      ],
+      "routeGeometry": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[106.683111,-6.214783],[106.683262,-6.214756],[106.683751,-6.214653],[106.684036,-6.214571],[106.684185,-6.215228],[106.684336,-6.215815],[106.684463,-6.216355],[106.684619,-6.216923],[106.684634,-6.216982],[106.684691,-6.217282],[106.684697,-6.217332],[106.684693,-6.217634],[106.684689,-6.21791],[106.684685,-6.218222],[106.684682,-6.218649],[106.685102,-6.218661],[106.686127,-6.218692],[106.686378,-6.2187],[106.686728,-6.21871],[106.687232,-6.218773],[106.687255,-6.218775],[106.687429,-6.218796],[106.687464,-6.218594],[106.687515,-6.218303],[106.687551,-6.218094]]}}]}",
+      "merchantMarkers": 107,
+      "journeyOpen": "false",
+      "selectedPopup": "GETRA×2ND BITE BAKERYROTIJALAN RADIO DALAM RAYA 87Kisaran harga SedangJam buka belum tersediaLihat detailRute ke sini",
+      "stored": "osm",
+      "style": "osm"
+    },
+    {
+      "id": "esri-satellite",
+      "same": true,
+      "center": [
+        106.78916099999992,
+        -6.259920000000037
+      ],
+      "zoom": 16,
+      "pitch": 0,
+      "bearing": 0,
+      "sources": [
+        {
+          "id": "walking-route",
+          "count": 1
+        },
+        {
+          "id": "route-alternatives",
+          "count": 0
+        },
+        {
+          "id": "walking-service-area",
+          "count": 0
+        },
+        {
+          "id": "jakarta-admin-boundaries",
+          "count": 0
+        },
+        {
+          "id": "getra-context-property",
+          "count": 0
+        },
+        {
+          "id": "getra-context-transaction",
+          "count": 0
+        },
+        {
+          "id": "getra-context-activity",
+          "count": 0
+        }
+      ],
+      "routeGeometry": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[106.683111,-6.214783],[106.683262,-6.214756],[106.683751,-6.214653],[106.684036,-6.214571],[106.684185,-6.215228],[106.684336,-6.215815],[106.684463,-6.216355],[106.684619,-6.216923],[106.684634,-6.216982],[106.684691,-6.217282],[106.684697,-6.217332],[106.684693,-6.217634],[106.684689,-6.21791],[106.684685,-6.218222],[106.684682,-6.218649],[106.685102,-6.218661],[106.686127,-6.218692],[106.686378,-6.2187],[106.686728,-6.21871],[106.687232,-6.218773],[106.687255,-6.218775],[106.687429,-6.218796],[106.687464,-6.218594],[106.687515,-6.218303],[106.687551,-6.218094]]}}]}",
+      "merchantMarkers": 107,
+      "journeyOpen": "false",
+      "selectedPopup": "GETRA×2ND BITE BAKERYROTIJALAN RADIO DALAM RAYA 87Kisaran harga SedangJam buka belum tersediaLihat detailRute ke sini",
+      "stored": "esri-satellite",
+      "style": "esri-satellite"
+    },
+    {
+      "id": "mapid-default",
+      "same": true,
+      "center": [
+        106.78916099999992,
+        -6.259920000000037
+      ],
+      "zoom": 16,
+      "pitch": 0,
+      "bearing": 0,
+      "sources": [
+        {
+          "id": "walking-route",
+          "count": 1
+        },
+        {
+          "id": "route-alternatives",
+          "count": 0
+        },
+        {
+          "id": "walking-service-area",
+          "count": 0
+        },
+        {
+          "id": "jakarta-admin-boundaries",
+          "count": 0
+        },
+        {
+          "id": "getra-context-property",
+          "count": 0
+        },
+        {
+          "id": "getra-context-transaction",
+          "count": 0
+        },
+        {
+          "id": "getra-context-activity",
+          "count": 0
+        }
+      ],
+      "routeGeometry": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[106.683111,-6.214783],[106.683262,-6.214756],[106.683751,-6.214653],[106.684036,-6.214571],[106.684185,-6.215228],[106.684336,-6.215815],[106.684463,-6.216355],[106.684619,-6.216923],[106.684634,-6.216982],[106.684691,-6.217282],[106.684697,-6.217332],[106.684693,-6.217634],[106.684689,-6.21791],[106.684685,-6.218222],[106.684682,-6.218649],[106.685102,-6.218661],[106.686127,-6.218692],[106.686378,-6.2187],[106.686728,-6.21871],[106.687232,-6.218773],[106.687255,-6.218775],[106.687429,-6.218796],[106.687464,-6.218594],[106.687515,-6.218303],[106.687551,-6.218094]]}}]}",
+      "merchantMarkers": 107,
+      "journeyOpen": "false",
+      "selectedPopup": "GETRA×2ND BITE BAKERYROTIJALAN RADIO DALAM RAYA 87Kisaran harga SedangJam buka belum tersediaLihat detailRute ke sini",
+      "stored": "mapid-default",
+      "style": "Street Mapid"
+    }
+  ],
+  "errors": [],
+  "loginDefault": {
+    "stored": "mapid-default",
+    "style": "Street Mapid"
+  },
+  "merchantSelected": true,
+  "before": {
+    "same": true,
+    "center": [
+      106.78916099999992,
+      -6.259920000000037
+    ],
+    "zoom": 16,
+    "pitch": 0,
+    "bearing": 0,
+    "sources": [
+      {
+        "id": "walking-route",
+        "count": 1
+      },
+      {
+        "id": "route-alternatives",
+        "count": 0
+      },
+      {
+        "id": "walking-service-area",
+        "count": 0
+      },
+      {
+        "id": "jakarta-admin-boundaries",
+        "count": 0
+      }
+    ],
+    "routeGeometry": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[106.683111,-6.214783],[106.683262,-6.214756],[106.683751,-6.214653],[106.684036,-6.214571],[106.684185,-6.215228],[106.684336,-6.215815],[106.684463,-6.216355],[106.684619,-6.216923],[106.684634,-6.216982],[106.684691,-6.217282],[106.684697,-6.217332],[106.684693,-6.217634],[106.684689,-6.21791],[106.684685,-6.218222],[106.684682,-6.218649],[106.685102,-6.218661],[106.686127,-6.218692],[106.686378,-6.2187],[106.686728,-6.21871],[106.687232,-6.218773],[106.687255,-6.218775],[106.687429,-6.218796],[106.687464,-6.218594],[106.687515,-6.218303],[106.687551,-6.218094]]}}]}",
+    "merchantMarkers": 107,
+    "journeyOpen": "false",
+    "selectedPopup": "GETRA×2ND BITE BAKERYROTIJALAN RADIO DALAM RAYA 87Kisaran harga SedangJam buka belum tersediaLihat detailRute ke sini",
+    "stored": "mapid-default",
+    "style": "Street Mapid"
+  },
+  "observed": [
+    {
+      "id": "osm",
+      "same": true,
+      "center": [
+        106.78916099999992,
+        -6.259920000000037
+      ],
+      "zoom": 16,
+      "pitch": 0,
+      "bearing": 0,
+      "sources": [
+        {
+          "id": "walking-route",
+          "count": 1
+        },
+        {
+          "id": "route-alternatives",
+          "count": 0
+        },
+        {
+          "id": "walking-service-area",
+          "count": 0
+        },
+        {
+          "id": "jakarta-admin-boundaries",
+          "count": 0
+        }
+      ],
+      "routeGeometry": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[106.683111,-6.214783],[106.683262,-6.214756],[106.683751,-6.214653],[106.684036,-6.214571],[106.684185,-6.215228],[106.684336,-6.215815],[106.684463,-6.216355],[106.684619,-6.216923],[106.684634,-6.216982],[106.684691,-6.217282],[106.684697,-6.217332],[106.684693,-6.217634],[106.684689,-6.21791],[106.684685,-6.218222],[106.684682,-6.218649],[106.685102,-6.218661],[106.686127,-6.218692],[106.686378,-6.2187],[106.686728,-6.21871],[106.687232,-6.218773],[106.687255,-6.218775],[106.687429,-6.218796],[106.687464,-6.218594],[106.687515,-6.218303],[106.687551,-6.218094]]}}]}",
+      "merchantMarkers": 107,
+      "journeyOpen": "false",
+      "selectedPopup": "GETRA×2ND BITE BAKERYROTIJALAN RADIO DALAM RAYA 87Kisaran harga SedangJam buka belum tersediaLihat detailRute ke sini",
+      "stored": "osm",
+      "style": "osm"
+    },
+    {
+      "id": "esri-satellite",
+      "same": true,
+      "center": [
+        106.78916099999992,
+        -6.259920000000037
+      ],
+      "zoom": 16,
+      "pitch": 0,
+      "bearing": 0,
+      "sources": [
+        {
+          "id": "walking-route",
+          "count": 1
+        },
+        {
+          "id": "route-alternatives",
+          "count": 0
+        },
+        {
+          "id": "walking-service-area",
+          "count": 0
+        },
+        {
+          "id": "jakarta-admin-boundaries",
+          "count": 0
+        },
+        {
+          "id": "getra-context-property",
+          "count": 0
+        },
+        {
+          "id": "getra-context-transaction",
+          "count": 0
+        },
+        {
+          "id": "getra-context-activity",
+          "count": 0
+        }
+      ],
+      "routeGeometry": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[106.683111,-6.214783],[106.683262,-6.214756],[106.683751,-6.214653],[106.684036,-6.214571],[106.684185,-6.215228],[106.684336,-6.215815],[106.684463,-6.216355],[106.684619,-6.216923],[106.684634,-6.216982],[106.684691,-6.217282],[106.684697,-6.217332],[106.684693,-6.217634],[106.684689,-6.21791],[106.684685,-6.218222],[106.684682,-6.218649],[106.685102,-6.218661],[106.686127,-6.218692],[106.686378,-6.2187],[106.686728,-6.21871],[106.687232,-6.218773],[106.687255,-6.218775],[106.687429,-6.218796],[106.687464,-6.218594],[106.687515,-6.218303],[106.687551,-6.218094]]}}]}",
+      "merchantMarkers": 107,
+      "journeyOpen": "false",
+      "selectedPopup": "GETRA×2ND BITE BAKERYROTIJALAN RADIO DALAM RAYA 87Kisaran harga SedangJam buka belum tersediaLihat detailRute ke sini",
+      "stored": "esri-satellite",
+      "style": "esri-satellite"
+    },
+    {
+      "id": "mapid-default",
+      "same": true,
+      "center": [
+        106.78916099999992,
+        -6.259920000000037
+      ],
+      "zoom": 16,
+      "pitch": 0,
+      "bearing": 0,
+      "sources": [
+        {
+          "id": "walking-route",
+          "count": 1
+        },
+        {
+          "id": "route-alternatives",
+          "count": 0
+        },
+        {
+          "id": "walking-service-area",
+          "count": 0
+        },
+        {
+          "id": "jakarta-admin-boundaries",
+          "count": 0
+        },
+        {
+          "id": "getra-context-property",
+          "count": 0
+        },
+        {
+          "id": "getra-context-transaction",
+          "count": 0
+        },
+        {
+          "id": "getra-context-activity",
+          "count": 0
+        }
+      ],
+      "routeGeometry": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[106.683111,-6.214783],[106.683262,-6.214756],[106.683751,-6.214653],[106.684036,-6.214571],[106.684185,-6.215228],[106.684336,-6.215815],[106.684463,-6.216355],[106.684619,-6.216923],[106.684634,-6.216982],[106.684691,-6.217282],[106.684697,-6.217332],[106.684693,-6.217634],[106.684689,-6.21791],[106.684685,-6.218222],[106.684682,-6.218649],[106.685102,-6.218661],[106.686127,-6.218692],[106.686378,-6.2187],[106.686728,-6.21871],[106.687232,-6.218773],[106.687255,-6.218775],[106.687429,-6.218796],[106.687464,-6.218594],[106.687515,-6.218303],[106.687551,-6.218094]]}}]}",
+      "merchantMarkers": 107,
+      "journeyOpen": "false",
+      "selectedPopup": "GETRA×2ND BITE BAKERYROTIJALAN RADIO DALAM RAYA 87Kisaran harga SedangJam buka belum tersediaLihat detailRute ke sini",
+      "stored": "mapid-default",
+      "style": "Street Mapid"
+    }
+  ],
+  "logoutResets": true,
+  "passed": true
+}

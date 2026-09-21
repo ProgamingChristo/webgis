@@ -1,0 +1,12 @@
+
+> getra-platform@0.1.0 lint
+> npm run lint -w frontend && npm run lint -w backend
+
+
+> getra-frontend@0.1.0 lint
+> eslint . --max-warnings=0
+
+
+> getra-backend@0.1.0 lint
+> eslint . --max-warnings=0
+

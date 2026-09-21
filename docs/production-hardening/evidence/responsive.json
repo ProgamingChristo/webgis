@@ -1,0 +1,1391 @@
+{
+  "base": "http://localhost:3100",
+  "started": "2026-09-21T03:41:41.368Z",
+  "viewports": [
+    {
+      "route": "/app",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 844,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 54,
+      "passed": true
+    },
+    {
+      "route": "/app",
+      "width": 430,
+      "scrollWidth": 430,
+      "height": 932,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 54,
+      "passed": true
+    },
+    {
+      "route": "/app",
+      "width": 768,
+      "scrollWidth": 768,
+      "height": 1024,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 54,
+      "passed": true
+    },
+    {
+      "route": "/app",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "height": 768,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 54,
+      "passed": true
+    },
+    {
+      "route": "/app",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "height": 800,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 54,
+      "passed": true
+    },
+    {
+      "route": "/app",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 900,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 54,
+      "passed": true
+    },
+    {
+      "route": "/umkm",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 844,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 3,
+      "passed": true
+    },
+    {
+      "route": "/umkm",
+      "width": 430,
+      "scrollWidth": 430,
+      "height": 932,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 3,
+      "passed": true
+    },
+    {
+      "route": "/umkm",
+      "width": 768,
+      "scrollWidth": 768,
+      "height": 1024,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 4,
+      "passed": true
+    },
+    {
+      "route": "/umkm",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "height": 768,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 4,
+      "passed": true
+    },
+    {
+      "route": "/umkm",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "height": 800,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 4,
+      "passed": true
+    },
+    {
+      "route": "/umkm",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 900,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 4,
+      "passed": true
+    },
+    {
+      "route": "/umkm/advertising",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 844,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 3,
+      "passed": true
+    },
+    {
+      "route": "/umkm/advertising",
+      "width": 430,
+      "scrollWidth": 430,
+      "height": 932,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 3,
+      "passed": true
+    },
+    {
+      "route": "/umkm/advertising",
+      "width": 768,
+      "scrollWidth": 768,
+      "height": 1024,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 3,
+      "passed": true
+    },
+    {
+      "route": "/umkm/advertising",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "height": 768,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 3,
+      "passed": true
+    },
+    {
+      "route": "/umkm/advertising",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "height": 800,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 3,
+      "passed": true
+    },
+    {
+      "route": "/umkm/advertising",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 900,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 3,
+      "passed": true
+    },
+    {
+      "route": "/community",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 844,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 74,
+      "passed": true
+    },
+    {
+      "route": "/community",
+      "width": 430,
+      "scrollWidth": 430,
+      "height": 932,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 74,
+      "passed": true
+    },
+    {
+      "route": "/community",
+      "width": 768,
+      "scrollWidth": 768,
+      "height": 1024,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 74,
+      "passed": true
+    },
+    {
+      "route": "/community",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "height": 768,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 74,
+      "passed": true
+    },
+    {
+      "route": "/community",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "height": 800,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 74,
+      "passed": true
+    },
+    {
+      "route": "/community",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 900,
+      "title": "GETRA — Peta Transit dan Usaha",
+      "buttons": 74,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 844,
+      "title": "Global Traffic & CCTV Live Feed — GETRA Global",
+      "buttons": 50,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv",
+      "width": 430,
+      "scrollWidth": 430,
+      "height": 932,
+      "title": "Global Traffic & CCTV Live Feed — GETRA Global",
+      "buttons": 50,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv",
+      "width": 768,
+      "scrollWidth": 768,
+      "height": 1024,
+      "title": "Global Traffic & CCTV Live Feed — GETRA Global",
+      "buttons": 50,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "height": 768,
+      "title": "Global Traffic & CCTV Live Feed — GETRA Global",
+      "buttons": 50,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "height": 800,
+      "title": "Global Traffic & CCTV Live Feed — GETRA Global",
+      "buttons": 50,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 900,
+      "title": "Global Traffic & CCTV Live Feed — GETRA Global",
+      "buttons": 50,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv#AI VISION",
+      "width": 390,
+      "scrollWidth": 390,
+      "unavailable": true,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv#AI VISION",
+      "width": 430,
+      "scrollWidth": 430,
+      "unavailable": true,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv#AI VISION",
+      "width": 768,
+      "scrollWidth": 768,
+      "unavailable": true,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv#AI VISION",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "unavailable": true,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv#AI VISION",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "unavailable": true,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv#AI VISION",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "unavailable": true,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv#SENSORS",
+      "width": 390,
+      "scrollWidth": 390,
+      "unavailable": true,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv#SENSORS",
+      "width": 430,
+      "scrollWidth": 430,
+      "unavailable": true,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv#SENSORS",
+      "width": 768,
+      "scrollWidth": 768,
+      "unavailable": true,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv#SENSORS",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "unavailable": true,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv#SENSORS",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "unavailable": true,
+      "passed": true
+    },
+    {
+      "route": "/international/cctv#SENSORS",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "unavailable": true,
+      "passed": true
+    },
+    {
+      "route": "/international/weather",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 844,
+      "title": "Global Weather Now ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/weather",
+      "width": 430,
+      "scrollWidth": 430,
+      "height": 932,
+      "title": "Global Weather Now ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/weather",
+      "width": 768,
+      "scrollWidth": 768,
+      "height": 1024,
+      "title": "Global Weather Now ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/weather",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "height": 768,
+      "title": "Global Weather Now ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/weather",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "height": 800,
+      "title": "Global Weather Now ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/weather",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 900,
+      "title": "Global Weather Now ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/earthquakes",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 844,
+      "title": "Global Earthquake Live ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/earthquakes",
+      "width": 430,
+      "scrollWidth": 430,
+      "height": 932,
+      "title": "Global Earthquake Live ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/earthquakes",
+      "width": 768,
+      "scrollWidth": 768,
+      "height": 1024,
+      "title": "Global Earthquake Live ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/earthquakes",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "height": 768,
+      "title": "Global Earthquake Live ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/earthquakes",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "height": 800,
+      "title": "Global Earthquake Live ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/earthquakes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 900,
+      "title": "Global Earthquake Live ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/active-fire",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 844,
+      "title": "Active Fire / Hotspot ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/active-fire",
+      "width": 430,
+      "scrollWidth": 430,
+      "height": 932,
+      "title": "Active Fire / Hotspot ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/active-fire",
+      "width": 768,
+      "scrollWidth": 768,
+      "height": 1024,
+      "title": "Active Fire / Hotspot ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/active-fire",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "height": 768,
+      "title": "Active Fire / Hotspot ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/active-fire",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "height": 800,
+      "title": "Active Fire / Hotspot ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/active-fire",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 900,
+      "title": "Active Fire / Hotspot ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/air-quality",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 844,
+      "title": "Global Air Quality ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/air-quality",
+      "width": 430,
+      "scrollWidth": 430,
+      "height": 932,
+      "title": "Global Air Quality ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/air-quality",
+      "width": 768,
+      "scrollWidth": 768,
+      "height": 1024,
+      "title": "Global Air Quality ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/air-quality",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "height": 768,
+      "title": "Global Air Quality ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/air-quality",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "height": 800,
+      "title": "Global Air Quality ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/air-quality",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 900,
+      "title": "Global Air Quality ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/flood",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 844,
+      "title": "DKI Flood & Water Level ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/flood",
+      "width": 430,
+      "scrollWidth": 430,
+      "height": 932,
+      "title": "DKI Flood & Water Level ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/flood",
+      "width": 768,
+      "scrollWidth": 768,
+      "height": 1024,
+      "title": "DKI Flood & Water Level ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/flood",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "height": 768,
+      "title": "DKI Flood & Water Level ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/flood",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "height": 800,
+      "title": "DKI Flood & Water Level ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/flood",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 900,
+      "title": "DKI Flood & Water Level ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/accessibility",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 844,
+      "title": "Accessible Facility Finder ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/accessibility",
+      "width": 430,
+      "scrollWidth": 430,
+      "height": 932,
+      "title": "Accessible Facility Finder ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/accessibility",
+      "width": 768,
+      "scrollWidth": 768,
+      "height": 1024,
+      "title": "Accessible Facility Finder ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/accessibility",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "height": 768,
+      "title": "Accessible Facility Finder ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/accessibility",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "height": 800,
+      "title": "Accessible Facility Finder ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/accessibility",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 900,
+      "title": "Accessible Facility Finder ? GETRA Global Data Center",
+      "buttons": 25,
+      "passed": true
+    },
+    {
+      "route": "/international/traffic-congestion",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 844,
+      "title": "Pendeteksi Macet & Rekayasa Arus — GETRA Global",
+      "buttons": 4,
+      "passed": true
+    },
+    {
+      "route": "/international/traffic-congestion",
+      "width": 430,
+      "scrollWidth": 430,
+      "height": 932,
+      "title": "Pendeteksi Macet & Rekayasa Arus — GETRA Global",
+      "buttons": 4,
+      "passed": true
+    },
+    {
+      "route": "/international/traffic-congestion",
+      "width": 768,
+      "scrollWidth": 768,
+      "height": 1024,
+      "title": "Pendeteksi Macet & Rekayasa Arus — GETRA Global",
+      "buttons": 4,
+      "passed": true
+    },
+    {
+      "route": "/international/traffic-congestion",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "height": 768,
+      "title": "Pendeteksi Macet & Rekayasa Arus — GETRA Global",
+      "buttons": 4,
+      "passed": true
+    },
+    {
+      "route": "/international/traffic-congestion",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "height": 800,
+      "title": "Pendeteksi Macet & Rekayasa Arus — GETRA Global",
+      "buttons": 4,
+      "passed": true
+    },
+    {
+      "route": "/international/traffic-congestion",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 900,
+      "title": "Pendeteksi Macet & Rekayasa Arus — GETRA Global",
+      "buttons": 4,
+      "passed": true
+    }
+  ],
+  "network": [
+    {
+      "path": "/api/auth/login",
+      "status": 204,
+      "method": "OPTIONS"
+    },
+    {
+      "path": "/api/auth/login",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 204,
+      "method": "OPTIONS"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "status": 204,
+      "method": "OPTIONS"
+    },
+    {
+      "path": "/api/map-import/layers",
+      "status": 204,
+      "method": "OPTIONS"
+    },
+    {
+      "path": "/api/basemap/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/community/notifications",
+      "status": 204,
+      "method": "OPTIONS"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/merchants/canonical",
+      "status": 204,
+      "method": "OPTIONS"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/map-import/layers",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/community/notifications",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/12/3264/2119.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/12/3263/2118.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/12/3264/2118.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/12/3263/2119.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/8192-8447.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Condensed%20Italic/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Medium/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/umkm/workspace",
+      "status": 204,
+      "method": "OPTIONS"
+    },
+    {
+      "path": "/api/umkm/workspace",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/umkm/advertising/my-merchants",
+      "status": 204,
+      "method": "OPTIONS"
+    },
+    {
+      "path": "/api/umkm/advertising/my-merchants",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/community/feed",
+      "status": 204,
+      "method": "OPTIONS"
+    },
+    {
+      "path": "/api/community/requests",
+      "status": 204,
+      "method": "OPTIONS"
+    },
+    {
+      "path": "/api/community/requests/signals",
+      "status": 204,
+      "method": "OPTIONS"
+    },
+    {
+      "path": "/api/community/requests",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/community/requests/signals",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/community/feed",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/community/notifications",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1631/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1632/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1632/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1631/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/8192-8447.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Condensed%20Italic/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Medium/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1630/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1630/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1631/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1632/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1631/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1632/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/8192-8447.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Condensed%20Italic/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Medium/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1630/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1630/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1631/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1632/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1631/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1632/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/8192-8447.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Condensed%20Italic/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Medium/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1630/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1630/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1631/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1632/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1631/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1632/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/8192-8447.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Condensed%20Italic/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Medium/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1630/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1630/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1631/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1632/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/8192-8447.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Condensed%20Italic/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Medium/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1631/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1632/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1630/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1630/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/styles/default/style.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles.json",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1631/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1632/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1631/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1632/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Regular/8192-8447.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Condensed%20Italic/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/fonts/Roboto%20Medium/0-255.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1630/1059.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/basemap/mapid/data/mapidtiles/11/1630/1058.pbf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 200,
+      "method": "GET"
+    }
+  ],
+  "errors": [],
+  "cameras": [
+    {
+      "url": "https://dki-jkt.balitower.co.id:7028/502045_JKP_POLDA_JPO-JL.-GATOT-SUBROTO-7_CCTV-01/embed.html",
+      "videos": [
+        {
+          "readyState": 4,
+          "width": 640,
+          "height": 360,
+          "time": 7.233781
+        }
+      ]
+    }
+  ],
+  "passed": true,
+  "finished": "2026-09-21T03:42:24.887Z"
+}

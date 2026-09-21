@@ -1,0 +1,35 @@
+{
+  "baseline": {
+    "questions": 154,
+    "successful_http": 154,
+    "intent_accuracy": 0.8701298701298701,
+    "answers_with_evidence": 103,
+    "fallback_answers": 15,
+    "p50_ms": 167,
+    "p95_ms": 1219,
+    "hallucination_rate": null,
+    "groundedness": null,
+    "groundedness_note": "Requires claim-by-claim review; evidence presence alone is not a hallucination metric."
+  },
+  "candidate": {
+    "questions": 154,
+    "successful_http": 154,
+    "intent_accuracy": 0.9935064935064936,
+    "answers_with_evidence": 101,
+    "fallback_answers": 15,
+    "p50_ms": 338,
+    "p95_ms": 1170,
+    "hallucination_rate": null,
+    "groundedness": null,
+    "groundedness_note": "Requires claim-by-claim review; evidence presence alone is not a hallucination metric."
+  },
+  "method": "Real HTTP /api/ai/ask; deterministic and configured tools; no mocked provider responses",
+  "mismatches": [
+    {
+      "id": "general_help-6",
+      "question": "Bagaimana keluar akun?",
+      "expected": "GENERAL_HELP",
+      "actual": "PROFILE"
+    }
+  ]
+}

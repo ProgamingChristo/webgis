@@ -1,0 +1,63 @@
+{
+  "base": "http://localhost:8180",
+  "front": "http://localhost:3100",
+  "checked_at": "2026-09-21T03:40:45.372Z",
+  "urls": [
+    {
+      "url": "http://localhost:3100",
+      "http": 200
+    },
+    {
+      "url": "http://localhost:3100/login",
+      "http": 200
+    },
+    {
+      "url": "http://localhost:8180/api/health",
+      "http": 200
+    }
+  ],
+  "routes": [
+    {
+      "mode": "walking",
+      "http": 200,
+      "status": "ROUTABLE",
+      "engine": "valhalla",
+      "distance_meters": 953,
+      "duration_seconds": 673,
+      "geometry": "LineString",
+      "points": 25,
+      "ms": 1965,
+      "passed": true
+    },
+    {
+      "mode": "motorcycle",
+      "http": 200,
+      "status": "ROUTABLE",
+      "engine": "valhalla",
+      "distance_meters": 1035,
+      "duration_seconds": 150,
+      "geometry": "LineString",
+      "points": 29,
+      "ms": 445,
+      "passed": true
+    },
+    {
+      "mode": "car",
+      "http": 200,
+      "status": "ROUTABLE",
+      "engine": "valhalla",
+      "distance_meters": 8706,
+      "duration_seconds": 1045,
+      "geometry": "LineString",
+      "points": 385,
+      "ms": 915,
+      "passed": true
+    }
+  ],
+  "ai_vision": {
+    "explicit_status": "UNAVAILABLE",
+    "canvas_count": 0,
+    "text": "Analisis kameraAnalisis membutuhkan frame kamera berizin dan layanan inferensi yang terhubung.UNAVAILABLE · Frame dan hasil inferensi belum tersedia. Jumlah objek, FPS, latensi, model, serta confidence belum dapat ditampilkan.Cari kamera atau wilayahKameraPilih kameraJPO Jl. Gatot Subroto · Jakarta PusatJl. Gerbang Pemuda · Jakarta PusatJl. Gerbang Pemuda (Satpol PP) · Jakarta PusatJl. Jend. Gatot Subroto · Jakarta PusatFlyover Ladokgi · Jakarta PusatJl. MH. Thamrin · Jakarta PusatSimpang Jl. MH. Thamrin · Jakarta PusatUOB Plaza · Jakarta PusatTaman Literasi · Jakarta SelatanSimpang Jl. Panglima Polim · Jakarta SelatanJl. Sultan Agung · Jakarta SelatanSenayan · Jakarta SelatanBendungan Hilir · Jakarta SelatanPasar Tanah Abang · Jakarta PusatJl. KH. Mas Mansyur · Jakarta PusatJl. Jati Baru Raya · Jakarta PusatKebon Melati · Jakarta PusatSimpang Grogol · Jakarta BaratSimpang Cawang · Jakarta TimurBoulevard Kelapa Gading · Jakarta UtaraREAL CAMERADKI PUBLIC CCTVUNKNOWNJPO Jl. Gatot SubrotoPolda Metro Jaya · Jakarta PusatSumber ResmiKebijakan privasi mengikuti penyedia; masking belum diverifikasiSumber kameraPolda Metro Jaya · JPO Jl. Gatot SubrotoWaktu frame terakhirBelum tersediaModel dan confidenceBelum tersediaDeteksi dan trackingBelum tersediaMembuka portal resmi tidak mengaktifkan analisis AI. Tidak ada hasil deteksi yang disimpulkan dari daftar kamera."
+  },
+  "passed": true
+}

@@ -1,0 +1,63 @@
+{
+  "base": "https://getra-routing-api.tail0ed517.ts.net",
+  "front": "https://getra-routing-api.tail0ed517.ts.net:8443",
+  "checked_at": "2026-09-21T03:46:18.341Z",
+  "urls": [
+    {
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443",
+      "http": 200
+    },
+    {
+      "url": "https://getra-routing-api.tail0ed517.ts.net:8443/login",
+      "http": 200
+    },
+    {
+      "url": "https://getra-routing-api.tail0ed517.ts.net/api/health",
+      "http": 200
+    }
+  ],
+  "routes": [
+    {
+      "mode": "walking",
+      "http": 200,
+      "status": "ROUTABLE",
+      "engine": "valhalla",
+      "distance_meters": 953,
+      "duration_seconds": 673,
+      "geometry": "LineString",
+      "points": 25,
+      "ms": 1021,
+      "passed": true
+    },
+    {
+      "mode": "motorcycle",
+      "http": 200,
+      "status": "ROUTABLE",
+      "engine": "valhalla",
+      "distance_meters": 1035,
+      "duration_seconds": 150,
+      "geometry": "LineString",
+      "points": 29,
+      "ms": 707,
+      "passed": true
+    },
+    {
+      "mode": "car",
+      "http": 200,
+      "status": "ROUTABLE",
+      "engine": "valhalla",
+      "distance_meters": 8706,
+      "duration_seconds": 1045,
+      "geometry": "LineString",
+      "points": 385,
+      "ms": 1213,
+      "passed": true
+    }
+  ],
+  "ai_vision": {
+    "explicit_status": null,
+    "canvas_count": 1,
+    "text": "AI VISION STUDIOINFERENCE LIVE (YOLOv8x)⚡ NVIDIA TensorRT 8.6 • 60 FPSComputer Vision & Neural Traffic AnalyticsVisualisasi inferensi AI real-time pada jalan raya dan koridor CCTV DKI Jakarta. Mendeteksi, mengklasifikasikan, serta melacak laju kendaraan dan pejalan kaki secara akurat.FPS:59.8|Lat:16.2msmAP@0.5: 94.8%PILIH KAMERA UNTUK ANALISIS AISemua 20 kamera resmi DKI Jakarta telah terhubung ke pipeline inferensi AI GETRA.20 Kamera Terdaftar • AI AktifAIJPO Jl. Gatot SubrotoAI AKTIFJakarta Pusat • Provider: Polda Metro JayaGanti KameraKapabilitas Aktif:PEDESTRIAN FLOWVEHICLE DETECTIONSPEED ANOMALYTRAFFIC DENSITY ESTIMATIONHELMET DETECTIONSUMBER TAMPILAN:📹 Neural Vision Live Stream (YOLOv8x Tracker)🏛️ Portal Resmi DKI (Iframe Live)YOLOv8x Urban Traffic v2.4 (TensorRT 8.6)GETRA-CrowdVision v2.1 (FP16)ByteTrack Multi-Object Flow (Kalman)JedaBounding BoxesTag Label & IDJalur Lintasan & KecepatanHeatmap KepadatanThreshold Confidence:70%AI METRICSDeteksi Objek Aktual (JPO Jl. Gatot Subroto)Objek aktif terdeteksi saat ini: 9 Objek (Threshold ≥ 70%)Status Pipeline:ONLINE INFERENCE (YOLOv8x)Pejalan Kaki1Pangsa:11%Sepeda0Pangsa:0%Motor3Pangsa:33%Mobil3Pangsa:33%Bus TransJkt1Pangsa:11%Truk1Pangsa:11%Model VersionGETRA-YOLOv8x-UrbanTraffic v2.4 (TensorRT 8.6)Hardware AccelerationNVIDIA TensorRT (FP16)Avg Confidence94% (Tinggi)Kepadatan RuasMODERATELevel of Service (LOS) & Arus Lalu LintasLOS B — STABILAnalisis kecepatan rata-rata kendaraan dan kelancaran koridor jalan berdasarkan estimasi model ByteTrack.Kecepatan Rata239 km/jHeadway3.2 detikRisiko MacetRendah (28%)Standar Perhitungan: MKJI (Manual Kapasitas Jalan Indonesia)TerverifikasiLive Detection & Event LogUpdate Real-Time10.46.29Mobil terdeteksi di Jalur Utama (Confidence 96.2%) — Jalur 210.46.26Bus TransJakarta melintasi koridor Jakarta Pusat (Confidence 98.4%) — Jalur Busway10.46.23Sepeda motor melintas dengan kecepatan 39 km/j (Headway stabil)10.46.19Pejalan kaki melintasi zebra cross / pedestrian pathway (Confidence 91.5%)Pipeline log terhubung ke monitoring center Dishub & Polda Metro JayaPrivasi & Etika AI: Inferensi computer vision GETRA dilakukan pada tataran metadata objek (kategori kendaraan, arah arus, dan estimasi kepadatan umum). Sistem menerapkan prinsip privacy-by-design dengan masking wajah dan pelat nomor sesuai regulasi perlindungan data pribadi publik DKI Jakarta."
+  },
+  "passed": false
+}

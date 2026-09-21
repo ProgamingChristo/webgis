@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 const base = process.env.GETRA_QA_URL || 'https://getra-routing-api.tail0ed517.ts.net:8443';
-const output = 'outputs/international-audit/public';
+const output = process.env.GETRA_QA_OUTPUT || 'outputs/international-audit/public';
 await mkdir(output, { recursive: true });
 const cases = [
   ['weather', {}], ['weather', { adm4: '31.71.03.1001' }],
@@ -20,7 +20,7 @@ for (const [layer, extra] of cases) {
     const data = await response.json();
     const result = { layer, query: extra, http: response.status, status: data.status, count: data.data?.features?.length,
       source: data.source?.provider, updated: data.last_updated, fetched: data.fetched_at, ttl: data.ttl,
-      message: data.message, warnings: data.warnings, truncated: data.truncated, first: data.data?.features?.[0], ms: Date.now() - started };
+      message: data.message, warnings: data.warnings, quality: data.quality, cache_status: data.cache_status, truncated: data.truncated, first: data.data?.features?.[0], ms: Date.now() - started };
     report.results.push(result);
     console.log(JSON.stringify({ layer, http: result.http, status: result.status, count: result.count, ms: result.ms }));
   } catch (error) { report.results.push({ layer, error: error.message, ms: Date.now() - started }); }

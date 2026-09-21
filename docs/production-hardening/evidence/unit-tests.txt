@@ -1,0 +1,30 @@
+
+> getra-platform@0.1.0 test
+> npm run test -w frontend && npm run test -w backend
+
+
+> getra-frontend@0.1.0 test
+> vitest run --config vitest.config.mts tests src/features/landing
+
+
+ RUN  v4.1.11 D:/Getra_Hardening/frontend
+
+
+ Test Files  81 passed (81)
+      Tests  588 passed (588)
+   Start at  15:48:08
+   Duration  17.91s (transform 66.70s, setup 0ms, import 125.10s, tests 7.31s, environment 33ms)
+
+
+> getra-backend@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 D:/Getra_Hardening/backend
+
+
+ Test Files  183 passed | 2 skipped (185)
+      Tests  1759 passed | 3 skipped (1762)
+   Start at  15:48:28
+   Duration  27.43s (transform 49.96s, setup 0ms, import 130.24s, tests 10.94s, environment 53ms)
+

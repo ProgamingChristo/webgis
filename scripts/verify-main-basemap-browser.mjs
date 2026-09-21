@@ -51,6 +51,7 @@ try {
     const map = window.__getraMapLibreInstance, style = map.getStyle();
     return { same: map === window.__qaMain, center: map.getCenter().toArray(), zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing(),
       sources: Object.entries(style.sources).filter(([,v]) => v.type === "geojson").map(([id,v]) => ({ id, count: typeof v.data === "object" ? v.data.features?.length : null })),
+      routeGeometry: JSON.stringify(map.getSource('walking-route')?.serialize()?.data),
       merchantMarkers: document.querySelectorAll('.maplibregl-marker button[aria-label^="Pilih "]').length,
       journeyOpen: document.querySelector('main[data-journey-open]')?.dataset.journeyOpen,
       selectedPopup: document.querySelector('.maplibregl-popup-content')?.textContent ?? null, stored: localStorage.getItem('getra:basemap:v2'), style: style.name };
@@ -61,7 +62,11 @@ try {
     await page.evaluate(label => { const b = [...document.querySelectorAll('.basemap-button')].find(b => label === 'MAPID' ? b.textContent.trim() === 'Reset ke MAPID' : b.querySelector('span')?.textContent.trim() === label); if (!b) throw new Error('Basemap button missing'); b.click(); }, label);
     await page.waitForFunction(id => window.__getraMapLibreInstance?.getContainer().dataset.basemapId === id && !document.querySelector('.map-basemap-state'), { timeout: 45000 }, id);
     const state = await snapshot();
-    if (!state.same || JSON.stringify(state.sources) !== JSON.stringify(report.before.sources)) throw new Error(`Application overlays lost during ${id}`);
+    report.observed ??= []; report.observed.push({ id, ...state });
+    // Background effects may register an additional empty source after capture.
+    // Every existing overlay and the actual route geometry must still survive.
+    const lostOverlay = report.before.sources.some(before => !state.sources.some(after => after.id === before.id && after.count === before.count));
+    if (!state.same || lostOverlay || state.routeGeometry !== report.before.routeGeometry) throw new Error(`Application overlays lost during ${id}`);
     if (state.merchantMarkers !== report.before.merchantMarkers || state.selectedPopup !== report.before.selectedPopup) throw new Error(`Merchant selection lost during ${id}`);
     if (state.journeyOpen !== report.before.journeyOpen || journeyMode && state.journeyOpen !== 'true') throw new Error(`Journey state lost during ${id}`);
     if (Math.abs(state.zoom - report.before.zoom) > 0.01 || state.center.some((v,i) => Math.abs(v-report.before.center[i]) > 0.00001)) throw new Error(`Camera changed during ${id}`);

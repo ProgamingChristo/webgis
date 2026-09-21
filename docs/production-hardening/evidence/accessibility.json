@@ -1,0 +1,37 @@
+{
+  "base": "http://localhost:3100",
+  "checked_at": "2026-09-21T03:41:43.373Z",
+  "engine": "Playwright + axe-core, WCAG 2.1 AA automated subset",
+  "pages": [
+    {
+      "route": "/login",
+      "url": "http://localhost:3100/login",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "passes": 25
+    },
+    {
+      "route": "/international/weather",
+      "url": "http://localhost:3100/international/weather",
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ],
+      "passes": 25
+    },
+    {
+      "route": "/international/cctv",
+      "url": "http://localhost:3100/international/cctv",
+      "violations": [],
+      "incomplete": [
+        "color-contrast",
+        "video-caption"
+      ],
+      "passes": 28
+    }
+  ],
+  "passed": true
+}

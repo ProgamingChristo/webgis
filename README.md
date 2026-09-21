@@ -13,6 +13,11 @@ Welcome to GETRA. This project operates on the **GETRA Integration Baseline (v1.
 
 URL di atas tetap menjadi referensi produksi. Alamat localhost di bawah hanya untuk pengembangan lokal.
 
+Audit hardening terbaru: [hasil QA dan batasan rilis](docs/production-hardening/QA_REPORT.md),
+[status machine-readable](docs/production-hardening/release-status.json), dan
+[PDF panduan, screenshot, serta bukti pengujian](docs/production-hardening/GETRA_PRODUCTION_HARDENING.pdf).
+Kandidat hardening dipisahkan dari deployment publik; lihat status tersebut sebelum menganggap fitur siap digunakan.
+
 ## System Overview
 
 GETRA seamlessly bridges Public Transit, Pedestrian Networking, and Retail/UMKM analytics through a unified interface.

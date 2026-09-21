@@ -1,0 +1,4 @@
+﻿getra-hardening-getra-frontend-full-1 getra-full-frontend:ee65dbf027308417a206e9c65c402becf3b502ac Up 7 minutes (healthy)
+getra-hardening-getra-backend-full-1 getra-full-backend:ee65dbf027308417a206e9c65c402becf3b502ac Up 7 minutes (healthy)
+sha256:5f2aa234622b32dcebbb5963a36405f18d5850cc0b7c7d45cbdf9b1221d65cc2 ee65dbf027308417a206e9c65c402becf3b502ac
+sha256:ae2236c18c61fc4a6b7934a11db49bb1f3bbb832849baae96e6615ad9405f6a4 ee65dbf027308417a206e9c65c402becf3b502ac

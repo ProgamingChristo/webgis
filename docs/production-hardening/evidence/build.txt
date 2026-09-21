@@ -1,0 +1,398 @@
+﻿time="2026-09-20T08:51:49Z" level=warning msg="Docker Compose is configured to build using Bake, but buildx isn't installed"
+#0 building with "default" instance using docker driver
+
+#1 [getra-backend-full internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.20kB 0.1s done
+#1 DONE 0.1s
+
+#2 [getra-backend-full internal] load metadata for docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5
+#2 DONE 0.3s
+
+#3 [getra-backend-full internal] load .dockerignore
+#3 transferring context: 564B 0.0s done
+#3 DONE 0.1s
+
+#4 [getra-backend-full internal] load build context
+#4 DONE 0.0s
+
+#5 [getra-backend-full deps 1/6] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5
+#5 resolve docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5
+#5 resolve docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5 0.2s done
+#5 DONE 0.2s
+
+#4 [getra-backend-full internal] load build context
+#4 transferring context: 4.35MB 4.7s
+#4 transferring context: 19.40MB 5.6s done
+#4 DONE 5.8s
+
+#6 [getra-backend-full deps 2/6] WORKDIR /app
+#6 CACHED
+
+#7 [getra-backend-full deps 3/6] COPY package.json package-lock.json ./
+#7 DONE 0.3s
+
+#8 [getra-backend-full deps 4/6] COPY frontend/package.json ./frontend/package.json
+#8 DONE 0.1s
+
+#9 [getra-backend-full deps 5/6] COPY backend/package.json ./backend/package.json
+#9 DONE 0.1s
+
+#10 [getra-backend-full deps 6/6] RUN --mount=type=cache,target=/root/.npm npm ci --prefer-offline --no-audit
+#10 300.8 
+#10 300.8 added 555 packages in 5m
+#10 300.8 
+#10 300.8 181 packages are looking for funding
+#10 300.8   run `npm fund` for details
+#10 300.8 npm notice
+#10 300.8 npm notice New major version of npm available! 10.9.8 -> 12.0.2
+#10 300.8 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+#10 300.8 npm notice To update run: npm install -g npm@12.0.2
+#10 300.8 npm notice
+#10 DONE 310.2s
+
+#11 [getra-backend-full backend-build 1/2] COPY . .
+#11 DONE 6.4s
+
+#12 [getra-backend-full backend-build 2/2] RUN npm run build -w backend
+#12 2.854 
+#12 2.854 > getra-backend@0.1.0 build
+#12 2.854 > next build --webpack
+#12 2.854 
+#12 3.939 ▲ Next.js 16.3.5 (webpack)
+#12 4.197 ✓ Running next.config.ts took 257ms
+#12 4.246 
+#12 4.342   Creating an optimized production build ...
+#12 37.49 ✓ Compiled successfully in 24.5s
+#12 37.50   Running TypeScript ...
+#12 55.66   Finished TypeScript in 18.2s ...
+#12 55.67   Collecting page data using 3 workers ...
+#12 57.91   Generating static pages using 3 workers (0/82) ...
+#12 58.42   Generating static pages using 3 workers (20/82) 
+#12 58.43   Generating static pages using 3 workers (40/82) 
+#12 58.43   Generating static pages using 3 workers (61/82) 
+#12 58.43 ✓ Generating static pages using 3 workers (82/82) in 517ms
+#12 59.55   Finalizing page optimization ...
+#12 59.55   Collecting build traces ...
+#12 95.90 
+#12 95.91 Route (app)
+#12 95.91 ┌ ○ /_not-found
+#12 95.91 ├ ƒ /api/accessibility/evidence
+#12 95.91 ├ ƒ /api/accessibility/evidence/[evidenceId]
+#12 95.91 ├ ƒ /api/accessibility/need
+#12 95.91 ├ ƒ /api/admin/accessibility/evidence/[evidenceId]/review
+#12 95.91 ├ ƒ /api/admin/community/analytics
+#12 95.91 ├ ƒ /api/admin/community/contributions
+#12 95.91 ├ ƒ /api/admin/community/contributions/[contributionId]
+#12 95.91 ├ ƒ /api/admin/community/contributions/[contributionId]/confirm
+#12 95.91 ├ ƒ /api/admin/community/contributions/[contributionId]/reject
+#12 95.91 ├ ƒ /api/admin/community/reports
+#12 95.91 ├ ƒ /api/admin/community/reports/[reportId]
+#12 95.91 ├ ƒ /api/admin/ingestion/jobs
+#12 95.91 ├ ƒ /api/admin/ingestion/run
+#12 95.91 ├ ƒ /api/admin/map-import/commit
+#12 95.91 ├ ƒ /api/admin/map-import/layers/[id]
+#12 95.91 ├ ƒ /api/admin/map-import/preview
+#12 95.91 ├ ƒ /api/admin/mapid/mission-sync
+#12 95.91 ├ ƒ /api/admin/merchant-claims
+#12 95.91 ├ ƒ /api/admin/merchant-claims/[id]/approve
+#12 95.91 ├ ƒ /api/admin/merchant-claims/[id]/reject
+#12 95.91 ├ ƒ /api/admin/merchant-reconciliation
+#12 95.91 ├ ƒ /api/admin/merchant-submissions
+#12 95.91 ├ ƒ /api/admin/merchant-submissions/[id]/approve
+#12 95.91 ├ ƒ /api/admin/merchant-submissions/[id]/reject
+#12 95.91 ├ ƒ /api/admin/mission/sync
+#12 95.91 ├ ƒ /api/advertising/events
+#12 95.91 ├ ƒ /api/advertising/placements/contextual-banner
+#12 95.91 ├ ƒ /api/advertising/placements/sponsored-pins
+#12 95.91 ├ ƒ /api/ai/ask
+#12 95.91 ├ ƒ /api/ai/merchant-description
+#12 95.91 ├ ƒ /api/analytics/demand
+#12 95.91 ├ ƒ /api/analytics/interpretation
+#12 95.91 ├ ƒ /api/analytics/retail-gap
+#12 95.91 ├ ƒ /api/auth/login
+#12 95.91 ├ ƒ /api/auth/logout
+#12 95.91 ├ ƒ /api/auth/me
+#12 95.91 ├ ƒ /api/auth/register
+#12 95.91 ├ ƒ /api/business-space/candidates
+#12 95.91 ├ ƒ /api/business-space/candidates/[candidateId]
+#12 95.91 ├ ƒ /api/business-space/compare
+#12 95.91 ├ ƒ /api/business-space/insight
+#12 95.91 ├ ƒ /api/community/contributions
+#12 95.91 ├ ƒ /api/community/contributions/[contributionId]
+#12 95.91 ├ ƒ /api/community/contributions/map
+#12 95.91 ├ ƒ /api/community/contributions/merchants
+#12 95.91 ├ ƒ /api/community/cultural-map
+#12 95.91 ├ ƒ /api/community/feed
+#12 95.91 ├ ƒ /api/community/friends
+#12 95.91 ├ ƒ /api/community/friends/[friendshipId]
+#12 95.91 ├ ƒ /api/community/friends/requests
+#12 95.91 ├ ƒ /api/community/notifications
+#12 95.91 ├ ƒ /api/community/notifications/[notificationId]/read
+#12 95.91 ├ ƒ /api/community/notifications/read-all
+#12 95.91 ├ ƒ /api/community/posts
+#12 95.91 ├ ƒ /api/community/posts/[postId]
+#12 95.91 ├ ƒ /api/community/posts/[postId]/comments
+#12 95.91 ├ ƒ /api/community/posts/[postId]/reactions/[reactionType]
+#12 95.91 ├ ƒ /api/community/reports
+#12 95.91 ├ ƒ /api/community/reputation/[userId]
+#12 95.91 ├ ƒ /api/community/requests
+#12 95.91 ├ ƒ /api/community/requests/[requestId]
+#12 95.91 ├ ƒ /api/community/requests/signals
+#12 95.91 ├ ƒ /api/community/requests/signals/[signalId]
+#12 95.91 ├ ƒ /api/community/requests/signals/[signalId]/responses
+#12 95.91 ├ ƒ /api/community/users/[userId]
+#12 95.91 ├ ƒ /api/contextual-observations
+#12 95.91 ├ ƒ /api/discovery
+#12 95.91 ├ ƒ /api/health
+#12 95.91 ├ ƒ /api/internal/poi/nearby
+#12 95.91 ├ ƒ /api/internal/routing/graph-health
+#12 95.91 ├ ƒ /api/internal/routing/provider-health
+#12 95.91 ├ ƒ /api/internal/routing/walking
+#12 95.91 ├ ƒ /api/internal/umkm/nearby
+#12 95.91 ├ ƒ /api/international/[layer]
+#12 95.91 ├ ƒ /api/international/interpret
+#12 95.91 ├ ƒ /api/map-import/layers
+#12 95.91 ├ ƒ /api/mapid/food-beverage
+#12 95.91 ├ ƒ /api/mapid/mission-observations
+#12 95.91 ├ ƒ /api/merchants/[id]/advertising/profile-poster
+#12 95.91 ├ ƒ /api/merchants/[id]/ownership
+#12 95.91 ├ ƒ /api/merchants/[id]/profile
+#12 95.91 ├ ƒ /api/merchants/canonical
+#12 95.91 ├ ƒ /api/onboarding
+#12 95.91 ├ ƒ /api/payments/midtrans/notification
+#12 95.91 ├ ƒ /api/places/resolve
+#12 95.91 ├ ƒ /api/profile
+#12 95.91 ├ ƒ /api/profile/avatar
+#12 95.91 ├ ƒ /api/profiles
+#12 95.91 ├ ƒ /api/profiles/[id]
+#12 95.91 ├ ƒ /api/regions
+#12 95.91 ├ ƒ /api/routing
+#12 95.91 ├ ƒ /api/routing/progress
+#12 95.91 ├ ƒ /api/spatial/bbox
+#12 95.91 ├ ƒ /api/spatial/distance
+#12 95.91 ├ ƒ /api/spatial/nearby
+#12 95.91 ├ ƒ /api/spatial/service-area
+#12 95.91 ├ ƒ /api/system/foundation
+#12 95.91 ├ ƒ /api/transport/nearest
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/analytics
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/cancel
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/creatives
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/creatives/[creativeId]
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/creatives/[creativeId]/media
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/creatives/[creativeId]/ready
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/lifecycle
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/pause
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/payment
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/payment/checkout
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/payment/receipt
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/payment/refresh
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/resume
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/schedule
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/serving-preview
+#12 95.91 ├ ƒ /api/umkm/advertising/campaigns/[id]/targeting
+#12 95.91 ├ ƒ /api/umkm/advertising/eligibility
+#12 95.91 ├ ƒ /api/umkm/advertising/my-merchants
+#12 95.91 ├ ƒ /api/umkm/intelligence
+#12 95.91 ├ ƒ /api/umkm/intelligence/copilot
+#12 95.91 ├ ƒ /api/umkm/merchant-submissions
+#12 95.91 ├ ƒ /api/umkm/merchant-submissions/[id]
+#12 95.91 ├ ƒ /api/umkm/merchant-submissions/[id]/cancel
+#12 95.91 ├ ƒ /api/umkm/merchant-submissions/[id]/submit
+#12 95.91 ├ ƒ /api/umkm/merchant-submissions/photo
+#12 95.91 ├ ƒ /api/umkm/merchants/[id]
+#12 95.91 ├ ƒ /api/umkm/workspace
+#12 95.91 ├ ƒ /api/v1/study-areas
+#12 95.91 ├ ƒ /api/v1/study-areas/[id]
+#12 95.91 ├ ƒ /api/v1/transport/corridors
+#12 95.91 └ ƒ /api/v1/transport/nodes
+#12 95.91 
+#12 95.91 
+#12 95.91 ○  (Static)   prerendered as static content
+#12 95.91 ƒ  (Dynamic)  server-rendered on demand
+#12 95.91 
+#12 DONE 96.4s
+
+#13 [getra-backend-full backend 3/4] COPY --from=backend-build --chown=node:node /app/backend/.next/standalone ./
+#13 DONE 1.6s
+
+#14 [getra-backend-full backend 4/4] COPY --from=backend-build --chown=node:node /app/backend/.next/static ./backend/.next/static
+#14 DONE 0.4s
+
+#15 [getra-backend-full] exporting to image
+#15 exporting layers
+#15 exporting layers 3.8s done
+#15 exporting manifest sha256:5fc506bbdf4f102cfbeaee95dca7286ecbc722a71e41e402fd95712a8594e5f9 0.0s done
+#15 exporting config sha256:b41f15a411dd5a61c251df26d08614ed4ef03ea35683e52d2090897642e89d17 0.0s done
+#15 exporting attestation manifest sha256:50f4b07a96e59308c16ee5a0b0a86529a88c84bcce00b325b6f1c06413388513 0.0s done
+#15 exporting manifest list sha256:ae2236c18c61fc4a6b7934a11db49bb1f3bbb832849baae96e6615ad9405f6a4 0.0s done
+#15 naming to docker.io/library/getra-full-backend:ee65dbf027308417a206e9c65c402becf3b502ac done
+#15 unpacking to docker.io/library/getra-full-backend:ee65dbf027308417a206e9c65c402becf3b502ac
+#15 unpacking to docker.io/library/getra-full-backend:ee65dbf027308417a206e9c65c402becf3b502ac 1.4s done
+#15 DONE 5.4s
+
+#16 [getra-backend-full] resolving provenance for metadata file
+#16 DONE 0.1s
+
+#17 [getra-frontend-full internal] load build definition from Dockerfile
+#17 transferring dockerfile: 2.20kB 0.0s done
+#17 DONE 0.0s
+
+#2 [getra-frontend-full internal] load metadata for docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5
+#2 DONE 0.3s
+
+#18 [getra-frontend-full internal] load .dockerignore
+#18 transferring context: 564B done
+#18 DONE 0.0s
+
+#5 [getra-frontend-full deps 1/6] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5
+#5 resolve docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5 0.0s done
+#5 DONE 0.2s
+
+#19 [getra-frontend-full internal] load build context
+#19 transferring context: 166.97kB 0.6s done
+#19 DONE 0.6s
+
+#6 [getra-frontend-full deps 2/6] WORKDIR /app
+#6 CACHED
+
+#20 [getra-frontend-full deps 3/6] COPY package.json package-lock.json ./
+#20 CACHED
+
+#21 [getra-frontend-full deps 4/6] COPY frontend/package.json ./frontend/package.json
+#21 CACHED
+
+#22 [getra-frontend-full deps 5/6] COPY backend/package.json ./backend/package.json
+#22 CACHED
+
+#23 [getra-frontend-full deps 6/6] RUN --mount=type=cache,target=/root/.npm npm ci --prefer-offline --no-audit
+#23 CACHED
+
+#24 [getra-frontend-full frontend-build 1/2] COPY . .
+#24 CACHED
+
+#25 [getra-frontend-full frontend-build 2/2] RUN --mount=type=secret,id=frontend_public_env,target=/app/frontend/.env.local,required=true npm run build -w frontend
+#25 1.566 
+#25 1.566 > getra-frontend@0.1.0 prebuild
+#25 1.566 > node ./scripts/copy-maplibre-worker.mjs
+#25 1.566 
+#25 1.658 [GETRA] MapLibre worker copied to public/maplibre
+#25 1.664 
+#25 1.664 > getra-frontend@0.1.0 build
+#25 1.664 > next build --webpack
+#25 1.664 
+#25 2.215 ▲ Next.js 16.3.5 (webpack)
+#25 2.215 - Environments: .env.local
+#25 2.254 ✓ Running next.config.ts took 39ms
+#25 2.277 
+#25 2.324   Creating an optimized production build ...
+#25 53.42 ✓ Compiled successfully in 48s
+#25 53.42   Running TypeScript ...
+#25 56.44   Finished TypeScript in 3.0s ...
+#25 56.45   Collecting page data using 3 workers ...
+#25 58.01   Generating static pages using 3 workers (0/109) ...
+#25 60.19   Generating static pages using 3 workers (27/109) 
+#25 60.20   Generating static pages using 3 workers (54/109) 
+#25 60.20   Generating static pages using 3 workers (81/109) 
+#25 60.20 ✓ Generating static pages using 3 workers (109/109) in 2.2s
+#25 63.04   Finalizing page optimization ...
+#25 63.04   Collecting build traces ...
+#25 85.52 
+#25 85.52 Route (app)
+#25 85.52 ┌ ○ /
+#25 85.52 ├ ○ /_not-found
+#25 85.52 ├ ○ /accessibility
+#25 85.52 ├ ○ /admin/community/contributions
+#25 85.52 ├ ○ /admin/import
+#25 85.52 ├ ○ /admin/mission-data
+#25 85.52 ├ ○ /admin/umkm
+#25 85.52 ├ ƒ /api/[...path]
+#25 85.52 ├ ƒ /api/basemap/carto/[...path]
+#25 85.52 ├ ƒ /api/basemap/mapid/[...path]
+#25 85.52 ├ ƒ /api/basemap/status
+#25 85.52 ├ ○ /app
+#25 85.52 ├ ○ /business-space
+#25 85.52 ├ ○ /cctv
+#25 85.52 ├ ○ /community
+#25 85.52 ├ ƒ /community/[id]
+#25 85.52 ├ ○ /community/contributions
+#25 85.52 ├ ○ /community/friends
+#25 85.52 ├ ƒ /community/requests/[requestId]
+#25 85.52 ├ ƒ /community/requests/signals/[signalId]
+#25 85.52 ├ ƒ /community/users/[userId]
+#25 85.52 ├ ○ /culinary-trails
+#25 85.52 ├ ○ /deals
+#25 85.52 ├ ○ /developers/open-data
+#25 85.52 ├ ○ /directory
+#25 85.52 ├ ○ /eco-walk
+#25 85.52 ├ ○ /government/accessibility-audit
+#25 85.52 ├ ○ /government/closures
+#25 85.52 ├ ○ /government/equity
+#25 85.52 ├ ○ /government/infrastructure
+#25 85.52 ├ ○ /international
+#25 85.52 ├   /international/[slug]
+#25 85.52 │ ├ ● /international/cctv
+#25 85.52 │ ├ ● /international/traffic-congestion
+#25 85.52 │ ├ ● /international/multimodal-transit
+#25 85.52 │ └ ● [+62 more paths]
+#25 85.52 ├ ○ /investor/foot-traffic
+#25 85.52 ├ ○ /investor/market-gap
+#25 85.52 ├ ○ /investor/tod-index
+#25 85.52 ├ ○ /login
+#25 85.52 ├ ○ /onboarding
+#25 85.52 ├ ○ /quests
+#25 85.52 ├ ○ /reports/new
+#25 85.52 ├ ○ /safety
+#25 85.52 ├ ○ /settings/profile
+#25 85.52 ├ ○ /signup
+#25 85.52 ├ ○ /transit
+#25 85.52 ├ ○ /transparency/status
+#25 85.52 ├ ○ /umkm
+#25 85.52 ├ ○ /umkm/advertising
+#25 85.52 ├ ○ /umkm/advertising/analytics
+#25 85.52 ├ ƒ /umkm/claims/[id]
+#25 85.52 ├ ○ /umkm/insights
+#25 85.52 ├ ○ /umkm/merchants/new
+#25 85.52 ├ ƒ /umkm/submissions/[id]
+#25 85.52 ├ ○ /umkm/supplies
+#25 85.52 ├ ○ /users
+#25 85.52 └ ƒ /users/[id]
+#25 85.52 
+#25 85.52 
+#25 85.52 ○  (Static)   prerendered as static content
+#25 85.52 ●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+#25 85.52 ƒ  (Dynamic)  server-rendered on demand
+#25 85.52 
+#25 DONE 88.1s
+
+#6 [getra-frontend-full deps 2/6] WORKDIR /app
+#6 CACHED
+
+#26 [getra-frontend-full frontend 3/5] COPY --from=frontend-build --chown=node:node /app/frontend/.next/standalone ./
+#26 DONE 2.3s
+
+#27 [getra-frontend-full frontend 4/5] COPY --from=frontend-build --chown=node:node /app/frontend/.next/static ./frontend/.next/static
+#27 DONE 0.1s
+
+#28 [getra-frontend-full frontend 5/5] COPY --from=frontend-build --chown=node:node /app/frontend/public ./frontend/public
+#28 DONE 0.1s
+
+#29 [getra-frontend-full] exporting to image
+#29 exporting layers
+#29 exporting layers 3.3s done
+#29 exporting manifest sha256:8917f99f75ce8a3642dfd6d0a8e7a7af313c1054bcce22d6ffdd080c27a3b1d3
+#29 exporting manifest sha256:8917f99f75ce8a3642dfd6d0a8e7a7af313c1054bcce22d6ffdd080c27a3b1d3 0.0s done
+#29 exporting config sha256:78120e76423997c0e0f329e927eb07e2fc5fc8f11c3c866707fa73230ef742ec 0.0s done
+#29 exporting attestation manifest sha256:713e2683d8b05edffe364b3340082fbea4e3c9b2d7b583ab5af4d99098f39675 0.0s done
+#29 exporting manifest list sha256:5f2aa234622b32dcebbb5963a36405f18d5850cc0b7c7d45cbdf9b1221d65cc2 0.0s done
+#29 naming to docker.io/library/getra-full-frontend:ee65dbf027308417a206e9c65c402becf3b502ac
+#29 naming to docker.io/library/getra-full-frontend:ee65dbf027308417a206e9c65c402becf3b502ac done
+#29 unpacking to docker.io/library/getra-full-frontend:ee65dbf027308417a206e9c65c402becf3b502ac
+#29 unpacking to docker.io/library/getra-full-frontend:ee65dbf027308417a206e9c65c402becf3b502ac 1.5s done
+#29 DONE 4.9s
+
+#30 [getra-frontend-full] resolving provenance for metadata file
+#30 DONE 0.0s
+ getra-backend-full  Built
+ getra-frontend-full  Built

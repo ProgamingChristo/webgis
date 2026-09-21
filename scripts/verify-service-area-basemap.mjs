@@ -22,6 +22,12 @@ try {
   await page.select('.commuter-filter-select select','10');
   await page.click('#commuter-filters .commuter-apply');
   await page.waitForFunction(()=>window.__getraMapLibreInstance?.getSource('walking-service-area')?.serialize()?.data?.features?.length > 0,{timeout:60000});
+  await page.evaluate(() => {
+    const map = window.__getraMapLibreInstance;
+    const coordinates = map.getSource('walking-service-area').serialize().data.features.flatMap(f => f.geometry.coordinates.flat());
+    const xs = coordinates.map(p => p[0]), ys = coordinates.map(p => p[1]);
+    map.fitBounds([[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]], { padding: 65, maxZoom: 15, duration: 0 });
+  });
   await page.waitForFunction(()=>window.__getraMapLibreInstance?.isStyleLoaded());
   await new Promise(r=>setTimeout(r,2000));
   await page.evaluate(() => { window.__serviceEvents=[]; window.__getraMapLibreInstance.on('error', e=>window.__serviceEvents.push({error:e.error?.message,source:e.sourceId})); window.addEventListener('getra:basemap-applied',e=>window.__serviceEvents.push(e.detail)); });
@@ -30,9 +36,10 @@ try {
   for(const [id,label] of [['osm','OpenStreetMap'],['esri-satellite','Esri Satellite'],['mapid-default','MAPID']]) {
     const clicked=await page.evaluate(label=>{const b=[...document.querySelectorAll('.basemap-button')].find(b=>label==='MAPID'?b.textContent.trim()==='Reset ke MAPID':b.querySelector('span')?.textContent.trim()===label); b.click();return {label,text:b.textContent,disabled:b.disabled,stored:localStorage.getItem('getra:basemap:v2'),maps:document.querySelectorAll('.maplibregl-map').length};},label); report.clicks??=[];report.clicks.push(clicked);
     await page.waitForFunction(id=>window.__getraMapLibreInstance?.getContainer().dataset.basemapId===id&&!document.querySelector('.map-basemap-state'),{timeout:45000},id);
+    await page.waitForFunction(() => window.__getraMapLibreInstance?.queryRenderedFeatures({ layers: ['walking-service-area-lines'] }).length > 0, { timeout: 15000 });
     const state=await page.evaluate(()=>({same:window.__qaServiceMap===window.__getraMapLibreInstance,geometry:window.__getraMapLibreInstance.getSource('walking-service-area')?.serialize().data,center:window.__getraMapLibreInstance.getCenter().toArray(),zoom:window.__getraMapLibreInstance.getZoom()}));
     report.states??=[];report.states.push({id,...state});
-    if(!state.same||JSON.stringify(state.geometry)!==JSON.stringify(report.before.geometry)||Math.abs(state.zoom-report.before.zoom)>0.01)throw new Error(`Service area changed on ${id}`);
+    if(!state.same||JSON.stringify(state.geometry)!==JSON.stringify(report.before.geometry)||Math.abs(state.zoom-report.before.zoom)>0.01||state.center.some((n,i)=>Math.abs(n-report.before.center[i])>0.00001))throw new Error(`Service area changed on ${id}`);
     report.switches.push({id,same:true,geometryPreserved:true}); await page.screenshot({path:`${output}/${id}.png`,fullPage:true});
   }
   report.passed=true;

@@ -1,0 +1,125 @@
+{
+  "base": "http://localhost:8180",
+  "frontend": "http://localhost:3100",
+  "checked_at": "2026-09-21T03:41:14.653Z",
+  "checks": [
+    {
+      "name": "anonymous profile denied",
+      "status": 401,
+      "ms": 114,
+      "headers": {
+        "x-request-id": "e1d08797-a24f-44e2-8322-89ca8079c7a6",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "access-control-allow-origin": null,
+        "content-security-policy": "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+      },
+      "passed": true
+    },
+    {
+      "name": "anonymous admin denied",
+      "status": 401,
+      "ms": 74,
+      "headers": {
+        "x-request-id": "cde7c7a6-e5b4-43e7-ae7a-861bdf81341f",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "access-control-allow-origin": null,
+        "content-security-policy": "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+      },
+      "passed": true
+    },
+    {
+      "name": "unknown layer",
+      "status": 404,
+      "ms": 57,
+      "headers": {
+        "x-request-id": "a8e7fb93-9c39-412d-9d1b-c82e7ac93542",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "access-control-allow-origin": null,
+        "content-security-policy": "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+      },
+      "passed": true
+    },
+    {
+      "name": "invalid coordinates",
+      "status": 400,
+      "ms": 44,
+      "headers": {
+        "x-request-id": "3e9846fc-d168-47f4-b195-5520c145e080",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "access-control-allow-origin": null,
+        "content-security-policy": "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+      },
+      "passed": true
+    },
+    {
+      "name": "malformed JSON",
+      "status": 400,
+      "ms": 25,
+      "headers": {
+        "x-request-id": "2a37224b-0ca7-4c39-beb1-2d73a111ce6a",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "access-control-allow-origin": null,
+        "content-security-policy": "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+      },
+      "passed": true
+    },
+    {
+      "name": "oversized JSON",
+      "status": 413,
+      "ms": 11,
+      "headers": {
+        "x-request-id": "2c7a9a0c-e2f8-4ea5-bb55-8dd65aaa0d48",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "access-control-allow-origin": null,
+        "content-security-policy": "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+      },
+      "passed": true
+    },
+    {
+      "name": "untrusted origin blocked",
+      "status": 403,
+      "ms": 13,
+      "headers": {
+        "x-request-id": "7122d5a9-6cff-49a1-b6ab-1af66c92d6b7",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "access-control-allow-origin": null,
+        "content-security-policy": "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+      },
+      "passed": true
+    },
+    {
+      "name": "ordinary user admin denied",
+      "status": 403,
+      "ms": 490,
+      "headers": {
+        "x-request-id": "039463c3-3fb2-4307-aa1f-6738ce030a3b",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "access-control-allow-origin": null,
+        "content-security-policy": "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+      },
+      "passed": true
+    },
+    {
+      "name": "frontend security headers",
+      "status": 200,
+      "ms": 27,
+      "headers": {
+        "x-request-id": null,
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "access-control-allow-origin": null,
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://app.sandbox.midtrans.com https://app.midtrans.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: *.supabase.co *.mapid.io mapidstorage.cdn.mapid.io mapid-app-chat.cdn.mapid.io; connect-src 'self' https: wss: http://localhost:8080 http://localhost:8180 https://getra-routing-api.tail0ed517.ts.net https://*.supabase.co https://app.sandbox.midtrans.com https://app.midtrans.com; frame-src 'self' https://jakcctv.jakarta.go.id https://dki-jkt.balitower.co.id:7028 https://cctv-jsc.balitower.co.id:8011 https://app.sandbox.midtrans.com https://app.midtrans.com; worker-src 'self' blob:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
+      },
+      "passed": true
+    }
+  ],
+  "passed": true
+}
